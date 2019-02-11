@@ -1,0 +1,11 @@
+{
+  "name": "@lib/logger",
+  "version": "1.0.0",
+  "description": "Some shared error code",
+  "main": "logger.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matt Kingston",
+  "license": "ISC"
+}

@@ -1,0 +1,3 @@
+FROM mowalitest.azurecr.io/docker/container-init-casa-common:latest
+
+COPY init.sql /

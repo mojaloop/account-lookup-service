@@ -1,0 +1,23 @@
+{
+    "name": "@lib/pathfinder",
+    "version": "1.0.0",
+    "description": "Pathfinder TLS connection",
+    "main": "tlsResolver.js",
+    "scripts": {
+        "test": "ava 'tests/**/*.js'",
+        "cover": "istanbul cover ava -- 'tests/**/*.js'",
+        "lint": "eslint --ignore-path ../.eslintignore ."
+    },
+    "author": "James Bush",
+    "license": "ISC",
+    "dependencies": {
+        "dns-packet": "^5.0.1"
+    },
+    "devDependencies": {
+        "ava": "1.0.0-beta.8",
+        "chance": "^1.0.16",
+        "eslint": "^2",
+        "eslint-plugin-ava": "^5.1.1",
+        "istanbul": "~0.4.3"
+    }
+}

@@ -1,0 +1,13 @@
+# Default values for central-directory-init.
+
+replicaCount: 1
+
+image:
+  repository: casablanca-casa-docker.jfrog.io/central-directory-init
+  tag: latest
+  pullPolicy: Always
+
+database:
+  secretName: "casa-centralledger"
+  secretKey: "db.uri"
+

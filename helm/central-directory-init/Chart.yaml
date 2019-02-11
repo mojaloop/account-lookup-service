@@ -1,0 +1,5 @@
+apiVersion: v1
+appVersion: "1.0"
+description: Ensures database entities required by the casablanca central directory service are created
+name: central-directory-init
+version: 0.1.0

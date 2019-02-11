@@ -1,0 +1,56 @@
+{
+    "name": "casablanca-central-directory",
+    "description": "",
+    "version": "1.0.0",
+    "author": "Matt Kingston <matt.kingston@modusbox.com>",
+    "contributors": [],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/msk-/casablanca-central-directory.git"
+    },
+    "bugs": "http://github.com/msk-/casablanca-central-directory/issues",
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org"
+    },
+    "dependencies": {
+        "@lib/e164": "file:lib/e164",
+        "@lib/error": "file:lib/error",
+        "@lib/logger": "file:lib/logger",
+        "@lib/pathfinder": "file:lib/pathfinder",
+        "@lib/requests": "file:lib/requests",
+        "@lib/validation": "file:lib/validation",
+        "@model/model": "file:model",
+        "boom": "^7.1.1",
+        "good": "^8.1.1",
+        "good-console": "^7.1.0",
+        "good-squeeze": "^5.1.0",
+        "hapi": "^17.0.0",
+        "hapi-openapi": "^1.0.0",
+        "json-rules-engine": "^2.3.0",
+        "knex": "^0.15.2",
+        "mysql": "^2.16.0",
+        "node-fetch": "^2.2.0"
+    },
+    "devDependencies": {
+        "ava": "1.0.0-beta.8",
+        "chance": "^1.0.18",
+        "eslint": "^2",
+        "eslint-plugin-ava": "^5.1.1",
+        "istanbul": "~0.4.3",
+        "swagmock": "~0.0.2",
+        "uuid": "^3.3.2"
+    },
+    "scripts": {
+        "test": "ava 'tests/**/*.js' './lib/pathfinder/tests/**/*.js' './lib/validation/tests/**/*.js'",
+        "cover": "istanbul cover ava -- 'tests/**/*.js'",
+        "lint": "eslint --ignore-path ../.eslintignore .",
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'",
+        "build": "docker build -t central-directory:local -f ../Dockerfile ../",
+        "run": "docker run -p 3000:3000 --rm --link db:mysql central-directory:local",
+        "package-lock": "docker run --rm -it central-directory:local cat package-lock.json > package-lock.json"
+    },
+    "generator-swaggerize": {
+        "version": "4.1.0"
+    },
+    "main": "./server"
+}

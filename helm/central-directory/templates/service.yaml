@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "central-directory.fullname" . }}
+  labels:
+    app: {{ template "central-directory.name" . }}
+    chart: {{ template "central-directory.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "central-directory.name" . }}
+    release: {{ .Release.Name }}
