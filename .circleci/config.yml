@@ -18,6 +18,7 @@ defaults_Dependencies: &defaults_Dependencies |
     apk --no-cache add curl
     apk --no-cache add openssh-client
     apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
+    npm config set unsafe-perm true
     npm install -g node-gyp
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
@@ -45,21 +46,16 @@ defaults_Environment: &defaults_environment
 defaults_build_docker_login: &defaults_build_docker_login
   name: Login to Docker Hub
   command: |
-    docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_ORG
+    docker login -u $DOCKER_USER -p $DOCKER_PASS
 
 defaults_build_docker_build: &defaults_build_docker_build
-  name: Build Docker image(s)
+  name: Build Docker image
   command: |
-    docker build -f Dockerfile.dbinit -t $DOCKER_ORG/casablanca-central-directory-init:$CIRCLE_TAG -t $DOCKER_ORG/casablanca-central-directory-init:$RELEASE_TAG .
     docker build -t $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG -t $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG .
 
 defaults_build_docker_publish: &defaults_build_docker_publish
   name: Publish Docker image $CIRCLE_TAG & Latest tag to Docker Hub
   command: |
-    echo "Publishing $DOCKER_ORG/casablanca-central-directory-init:$CIRCLE_TAG"
-    docker push $DOCKER_ORG/casablanca-central-directory-init:$CIRCLE_TAG
-    echo "Publishing $DOCKER_ORG/casablanca-central-directory-init:$RELEASE_TAG"
-    docker push $DOCKER_ORG/casablanca-central-directory-init:$RELEASE_TAG
     echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
     docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
     echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
@@ -68,7 +64,6 @@ defaults_build_docker_publish: &defaults_build_docker_publish
 defaults_deploy_prequisites: &defaults_deploy_prequisites
   name: Copy deployment pre-requisites from S3 bucket
   command: |
-    echo "K8 Token: $K8_USER_TOKEN for user: $K8_USER_NAME"
     if [ -z "$K8_USER_TOKEN" ];
     then
         echo "Copying K8 keys into $AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_KEYS folder"
@@ -79,7 +74,7 @@ defaults_deploy_prequisites: &defaults_deploy_prequisites
         echo "Skipping K8 keys into $AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_KEYS folder"
     fi
 
-    echo "Copying Helm value file into $AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_HELM folder for $K8_RELEASE_NAME release into /$CIRCLE_WORKING_DIRECTORY/$AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_HELM"
+    echo "Copying Helm value file into $AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_HELM folder for $K8_RELEASE_NAME release"
     mkdir $CIRCLE_WORKING_DIRECTORY/$AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_HELM
     aws s3 cp $AWS_S3_URI_DEVOPS_DEPLOYMENT_CONFIG/$AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_HELM/$HELM_VALUE_FILENAME $CIRCLE_WORKING_DIRECTORY/$AWS_S3_DIR_DEVOPS_DEPLOYMENT_CONFIG_HELM/
 
