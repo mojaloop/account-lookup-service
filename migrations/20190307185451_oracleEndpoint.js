@@ -30,7 +30,7 @@ exports.up = (knex, Promise) => {
     if (!exists) {
       return knex.schema.createTable('oracleEndpoint', (t) => {
         t.increments('oracleEndpointId').primary().notNullable()
-        t.integer('oracleType').unsigned().notNullable()
+        t.string('oracleType').notNullable()
         t.integer('endpointTypeId').unsigned().notNullable()
         t.foreign('endpointTypeId').references('endpointTypeId').inTable('endpointType')
         t.string('value', 512).notNullable()

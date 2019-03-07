@@ -27,7 +27,7 @@
 
 const Db = require('@mojaloop/central-services-database').Db
 
-exports.getOracleEndpointByType = async (type) => {
+const getOracleEndpointByType = async (type) => {
   try {
     return await Db.oracleEndpoint.findOne({ oracleType: type, isActive: true })
   } catch (err) {
@@ -35,7 +35,7 @@ exports.getOracleEndpointByType = async (type) => {
   }
 }
 
-exports.getAllOracleEndpoint = async () => {
+const getAllOracleEndpoint = async () => {
   try {
     return await Db.oracleEndpoint.find({ isActive: true }, { order: 'name asc' })
   } catch (err) {
@@ -43,7 +43,7 @@ exports.getAllOracleEndpoint = async () => {
   }
 }
 
-exports.createOracleEndpoint = async (oracleEndpointModel, type) => {
+const createOracleEndpoint = async (oracleEndpointModel, type) => {
   try {
     const knex = await Db.getKnex()
     return await knex.from(knex.raw('oracleEndpoint (oracleType, endpointTypeId, value, createdBy)'))
@@ -58,7 +58,7 @@ exports.createOracleEndpoint = async (oracleEndpointModel, type) => {
   }
 }
 
-exports.updateOracleEndpoint = async (oracleType, value ) => {
+const updateOracleEndpoint = async (oracleType, value ) => {
   try {
     return await Db.oracleEndpoint.update({ oracleType }, { value })
   } catch (err) {
@@ -66,7 +66,7 @@ exports.updateOracleEndpoint = async (oracleType, value ) => {
   }
 }
 
-exports.setIsActiveOracleEndpoint = async (oracleType, isActive) => {
+const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   try {
     return await Db.oracleEndpoint.update({ oracleType }, { isActive })
   } catch (err) {
@@ -74,10 +74,19 @@ exports.setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   }
 }
 
-exports.destroyOracleEndpointByType = async (oracleType) => {
+const destroyOracleEndpointByType = async (oracleType) => {
   try {
     return await Db.oracleEndpoint.destroy({ oracleType })
   } catch (err) {
     throw new Error(err.message)
   }
+}
+
+module.exports ={
+  getOracleEndpointByType,
+  getAllOracleEndpoint,
+  createOracleEndpoint,
+  updateOracleEndpoint,
+  setIsActiveOracleEndpoint,
+  destroyOracleEndpointByType
 }

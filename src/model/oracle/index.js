@@ -28,10 +28,10 @@
 const oracleEndpointModel = require('./oracleEndpoint')
 
 module.exports = {
-  getOracleEndpointByType: oracleEndpointModel.getByType(type),
-  getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint(),
-  createOracleEndpoint: oracleEndpointModel.createOracleEndpoint(oracleEndpointModel, type),
-  updateOracleEndpoint: oracleEndpointModel.updateOracleEndpoint(oracleType, value),
-  setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint(oracleType, isActive),
-  destroyOracleEndpointByType: oracleEndpointModel.destroyOracleEndpointByType(oracleType)
+  getOracleEndpointByType: oracleEndpointModel.getOracleEndpointByType,
+  getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint,
+  createOracleEndpoint: oracleEndpointModel.createOracleEndpoint,
+  updateOracleEndpoint: oracleEndpointModel.updateOracleEndpoint,
+  setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint,
+  destroyOracleEndpointByType: oracleEndpointModel.destroyOracleEndpointByType
 }

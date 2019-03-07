@@ -27,12 +27,12 @@
 
 exports.up = function (knex, Promise) {
   return knex.schema.table('endpointType', (t) => {
-    t.unique('name')
+    t.unique('type')
   })
 }
 
 exports.down = function (knex, Promise) {
   return knex.schema.table('endpointType', (t) => {
-    t.dropUnique('name')
+    t.dropUnique('type')
   })
 }

@@ -27,9 +27,23 @@
 
 const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../model/oracle')
+const Enums = require('../../lib/enum')
+const request = require('../../lib/request')
 
-const participantsByTypeAndID = (requesterName, type, id) => {
+const participantsByTypeAndID = (requesterName, req) => {
+  try{
+    const type = req.params.type
+    if(Object.values(Enums.typeEnum).includes(type)){
+      const oracleEndointModel = oracleEndpoint.getOracleEndpointByType(type)
+      const restUrl = oracleEndointModel.value + req.path
+      const payload = req.payload || undefined
+      const response = request.requestOracleRegistry(restUrl, req.method, req.headers, payload )
+    } else {
+      // TODO handle negative case when type not located
+    }
+  } catch (e) {
 
+  }
 }
 
 module.exports = {
