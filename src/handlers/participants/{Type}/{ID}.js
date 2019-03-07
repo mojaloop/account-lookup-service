@@ -1,12 +1,7 @@
 'use strict';
 
-const participantsModel = require('@model/model').participants;
-const err = require('@lib/error');
-//const AppError = err.ApplicationError;
-const syncResponses = err.responses.build;
-const asyncResponses = err.responses.async;
-const pp = require('util').inspect;
-const e164 = require('@lib/e164').validate;
+const participants = require('../../../domain/participant')
+const Logger = require('@mojaloop/central-services-shared').Logger
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -20,33 +15,21 @@ module.exports = {
      * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
      */
     get: function ParticipantsByTypeAndID(req, h) {
-        if (req.params.Type !== 'MSISDN') {
-            return syncResponses.badRequestMalformedType(h);
-        }
-        if (!e164(req.params.ID)) {
-            return syncResponses.badRequestMalformedMSISDN(h);
-        }
         (async function() {
-            const metadata = `${req.method} ${req.path}`;
-            const { database: db, requests: rq, logger } = req.server.app;
-            const requesterName = req.headers['fspiop-source']; // should not fail; should have been validated already
+            const metadata = `${req.method} ${req.path}`
+            const requesterName = req.headers['fspiop-source']
             try {
-                req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`);
-                await participantsModel.handleMSISDNParticipantRequest(req.server.app, requesterName, req);
-                req.server.log(['info'], `success: ${metadata}.`);
+                Logger.info(`received: ${metadata}. ${pp(req.params)}`)
+                await participants.participantsByTypeAndID(requesterName, req.params.type, req.params.id)
+                Logger.info(`success: ${metadata}.`)
             }
             catch(err) {
-                req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`);
+                Logger.error(`ERROR - ${metadata}: ${err.stack || pp(err)}`)
                 // TODO: what if this fails? We need to log. What happens by default?
-                const url = await rq.createErrorUrl(db, req.path, requesterName);
                 // TODO: review this error message
-                // TODO: we should be able to throw an AppError somewhere, test whether the error
-                // received in this handler is an AppError, then send the requester the correct
-                // payload etc. based on the contents of that AppError.
-                rq.sendError(url, asyncResponses.serverError, rq.defaultHeaders(requesterName, 'participants'), { logger });
             }
         })();
-        return h.response().code(202);
+        return h.response().code(202)
     },
     /**
      * summary: ParticipantsByTypeAndID
@@ -56,7 +39,7 @@ module.exports = {
      * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
      */
     put: function ParticipantsByTypeAndID3(request, h) {
-        return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501);
+        return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501)
     },
     /**
      * summary: ParticipantsByIDAndType
@@ -66,7 +49,7 @@ module.exports = {
      * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
      */
     post: function ParticipantsByIDAndType(request, h) {
-        return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501);
+        return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501)
     },
     /**
      * summary: ParticipantsByTypeAndID
@@ -76,7 +59,7 @@ module.exports = {
      * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
      */
     delete: function ParticipantsByTypeAndID2(request, h) {
-        return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501);
+        return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501)
     }
 
 };

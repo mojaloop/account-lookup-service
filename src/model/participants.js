@@ -1,6 +1,6 @@
 'use strict';
 
-const errors = require('@lib/error').responses.async;
+const errors = require('../lib/error/error').responses.async;
 const utils = require('./utils');
 
 // TODO: comments

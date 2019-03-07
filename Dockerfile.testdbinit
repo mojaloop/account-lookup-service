@@ -1,3 +1,0 @@
-FROM casablanca-casa-docker-release.jfrog.io/container-init-base:latest
-
-COPY *.sql /

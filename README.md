@@ -1,6 +1,6 @@
 # Casablanca central directory
 
-Swagger api [location](./src/config/swagger.json)
+Swagger api [location](src/interface/swagger.json)
 
 # Database initialisation container/service
 Build the central-ledger-init container from the central-ledger-init repo. Note

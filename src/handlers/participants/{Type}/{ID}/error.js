@@ -1,12 +1,12 @@
 'use strict';
 
-const model = require('@model/model').participants;
-const err = require('@lib/error');
+const model = require('../../../../model').participants;
+const err = require('../../../../lib/error/error');
 //const AppError = err.ApplicationError;
 const syncResponses = err.responses.build;
 const asyncResponses = err.responses.async;
 const pp = require('util').inspect;
-const e164 = require('@lib/e164').validate;
+const e164 = require('../../../../lib/validation').e164Validate;
 
 /**
  * Operations on /participants/{Type}/{ID}/error

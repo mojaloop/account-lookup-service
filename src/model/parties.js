@@ -1,6 +1,6 @@
 'use strict';
 
-const errors = require('@lib/error').responses.async;
+const errors = require('../lib/error/error').responses.async;
 const utils = require('./utils');
 
 module.exports.handleMSISDNPartyRequest = async function({ database: db, pathfinder: pf, requests, logger }, req, ) {

@@ -1,12 +1,12 @@
 'use strict';
 
-const partiesModel = require('@model/model').parties;
-const err = require('@lib/error');
+const partiesModel = require('../../../model').parties;
+const err = require('../../../lib/error/error');
 //const AppError = err.ApplicationError;
 const syncResponses = err.responses.build;
 const asyncResponses = err.responses.async;
 const pp = require('util').inspect;
-const e164 = require('@lib/e164').validate;
+const e164 = require('../../../lib/validation').e164Validate;
 
 /**
  * Operations on /parties/{Type}/{ID}

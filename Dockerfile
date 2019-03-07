@@ -4,7 +4,7 @@ WORKDIR /src
 
 CMD ["node", "/src/server.js"]
 
-COPY ./src/package.json ./src/package-lock.json /src/
+COPY package.json ./src/package-lock.json /src/
 COPY ./src/lib/pathfinder/package.json /src/lib/pathfinder/package.json
 COPY ./src/lib/error/package.json /src/lib/error/package.json
 COPY ./src/lib/logger/package.json /src/lib/logger/package.json

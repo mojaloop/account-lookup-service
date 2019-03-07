@@ -1,7 +1,7 @@
 'use strict';
 
-const model = require('@model/model').parties;
-const err = require('@lib/error');
+const model = require('../../../../model').parties;
+const err = require('../../../../lib/error/error');
 //const AppError = err.ApplicationError;
 const syncResponses = err.responses.build;
 const asyncResponses = err.responses.async;
