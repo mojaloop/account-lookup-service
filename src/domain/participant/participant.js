@@ -30,11 +30,11 @@ const oracleEndpoint = require('../../model/oracle')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 
-const participantsByTypeAndID = (requesterName, req) => {
+const participantsByTypeAndID = async (requesterName, req) => {
   try{
-    const type = req.params.type
+    const type = req.params.Type
     if(Object.values(Enums.typeEnum).includes(type)){
-      const oracleEndointModel = oracleEndpoint.getOracleEndpointByType(type)
+      const oracleEndointModel = await oracleEndpoint.getOracleEndpointByType(type)
       const restUrl = oracleEndointModel.value + req.path
       const payload = req.payload || undefined
       const response = request.requestOracleRegistry(restUrl, req.method, req.headers, payload )
