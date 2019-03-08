@@ -48,9 +48,17 @@ const endpointTypes = {
   FSIOP_CALLBACK_URL: 'FSPIOP_CALLBACK_URL'
 }
 
+const restMethods = {
+  GET: 'GET',
+  POST: 'POST',
+  PUT: 'PUT',
+  DELETE: 'DELETE'
+}
+
 module.exports = {
   type,
   resources,
   apiServices,
-  endpointTypes
+  endpointTypes,
+  restMethods
 }

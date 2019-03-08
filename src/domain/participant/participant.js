@@ -33,14 +33,15 @@ const participantEndpointCache = require('./cache/participantEndpoint')
 
 
 const participantsByTypeAndID = async (requesterName, req) => {
-  try{
+  try {
     const type = req.params.Type
-    if(Object.values(Enums.type).includes(type)){
+    if (Object.values(Enums.type).includes(type)) {
       const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
       const oracleEndointModel = await oracleEndpoint.getOracleEndpointByType(type)
       const url = oracleEndointModel.value + req.path
       const payload = req.payload || undefined
-      const response = request.requestOracleRegistry(url, req.headers, req.method, payload)
+      const response = await request.requestOracleRegistry(url, req.headers, req.method, payload)
+      const requesterResponse = await request.requestOracleRegistry(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
       Logger.info(JSON.stringify(response))
     } else {
       // TODO handle negative case when type not located

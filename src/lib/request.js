@@ -26,7 +26,7 @@
 const request = require('request')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
-const requestOracleRegistry = (url, headers, method = undefined, payload = undefined) => {
+const requestOracleRegistry = async (url, headers, method = undefined, payload = undefined) => {
   try {
     const requestOptions = {
       url,
@@ -39,7 +39,7 @@ const requestOracleRegistry = (url, headers, method = undefined, payload = undef
     }
     Logger.info(`request: ${JSON.stringify(requestOptions)}`)
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       return request(requestOptions, (error, response, body) => {
         if (error) {
           Logger.error(`ERROR: ${error}, response: ${JSON.stringify(response)}`)
