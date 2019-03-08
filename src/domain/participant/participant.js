@@ -29,24 +29,24 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../model/oracle')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
-const participantEndpointCache = require('./index')
+const participantEndpointCache = require('./cache/participantEndpoint')
 
 
 const participantsByTypeAndID = async (requesterName, req) => {
   try{
     const type = req.params.Type
     if(Object.values(Enums.type).includes(type)){
-      const requesterEndpoints = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
+      const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
       const oracleEndointModel = await oracleEndpoint.getOracleEndpointByType(type)
       const url = oracleEndointModel.value + req.path
       const payload = req.payload || undefined
       const response = request.requestOracleRegistry(url, req.headers, req.method, payload)
-
+      Logger.info(JSON.stringify(response))
     } else {
       // TODO handle negative case when type not located
     }
   } catch (e) {
-
+    Logger.error(e)
   }
 }
 

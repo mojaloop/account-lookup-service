@@ -24,29 +24,34 @@
 'use strict'
 
 const request = require('request')
+const Logger = require('@mojaloop/central-services-shared').Logger
 
 const requestOracleRegistry = (url, headers, method = undefined, payload = undefined) => {
-  const requestOptions = {
-    url,
-    method: method,
-    headers: headers,
-    body: payload,
-    agentOptions: {
-      rejectUnauthorized: false
-    }
-  }
-  Logger.info(`request: ${JSON.stringify(requestOptions)}`)
-
-  return new Promise((resolve, reject) => {
-    return request(requestOptions, (error, response, body) => {
-      if (error) {
-        Logger.error(`ERROR: ${error}, response: ${JSON.stringify(response)}`)
-        return reject(error)
+  try {
+    const requestOptions = {
+      url,
+      method: method,
+      headers: headers,
+      body: payload,
+      agentOptions: {
+        rejectUnauthorized: false
       }
-      Logger.info(`SUCCESS with body: ${JSON.stringify(response.body)}`)
-      return resolve(response)
+    }
+    Logger.info(`request: ${JSON.stringify(requestOptions)}`)
+
+    return new Promise((resolve, reject) => {
+      return request(requestOptions, (error, response, body) => {
+        if (error) {
+          Logger.error(`ERROR: ${error}, response: ${JSON.stringify(response)}`)
+          return reject(error)
+        }
+        Logger.info(`SUCCESS with body: ${JSON.stringify(response.body)}`)
+        return resolve(response)
+      })
     })
-  })
+  } catch (e) {
+    Logger.error(e)
+  }
 }
 
 module.exports = {

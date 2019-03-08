@@ -22,13 +22,13 @@
  --------------
  ******/
 
-'use strict';
+'use strict'
 
-const Hapi = require('hapi');
-const HapiOpenAPI = require('hapi-openapi');
-const Path = require('path');
+const Hapi = require('hapi')
+const HapiOpenAPI = require('hapi-openapi')
+const Path = require('path')
 const Db = require('@mojaloop/central-services-database').Db
-const Config = require('./lib/config.js');
+const Config = require('./lib/config.js')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')

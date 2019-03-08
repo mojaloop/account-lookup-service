@@ -35,6 +35,7 @@ const Enum = require('../../../lib/enum')
 const partition = 'endpoint-cache'
 const clientOptions = {partition}
 const policyOptions = Config.ENDPOINT_CACHE_CONFIG
+const Mustache = require('mustache')
 
 let client
 let policy
@@ -75,20 +76,25 @@ const initializeCache = async () => {
  * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
  */
 
-const fetchEndpoints = async (id) => {
-  Logger.info(`[fsp=${id}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${id}`)
-  const defaultHeaders = util.defaultHeaders(Enum.apiServices.CL, Enum.resources.participants, Enum.apiServices.ALS)
-  const response = await request.requestOracleRegistry(Config.ENDPOINT_SOURCE_URL, defaultHeaders)
-  Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::getEndpoint := successful with body: ${JSON.stringify(response.body)}`)
-  let endpoints = JSON.parse(response.body)
-  let endpointMap = {}
-  if (Array.isArray(endpoints)) {
-    endpoints.forEach(item => {
-      endpointMap[item.type] = item.value
-    })
+const fetchEndpoints = async (fsp) => {
+  try {
+    Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
+    const defaultHeaders = util.defaultHeaders(Enum.apiServices.CL, Enum.resources.participants, Enum.apiServices.ALS)
+    const url = Mustache.render(Config.ENDPOINT_SOURCE_URL, { fsp })
+    const response = await request.requestOracleRegistry(url, defaultHeaders)
+    Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::getEndpoint := successful with body: ${JSON.stringify(response.body)}`)
+    let endpoints = JSON.parse(response.body)
+    let endpointMap = {}
+    if (Array.isArray(endpoints)) {
+      endpoints.forEach(item => {
+        endpointMap[item.type] = item.value
+      })
+    }
+    Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Returning the endpoints: ${JSON.stringify(endpointMap)}`)
+    return endpointMap
+  } catch (e) {
+    Logger.error(`participantEndpointCache::fetchEndpoints:: ERROR:'${e}'`)
   }
-  Logger.info(`[fsp=${id}] ~ participantEndpointCache::fetchEndpoints := Returning the endpoints: ${JSON.stringify(endpointMap)}`)
-  return endpointMap
 }
 
 /**

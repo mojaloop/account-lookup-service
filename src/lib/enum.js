@@ -45,7 +45,7 @@ const apiServices = {
 }
 
 const endpointTypes = {
-  FSIOP_CALLBACK_URL: 'FSIOP_CALLBACK_URL'
+  FSIOP_CALLBACK_URL: 'FSPIOP_CALLBACK_URL'
 }
 
 module.exports = {
