@@ -26,7 +26,7 @@
 'use strict'
 
 exports.up = (knex, Promise) => {
-  return knex.schema.hasTable('oracleEndpoint').then(function(exists) {
+  return knex.schema.hasTable('oracleEndpoint').then(function (exists) {
     if (!exists) {
       return knex.schema.createTable('oracleEndpoint', (t) => {
         t.increments('oracleEndpointId').primary().notNullable()

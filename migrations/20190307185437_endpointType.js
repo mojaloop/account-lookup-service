@@ -25,7 +25,7 @@
 'use strict'
 
 exports.up = (knex, Promise) => {
-  return knex.schema.hasTable('endpointType').then(function(exists) {
+  return knex.schema.hasTable('endpointType').then(function (exists) {
     if (!exists) {
       return knex.schema.createTable('endpointType', (t) => {
         t.increments('endpointTypeId').primary().notNullable()

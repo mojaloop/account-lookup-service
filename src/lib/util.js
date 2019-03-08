@@ -16,19 +16,24 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
 
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
  ******/
-
 'use strict'
 
-const participantEndpointCache = require('./cache/participantEndpoint')
-const participants = require('./participant')
+function defaultHeaders(destination, resource, source, version = '1.0') {
+  // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
+  // add/append to this field in all 'queueResponse' calls?
+  return {
+    'FSPIOP-Destination': destination,
+    'Content-Type': `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'Date': (new Date()).toUTCString(),
+    'FSPIOP-Source': source
+  }
+}
 
 module.exports = {
-  getEndpoint: participantEndpointCache.getEndpoint,
-  participantsByTypeAndID: participants.participantsByTypeAndID
+  defaultHeaders
 }

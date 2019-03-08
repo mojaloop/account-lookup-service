@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 
-module.exports.responses = require('./responses');
+module.exports.responses = require('./responses')
 
 module.exports.ApplicationError = class ApplicationError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = 'ApplicationError';
-    }
-};
+  constructor(message) {
+    super(message)
+    this.name = 'ApplicationError'
+  }
+}

@@ -28,11 +28,12 @@
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Config = require('../../../lib/config')
 const Catbox = require('catbox')
-const participantEndpointModel = require('../../../model/participant/participantEndpoint')
-const { Map } = require('immutable')
-
+const {Map} = require('immutable')
+const request = require('../../../lib/request')
+const util = require('../../../lib/util')
+const Enum = require('../../../lib/enum')
 const partition = 'endpoint-cache'
-const clientOptions = { partition }
+const clientOptions = {partition}
 const policyOptions = Config.ENDPOINT_CACHE_CONFIG
 
 let client
@@ -43,12 +44,12 @@ let policy
  */
 
 /**
-* @function initializeCache
-*
-* @description This initializes the cache for endpoints
-*
-* @returns {boolean} Returns true on successful initialization of the cache, throws error on falires
-*/
+ * @function initializeCache
+ *
+ * @description This initializes the cache for endpoints
+ *
+ * @returns {boolean} Returns true on successful initialization of the cache, throws error on falires
+ */
 const initializeCache = async () => {
   try {
     Logger.info(`participantEndpointCache::initializeCache::start::clientOptions - ${clientOptions}`)
@@ -66,8 +67,8 @@ const initializeCache = async () => {
 }
 
 /**
-* @function fetchEndpoints
-*
+ * @function fetchEndpoints
+ *
  * @description This populates the cache of endpoints
  *
  * @param {string} id The fsp id
@@ -76,7 +77,16 @@ const initializeCache = async () => {
 
 const fetchEndpoints = async (id) => {
   Logger.info(`[fsp=${id}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${id}`)
-  const endpointMap = await participantEndpointModel.getEndpoint(id)
+  const defaultHeaders = util.defaultHeaders(Enum.apiServices.CL, Enum.resources.participants, Enum.apiServices.ALS)
+  const response = await request.requestOracleRegistry(Config.ENDPOINT_SOURCE_URL, defaultHeaders)
+  Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::getEndpoint := successful with body: ${JSON.stringify(response.body)}`)
+  let endpoints = JSON.parse(response.body)
+  let endpointMap = {}
+  if (Array.isArray(endpoints)) {
+    endpoints.forEach(item => {
+      endpointMap[item.type] = item.value
+    })
+  }
   Logger.info(`[fsp=${id}] ~ participantEndpointCache::fetchEndpoints := Returning the endpoints: ${JSON.stringify(endpointMap)}`)
   return endpointMap
 }
@@ -87,36 +97,35 @@ const fetchEndpoints = async (id) => {
  * @description It returns the endpoint for a given fsp and type from the cache if the cache is still valid, otherwise it will refresh the cache and return the value
  *
  * @param {string} fsp - the id of the fsp
- * @param {string} enpointType - the type of the endpoint
+ * @param {string} endpointType - the type of the endpoint
  *
  * @returns {string} - Returns the endpoint, throws error if failure occurs
  */
-const getEndpoint = async (fsp, enpointType) => {
-  Logger.info(`participantEndpointCache::getEndpoint::enpointType - ${enpointType}`)
+const getEndpoint = async (fsp, endpointType) => {
+  Logger.info(`participantEndpointCache::getEndpoint::enpointType - ${endpointType}`)
   try {
     let endpoints = await policy.get(fsp)
-    let url = new Map(endpoints).get(enpointType)
-    return url
+    return new Map(endpoints).get(endpointType)
   } catch (e) {
     Logger.error(`participantEndpointCache::getEndpoint:: ERROR:'${e}'`)
     throw e
   }
 }
 
-/**
- * @function stopCache
- *
- * @description It stops the cache client
- *
- * @returns {boolean} - Returns the status
- */
-const stopCache = async () => {
-  Logger.info('participantEndpointCache::stopCache::Stopping the cache')
-  return client.stop()
-}
+// /**
+//  * @function stopCache
+//  *
+//  * @description It stops the cache client
+//  *
+//  * @returns {boolean} - Returns the status
+//  */
+// const stopCache = async () => {
+//   Logger.info('participantEndpointCache::stopCache::Stopping the cache')
+//   return client.stop()
+// }
 
 module.exports = {
   initializeCache,
-  getEndpoint,
-  stopCache
+  getEndpoint
+  // stopCache
 }
