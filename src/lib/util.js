@@ -23,6 +23,10 @@
  ******/
 'use strict'
 
+const Enum = require('./enum')
+
+const getKeyCaseInsensitive = (o, key) => Object.keys(o).find(k => k.toLowerCase() === key.toLowerCase())
+
 function defaultHeaders(destination, resource, source, version = '1.0') {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
@@ -34,6 +38,28 @@ function defaultHeaders(destination, resource, source, version = '1.0') {
   }
 }
 
+function setHeaders(headers, newHeaders) {
+  return Object.entries(newHeaders).reduce((pv, [header, value]) => {
+    const existingHeader = getKeyCaseInsensitive(headers, header)
+    if (existingHeader === undefined) {
+      return {...pv, [header]: value}
+    }
+    return {...pv, [existingHeader]: value}
+  }, headers)
+}
+
+function filterHeaders(headers) {
+  const keyInWhitelist = k => undefined !== Enum.defaultHeaderWhitelist.find(s => s.toLowerCase() === k.toLowerCase())
+  return filterObject(headers, keyInWhitelist)
+}
+
+function filterObject(headers, f) {
+  return Object.entries(headers).filter(([k, v]) => f(k, v)).reduce((pv, [k, v]) => ({...pv, [k]: v}), {})
+}
+
+
 module.exports = {
-  defaultHeaders
+  defaultHeaders,
+  setHeaders,
+  filterHeaders
 }

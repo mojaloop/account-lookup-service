@@ -26,7 +26,7 @@
 const request = require('request')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
-const requestOracleRegistry = async (url, headers, method = undefined, payload = undefined) => {
+const sendRequest = async (url, headers, method = undefined, payload = undefined) => {
   try {
     const requestOptions = {
       url,
@@ -55,5 +55,5 @@ const requestOracleRegistry = async (url, headers, method = undefined, payload =
 }
 
 module.exports = {
-  requestOracleRegistry
+  sendRequest
 }

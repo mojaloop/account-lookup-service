@@ -32,7 +32,7 @@ const Config = require('./lib/config.js')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
-const ParticipantEndpointCache = require('./domain/participant/cache/participantEndpoint')
+const ParticipantEndpointCache = require('./domain/participants/cache/participantEndpoint')
 
 const connectDatabase = async () => {
   let result = await Db.connect(Config.DATABASE_URI)

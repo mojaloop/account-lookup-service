@@ -23,6 +23,7 @@
  ******/
 'use strict'
 
+// TODO We should store this in the database and like to oracleEndpoint table for oracleType
 const type = {
   MSISDN: 'MSISDN',
   EMAIL: 'EMAIL',
@@ -44,6 +45,7 @@ const apiServices = {
   CL: 'central-ledger-service'
 }
 
+// TODO need get all these endpoints from somewhere
 const endpointTypes = {
   FSIOP_CALLBACK_URL: 'FSPIOP_CALLBACK_URL'
 }
@@ -55,10 +57,23 @@ const restMethods = {
   DELETE: 'DELETE'
 }
 
+// TODO this needs to be looked at
+const defaultHeaderWhitelist = [
+  'accept',
+  'fspiop-destination',
+  'fspiop-http-method',
+  'fspiop-signature',
+  'fspiop-source',
+  'fspiop-uri',
+  'date',
+  'content-type'
+]
+
 module.exports = {
   type,
   resources,
   apiServices,
   endpointTypes,
-  restMethods
+  restMethods,
+  defaultHeaderWhitelist
 }
