@@ -22,7 +22,6 @@
 
  --------------
  ******/
-
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
@@ -31,17 +30,24 @@ const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
 
-
-const participantsByTypeAndID = async (requesterName, req) => {
+/**
+ * @function getParticipantsByTypeAndID
+ *
+ * @description sends request to applicable oracle based on type and sends results back to requester
+ *
+ * @param {string} requesterName The FSPIOP-Source fsp id
+ * @param {object} req The request object from the Hapi server
+ */
+const getParticipantsByTypeAndID = async (requesterName, req) => {
   try {
     const type = req.params.Type
     if (Object.values(Enums.type).includes(type)) {
       const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
-      const oracleEndointModel = await oracleEndpoint.getOracleEndpointByType(type)
-      const url = oracleEndointModel.value + req.path
+      const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+      const url = oracleEndpointModel.value + req.path
       const payload = req.payload || undefined
-      const response = await request.requestOracleRegistry(url, req.headers, req.method, payload)
-      const requesterResponse = await request.requestOracleRegistry(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
+      const response = await request.sendRequest(url, req.headers, req.method, payload)
+      await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
       Logger.info(JSON.stringify(response))
     } else {
       // TODO handle negative case when type not located
@@ -51,6 +57,25 @@ const participantsByTypeAndID = async (requesterName, req) => {
   }
 }
 
+/**
+ * @function putParticipantsErrorByTypeAndID
+ *
+ * @description This populates the cache of endpoints
+ *
+ * @param {object} req The request object from the Hapi server
+ */
+const putParticipantsErrorByTypeAndID = async (req) => {
+  try {
+    const destinationParticipant = req.headers['fspiop-destination']
+    const destinationEndpoint = await participantEndpointCache.getEndpoint(destinationParticipant, Enums.endpointTypes.FSIOP_CALLBACK_URL)
+    await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
+    Logger.info(JSON.stringify(req))
+  } catch (e) {
+    Logger.error(e)
+  }
+}
+
 module.exports = {
-  participantsByTypeAndID
+  getParticipantsByTypeAndID,
+  putParticipantsErrorByTypeAndID
 }

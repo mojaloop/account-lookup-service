@@ -26,7 +26,7 @@
 'use strict'
 
 const participantEndpointCache = require('./cache/participantEndpoint')
-const participants = require('./participant')
+const participants = require('./participants')
 
 module.exports = {
   getEndpoint: participantEndpointCache.getEndpoint,
