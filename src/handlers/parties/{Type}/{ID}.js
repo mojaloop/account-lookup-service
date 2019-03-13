@@ -32,7 +32,7 @@ const pp = require('util').inspect
  */
 module.exports = {
   /**
-   * summary: PartiesByTypeAndID
+   * summary: getPartiesByTypeAndID
    * description: The HTTP request GET /parties/&lt;Type&gt;/&lt;ID&gt; (or GET /parties/&lt;Type&gt;/&lt;ID&gt;/&lt;SubId&gt;) is used to lookup information regarding the requested Party, defined by &lt;Type&gt;, &lt;ID&gt; and optionally &lt;SubId&gt; (for example, GET /parties/MSISDN/123456789, or GET /parties/BUSINESS/shoecompany/employee1).
    * parameters: Accept
    * produces: application/json
@@ -54,7 +54,7 @@ module.exports = {
   },
 
   /**
-   * summary: PartiesByTypeAndID2
+   * summary: putPartiesByTypeAndID
    * description: The callback PUT /parties/&lt;Type&gt;/&lt;ID&gt; (or PUT /parties/&lt;Type&gt;/&lt;ID&gt;/&lt;SubId&gt;) is used to inform the client of a successful result of the Party information lookup.
    * parameters: body, Content-Length
    * produces: application/json

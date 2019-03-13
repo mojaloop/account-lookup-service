@@ -31,5 +31,6 @@ const participants = require('./participants')
 module.exports = {
   getEndpoint: participantEndpointCache.getEndpoint,
   getParticipantsByTypeAndID: participants.getParticipantsByTypeAndID,
-  putParticipantsErrorByTypeAndID: participants.putParticipantsErrorByTypeAndID
+  putParticipantsErrorByTypeAndID: participants.putParticipantsErrorByTypeAndID,
+  validateParticipant: participants.validateParticipant
 }

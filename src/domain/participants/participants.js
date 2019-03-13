@@ -29,6 +29,9 @@ const oracleEndpoint = require('../../model/oracle')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
+const util = require('../../lib/util')
+const Mustache = require('mustache')
+const Config = require('../../lib/config')
 
 /**
  * @function getParticipantsByTypeAndID
@@ -42,13 +45,15 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
   try {
     const type = req.params.Type
     if (Object.values(Enums.type).includes(type)) {
-      const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
-      const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-      const url = oracleEndpointModel.value + req.path
-      const payload = req.payload || undefined
-      const response = await request.sendRequest(url, req.headers, req.method, payload)
-      await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
-      Logger.info(JSON.stringify(response))
+      if(validateParticipant(req.headers['fspiop-source'])) {
+        const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
+        const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+        const url = oracleEndpointModel.value + req.path
+        const payload = req.payload || undefined
+        const response = await request.sendRequest(url, req.headers, req.method, payload)
+        await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
+        Logger.info(JSON.stringify(response))
+      }
     } else {
       // TODO handle negative case when type not located
     }
@@ -75,7 +80,20 @@ const putParticipantsErrorByTypeAndID = async (req) => {
   }
 }
 
+/**
+ * @function validateParticipant
+ *
+ * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
+ *
+ * @param {string} fsp The FSPIOP-Source fsp id
+ */
+const validateParticipant = async (fsp) => {
+  const getParticipantUrl = Mustache.render(Config.PARTICIPANT_SOURCE_URL, { fsp })
+  return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
+}
+
 module.exports = {
   getParticipantsByTypeAndID,
-  putParticipantsErrorByTypeAndID
+  putParticipantsErrorByTypeAndID,
+  validateParticipant
 }
