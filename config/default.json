@@ -7,6 +7,7 @@
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
+  "PARTICIPANT_SOURCE_URL": "http://localhost:3001/participants/{{fsp}}",
   "INSTRUMENTATION": {
     "METRICS": {
       "DISABLED": false,
