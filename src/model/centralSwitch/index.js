@@ -25,14 +25,13 @@
 
 'use strict'
 
-const oracleEndpointModel = require('./oracleEndpoint')
+const oracleEndpointModel = require('./centralSwitchEndpoint')
 
 module.exports = {
-  getOracleEndpointByType: oracleEndpointModel.getOracleEndpointByType,
-  getOracleEndpointByTypeAndCurrency: oracleEndpointModel.getOracleEndpointByTypeAndCurrency,
-  getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint,
-  createOracleEndpoint: oracleEndpointModel.createOracleEndpoint,
-  updateOracleEndpoint: oracleEndpointModel.updateOracleEndpoint,
-  setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint,
-  destroyOracleEndpointByType: oracleEndpointModel.destroyOracleEndpointByType
+  getCentralSwitchEndpointById: oracleEndpointModel.getCentralSwitchEndpointById,
+  getAllCentralSwitchEndpoint: oracleEndpointModel.getAllCentralSwitchEndpoint,
+  createCentralSwitchEndpoint: oracleEndpointModel.createCentralSwitchEndpoint,
+  updateCentralSwitchEndpoint: oracleEndpointModel.updateCentralSwitchEndpoint,
+  setIsActiveCentralSwitchEndpoint: oracleEndpointModel.setIsActiveCentralSwitchEndpoint,
+  destroyCentralSwitchEndpointByName: oracleEndpointModel.destroyCentralSwitchEndpointByName
 }
