@@ -102,7 +102,7 @@ const initialize = async () => {
   if (server) {
     try {
       server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-      server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+      Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
       await ParticipantEndpointCache.initializeCache()
       return server
     } catch (e) {

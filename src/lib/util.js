@@ -57,9 +57,20 @@ function filterObject(headers, f) {
   return Object.entries(headers).filter(([k, v]) => f(k, v)).reduce((pv, [k, v]) => ({...pv, [k]: v}), {})
 }
 
+function buildErrorObject(errorCode, errorDescription, extensionList) {
+  return {
+    errorInformation: {
+      errorCode,
+      errorDescription,
+      extensionList
+    }
+  }
+}
+
 
 module.exports = {
   defaultHeaders,
   setHeaders,
-  filterHeaders
+  filterHeaders,
+  buildErrorObject
 }

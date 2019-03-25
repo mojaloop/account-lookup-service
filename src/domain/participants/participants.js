@@ -26,6 +26,7 @@
 
 const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../model/oracle')
+const Switch = require('../../model/switch')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
@@ -44,19 +45,46 @@ const Config = require('../../lib/config')
 const getParticipantsByTypeAndID = async (requesterName, req) => {
   try {
     const type = req.params.Type
-    if (Object.values(Enums.type).includes(type)) {
-      if(validateParticipant(req.headers['fspiop-source'])) {
-        const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL)
+    const requesterParticipant = await validateParticipant(req.headers['fspiop-source'])
+    if (requesterParticipant) {
+      if (Object.values(Enums.type).includes(type)) {
         const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-        const url = oracleEndpointModel.value + req.path
-        const payload = req.payload || undefined
-        const response = await request.sendRequest(url, req.headers, req.method, payload)
-        await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
-        Logger.info(JSON.stringify(response))
+        if (oracleEndpointModel) {
+          const switchEndpoint = await Switch.getSwitchEndpointById(oracleEndpointModel[0].switchEndpointId)
+          if (switchEndpoint) {
+            const url = oracleEndpointModel[0].value + req.path
+            const payload = req.payload || undefined
+            const response = await request.sendRequest(url, req.headers, req.method, payload)
+            if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
+              const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT, switchEndpoint.value)
+              if (requesterEndpoint) {
+                await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
+              } else {
+                const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, switchEndpoint.value)
+                await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
+              }
+            } else {
+              const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, switchEndpoint.value)
+              await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: '', value: ''}]))
+            }
+          } else {
+            // TODO: Send to error handling framework
+          }
+        } else {
+          const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
+          await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3100, 'Oracle for provided type not found', [{key: '', value: ''}]))
+        }
+      } else {
+        const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
+        await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3100, 'Type not found', [{key: '', value: ''}]))
       }
     } else {
-      // TODO handle negative case when type not located
+      Logger.error('Something is wrong')
+      // TODO: find out what to do here if FSP not found
+      // const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
+      // await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3202, 'Provided Payer FSP ID not found.', [{key: '', value: ''}]))
     }
+
   } catch (e) {
     Logger.error(e)
   }
@@ -65,16 +93,20 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
 /**
  * @function putParticipantsErrorByTypeAndID
  *
- * @description This populates the cache of endpoints
+ * @description This is a callback function
  *
  * @param {object} req The request object from the Hapi server
  */
 const putParticipantsErrorByTypeAndID = async (req) => {
   try {
     const destinationParticipant = req.headers['fspiop-destination']
-    const destinationEndpoint = await participantEndpointCache.getEndpoint(destinationParticipant, Enums.endpointTypes.FSIOP_CALLBACK_URL)
-    await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
-    Logger.info(JSON.stringify(req))
+    if (validateParticipant(destinationParticipant)) {
+      const destinationEndpoint = await participantEndpointCache.getEndpoint(destinationParticipant, Enums.endpointTypes.FSIOP_CALLBACK_URL)
+      await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
+      Logger.info(JSON.stringify(req))
+    } else {
+
+    }
   } catch (e) {
     Logger.error(e)
   }
@@ -88,8 +120,13 @@ const putParticipantsErrorByTypeAndID = async (req) => {
  * @param {string} fsp The FSPIOP-Source fsp id
  */
 const validateParticipant = async (fsp) => {
-  const getParticipantUrl = Mustache.render(Config.PARTICIPANT_SOURCE_URL, { fsp })
-  return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
+  const getParticipantUrl = Mustache.render(Config.PARTICIPANT_SOURCE_URL, {fsp})
+  const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
+  if (response.statusCode !== 200) {
+    return null
+  } else {
+    return response
+  }
 }
 
 module.exports = {

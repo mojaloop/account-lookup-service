@@ -36,9 +36,11 @@ const partition = 'endpoint-cache'
 const clientOptions = {partition}
 const policyOptions = Config.ENDPOINT_CACHE_CONFIG
 const Mustache = require('mustache')
+const Switch = require('../../../model/switch')
 
 let client
 let policy
+let currentEndpoint
 
 /**
  * @module src/domain/participant/lib/cache
@@ -53,11 +55,11 @@ let policy
  */
 const initializeCache = async () => {
   try {
-    Logger.info(`participantEndpointCache::initializeCache::start::clientOptions - ${clientOptions}`)
+    Logger.info(`participantEndpointCache::initializeCache::start::clientOptions - ${JSON.stringify(clientOptions)}`)
     client = new Catbox.Client(require('catbox-memory'), clientOptions)
     await client.start()
     policyOptions.generateFunc = fetchEndpoints
-    Logger.info(`participantEndpointCache::initializeCache::start::policyOptions - ${policyOptions}`)
+    Logger.info(`participantEndpointCache::initializeCache::start::policyOptions - ${JSON.stringify(policyOptions)}`)
     policy = new Catbox.Policy(policyOptions, client, partition)
     Logger.info('participantEndpointCache::initializeCache::Cache initialized successfully')
     return true
@@ -73,17 +75,23 @@ const initializeCache = async () => {
  * @description This populates the cache of endpoints
  *
  * @param {string} fsp The fsp id
+ * @param {string} endpoint - the url of the switch to access
  * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
  */
 
 const fetchEndpoints = async (fsp) => {
   try {
+    if(!currentEndpoint) {
+      const endpointModel = await Switch.getDefaultSwitchEndpoint()
+      currentEndpoint = endpointModel.value
+    }
     Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
     const defaultHeaders = util.defaultHeaders(Enum.apiServices.CL, Enum.resources.participants, Enum.apiServices.ALS)
-    const url = Mustache.render(Config.ENDPOINT_SOURCE_URL, { fsp })
+    const url = Mustache.render(currentEndpoint + Enum.switchEndpoints.participantEndpoints, { fsp })
+    Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
     const response = await request.sendRequest(url, defaultHeaders)
-    Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::getEndpoint := successful with body: ${JSON.stringify(response.body)}`)
-    let endpoints = JSON.parse(response.body)
+    Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.body)}`)
+    let endpoints = response.body
     let endpointMap = {}
     if (Array.isArray(endpoints)) {
       endpoints.forEach(item => {
@@ -103,13 +111,15 @@ const fetchEndpoints = async (fsp) => {
  * @description It returns the endpoint for a given fsp and type from the cache if the cache is still valid, otherwise it will refresh the cache and return the value
  *
  * @param {string} fsp - the id of the fsp
+ * @param endpoint - the url of the switch to access, can be null if so then default is used
  * @param {string} endpointType - the type of the endpoint
  *
  * @returns {string} - Returns the endpoint, throws error if failure occurs
  */
-const getEndpoint = async (fsp, endpointType) => {
-  Logger.info(`participantEndpointCache::getEndpoint::enpointType - ${endpointType}`)
+const getEndpoint = async (fsp, endpointType, endpoint = null) => {
+  Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
   try {
+    currentEndpoint = endpoint
     let endpoints = await policy.get(fsp)
     return new Map(endpoints).get(endpointType)
   } catch (e) {
@@ -133,5 +143,4 @@ const getEndpoint = async (fsp, endpointType) => {
 module.exports = {
   initializeCache,
   getEndpoint
-  // stopCache
 }

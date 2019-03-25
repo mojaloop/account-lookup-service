@@ -44,7 +44,7 @@ module.exports = {
       const requesterName = req.headers['fspiop-source']
       try {
         Logger.info(`received: ${metadata}. ${req.params}`)
-        await participants.getParticipantsByTypeAndID(requesterName, req)
+        participants.getParticipantsByTypeAndID(requesterName, req)
         Logger.info(`success: ${metadata}.`)
       } catch (err) {
         Logger.error(`ERROR - ${metadata}: ${err.stack || pp(err)}`)

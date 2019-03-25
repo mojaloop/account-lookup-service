@@ -28,24 +28,25 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 
 const sendRequest = async (url, headers, method = undefined, payload = undefined) => {
   try {
+    if(payload && typeof payload !== 'string') {
+      payload = JSON.stringify(payload)
+    }
     const requestOptions = {
       url,
       method: method,
       headers: headers,
-      body: payload,
-      agentOptions: {
-        rejectUnauthorized: false
-      }
+      body: payload
     }
     Logger.info(`request: ${JSON.stringify(requestOptions)}`)
 
-    return await new Promise((resolve, reject) => {
-      return request(requestOptions, (error, response, body) => {
+    return await new Promise(async (resolve, reject) => {
+      return await request(requestOptions, (error, response) => {
         if (error) {
           Logger.error(`ERROR: ${error}, response: ${JSON.stringify(response)}`)
           return reject(error)
         }
         Logger.info(`SUCCESS with body: ${JSON.stringify(response.body)}`)
+        response.body = JSON.parse(response.body)
         return resolve(response)
       })
     })

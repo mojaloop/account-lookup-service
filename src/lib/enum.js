@@ -47,7 +47,13 @@ const apiServices = {
 
 // TODO need get all these endpoints from somewhere
 const endpointTypes = {
-  FSIOP_CALLBACK_URL: 'FSPIOP_CALLBACK_URL'
+  FSIOP_CALLBACK_URL: 'FSPIOP_CALLBACK_URL',
+  FSIOP_CALLBACK_URL_PARTICIPANT_PUT: 'FSIOP_CALLBACK_URL_PARTICIPANT_PUT',
+  FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR: 'FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR',
+  FSIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT: 'FSIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT',
+  FSIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR: 'FSIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR',
+  FSIOP_CALLBACK_URL_PARTIES_PUT: 'FSIOP_CALLBACK_URL_PARTIES_PUT',
+  FSIOP_CALLBACK_URL_PARTIES_PUT_ERROR: 'FSIOP_CALLBACK_URL_PARTIES_PUT_ERROR'
 }
 
 const restMethods = {
@@ -69,11 +75,17 @@ const defaultHeaderWhitelist = [
   'content-type'
 ]
 
+const switchEndpoints = {
+  participantEndpoints: '/participants/{{fsp}}/endpoints',
+  participantsGet: '/participants/{{fsp}}'
+}
+
 module.exports = {
   type,
   resources,
   apiServices,
   endpointTypes,
   restMethods,
-  defaultHeaderWhitelist
+  defaultHeaderWhitelist,
+  switchEndpoints
 }
