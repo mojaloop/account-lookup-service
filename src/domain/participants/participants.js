@@ -120,7 +120,8 @@ const putParticipantsErrorByTypeAndID = async (req) => {
  * @param {string} fsp The FSPIOP-Source fsp id
  */
 const validateParticipant = async (fsp) => {
-  const getParticipantUrl = Mustache.render(Config.PARTICIPANT_SOURCE_URL, {fsp})
+  const switchEndpointModel = await Switch.getDefaultSwitchEndpoint()
+  const getParticipantUrl = Mustache.render(switchEndpointModel.value + Enums.switchEndpoints.participantsGet, {fsp})
   const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
   if (response.statusCode !== 200) {
     return null
