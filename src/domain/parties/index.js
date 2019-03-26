@@ -29,8 +29,6 @@
 
 const parties = require('./parties')
 
-module.exports = {
-  getPartiesByTypeAndID: parties.getPartiesByTypeAndID,
-  putPartiesByTypeAndID: parties.putPartiesByTypeAndID,
-  putPartiesErrorByTypeAndID: parties.putPartiesErrorByTypeAndID
-}
+exports.getPartiesByTypeAndID = parties.getPartiesByTypeAndID
+exports.putPartiesByTypeAndID = parties.putPartiesByTypeAndID
+exports.putPartiesErrorByTypeAndID = parties.putPartiesErrorByTypeAndID

@@ -21,7 +21,9 @@
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
+ *****/
 'use strict'
+const participants = require('../domain/participants')
 
 /**
  * Operations on /participants
@@ -34,7 +36,16 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function Participants1(request, h) {
-    return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
+  post: function Participants1(req, h) {
+    const metadata = `${req.method} ${req.path}`
+    try {
+      req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
+      participants.postParticipantsBatch(req)
+      req.server.log(['info'], `success: ${metadata}.`)
+    } catch (err) {
+      req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`)
+      // TODO: review this error message
+    }
+    return h.response().code(200)
   }
 }

@@ -32,3 +32,4 @@ exports.getEndpoint = participantEndpointCache.getEndpoint
 exports.getParticipantsByTypeAndID = participants.getParticipantsByTypeAndID
 exports.putParticipantsErrorByTypeAndID = participants.putParticipantsErrorByTypeAndID
 exports.validateParticipant = participants.validateParticipant
+exports.postParticipantsBatch = participants.postParticipantsBatch
