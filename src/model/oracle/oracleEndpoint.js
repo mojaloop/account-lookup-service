@@ -57,7 +57,7 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
         .innerJoin('switchEndpoint AS cs', 'oracleEndpoint.switchEndpointId', 'cs.switchEndpointId')
         .where({
           'pt.name': type,
-          'pc.currencyId': currencyId,
+          'cu.currencyId': currencyId,
           'pt.isActive': 1,
           'oracleEndpoint.isActive': 1,
           'cs.isActive': 1
@@ -71,7 +71,7 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
 
 const getAllOracleEndpoint = async () => {
   try {
-    return await Db.oracleEndpoint.find({ isActive: true }, { order: 'name asc' })
+    return await Db.oracleEndpoint.find({isActive: true}, {order: 'name asc'})
   } catch (err) {
     throw new Error(err.message)
   }
@@ -92,9 +92,9 @@ const createOracleEndpoint = async (oracleEndpointModel, type) => {
   }
 }
 
-const updateOracleEndpoint = async (oracleType, value ) => {
+const updateOracleEndpoint = async (oracleType, value) => {
   try {
-    return await Db.oracleEndpoint.update({ oracleType }, { value })
+    return await Db.oracleEndpoint.update({oracleType}, {value})
   } catch (err) {
     throw new Error(err.message)
   }
@@ -102,7 +102,7 @@ const updateOracleEndpoint = async (oracleType, value ) => {
 
 const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   try {
-    return await Db.oracleEndpoint.update({ oracleType }, { isActive })
+    return await Db.oracleEndpoint.update({oracleType}, {isActive})
   } catch (err) {
     throw new Error(err.message)
   }
@@ -110,13 +110,13 @@ const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
 
 const destroyOracleEndpointByType = async (oracleType) => {
   try {
-    return await Db.oracleEndpoint.update({ oracleType }, { isActive: false })
+    return await Db.oracleEndpoint.update({oracleType}, {isActive: false})
   } catch (err) {
     throw new Error(err.message)
   }
 }
 
-module.exports ={
+module.exports = {
   getOracleEndpointByType,
   getOracleEndpointByTypeAndCurrency,
   getAllOracleEndpoint,

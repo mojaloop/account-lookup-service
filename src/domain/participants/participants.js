@@ -32,7 +32,6 @@ const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
 const util = require('../../lib/util')
 const Mustache = require('mustache')
-const Config = require('../../lib/config')
 
 /**
  * @function getParticipantsByTypeAndID
@@ -48,11 +47,21 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
     const requesterParticipant = await validateParticipant(req.headers['fspiop-source'])
     if (requesterParticipant) {
       if (Object.values(Enums.type).includes(type)) {
-        const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+        let oracleEndpointModel
+        if (req.query && req.query.currency && req.query.currency.length !== 0){
+          oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.query.currency)
+        } else {
+          oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+        }
         if (oracleEndpointModel) {
           const switchEndpoint = await Switch.getSwitchEndpointById(oracleEndpointModel[0].switchEndpointId)
           if (switchEndpoint) {
-            const url = oracleEndpointModel[0].value + req.path
+            let url
+            if (req.query && req.query.currency && req.query.currency.length !== 0) {
+              url = oracleEndpointModel[0].value + req.raw.req.url
+            } else {
+              url = oracleEndpointModel[0].value + req.path
+            }
             const payload = req.payload || undefined
             const response = await request.sendRequest(url, req.headers, req.method, payload)
             if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
@@ -72,7 +81,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
           }
         } else {
           const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
-          await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3100, 'Oracle for provided type not found', [{key: '', value: ''}]))
+          await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3200, 'Oracle for provided type not found', [{key: '', value: ''}]))
         }
       } else {
         const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
