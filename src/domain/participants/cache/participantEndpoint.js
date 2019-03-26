@@ -53,7 +53,7 @@ let currentEndpoint
  *
  * @returns {boolean} Returns true on successful initialization of the cache, throws error on falires
  */
-const initializeCache = async () => {
+exports.initializeCache = async () => {
   try {
     Logger.info(`participantEndpointCache::initializeCache::start::clientOptions - ${JSON.stringify(clientOptions)}`)
     client = new Catbox.Client(require('catbox-memory'), clientOptions)
@@ -75,7 +75,6 @@ const initializeCache = async () => {
  * @description This populates the cache of endpoints
  *
  * @param {string} fsp The fsp id
- * @param {string} endpoint - the url of the switch to access
  * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
  */
 
@@ -116,7 +115,7 @@ const fetchEndpoints = async (fsp) => {
  *
  * @returns {string} - Returns the endpoint, throws error if failure occurs
  */
-const getEndpoint = async (fsp, endpointType, endpoint = null) => {
+exports.getEndpoint = async (fsp, endpointType, endpoint = null) => {
   Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
   try {
     currentEndpoint = endpoint
@@ -139,8 +138,3 @@ const getEndpoint = async (fsp, endpointType, endpoint = null) => {
 //   Logger.info('participantEndpointCache::stopCache::Stopping the cache')
 //   return client.stop()
 // }
-
-module.exports = {
-  initializeCache,
-  getEndpoint
-}

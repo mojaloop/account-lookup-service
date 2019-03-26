@@ -64,23 +64,23 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
               if (requesterEndpoint) {
                 await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
               } else {
-                const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, switchEndpoint.value)
-                await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
+                await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+                  util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
               }
             } else {
-              const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, switchEndpoint.value)
-              await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: '', value: ''}]))
+              await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+                util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: '', value: ''}]))
             }
           } else {
             // TODO: Send to error handling framework
           }
         } else {
-          const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
-          await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3200, 'Oracle for provided type not found', [{key: '', value: ''}]))
+          await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+            util.buildErrorObject(3200, 'Oracle for provided type not found', [{key: '', value: ''}]))
         }
       } else {
-        const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR)
-        await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, util.buildErrorObject(3100, 'Type not found', [{key: '', value: ''}]))
+        await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+          util.buildErrorObject(3100, 'Type not found', [{key: '', value: ''}]))
       }
     } else {
       Logger.error('Something is wrong')

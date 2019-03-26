@@ -24,6 +24,8 @@
 'use strict'
 
 const Enum = require('./enum')
+const request = require('./request')
+const participantEndpointCache = require('../domain/participants/cache/participantEndpoint')
 
 const getKeyCaseInsensitive = (o, key) => Object.keys(o).find(k => k.toLowerCase() === key.toLowerCase())
 
@@ -67,10 +69,15 @@ function buildErrorObject(errorCode, errorDescription, extensionList) {
   }
 }
 
+async function sendErrorToErrorEndpoint(req, participantName, endpointType, errorInformation) {
+  const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(participantName, endpointType)
+  await request.sendRequest(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
+}
 
 module.exports = {
   defaultHeaders,
   setHeaders,
   filterHeaders,
-  buildErrorObject
+  buildErrorObject,
+  sendErrorToErrorEndpoint
 }

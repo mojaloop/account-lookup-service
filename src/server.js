@@ -35,8 +35,7 @@ const RequestLogger = require('./lib/requestLogger')
 const ParticipantEndpointCache = require('./domain/participants/cache/participantEndpoint')
 
 const connectDatabase = async () => {
-  let result = await Db.connect(Config.DATABASE_URI)
-  return result
+  return await Db.connect(Config.DATABASE_URI)
 }
 
 const openAPIOptions = {
@@ -78,13 +77,12 @@ const createServer = async (port) => {
           RequestLogger.logResponse(request.response)
         } else {
           const error = request.response
-          let errorMessage = {
+          error.message = {
             errorInformation: {
               errorCode: error.statusCode,
               errorDescription: error.message
             }
           }
-          error.message = errorMessage
           error.reformat()
         }
         return h.continue
@@ -92,7 +90,6 @@ const createServer = async (port) => {
     }
   ])
   await server.start()
-  Logger.debug('Server running at: ', server.info.uri)
   return server
 }
 

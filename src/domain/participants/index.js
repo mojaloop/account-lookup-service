@@ -28,9 +28,7 @@
 const participantEndpointCache = require('./cache/participantEndpoint')
 const participants = require('./participants')
 
-module.exports = {
-  getEndpoint: participantEndpointCache.getEndpoint,
-  getParticipantsByTypeAndID: participants.getParticipantsByTypeAndID,
-  putParticipantsErrorByTypeAndID: participants.putParticipantsErrorByTypeAndID,
-  validateParticipant: participants.validateParticipant
-}
+exports.getEndpoint = participantEndpointCache.getEndpoint
+exports.getParticipantsByTypeAndID = participants.getParticipantsByTypeAndID
+exports.putParticipantsErrorByTypeAndID = participants.putParticipantsErrorByTypeAndID
+exports.validateParticipant = participants.validateParticipant
