@@ -56,12 +56,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
         if (oracleEndpointModel) {
           const switchEndpoint = await Switch.getSwitchEndpointById(oracleEndpointModel[0].switchEndpointId)
           if (switchEndpoint) {
-            let url
-            if (req.query && req.query.currency && req.query.currency.length !== 0) {
-              url = oracleEndpointModel[0].value + req.raw.req.url
-            } else {
-              url = oracleEndpointModel[0].value + req.path
-            }
+            const url = oracleEndpointModel[0].value + req.raw.req.url
             const payload = req.payload || undefined
             const response = await request.sendRequest(url, req.headers, req.method, payload)
             if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
