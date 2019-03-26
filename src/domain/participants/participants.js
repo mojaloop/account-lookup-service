@@ -46,7 +46,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
     const type = req.params.Type
     if (Object.values(Enums.type).includes(type)) {
       let oracleEndpointModel
-      if (req.query && req.query.currency && req.query.currency.length !== 0){
+      if (req.query && req.query.currency && req.query.currency.length !== 0) {
         oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.query.currency)
       } else {
         oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
@@ -55,7 +55,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
         const switchEndpoint = await Switch.getSwitchEndpointById(oracleEndpointModel[0].switchEndpointId)
         if (switchEndpoint) {
           const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
-          if(requesterParticipantModel) {
+          if (requesterParticipantModel) {
             const url = oracleEndpointModel[0].value + req.raw.req.url
             const payload = req.payload || undefined
             const response = await request.sendRequest(url, req.headers, req.method, payload)
@@ -129,14 +129,32 @@ const putParticipantsErrorByTypeAndID = async (req) => {
  */
 const postParticipantsBatch = async (req) => {
   try {
-    const destinationParticipant = req.headers['fspiop-destination']
-    // if (validateParticipant(destinationParticipant)) {
-    //   const destinationEndpoint = await participantEndpointCache.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL)
-    //   await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
-    //   Logger.info(JSON.stringify(req))
-    // } else {
-    //
-    // }
+    const typeMap = new Map()
+    const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
+    if (requesterParticipantModel) {
+      for (let party of req.payload.partyList) {
+        if (typeMap.get(party.partyIdType)) {
+          const partyList = typeMap.get(party.partyIdType)
+          partyList.push(party)
+          typeMap.set(party.partyIdType, partyList)
+        } else {
+          typeMap.set(party.partyIdType, [party])
+        }
+      }
+      if (req.payload.currency) {
+        for (let [key, value] of typeMap) {
+
+        }
+      } else {
+        // TODO: need clarity if all types must be same or not as well as if all participants in partyList must pass validation
+      }
+      const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT)
+      const url = requesterEndpoint + req.raw.req.url + '/' + req.payload.requestId
+      await request.sendRequest(url, req.headers, Enums.restMethods.PUT, req.payload)
+    } else {
+      Logger.error('Requester FSP not found')
+      // TODO: handle issue where requester fsp not found
+    }
   } catch (e) {
     Logger.error(e)
   }
@@ -152,7 +170,7 @@ const postParticipantsBatch = async (req) => {
  * @param {string} switchEndpoint The FSPIOP-Source fsp id
  */
 const validateParticipant = async (fsp, switchEndpoint = undefined) => {
-  if (!switchEndpoint){
+  if (!switchEndpoint) {
     const switchEndpointModel = await Switch.getDefaultSwitchEndpoint()
     switchEndpoint = switchEndpointModel.value
   }
