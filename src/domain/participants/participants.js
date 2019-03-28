@@ -57,10 +57,10 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
           const url = oracleEndpointModel[0].value + req.raw.req.url
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload)
-          if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
+          if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
             const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT)
             if (requesterEndpoint) {
-              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
+              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
             } else {
               await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
                 util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
@@ -148,19 +148,27 @@ const postParticipantsBatch = async (req) => {
         if (oracleEndpointModel.length > 0) {
           const url = oracleEndpointModel[0].value + req.raw.req.url
           req.payload.partyList = value
-          const response = await request.sendRequest(url, req.headers, req.method, req.payload)
-          if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
-            overallReturnList.concat(response.body.partyList)
-          } else {
+          let response
+          try {
+            response = await request.sendRequest(url, req.headers, req.method, req.payload)
+            if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+              overallReturnList.concat(response.data.partyList)
+            } else {
+              // TODO: what happens when nothing is returned
+              for (let party of value) {
+                overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+              }
+            }
+          } catch (e) {
             // TODO: what happens when nothing is returned
             for (let party of value) {
-              overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+              overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: e.code, value: e.message}]))
             }
           }
         } else {
-          // TODO: what happens type not found
+          // TODO: what happens oracle type not found
           for (let party of value) {
-            overallReturnList.push(util.buildErrorObject(3100, 'Type not found.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+            overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         }
       }
@@ -170,7 +178,7 @@ const postParticipantsBatch = async (req) => {
       await request.sendRequest(url, req.headers, Enums.restMethods.PUT, req.payload)
     } else {
       Logger.error('Requester FSP not found')
-      // TODO: handle issue where requester fsp not found
+      // TODO: handle issue where requester fsp not found send to error handling framework
     }
   } catch (e) {
     Logger.error(e)
@@ -184,14 +192,19 @@ const postParticipantsBatch = async (req) => {
  * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
  *
  * @param {string} fsp The FSPIOP-Source fsp id
+ * @return
  */
 const validateParticipant = async (fsp) => {
-  const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
-  const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
-  if (response.statusCode !== 200) {
-    return null
-  } else {
-    return response
+  try {
+    const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
+    const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
+    if (response.status !== 200) {
+      return null
+    } else {
+      return response
+    }
+  } catch (e) {
+
   }
 }
 

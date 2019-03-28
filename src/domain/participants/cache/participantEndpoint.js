@@ -83,8 +83,8 @@ const fetchEndpoints = async (fsp) => {
     const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.switchEndpoints.participantEndpoints, {fsp})
     Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
     const response = await request.sendRequest(url, defaultHeaders)
-    Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.body)}`)
-    let endpoints = response.body
+    Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.data)}`)
+    let endpoints = response.data
     let endpointMap = {}
     if (Array.isArray(endpoints)) {
       endpoints.forEach(item => {

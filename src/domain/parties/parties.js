@@ -56,8 +56,8 @@ const getPartiesByTypeAndID = async (req) => {
           const url = oracleEndpointModel[0].value + req.raw.req.url
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload)
-          if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
-            const requesterEndpoint = await participant.getEndpoint(response.body.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET)
+          if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+            const requesterEndpoint = await participant.getEndpoint(response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET)
             if (requesterEndpoint) {
               const fspUrl = requesterEndpoint + req.raw.req.url
               await request.sendRequest(fspUrl, req.headers)

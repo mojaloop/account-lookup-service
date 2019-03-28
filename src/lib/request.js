@@ -23,35 +23,40 @@
  ******/
 'use strict'
 
-const request = require('request-promise-native')
+const request = require('axios')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
-const sendRequest = async (url, headers, method = undefined, payload = undefined) => {
+/**
+ * @function validateParticipant
+ *
+ * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
+ *
+ * @param {string} url the endpoint for the service you require
+ * @param {object} headers the http headers
+ * @param {string} method http method being requested i.e. GET, POST, PUT
+ * @param {object} payload the body of the request being sent
+ *
+ *@return {object} The response for the request being sent
+ */
+const sendRequest = async (url, headers, method = 'get', payload = undefined) => {
   try {
-    if (payload && typeof payload !== 'string') {
-      payload = JSON.stringify(payload)
-    }
     const requestOptions = {
       url,
       method: method,
       headers: headers,
-      body: payload
+      data: payload,
+      responseType: 'json'
     }
-    Logger.info(`request: ${JSON.stringify(requestOptions)}`)
-
-    return await new Promise((resolve, reject) => {
-      return request(requestOptions, (error, response) => {
-        if (error) {
-          Logger.error(`ERROR: ${error}, response: ${JSON.stringify(response)}`)
-          return reject(error)
-        }
-        Logger.info(`SUCCESS with body: ${JSON.stringify(response.body)}`)
-        response.body = JSON.parse(response.body)
-        return resolve(response)
-      })
-    })
+    Logger.debug(`request: ${JSON.stringify(requestOptions)}`)
+    const response = await request(requestOptions)
+    if (response) {
+      return response
+    } else {
+      throw new Error('Error has occurred requesting endpoints')
+    }
   } catch (e) {
     Logger.error(e)
+    throw e
   }
 }
 
