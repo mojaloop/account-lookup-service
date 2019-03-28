@@ -1,4 +1,4 @@
-# Casablanca central directory
+# Central directory
 
 Swagger api [location](src/interface/swagger.json)
 

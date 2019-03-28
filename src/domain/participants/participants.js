@@ -118,24 +118,46 @@ const putParticipantsErrorByTypeAndID = async (req) => {
 const postParticipantsBatch = async (req) => {
   try {
     const typeMap = new Map()
+    const overallReturnList = []
     const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
     if (requesterParticipantModel) {
       for (let party of req.payload.partyList) {
-        if (typeMap.get(party.partyIdType)) {
-          const partyList = typeMap.get(party.partyIdType)
-          partyList.push(party)
-          typeMap.set(party.partyIdType, partyList)
+        if (Object.values(Enums.type).includes(party.partyIdType)) {
+          if (party.fspId === req.headers['fspiop-source']) {
+            if (typeMap.get(party.partyIdType)) {
+              const partyList = typeMap.get(party.partyIdType)
+              partyList.push(party)
+              typeMap.set(party.partyIdType, partyList)
+            } else {
+              typeMap.set(party.partyIdType, [party])
+            }
+          } else {
+            overallReturnList.push(util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+          }
         } else {
-          typeMap.set(party.partyIdType, [party])
+          overallReturnList.push(util.buildErrorObject(3100, 'Type not found', [{key: party.partyIdType, value: party.partyIdentifier}]))
         }
       }
-      if (req.payload.currency) {
-        for (let [key, value] of typeMap) {
-
+      for (let [key, value] of typeMap) {
+        let oracleEndpointModel
+        if (req.payload.currency && req.query.currency.length !== 0) {
+          oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(key, req.payload.currency)
+        } else {
+          oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(key)
         }
-      } else {
-        // TODO: need clarity if all types must be same or not as well as if all participants in partyList must pass validation
+        const url = oracleEndpointModel[0].value + req.raw.req.url
+        req.payload.partyList = value
+        const response = await request.sendRequest(url, req.headers, req.method, req.payload)
+        if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
+          overallReturnList.concat(response.body.partyList)
+        } else {
+          // TODO: what happens when nothing is returned
+          for (let party of value) {
+            overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+          }
+        }
       }
+      req.payload.partyList = overallReturnList
       const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT)
       const url = requesterEndpoint + req.raw.req.url + '/' + req.payload.requestId
       await request.sendRequest(url, req.headers, Enums.restMethods.PUT, req.payload)
