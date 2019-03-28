@@ -33,15 +33,13 @@ const getOracleEndpointByType = async (type) => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
-        .innerJoin('switchEndpoint AS cs', 'oracleEndpoint.switchEndpointId', 'cs.switchEndpointId')
         .where({
           'pt.name': type,
           'pt.isActive': 1,
           'oracleEndpoint.isActive': 1,
-          'oracleEndpoint.isDefault': 1,
-          'cs.isActive': 1
+          'oracleEndpoint.isDefault': 1
         })
-        .select('oracleEndpoint.value', 'oracleEndpoint.switchEndpointId', 'et.type as endpointType')
+        .select('oracleEndpoint.value', 'et.type as endpointType')
     })
   } catch (err) {
     throw new Error(err.message)
@@ -54,15 +52,13 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
-        .innerJoin('switchEndpoint AS cs', 'oracleEndpoint.switchEndpointId', 'cs.switchEndpointId')
         .where({
           'pt.name': type,
           'cu.currencyId': currencyId,
           'pt.isActive': 1,
-          'oracleEndpoint.isActive': 1,
-          'cs.isActive': 1
+          'oracleEndpoint.isActive': 1
         })
-        .select('oracleEndpoint.value', 'oracleEndpoint.switchEndpointId', 'et.type as endpointType')
+        .select('oracleEndpoint.value', 'et.type as endpointType')
     })
   } catch (err) {
     throw new Error(err.message)

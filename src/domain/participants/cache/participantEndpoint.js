@@ -36,11 +36,9 @@ const partition = 'endpoint-cache'
 const clientOptions = {partition}
 const policyOptions = Config.ENDPOINT_CACHE_CONFIG
 const Mustache = require('mustache')
-const Switch = require('../../../model/switch')
 
 let client
 let policy
-let currentEndpoint
 
 /**
  * @module src/domain/participant/lib/cache
@@ -80,13 +78,9 @@ exports.initializeCache = async () => {
 
 const fetchEndpoints = async (fsp) => {
   try {
-    if(!currentEndpoint) {
-      const endpointModel = await Switch.getDefaultSwitchEndpoint()
-      currentEndpoint = endpointModel.value
-    }
     Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
     const defaultHeaders = util.defaultHeaders(Enum.apiServices.CL, Enum.resources.participants, Enum.apiServices.ALS)
-    const url = Mustache.render(currentEndpoint + Enum.switchEndpoints.participantEndpoints, { fsp })
+    const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.switchEndpoints.participantEndpoints, { fsp })
     Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
     const response = await request.sendRequest(url, defaultHeaders)
     Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.body)}`)
@@ -110,15 +104,13 @@ const fetchEndpoints = async (fsp) => {
  * @description It returns the endpoint for a given fsp and type from the cache if the cache is still valid, otherwise it will refresh the cache and return the value
  *
  * @param {string} fsp - the id of the fsp
- * @param endpoint - the url of the switch to access, can be null if so then default is used
  * @param {string} endpointType - the type of the endpoint
  *
  * @returns {string} - Returns the endpoint, throws error if failure occurs
  */
-exports.getEndpoint = async (fsp, endpointType, endpoint = null) => {
+exports.getEndpoint = async (fsp, endpointType) => {
   Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
   try {
-    currentEndpoint = endpoint
     let endpoints = await policy.get(fsp)
     return new Map(endpoints).get(endpointType)
   } catch (e) {

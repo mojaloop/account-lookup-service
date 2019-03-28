@@ -2,12 +2,11 @@
   "PORT": 4002,
   "DATABASE_URI": "mysql://account_lookup:password@localhost:3306/account_lookup",
   "RUN_MIGRATIONS": true,
-  "ENDPOINT_SOURCE_URL": "http://localhost:3001/participants/{{fsp}}/endpoints",
   "ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
-  "PARTICIPANT_SOURCE_URL": "http://localhost:3001/participants/{{fsp}}",
+  "SWITCH_ENDPOINT": "http://localhost:3001",
   "INSTRUMENTATION": {
     "METRICS": {
       "DISABLED": false,

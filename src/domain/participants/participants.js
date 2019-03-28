@@ -26,12 +26,12 @@
 
 const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../model/oracle')
-const Switch = require('../../model/switch')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
 const util = require('../../lib/util')
 const Mustache = require('mustache')
+const Config = require('../../lib/config')
 
 /**
  * @function getParticipantsByTypeAndID
@@ -52,38 +52,26 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
         oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
       }
       if (oracleEndpointModel) {
-        const switchEndpoint = await Switch.getSwitchEndpointById(oracleEndpointModel[0].switchEndpointId)
-        if (switchEndpoint) {
-          const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
-          if (requesterParticipantModel) {
-            const url = oracleEndpointModel[0].value + req.raw.req.url
-            const payload = req.payload || undefined
-            const response = await request.sendRequest(url, req.headers, req.method, payload)
-            if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
-              const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, switchEndpoint.value)
-              if (requesterEndpoint) {
-                await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
-              } else {
-                await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                  util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{
-                    key: '',
-                    value: ''
-                  }]))
-              }
+        const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
+        if (requesterParticipantModel) {
+          const url = oracleEndpointModel[0].value + req.raw.req.url
+          const payload = req.payload || undefined
+          const response = await request.sendRequest(url, req.headers, req.method, payload)
+          if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
+            const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT)
+            if (requesterEndpoint) {
+              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.body)
             } else {
               await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{
-                  key: '',
-                  value: ''
-                }]))
+                util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
             }
           } else {
-            Logger.error('Requester FSP not found')
-            // TODO: handle issue where requester fsp not found
+            await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+              util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: '', value: ''}]))
           }
         } else {
-          Logger.error('Switch endpoint not found throw error to error handling framework')
-          // TODO: Send to error handling framework
+          Logger.error('Requester FSP not found')
+          // TODO: handle issue where requester fsp not found
         }
       } else {
         await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
@@ -107,7 +95,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
  */
 const putParticipantsErrorByTypeAndID = async (req) => {
   try {
-    const destinationParticipant = req.headers['fspiop-destination']
+    // const destinationParticipant = req.headers['fspiop-destination']
     // if (validateParticipant(destinationParticipant)) {
     //   const destinationEndpoint = await participantEndpointCache.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL)
     //   await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
@@ -167,14 +155,9 @@ const postParticipantsBatch = async (req) => {
  * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
  *
  * @param {string} fsp The FSPIOP-Source fsp id
- * @param {string} switchEndpoint The FSPIOP-Source fsp id
  */
-const validateParticipant = async (fsp, switchEndpoint = undefined) => {
-  if (!switchEndpoint) {
-    const switchEndpointModel = await Switch.getDefaultSwitchEndpoint()
-    switchEndpoint = switchEndpointModel.value
-  }
-  const getParticipantUrl = Mustache.render(switchEndpoint + Enums.switchEndpoints.participantsGet, {fsp})
+const validateParticipant = async (fsp) => {
+  const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
   const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
   if (response.statusCode !== 200) {
     return null

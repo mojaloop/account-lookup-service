@@ -34,8 +34,6 @@ exports.up = (knex, Promise) => {
         t.foreign('partyIdTypeId').references('partyIdTypeId').inTable('partyIdType')
         t.integer('endpointTypeId').unsigned().notNullable()
         t.foreign('endpointTypeId').references('endpointTypeId').inTable('endpointType')
-        t.integer('switchEndpointId').unsigned().notNullable()
-        t.foreign('switchEndpointId').references('switchEndpointId').inTable('switchEndpoint')
         t.string('currencyId')
         t.foreign('currencyId').references('currencyId').inTable('currency')
         t.string('value', 512).notNullable()
