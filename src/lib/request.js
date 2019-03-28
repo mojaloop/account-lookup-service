@@ -23,12 +23,12 @@
  ******/
 'use strict'
 
-const request = require('request')
+const request = require('request-promise-native')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
 const sendRequest = async (url, headers, method = undefined, payload = undefined) => {
   try {
-    if(payload && typeof payload !== 'string') {
+    if (payload && typeof payload !== 'string') {
       payload = JSON.stringify(payload)
     }
     const requestOptions = {
@@ -39,8 +39,8 @@ const sendRequest = async (url, headers, method = undefined, payload = undefined
     }
     Logger.info(`request: ${JSON.stringify(requestOptions)}`)
 
-    return await new Promise(async (resolve, reject) => {
-      return await request(requestOptions, (error, response) => {
+    return await new Promise((resolve, reject) => {
+      return request(requestOptions, (error, response) => {
         if (error) {
           Logger.error(`ERROR: ${error}, response: ${JSON.stringify(response)}`)
           return reject(error)

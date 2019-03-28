@@ -80,7 +80,7 @@ const fetchEndpoints = async (fsp) => {
   try {
     Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
     const defaultHeaders = util.defaultHeaders(Enum.apiServices.CL, Enum.resources.participants, Enum.apiServices.ALS)
-    const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.switchEndpoints.participantEndpoints, { fsp })
+    const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.switchEndpoints.participantEndpoints, {fsp})
     Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
     const response = await request.sendRequest(url, defaultHeaders)
     Logger.info(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.body)}`)
