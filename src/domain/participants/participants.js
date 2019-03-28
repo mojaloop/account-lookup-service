@@ -140,20 +140,27 @@ const postParticipantsBatch = async (req) => {
       }
       for (let [key, value] of typeMap) {
         let oracleEndpointModel
-        if (req.payload.currency && req.query.currency.length !== 0) {
+        if (req.payload.currency && req.payload.currency.length !== 0) {
           oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(key, req.payload.currency)
         } else {
           oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(key)
         }
-        const url = oracleEndpointModel[0].value + req.raw.req.url
-        req.payload.partyList = value
-        const response = await request.sendRequest(url, req.headers, req.method, req.payload)
-        if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
-          overallReturnList.concat(response.body.partyList)
+        if (oracleEndpointModel.length > 0) {
+          const url = oracleEndpointModel[0].value + req.raw.req.url
+          req.payload.partyList = value
+          const response = await request.sendRequest(url, req.headers, req.method, req.payload)
+          if (response && response.body && Array.isArray(response.body.partyList) && response.body.partyList.length > 0) {
+            overallReturnList.concat(response.body.partyList)
+          } else {
+            // TODO: what happens when nothing is returned
+            for (let party of value) {
+              overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+            }
+          }
         } else {
-          // TODO: what happens when nothing is returned
+          // TODO: what happens type not found
           for (let party of value) {
-            overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+            overallReturnList.push(util.buildErrorObject(3100, 'Type not found.', [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         }
       }
