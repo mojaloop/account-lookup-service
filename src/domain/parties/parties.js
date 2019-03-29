@@ -105,12 +105,12 @@ const putPartiesByTypeAndID = async (req) => {
       if (requesterParticipant) {
         const destinationParticipant = await participant.validateParticipant(req.headers['fspiop-destination'])
         if (destinationParticipant) {
-          const requestedEndpoint = await participant.getEndpoint(destinationParticipant.body.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT)
+          const requestedEndpoint = await participant.getEndpoint(destinationParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT)
           const url = requestedEndpoint + req.raw.req.url
           await request.sendRequest(url, req.headers, Enums.restMethods.PUT, req.payload)
           Logger.info('parties::putPartiesByTypeAndID::end')
         } else {
-          const requesterErrorEndpoint = await participant.getEndpoint(requesterParticipant.body.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
+          const requesterErrorEndpoint = await participant.getEndpoint(requesterParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
           await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT,
             util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
         }

@@ -162,7 +162,7 @@ const postParticipantsBatch = async (req) => {
           } catch (e) {
             // TODO: what happens when nothing is returned
             for (let party of value) {
-              overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: e.code, value: e.message}]))
+              overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
             }
           }
         } else {
