@@ -31,6 +31,7 @@ const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participant = require('../../domain/participants')
 const util = require('../../lib/util')
+const Errors = require('../../lib/error')
 
 /**
  * @function getPartiesByTypeAndID
@@ -64,11 +65,11 @@ const getPartiesByTypeAndID = async (req) => {
               Logger.info('parties::getPartiesByTypeAndID::end')
             } else {
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-                util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
+                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
             }
           } else {
             await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-              util.buildErrorObject(3204, 'Participant with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: '', value: ''}]))
+              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: '', value: ''}]))
           }
         } else {
           Logger.error('Requester FSP not found')
@@ -76,11 +77,11 @@ const getPartiesByTypeAndID = async (req) => {
         }
       } else {
         await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-          util.buildErrorObject(3200, 'Oracle for provided type not found', [{key: '', value: ''}]))
+          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
       }
     } else {
       await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-        util.buildErrorObject(3100, 'Type not found', [{key: '', value: ''}]))
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
     }
   } catch (e) {
 
@@ -111,7 +112,7 @@ const putPartiesByTypeAndID = async (req) => {
         } else {
           const requesterErrorEndpoint = await participant.getEndpoint(requesterParticipant.body.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
           await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT,
-            util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
+            util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
         }
       } else {
         Logger.error('Requester FSP not found')
@@ -119,7 +120,7 @@ const putPartiesByTypeAndID = async (req) => {
       }
     } else {
       await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-        util.buildErrorObject(3100, 'Type not found', [{key: '', value: ''}]))
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
     }
   } catch (e) {
     Logger.error(e)

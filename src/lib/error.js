@@ -16,48 +16,26 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
  ******/
+
 'use strict'
 
-const request = require('axios')
-const Logger = require('@mojaloop/central-services-shared').Logger
-
-/**
- * @function validateParticipant
- *
- * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
- *
- * @param {string} url the endpoint for the service you require
- * @param {object} headers the http headers
- * @param {string} method http method being requested i.e. GET, POST, PUT
- * @param {object} payload the body of the request being sent
- *
- *@return {object} The response for the request being sent or error object with response included
- */
-const sendRequest = async (url, headers, method = 'get', payload = undefined) => {
-  try {
-    const requestOptions = {
-      url,
-      method: method,
-      headers: headers,
-      data: payload,
-      responseType: 'json'
-    }
-    Logger.info(`Success: sendRequest::requestOptions ${requestOptions}`)
-    Logger.debug(`request: ${JSON.stringify(requestOptions)}`)
-    const response = await request(requestOptions)
-    Logger.debug(`Success: sendRequest::response ${response}`)
-    return response
-  } catch (e) {
-    Logger.error(e)
-    throw e
+exports.ErrorObject = {
+  ADD_PARTY_ERROR: {
+    errorCode: 3003,
+    errorDescription: 'Error occurred while adding or updating information regarding a Party.'
+  },
+  PARTY_NOT_FOUND_ERROR: {
+    errorCode: 3204,
+    errorDescription: 'Party with the provided identifier, identifier type, and optional sub id or type was not found.'
+  },
+  DESTINATION_FSP_NOT_FOUND_ERROR: {
+    errorCode: 3201,
+    errorDescription: 'Destination FSP does not exist or cannot be found.'
   }
-}
-
-module.exports = {
-  sendRequest
 }

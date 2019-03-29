@@ -32,7 +32,7 @@ const participantEndpointCache = require('./cache/participantEndpoint')
 const util = require('../../lib/util')
 const Mustache = require('mustache')
 const Config = require('../../lib/config')
-
+const Errors = require('../../lib/error')
 /**
  * @function getParticipantsByTypeAndID
  *
@@ -63,11 +63,11 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
               await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
             } else {
               await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                util.buildErrorObject(3201, 'Destination FSP does not exist or cannot be found.', [{key: '', value: ''}]))
+                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
             }
           } else {
             await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-              util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: '', value: ''}]))
+              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: '', value: ''}]))
           }
         } else {
           Logger.error('Requester FSP not found')
@@ -75,11 +75,11 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
         }
       } else {
         await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-          util.buildErrorObject(3200, 'Oracle for provided type not found', [{key: '', value: ''}]))
+          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
       }
     } else {
       await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-        util.buildErrorObject(3100, 'Type not found', [{key: '', value: ''}]))
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
     }
   } catch (e) {
     Logger.error(e)
@@ -132,10 +132,10 @@ const postParticipantsBatch = async (req) => {
               typeMap.set(party.partyIdType, [party])
             }
           } else {
-            overallReturnList.push(util.buildErrorObject(3204, 'Party with the provided identifier, identifier type, and optional sub id or type was not found.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+            overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         } else {
-          overallReturnList.push(util.buildErrorObject(3100, 'Type not found', [{key: party.partyIdType, value: party.partyIdentifier}]))
+          overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
         }
       }
       for (let [key, value] of typeMap) {
@@ -156,19 +156,19 @@ const postParticipantsBatch = async (req) => {
             } else {
               // TODO: what happens when nothing is returned
               for (let party of value) {
-                overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+                overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
               }
             }
           } catch (e) {
             // TODO: what happens when nothing is returned
             for (let party of value) {
-              overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: e.code, value: e.message}]))
+              overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: e.code, value: e.message}]))
             }
           }
         } else {
           // TODO: what happens oracle type not found
           for (let party of value) {
-            overallReturnList.push(util.buildErrorObject(3003, 'Error occurred while adding or updating information regarding a Party.', [{key: party.partyIdType, value: party.partyIdentifier}]))
+            overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         }
       }
@@ -198,13 +198,9 @@ const validateParticipant = async (fsp) => {
   try {
     const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
     const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
-    if (response.status !== 200) {
-      return null
-    } else {
-      return response
-    }
+    return response
   } catch (e) {
-
+    return null
   }
 }
 
