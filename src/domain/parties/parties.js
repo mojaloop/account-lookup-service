@@ -65,11 +65,11 @@ const getPartiesByTypeAndID = async (req) => {
               Logger.info('parties::getPartiesByTypeAndID::end')
             } else {
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
+                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
             }
           } else {
             await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: '', value: ''}]))
+              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
           }
         } else {
           Logger.error('Requester FSP not found')
@@ -77,11 +77,11 @@ const getPartiesByTypeAndID = async (req) => {
         }
       } else {
         await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
+          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
       }
     } else {
       await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
     }
   } catch (e) {
 
@@ -112,7 +112,7 @@ const putPartiesByTypeAndID = async (req) => {
         } else {
           const requesterErrorEndpoint = await participant.getEndpoint(requesterParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
           await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT,
-            util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
+            util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
         }
       } else {
         Logger.error('Requester FSP not found')
@@ -120,7 +120,7 @@ const putPartiesByTypeAndID = async (req) => {
       }
     } else {
       await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
     }
   } catch (e) {
     Logger.error(e)

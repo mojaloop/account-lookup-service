@@ -63,11 +63,11 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
               await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
             } else {
               await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: '', value: ''}]))
+                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
             }
           } else {
             await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: '', value: ''}]))
+              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
           }
         } else {
           Logger.error('Requester FSP not found')
@@ -75,11 +75,11 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
         }
       } else {
         await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
+          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
       }
     } else {
       await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: '', value: ''}]))
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
     }
   } catch (e) {
     Logger.error(e)
@@ -192,13 +192,12 @@ const postParticipantsBatch = async (req) => {
  * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
  *
  * @param {string} fsp The FSPIOP-Source fsp id
- * @return
+ * @returns the participants info in a successful case and
  */
 const validateParticipant = async (fsp) => {
   try {
     const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
-    const response = await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
-    return response
+    return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
   } catch (e) {
     return null
   }
