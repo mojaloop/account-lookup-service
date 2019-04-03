@@ -25,7 +25,7 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-const oracleEndpoint = require('../../model/oracle')
+const oracleEndpoint = require('../../models/oracle')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
@@ -71,7 +71,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
           }
         } else {
           Logger.error('Requester FSP not found')
-          // TODO: handle issue where requester fsp not found
+          // TODO: handle issue where requester fsp not found. Pass to error handling framework
         }
       } else {
         await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,

@@ -39,19 +39,17 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function getParticipantsByTypeAndID(req, h) {
-    (async function () {
-      const metadata = `${req.method} ${req.path}`
-      const requesterName = req.headers['fspiop-source']
-      try {
-        Logger.info(`received: ${metadata}. ${req.params}`)
-        participants.getParticipantsByTypeAndID(requesterName, req)
-        Logger.info(`success: ${metadata}.`)
-      } catch (err) {
-        Logger.error(`ERROR - ${metadata}: ${err.stack || pp(err)}`)
-        // TODO: what if this fails? We need to log. What happens by default?
-        // TODO: review this error message
-      }
-    })()
+    const metadata = `${req.method} ${req.path}`
+    const requesterName = req.headers['fspiop-source']
+    try {
+      Logger.info(`received: ${metadata}. ${req.params}`)
+      participants.getParticipantsByTypeAndID(requesterName, req)
+      Logger.info(`success: ${metadata}.`)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err.stack || pp(err)}`)
+      // TODO: what if this fails? We need to log. What happens by default?
+      // TODO: review this error message
+    }
     return h.response().code(202)
   },
   /**

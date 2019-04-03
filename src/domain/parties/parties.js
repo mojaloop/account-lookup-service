@@ -26,7 +26,7 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-const oracleEndpoint = require('../../model/oracle')
+const oracleEndpoint = require('../../models/oracle')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
 const participant = require('../../domain/participants')

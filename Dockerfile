@@ -11,7 +11,7 @@ COPY ./src/lib/logger/package.json /src/lib/logger/package.json
 COPY ./src/lib/requests/package.json /src/lib/requests/package.json
 COPY ./src/lib/validation/package.json /src/lib/validation/package.json
 COPY ./src/lib/e164/package.json /src/lib/e164/package.json
-COPY ./src/model/package.json /src/model/package.json
+COPY src/models /src/model/package.json
 RUN npm install --production
 
 COPY ./src/ /src/

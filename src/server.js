@@ -80,7 +80,11 @@ const createServer = async (port) => {
           error.message = {
             errorInformation: {
               errorCode: error.statusCode,
-              errorDescription: error.message
+              errorDescription: error.message,
+              extensionList:[{
+                key: '',
+                value: ''
+              }]
             }
           }
           error.reformat()
@@ -93,19 +97,13 @@ const createServer = async (port) => {
   return server
 }
 
-const initialize = async () => {
+const initialize = async (port = Config.PORT) => {
   await connectDatabase()
-  const server = await createServer(Config.PORT)
-  if (server) {
-    try {
-      server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-      Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-      await ParticipantEndpointCache.initializeCache()
-      return server
-    } catch (e) {
-      server.log('error', e.message)
-    }
-  }
+  const server = await createServer(port)
+  server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
+  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  await ParticipantEndpointCache.initializeCache()
+  return server
 }
 
 module.exports = {
