@@ -16,6 +16,30 @@
   "config": {
     "knex": "--knexfile ./config/knexfile.js"
   },
+  "ava": {
+    "files": [
+      "src/**/*.js"
+    ],
+    "sources": [
+      "src/**/*.js",
+      "!test/**/*"
+    ]
+  },
+  "nyc": {
+    "check-coverage": true,
+    "per-file": true,
+    "lines": 5,
+    "statements": 5,
+    "functions": 5,
+    "branches": 5,
+    "include": [
+      "src/**/*.js"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ]
+  },
   "dependencies": {
     "@mojaloop/central-services-database": "5.2.1",
     "@mojaloop/central-services-error-handling": "5.2.0",

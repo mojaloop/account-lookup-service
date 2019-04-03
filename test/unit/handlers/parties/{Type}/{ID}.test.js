@@ -39,18 +39,19 @@ let destinationFsp = 'dfsp2'
 let sourceFsp = 'dfsp1'
 let resource = 'participants'
 
-Test.beforeEach(async () => {
+Test.before(async () => {
   sandbox = Sinon.createSandbox()
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  server = await initServer(await getPort())
 })
 
-Test.afterEach(async t => {
+Test.after(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
 Test.serial('test getPartiesByTypeAndID endpoint', async test => {
   try {
-    server = await initServer(await getPort())
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/parties/{Type}/{ID}',
@@ -83,7 +84,6 @@ Test.serial('test getPartiesByTypeAndID endpoint', async test => {
     }
     sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
     const response = await server.inject(options)
-    await server.stop()
     test.is(response.statusCode, 202, 'Ok response status')
   } catch (e) {
     Logger.error(e)
@@ -93,7 +93,6 @@ Test.serial('test getPartiesByTypeAndID endpoint', async test => {
 
 Test.serial('test putPartiesByTypeAndID endpoint', async test => {
   try {
-    server = await initServer(await getPort())
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/parties/{Type}/{ID}',
@@ -126,7 +125,6 @@ Test.serial('test putPartiesByTypeAndID endpoint', async test => {
     }
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
     const response = await server.inject(options)
-    await server.stop()
     test.is(response.statusCode, 200, 'Ok response status')
   } catch (e) {
     Logger.error(e)

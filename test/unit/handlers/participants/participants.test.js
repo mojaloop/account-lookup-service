@@ -44,7 +44,7 @@ Test.beforeEach(async () => {
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
 })
 
-Test.afterEach(async t => {
+Test.afterEach(async () => {
   sandbox.restore()
 })
 
