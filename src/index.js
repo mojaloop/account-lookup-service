@@ -21,8 +21,50 @@
 
  --------------
  ******/
+
 'use strict'
 
 const Server = require('./server')
+const PJson = require('../package.json')
+const { Command } = require('commander')
+const Config = require('./lib/config')
+const Logger = require('@mojaloop/central-services-shared').Logger
 
-module.exports = Server.initialize()
+const Program = new Command()
+
+Program
+  .version(PJson.version)
+  .description('CLI to manage Servers')
+
+Program.command('server') // sub-command name, coffeeType = type, required
+  .alias('s') // alternative sub-command is `o`
+  .description('Start a specified Handler') // command description
+  .option('--api', 'Start the api server')
+  .option('--admin', 'Start the admin server')
+
+  // function to execute when command is uses
+  .action(async (args) => {
+    let options
+    if (args.api) {
+      Logger.debug(`CLI: Executing --api`)
+      options = {
+        port: Config.API_PORT,
+        isAPI: true
+      }
+    } else if (args.admin) {
+      Logger.debug(`CLI: Executing --admin`)
+      options = {
+        port: Config.ADMIN_PORT,
+        isAPI: false
+      }
+    }
+    module.exports = Server.initialize(options.port, options.isAPI)
+  })
+
+if (Array.isArray(process.argv) && process.argv.length > 2) {
+  // parse command line vars
+  Program.parse(process.argv)
+} else {
+  // display default help
+  Program.help()
+}

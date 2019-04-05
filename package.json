@@ -51,6 +51,7 @@
     "catbox": "10.0.6",
     "catbox-memory": "4.0.1",
     "chance": "1.0.18",
+    "commander": "2.20.0",
     "docdash": "1.0.3",
     "good": "8.1.2",
     "good-console": "8.0.0",
@@ -85,7 +86,9 @@
     "uuid": "3.3.2"
   },
   "scripts": {
-    "start": "node src/index.js",
+    "start": "run-p start:api start:admin",
+    "start:api": "node src/index.js server --api",
+    "start:admin": "node src/index.js server --admin",
     "test": "ava test/unit/**/**.test.js",
     "cover": "npx nyc report --reporter=lcov npm test",
     "lint": "eslint --ignore-path ../.eslintignore .",

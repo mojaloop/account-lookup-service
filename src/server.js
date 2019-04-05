@@ -43,15 +43,21 @@ const openAPIOptions = {
   handlers: Path.resolve(__dirname, './handlers')
 }
 
+const openAdminAPIOptions = {
+  api: Path.resolve(__dirname, './interface/admin_swagger.json'),
+  handlers: Path.resolve(__dirname, './handlers')
+}
+
 /**
  * @function createServer
  *
  * @description Create HTTP Server
  *
  * @param {number} port Port to register the Server against
+ * @param {boolean} isApi to check if admin or api server
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port) => {
+const createServer = async (port, isApi) => {
   const server = await new Hapi.Server({
     port
   })
@@ -59,7 +65,7 @@ const createServer = async (port) => {
   await server.register([
     {
       plugin: HapiOpenAPI,
-      options: openAPIOptions
+      options: isApi ? openAPIOptions : openAdminAPIOptions
     }
   ])
   await server.ext([
@@ -97,9 +103,9 @@ const createServer = async (port) => {
   return server
 }
 
-const initialize = async (port = Config.API_PORT) => {
+const initialize = async (port = Config.API_PORT, isApi = true) => {
   await connectDatabase()
-  const server = await createServer(port)
+  const server = await createServer(port, isApi)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache()

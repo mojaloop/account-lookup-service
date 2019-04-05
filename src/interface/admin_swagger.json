@@ -110,8 +110,10 @@
           "application/json": {
             "“oracleIdType”": "“MSISDN”",
             "“currency”": "“USD”",
-            "“endpoint”": "“http://localhost:5000”",
-            "“endpointType”": "“URL”",
+            "“endpoint”": {
+              "“value”": "“http://localhost:5000”",
+              "“endpointType”": "“URL”"
+            },
             "“isDefault”": true
           }
         },
@@ -182,8 +184,10 @@
         "x-examples": {
           "application/json": {
             "“oracle”": {
-              "“endpoint”": "“http://localhost:5000”",
-              "“endpointType”": "“URL”",
+              "“endpoint”": {
+                "“value”": "“http://localhost:5000”",
+                "“endpointType”": "“URL”"
+              },
               "“currency”": "“USD”",
               "“isDefault”": false
             }
@@ -600,7 +604,7 @@
         }
       },
       "required": [
-        "endpoint",
+        "value",
         "endpointType"
       ]
     },
@@ -633,8 +637,7 @@
       },
       "required": [
         "oracleIdType",
-        "endpoint",
-        "endpointType"
+        "endpoint"
       ]
     },
     "OracleInfoGetResponse": {
@@ -662,8 +665,7 @@
       },
       "required": [
         "oracleIdType",
-        "endpoint",
-        "endpointType"
+        "endpoint"
       ]
     },
     "PartyIdType": {
