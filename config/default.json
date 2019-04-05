@@ -1,7 +1,7 @@
 {
-  "PORT": 4002,
-  "DATABASE_URI": "mysql://account_lookup:password@localhost:3306/account_lookup",
-  "RUN_MIGRATIONS": true,
+  "ADMIN_PORT": 4001,
+  "API_PORT": 4002,
+  "DATABASE_URI": "mysql://account_lookup:password@localhost:3307/account_lookup",
   "ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
     "generateTimeout": 30000
@@ -15,7 +15,7 @@
       },
       "config": {
         "timeout": 5000,
-        "prefix": "moja_als_",
+        "prefix": "moja_",
         "defaultLabels": {
           "serviceName": "account-lookup-service"
         }
