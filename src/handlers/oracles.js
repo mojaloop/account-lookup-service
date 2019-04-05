@@ -49,7 +49,11 @@ module.exports = {
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    await oracle.postOracle(request)
-    return h.response().code(201)
+    try {
+      await oracle.postOracle(request)
+      return h.response().code(201)
+    } catch (e) {
+      return h.response(e).code(400)
+    }
   }
 }

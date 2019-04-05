@@ -73,16 +73,9 @@ const getAllOracleEndpoint = async () => {
   }
 }
 
-const createOracleEndpoint = async (oracleEndpointModel, type) => {
+const createOracleEndpoint = async (oracleEndpointModel) => {
   try {
-    const knex = await Db.getKnex()
-    return await knex.from(knex.raw('oracleEndpoint (oracleType, endpointTypeId, value, createdBy)'))
-      .insert(function () {
-        this.from('endpointType AS et')
-          .where('et.type', type)
-          .select(knex.raw('?', oracleEndpointModel.oracleType), 'et.endpointTypeId',
-            knex.raw('?', oracleEndpointModel.value), knex.raw('?', oracleEndpointModel.createdBy))
-      })
+    return await Db.oracleEndpoint.insert(oracleEndpointModel)
   } catch (err) {
     throw new Error(err.message)
   }

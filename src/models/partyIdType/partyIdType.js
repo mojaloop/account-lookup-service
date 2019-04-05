@@ -18,50 +18,23 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
  ******/
+
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
-const oracleEndpoint = require('../../models/oracle')
-const partyIdType = require('../../models/partyIdType')
-const endpointType = require('../../models/endpointType')
+const Db = require('@mojaloop/central-services-database').Db
 
-/**
- * @function postOracle
- *
- * @description This creates and entry in the oracleEndpoint table
- *
- * @param {object} req The request object from the Hapi server
- */
-const postOracle = async (req) => {
+const getPartyIdTypeByName = async (name) => {
   try {
-    let oracleEntity = {}
-    const payload = req.payload
-    if(payload.isDefault){
-      oracleEntity.isDefault = payload.isDefault
-    } else {
-      oracleEntity.isDefault = false
-    }
-    if(payload.currency){
-      oracleEntity.currencyId = payload.currency
-    }
-    oracleEntity.value = payload.endpoint.value
-    oracleEntity.createdBy =  'Admin'
-    const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
-    const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
-    oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
-    oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
-    await oracleEndpoint.createOracleEndpoint(oracleEntity)
-    return true
-  } catch (e) {
-    Logger.error(e)
-    throw e
+    return Db.partyIdType.findOne({name, isActive: true})
+  } catch (err) {
+    throw new Error(err.message)
   }
 }
 
 module.exports = {
-  postOracle
+  getPartyIdTypeByName
 }
