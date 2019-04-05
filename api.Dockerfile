@@ -1,7 +1,7 @@
 FROM mhart/alpine-node:10.15.1
 
-WORKDIR /opt/account-lookup
-COPY . /opt/account-lookup
+WORKDIR /opt/account-lookup-service
+COPY . /opt/account-lookup-service
 
 RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
     && cd $(npm root -g)/npm \
@@ -14,4 +14,4 @@ RUN npm install --production && \
 RUN apk del build-dependencies
 
 EXPOSE 4002
-CMD node src/index.js
+CMD node src/index.js server -api
