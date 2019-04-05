@@ -30,7 +30,7 @@
 'use strict'
 const SwagMock = require('swagmock')
 const Path = require('path')
-const apiPath = Path.resolve(__dirname, '../../src/interface/swagger.json')
+const apiPath = Path.resolve(__dirname, '../../src/interface/api_swagger.json')
 let mockGen
 
 module.exports = function () {

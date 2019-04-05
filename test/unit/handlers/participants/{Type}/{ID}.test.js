@@ -32,6 +32,7 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const util = require('../../../../../src/lib/util')
 const participants = require('../../../../../src/domain/participants')
 const getPort = require('get-port')
+const requestLogger = require('../../../../../src/lib/requestLogger')
 
 let server
 let sandbox
@@ -42,9 +43,11 @@ let resource = 'participants'
 Test.beforeEach(async () => {
   sandbox = Sinon.createSandbox()
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  sandbox.stub(requestLogger, 'logRequest').returns({})
+  sandbox.stub(requestLogger, 'logResponse').returns({})
 })
 
-Test.afterEach(async t => {
+Test.afterEach(async () => {
   sandbox.restore()
 })
 

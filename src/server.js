@@ -39,7 +39,7 @@ const connectDatabase = async () => {
 }
 
 const openAPIOptions = {
-  api: Path.resolve(__dirname, './interface/swagger.json'),
+  api: Path.resolve(__dirname, './interface/api_swagger.json'),
   handlers: Path.resolve(__dirname, './handlers')
 }
 
@@ -97,7 +97,7 @@ const createServer = async (port) => {
   return server
 }
 
-const initialize = async (port = Config.PORT) => {
+const initialize = async (port = Config.API_PORT) => {
   await connectDatabase()
   const server = await createServer(port)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)

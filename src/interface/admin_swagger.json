@@ -1,0 +1,916 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0",
+    "title": "Open API for ALS Admin API",
+    "description": "Open API for ALS Admin API",
+    "license": {
+      "name": "Apache 2.0"
+    }
+  },
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/oracles": {
+      "get": {
+        "description": "The HTTP request GET /oracles is used to return the list of all oracle endpoints. There are optional fields for type and currency i.e. /admin/oracles?type=MSISDN&currency=USD which can be used to get more filtered results or a specific entry",
+        "summary": "Get Oracles",
+        "tags": [
+          "admin"
+        ],
+        "operationId": "OracleGet",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/type"
+          },
+          {
+            "$ref": "#/parameters/currency"
+          },
+          {
+            "$ref": "#/parameters/Accept"
+          },
+          {
+            "$ref": "#/parameters/Content-Type"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Response200"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      },
+      "post": {
+        "description": "The HTTP request POST /oracles is used to create information in the server regarding the provided oracles. This request should be used for creation of Oracle information.",
+        "summary": "Create Oracles",
+        "tags": [
+          "admin"
+        ],
+        "operationId": "OraclePost",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OracleInfo"
+            }
+          },
+          {
+            "$ref": "#/parameters/Accept"
+          },
+          {
+            "$ref": "#/parameters/Content-Length"
+          },
+          {
+            "$ref": "#/parameters/Content-Type"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "x-examples": {
+          "application/json": {
+            "“oracleIdType”": "“MSISDN”",
+            "“currency”": "“USD”",
+            "“endpoint”": "“http://localhost:5000”",
+            "“endpointType”": "“URL”",
+            "“isDefault”": true
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/responses/Response201"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      }
+    },
+    "/oracles/{ID}": {
+      "put": {
+        "description": "The HTTP request PUT /oracles/{ID} is used to update information in the server regarding the provided oracle. This request should be used for individual update of Oracle information.",
+        "summary": "Update Oracle",
+        "tags": [
+          "admin"
+        ],
+        "operationId": "OraclePut",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OracleInfo"
+            }
+          },
+          {
+            "$ref": "#/parameters/ID"
+          },
+          {
+            "$ref": "#/parameters/Content-Length"
+          },
+          {
+            "$ref": "#/parameters/Content-Type"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "x-examples": {
+          "application/json": {
+            "“oracle”": {
+              "“endpoint”": "“http://localhost:5000”",
+              "“endpointType”": "“URL”",
+              "“currency”": "“USD”",
+              "“isDefault”": false
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/responses/Response204"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      },
+      "delete": {
+        "description": "The HTTP request DELETE /oracles/{ID} is used to delete information in the server regarding the provided oracle.",
+        "summary": "Delete Oracle",
+        "tags": [
+          "admin"
+        ],
+        "operationId": "OracleDelete",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/Accept"
+          },
+          {
+            "$ref": "#/parameters/ID"
+          },
+          {
+            "$ref": "#/parameters/Content-Type"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/Response204"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "The HTTP request GET /health is used to return the current status of the Admin API.",
+        "summary": "Get Oracles",
+        "tags": [
+          "admin"
+        ],
+        "operationId": "AdminHealthGet",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ResponseHealth200"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorCode": {
+      "title": "ErrorCode",
+      "type": "string",
+      "pattern": "^[1-9]\\d{3}$",
+      "description": "The API data type ErrorCode is a JSON String of four characters, consisting of digits only. Negative numbers are not allowed. A leading zero is not allowed. Each error code in the API is a four-digit number, for example, 1234, where the first number (1 in the example) represents the high-level error category, the second number (2 in the example) represents the low-level error category, and the last two numbers (34 in the example) represents the specific error."
+    },
+    "ErrorDescription": {
+      "title": "ErrorDescription",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Error description string."
+    },
+    "ExtensionKey": {
+      "title": "ExtensionKey",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Extension key."
+    },
+    "ExtensionValue": {
+      "title": "ExtensionValue",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Extension value."
+    },
+    "Currency": {
+      "title": "CurrencyEnum",
+      "description": "The currency codes defined in ISO 4217 as three-letter alphabetic codes are used as the standard naming representation for currencies.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "enum": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "ARS",
+        "AUD",
+        "AWG",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BRL",
+        "BSD",
+        "BTN",
+        "BWP",
+        "BYN",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHF",
+        "CLP",
+        "CNY",
+        "COP",
+        "CRC",
+        "CUC",
+        "CUP",
+        "CVE",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "EGP",
+        "ERN",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GGP",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HRK",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "IMP",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JEP",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRO",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SHP",
+        "SLL",
+        "SOS",
+        "SPL",
+        "SRD",
+        "STD",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TVD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "UYU",
+        "UZS",
+        "VEF",
+        "VND",
+        "VUV",
+        "WST",
+        "XAF",
+        "XCD",
+        "XDR",
+        "XOF",
+        "XPF",
+        "YER",
+        "ZAR",
+        "ZMW",
+        "ZWD"
+      ]
+    },
+    "ErrorInformation": {
+      "title": "ErrorInformation",
+      "type": "object",
+      "description": "Data model for the complex type ErrorInformation.",
+      "properties": {
+        "errorCode": {
+          "type": "string",
+          "description": "Specific error number."
+        },
+        "errorDescription": {
+          "type": "string",
+          "description": "Error description string."
+        },
+        "extensionList": {
+          "$ref": "#/definitions/ExtensionList"
+        }
+      },
+      "required": [
+        "errorCode",
+        "errorDescription"
+      ]
+    },
+    "ErrorInformationResponse": {
+      "title": "ErrorInformationResponse",
+      "type": "object",
+      "description": "Data model for the complex type object that contains an optional element ErrorInformation used along with 4xx and 5xx responses.",
+      "properties": {
+        "errorInformation": {
+          "$ref": "#/definitions/ErrorInformation"
+        }
+      }
+    },
+    "Extension": {
+      "title": "Extension",
+      "type": "object",
+      "description": "Data model for the complex type Extension",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Extension key."
+        },
+        "value": {
+          "type": "string",
+          "description": "Extension value."
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    },
+    "ExtensionList": {
+      "title": "ExtensionList",
+      "type": "object",
+      "description": "Data model for the complex type ExtensionList",
+      "properties": {
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "minItems": 1,
+          "maxItems": 16,
+          "description": "Number of Extension elements"
+        }
+      },
+      "required": [
+        "extension"
+      ]
+    },
+    "Endpoint": {
+      "title": "Endpoint",
+      "type": "object",
+      "description": "Contains information about an endpoint",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "An endpoint for the Oracle."
+        },
+        "endpointType": {
+          "$ref": "#/definitions/EndpointType"
+        }
+      },
+      "required": [
+        "endpoint",
+        "endpointType"
+      ]
+    },
+    "EndpointType": {
+      "title": "EndpointType",
+      "type": "string",
+      "enum": [
+        "URL"
+      ],
+      "description": "The type of endpoint requested"
+    },
+    "OracleInfo": {
+      "title": "OracleInfo",
+      "type": "object",
+      "description": "Data model for the complex type OracleInfo.",
+      "properties": {
+        "oracleIdType": {
+          "$ref": "#/definitions/PartyIdType"
+        },
+        "endpoint": {
+          "$ref": "#/definitions/Endpoint"
+        },
+        "currency": {
+          "$ref": "#/definitions/Currency"
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Is the endpoint default or not"
+        }
+      },
+      "required": [
+        "oracleIdType",
+        "endpoint",
+        "endpointType"
+      ]
+    },
+    "OracleInfoGetResponse": {
+      "title": "OracleInfoGetResponse",
+      "type": "object",
+      "description": "Data model for the complex type OracleInfo.",
+      "properties": {
+        "oracleId": {
+          "type": "string",
+          "description": "Oracle type entry's unique identified"
+        },
+        "oracleIdType": {
+          "$ref": "#/definitions/PartyIdType"
+        },
+        "endpoint": {
+          "$ref": "#/definitions/Endpoint"
+        },
+        "currency": {
+          "$ref": "#/definitions/Currency"
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Is the endpoint default or not"
+        }
+      },
+      "required": [
+        "oracleIdType",
+        "endpoint",
+        "endpointType"
+      ]
+    },
+    "PartyIdType": {
+      "title": "PartyIdTypeEnum",
+      "type": "string",
+      "enum": [
+        "MSISDN",
+        "EMAIL",
+        "PERSONAL_ID",
+        "BUSINESS",
+        "DEVICE",
+        "ACCOUNT_ID",
+        "IBAN",
+        "ALIAS"
+      ],
+      "description": "Below are the allowed values for the enumeration - MSISDN An MSISDN (Mobile Station International Subscriber Directory Number, that is, the phone number) is used as reference to a participant. The MSISDN identifier should be in international format according to the ITU-T E.164 standard. Optionally, the MSISDN may be prefixed by a single plus sign, indicating the international prefix. - EMAIL An email is used as reference to a participant. The format of the email should be according to the informational RFC 3696. - PERSONAL_ID A personal identifier is used as reference to a participant. Examples of personal identification are passport number, birth certificate number, and national registration number. The identifier number is added in the PartyIdentifier element. The personal identifier type is added in the PartySubIdOrType element. - BUSINESS A specific Business (for example, an organization or a company) is used as reference to a participant. The BUSINESS identifier can be in any format. To make a transaction connected to a specific username or bill number in a Business, the PartySubIdOrType element should be used. - DEVICE A specific device (for example, a POS or ATM) ID connected to a specific business or organization is used as reference to a Party. For referencing a specific device under a specific business or organization, use the PartySubIdOrType element. - ACCOUNT_ID A bank account number or FSP account ID should be used as reference to a participant. The ACCOUNT_ID identifier can be in any format, as formats can greatly differ depending on country and FSP. - IBAN A bank account number or FSP account ID is used as reference to a participant. The IBAN identifier can consist of up to 34 alphanumeric characters and should be entered without whitespace. - ALIAS An alias is used as reference to a participant. The alias should be created in the FSP as an alternative reference to an account owner. Another example of an alias is a username in the FSP system. The ALIAS identifier can be in any format. It is also possible to use the PartySubIdOrType element for identifying an account under an Alias defined by the PartyIdentifier."
+    },
+    "Status": {
+      "title": "Status",
+      "type": "object",
+      "description": "Data model for the api status.",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "The return status, usually \"OK\""
+        }
+      }
+    }
+  },
+  "responses": {
+    "ResponseHealth200": {
+      "description": "OK",
+      "schema": {
+        "$ref": "#/definitions/Status"
+      }
+    },
+    "Response200": {
+      "description": "OK",
+      "schema": {
+        "items": {
+          "$ref": "#/definitions/OracleInfoGetResponse"
+        },
+        "minItems": 1,
+        "maxItems": 1000
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "Response201": {
+      "description": "Created"
+    },
+    "Response204": {
+      "description": "No Content"
+    },
+    "ErrorResponse400": {
+      "description": "Bad Request - The application cannot process the request; for example, due to malformed syntax or the payload exceeded size restrictions.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse401": {
+      "description": "Unauthorized - The request requires authentication in order to be processed.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse403": {
+      "description": "Forbidden - The request was denied and will be denied in the future.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse404": {
+      "description": "Not Found - The resource specified in the URI was not found.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse405": {
+      "description": "Method Not Allowed - An unsupported HTTP method for the request was used.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse406": {
+      "description": "Not acceptable - The server is not capable of generating content according to the Accept headers sent in the request. Used in the API to indicate that the server does not support the version that the client is requesting.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse501": {
+      "description": "Not Implemented - The server does not support the requested service. The client should not retry.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse503": {
+      "description": "Service Unavailable - The server is currently unavailable to accept any new service requests. This should be a temporary state, and the client should retry within a reasonable time frame.",
+      "schema": {
+        "$ref": "#/definitions/ErrorInformationResponse"
+      },
+      "headers": {
+        "Content-Length": {
+          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
+          "type": "integer"
+        },
+        "Content-Type": {
+          "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "Accept": {
+      "name": "accept",
+      "in": "header",
+      "required": true,
+      "type": "string",
+      "description": "The Accept header field indicates the version of the API the client would like the server to use."
+    },
+    "Accept-Optional": {
+      "name": "accept",
+      "in": "header",
+      "required": false,
+      "type": "string",
+      "description": "The Accept header field indicates the version of the API the client would like the server to use."
+    },
+    "Content-Length": {
+      "name": "content-length",
+      "in": "header",
+      "required": false,
+      "type": "integer",
+      "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body. Note - The API supports a maximum size of 5242880 bytes (5 Megabytes)"
+    },
+    "Content-Type": {
+      "name": "content-type",
+      "in": "header",
+      "type": "string",
+      "required": true,
+      "description": "The Content-Type header indicates the specific version of the API used to send the payload body."
+    },
+    "Date": {
+      "name": "date",
+      "in": "header",
+      "type": "string",
+      "required": true,
+      "description": "The Date header field indicates the date when the request was sent."
+    },
+    "ID": {
+      "name": "ID",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "description": "ID relating to the oracle endpoint entry"
+    },
+    "type": {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "type": "string",
+      "description": "type of oracle entry"
+    },
+    "currency": {
+      "name": "currency",
+      "in": "query",
+      "required": false,
+      "type": "string",
+      "description": "currency relating to the oracle endpoint entry"
+    }
+  }
+}

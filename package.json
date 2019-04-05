@@ -96,7 +96,7 @@
     "migrate:current": "knex migrate:currentVersion $npm_package_config_knex",
     "seed:run": "knex seed:run $npm_package_config_knex",
     "seed:create": "knex seed:make $npm_package_config_knex",
-    "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'",
+    "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/api_swagger.json'",
     "build": "docker build -t central-directory:local -f ../Dockerfile ../",
     "run": "docker run -p 3000:3000 --rm --link db:mysql central-directory:local",
     "package-lock": "docker run --rm -it central-directory:local cat package-lock.json > package-lock.json",
