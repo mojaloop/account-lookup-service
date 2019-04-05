@@ -38,30 +38,41 @@ Program
 
 Program.command('server') // sub-command name, coffeeType = type, required
   .alias('s') // alternative sub-command is `o`
-  .description('Start a specified Handler') // command description
+  .description('Start the ALS services. Use options to specify server type of none to run both') // command description
   .option('--api', 'Start the api server')
   .option('--admin', 'Start the admin server')
 
   // function to execute when command is uses
   .action(async (args) => {
-    let options
     if (args.api) {
       Logger.debug(`CLI: Executing --api`)
-      options = {
+      let options = {
         port: Config.API_PORT,
         isAPI: true
       }
+      module.exports = Server.initialize(options.port, options.isAPI)
     } else if (args.admin) {
       Logger.debug(`CLI: Executing --admin`)
-      options = {
+      let options = {
         port: Config.ADMIN_PORT,
         isAPI: false
       }
+      module.exports = Server.initialize(options.port, options.isAPI)
+    } else {
+      let optionsAdmin = {
+        port: Config.ADMIN_PORT,
+        isAPI: false
+      }
+      module.exports = Server.initialize(optionsAdmin.port, optionsAdmin.isAPI)
+      let optionsApi = {
+        port: Config.API_PORT,
+        isAPI: true
+      }
+      module.exports = Server.initialize(optionsApi.port, optionsApi.isAPI)
     }
-    module.exports = Server.initialize(options.port, options.isAPI)
   })
 
-if (Array.isArray(process.argv) && process.argv.length > 2) {
+if (Array.isArray(process.argv) && process.argv.length > 1) {
   // parse command line vars
   Program.parse(process.argv)
 } else {
