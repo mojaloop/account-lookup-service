@@ -16,40 +16,39 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
  ******/
-
 'use strict'
 
-const Boom = require('boom')
-const oracle = require('../domain/oracle')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const oracleEndpoint = require('../../models/oracle')
+const Enums = require('../../lib/enum')
+const util = require('../../lib/util')
+const Mustache = require('mustache')
+const Config = require('../../lib/config')
+const Errors = require('../../lib/error')
 
 /**
- * Operations on /oracles
+ * @function postOracle
+ *
+ * @description This creates and entry in the oracleEndpoint table
+ *
+ * @param {object} req The request object from the Hapi server
  */
-module.exports = {
-  /**
-   * summary: Get Oracles
-   * description: The HTTP request GET /oracles is used to return the list of all oracle endpoints. There are optional fields for type and currency i.e. /admin/oracles?type=MSISDN&amp;currency=USD which can be used to get more filtered results or a specific entry
-   * parameters: type, currency, accept, content-type, date
-   * produces: application/json
-   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-  get: function OracleGet(request, h) {
-    return Boom.notImplemented()
-  },
-  /**
-   * summary: Create Oracles
-   * description: The HTTP request POST /oracles is used to create information in the server regarding the provided oracles. This request should be used for creation of Oracle information.
-   * parameters: body, accept, content-length, content-type, date
-   * produces: application/json
-   * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-  post: async (request, h) => {
-    await oracle.postOracle(request)
-    return h.response().code(201)
+const postOracle = async (req) => {
+  try {
+    let oracleEntity
+    const payload = req.payload
+
+  } catch (e) {
+    Logger.error(e)
   }
+}
+
+module.exports = {
+  postOracle
 }

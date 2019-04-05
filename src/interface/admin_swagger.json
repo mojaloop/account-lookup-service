@@ -183,14 +183,13 @@
         ],
         "x-examples": {
           "application/json": {
-            "“oracle”": {
-              "“endpoint”": {
-                "“value”": "“http://localhost:5000”",
-                "“endpointType”": "“URL”"
-              },
-              "“currency”": "“USD”",
-              "“isDefault”": false
-            }
+            "“oracleIdType”": "“MSISDN”",
+            "“currency”": "“USD”",
+            "“endpoint”": {
+              "“value”": "“http://localhost:5000”",
+              "“endpointType”": "“URL”"
+            },
+            "“isDefault”": true
           }
         },
         "responses": {
