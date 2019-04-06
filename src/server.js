@@ -33,6 +33,7 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const ParticipantEndpointCache = require('./domain/participants/cache/participantEndpoint')
+const Migrator = require('./lib/migrator')
 
 const connectDatabase = async () => {
   return await Db.connect(Config.DATABASE_URI)
@@ -46,6 +47,10 @@ const openAPIOptions = {
 const openAdminAPIOptions = {
   api: Path.resolve(__dirname, './interface/admin_swagger.json'),
   handlers: Path.resolve(__dirname, './handlers')
+}
+
+const migrate = (isApi) => {
+  return Config.RUN_MIGRATIONS && isApi ? Migrator.migrate() : {}
 }
 
 /**
@@ -105,6 +110,7 @@ const createServer = async (port, isApi) => {
 
 const initialize = async (port = Config.API_PORT, isApi = true) => {
   await connectDatabase()
+  await migrate(isApi)
   const server = await createServer(port, isApi)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
