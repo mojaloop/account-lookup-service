@@ -5,6 +5,20 @@ const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Mockgen = require('../../util/mockgen.js')
+const oracle = require('../../../src/domain/oracle')
+const Sinon = require('sinon')
+const helper = require('../../util/helper')
+
+let sandbox
+
+Test.beforeEach(async () => {
+  sandbox = Sinon.createSandbox()
+})
+
+Test.afterEach(async () => {
+  sandbox.restore()
+})
+
 
 /**
  * summary: Get Oracles
@@ -27,7 +41,7 @@ Test('test OracleGet get operation', async function (t) {
   })
 
   const requests = new Promise((resolve, reject) => {
-    Mockgen().requests({
+    Mockgen(false).requests({
       path: '/oracles',
       operation: 'get'
     }, function (error, mock) {
@@ -37,13 +51,14 @@ Test('test OracleGet get operation', async function (t) {
 
   const mock = await requests
 
-  t.ok(mock)
-  t.ok(mock.request)
+  t.pass(mock)
+  t.pass(mock.request)
   //Get the resolved path from mock request
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'get',
-    url: '' + mock.request.path
+    url: mock.request.path,
+    headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
     //Send the request body
@@ -53,7 +68,7 @@ Test('test OracleGet get operation', async function (t) {
     options.payload = mock.request.formData
     //Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
-    options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    options.headers = helper.defaultAdminHeaders()
   }
   // If headers are present, set the headers.
   if (mock.request.headers && mock.request.headers.length > 0) {
@@ -61,10 +76,7 @@ Test('test OracleGet get operation', async function (t) {
   }
 
   const response = await server.inject(options)
-
-  t.equal(response.statusCode, 200, 'Ok response status')
-  t.end()
-
+  t.is(response.statusCode, 501, 'Ok response status')
 })
 /**
  * summary: Create Oracles
@@ -87,7 +99,7 @@ Test('test OraclePost post operation', async function (t) {
   })
 
   const requests = new Promise((resolve, reject) => {
-    Mockgen().requests({
+    Mockgen(false).requests({
       path: '/oracles',
       operation: 'post'
     }, function (error, mock) {
@@ -97,13 +109,14 @@ Test('test OraclePost post operation', async function (t) {
 
   const mock = await requests
 
-  t.ok(mock)
-  t.ok(mock.request)
+  t.pass(mock)
+  t.pass(mock.request)
   //Get the resolved path from mock request
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'post',
-    url: '' + mock.request.path
+    url: mock.request.path,
+    headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
     //Send the request body
@@ -113,17 +126,14 @@ Test('test OraclePost post operation', async function (t) {
     options.payload = mock.request.formData
     //Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
-    options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    options.headers = helper.defaultAdminHeaders()
   }
   // If headers are present, set the headers.
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-
+  sandbox.stub(oracle, 'postOracle').returns(Promise.resolve({}))
   const response = await server.inject(options)
-
-  t.equal(response.statusCode, 201, 'Ok response status')
-  t.end()
-
+  t.is(response.statusCode, 201, 'Ok response status')
 })
 

@@ -97,9 +97,6 @@
             "$ref": "#/parameters/Accept"
           },
           {
-            "$ref": "#/parameters/Content-Length"
-          },
-          {
             "$ref": "#/parameters/Content-Type"
           },
           {
@@ -170,9 +167,6 @@
           },
           {
             "$ref": "#/parameters/ID"
-          },
-          {
-            "$ref": "#/parameters/Content-Length"
           },
           {
             "$ref": "#/parameters/Content-Type"
@@ -711,10 +705,6 @@
         "maxItems": 1000
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -733,10 +723,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -749,10 +735,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -765,10 +747,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -781,10 +759,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -797,10 +771,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -813,10 +783,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -829,10 +795,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -845,10 +807,6 @@
         "$ref": "#/definitions/ErrorInformationResponse"
       },
       "headers": {
-        "Content-Length": {
-          "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body.",
-          "type": "integer"
-        },
         "Content-Type": {
           "description": "The Content-Type header indicates the specific version of the API used to send the payload body.",
           "type": "string"
@@ -870,13 +828,6 @@
       "required": false,
       "type": "string",
       "description": "The Accept header field indicates the version of the API the client would like the server to use."
-    },
-    "Content-Length": {
-      "name": "content-length",
-      "in": "header",
-      "required": false,
-      "type": "integer",
-      "description": "The Content-Length header field indicates the anticipated size of the payload body. Only sent if there is a body. Note - The API supports a maximum size of 5242880 bytes (5 Megabytes)"
     },
     "Content-Type": {
       "name": "content-type",

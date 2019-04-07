@@ -5,6 +5,7 @@ const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Mockgen = require('../../../util/mockgen.js')
+const helper = require('../../../util/helper')
 
 /**
  * summary: Update Oracle
@@ -27,7 +28,7 @@ Test('test OraclePut put operation', async function (t) {
   })
 
   const requests = new Promise((resolve, reject) => {
-    Mockgen().requests({
+    Mockgen(false).requests({
       path: '/oracles/{ID}',
       operation: 'put'
     }, function (error, mock) {
@@ -37,13 +38,14 @@ Test('test OraclePut put operation', async function (t) {
 
   const mock = await requests
 
-  t.ok(mock)
-  t.ok(mock.request)
+  t.pass(mock)
+  t.pass(mock.request)
   //Get the resolved path from mock request
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'put',
-    url: '' + mock.request.path
+    url: '' + mock.request.path,
+    headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
     //Send the request body
@@ -53,18 +55,14 @@ Test('test OraclePut put operation', async function (t) {
     options.payload = mock.request.formData
     //Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
-    options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    options.headers = helper.defaultAdminHeaders()
   }
   // If headers are present, set the headers.
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-
   const response = await server.inject(options)
-
-  t.equal(response.statusCode, 204, 'Ok response status')
-  t.end()
-
+  t.is(response.statusCode, 501, 'Ok response status')
 })
 /**
  * summary: Delete Oracle
@@ -87,7 +85,7 @@ Test('test OracleDelete delete operation', async function (t) {
   })
 
   const requests = new Promise((resolve, reject) => {
-    Mockgen().requests({
+    Mockgen(false).requests({
       path: '/oracles/{ID}',
       operation: 'delete'
     }, function (error, mock) {
@@ -97,13 +95,14 @@ Test('test OracleDelete delete operation', async function (t) {
 
   const mock = await requests
 
-  t.ok(mock)
-  t.ok(mock.request)
+  t.pass(mock)
+  t.pass(mock.request)
   //Get the resolved path from mock request
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'delete',
-    url: '' + mock.request.path
+    url: '' + mock.request.path,
+    headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
     //Send the request body
@@ -113,7 +112,7 @@ Test('test OracleDelete delete operation', async function (t) {
     options.payload = mock.request.formData
     //Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
-    options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    options.headers = helper.defaultAdminHeaders()
   }
   // If headers are present, set the headers.
   if (mock.request.headers && mock.request.headers.length > 0) {
@@ -122,7 +121,5 @@ Test('test OracleDelete delete operation', async function (t) {
 
   const response = await server.inject(options)
 
-  t.equal(response.statusCode, 204, 'Ok response status')
-  t.end()
-
+  t.is(response.statusCode, 501, 'Ok response status')
 })

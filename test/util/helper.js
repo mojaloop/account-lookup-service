@@ -3,11 +3,8 @@
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
  The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
-
  http://www.apache.org/licenses/LICENSE-2.0
-
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
  Contributors
  --------------
  This is the official list of the Mojaloop project contributors for this file.
@@ -18,26 +15,22 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
-
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
  ******/
-
 'use strict'
-const SwagMock = require('swagmock')
-const Path = require('path')
-const apiPath = Path.resolve(__dirname, '../../src/interface/api_swagger.json')
-const adminPath = Path.resolve(__dirname, '../../src/interface/admin_swagger.json')
-let mockGen
 
-module.exports = function (isApi = true) {
-  /**
-   * Cached mock generator
-   */
-  mockGen = mockGen || SwagMock(isApi ? apiPath : adminPath)
-  return mockGen
+function defaultAdminHeaders() {
+  return {
+    'Accept': 'application/vnd.interoperability.oracles+json;version=1',
+    'Content-Type': 'application/vnd.interoperability.oracles+json;version=1.0',
+    'Date': (new Date()).toUTCString()
+  }
+}
+
+module.exports = {
+  defaultAdminHeaders
 }
