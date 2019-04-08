@@ -109,6 +109,66 @@ const putParticipantsErrorByTypeAndID = async (req) => {
 }
 
 /**
+ * @function postParticipants
+ *
+ * @description This sends request to all applicable oracles to store
+ *
+ * @param {object} req The request object from the Hapi server
+ */
+const postParticipants = async (req) => {
+  try {
+    const type = req.params.Type
+    if (Object.values(Enums.type).includes(type)) {
+      const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
+      if (req.payload.fspId === req.headers['fspiop-source']) {
+        if (requesterParticipantModel) {
+          let oracleEndpointModel
+          if (req.payload.currency && req.payload.currency.length !== 0) {
+            oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.payload.currency)
+          } else {
+            oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+          }
+          if (oracleEndpointModel.length > 0) {
+            const url = oracleEndpointModel[0].value + req.raw.req.url
+            let response
+            try {
+              response = await request.sendRequest(url, req.headers, req.method, req.payload)
+              if (response && response.data) {
+                const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT)
+                const url = requesterEndpoint + req.raw.req.url
+                await request.sendRequest(url, req.headers, Enums.restMethods.PUT, response.data)
+              } else {
+                // TODO: what happens when nothing is returned
+                await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+                  util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+              }
+            } catch (e) {
+              // TODO: what happens when nothing is returned
+              await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+                util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+            }
+          }
+        } else {
+          // TODO: what happens requester not found
+          await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+            util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+        }
+      } else {
+        // TODO: what happens requester and fspId not the same
+        await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+      }
+    } else {
+      await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+    }
+  } catch (e) {
+    Logger.error(e)
+  }
+}
+
+
+/**
  * @function postParticipantsBatch
  *
  * @description This sends request to all applicable oracles to store
@@ -207,5 +267,6 @@ module.exports = {
   getParticipantsByTypeAndID,
   putParticipantsErrorByTypeAndID,
   validateParticipant,
+  postParticipants,
   postParticipantsBatch
 }

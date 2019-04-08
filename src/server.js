@@ -50,7 +50,7 @@ const openAdminAPIOptions = {
 }
 
 const migrate = (isApi) => {
-  return Config.RUN_MIGRATIONS && isApi ? Migrator.migrate() : {}
+  return Config.RUN_MIGRATIONS && !isApi ? Migrator.migrate() : {}
 }
 
 /**

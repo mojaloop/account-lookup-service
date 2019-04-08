@@ -34,7 +34,7 @@ function defaultHeaders(destination, resource, source, version = '1.0') {
   // add/append to this field in all 'queueResponse' calls?
   return {
     'Accept': `application/vnd.interoperability.${resource}+json;version=${version}`,
-    'FSPIOP-Destination': destination,
+    'FSPIOP-Destination': destination ? destination : '',
     'Content-Type': `application/vnd.interoperability.${resource}+json;version=${version}`,
     'Date': (new Date()).toUTCString(),
     'FSPIOP-Source': source

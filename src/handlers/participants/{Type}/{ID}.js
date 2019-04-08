@@ -69,8 +69,16 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function ParticipantsByIDAndType(request, h) {
-    return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
+  post: function postParticipants(request, h) {
+    const metadata = `${request.method} ${request.path}`
+    try {
+      participants.postParticipants(request)
+      Logger.info(`success: ${metadata}.`)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      // TODO: review this error message
+    }
+    return h.response().code(200)
   },
   /**
    * summary: ParticipantsByTypeAndID
