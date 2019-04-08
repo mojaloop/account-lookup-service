@@ -14,7 +14,7 @@ const helper = require('../../util/helper')
  * produces: application/json
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
-Test('test AdminHealthGet get operation', async function (t) {
+Test('AdminHealthGet get operation', async function (t) {
 
   const server = new Hapi.Server()
 

@@ -184,14 +184,14 @@ jobs:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: Install tape, tapes and tap-xunit
-          command: npm install -g tape tapes tap-xunit
+          name: Install ava tap tap-xunit
+          command: npm install -g ava tap tap-xunit
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute unit tests
-          command: npm -s run test:xunit > ./test/results/tape.xml
+          command: ava --tap | tap-xunit > ./test/results/ava.xml
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -216,7 +216,7 @@ jobs:
             - dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Execute code coverage check
-          command: npm -s run test:coverage-check
+          command: npm -s run cover
       - store_artifacts:
           path: coverage
           prefix: test

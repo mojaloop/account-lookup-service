@@ -18,11 +18,10 @@
   },
   "ava": {
     "files": [
-      "src/**/*.js"
+      "test/unit/**/**.test.js"
     ],
     "sources": [
-      "src/**/*.js",
-      "!test/**/*"
+      "src/**/*.js"
     ]
   },
   "nyc": {
@@ -83,6 +82,7 @@
     "proxyquire": "2.1.0",
     "sinon": "7.3.1",
     "swagmock": "1.0.0",
+    "tap-xunit": "^2.3.0",
     "uuid": "3.3.2"
   },
   "scripts": {

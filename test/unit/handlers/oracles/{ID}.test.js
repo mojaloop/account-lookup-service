@@ -64,6 +64,7 @@ Test('test OraclePut put operation', async function (t) {
   const response = await server.inject(options)
   t.is(response.statusCode, 501, 'Ok response status')
 })
+
 /**
  * summary: Delete Oracle
  * description: The HTTP request DELETE /oracles/{ID} is used to delete information in the server regarding the provided oracle.
@@ -78,7 +79,7 @@ Test('test OracleDelete delete operation', async function (t) {
   await server.register({
     plugin: HapiOpenAPI,
     options: {
-      api: Path.resolve('../../../../src/interface/admin_swagger.json'),
+      api: Path.resolve(__dirname, '../../../../src/interface/admin_swagger.json'),
       handlers: Path.join(__dirname, '../../handlers'),
       outputvalidation: true
     }

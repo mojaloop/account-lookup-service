@@ -19,7 +19,6 @@ Test.afterEach(async () => {
   sandbox.restore()
 })
 
-
 /**
  * summary: Get Oracles
  * description: The HTTP request GET /oracles is used to return the list of all oracle endpoints. There are optional fields for type and currency i.e. /admin/oracles?type=MSISDN&amp;currency=USD which can be used to get more filtered results or a specific entry
