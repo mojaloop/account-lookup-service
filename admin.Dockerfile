@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:10.15.1
+FROM node:10.15-alpine
 
 WORKDIR /opt/account-lookup-service
 COPY . /opt/account-lookup-service

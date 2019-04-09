@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:10.15.1
+FROM node:10.15-alpine
 
 WORKDIR /opt/account-lookup-service
 COPY . /opt/account-lookup-service
@@ -8,8 +8,7 @@ RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool aut
     && npm config set unsafe-perm true \
     && npm install -g node-gyp
 
-RUN npm install --production && \
-  npm uninstall -g npm
+RUN npm install --production
 
 RUN apk del build-dependencies
 
