@@ -4,8 +4,8 @@ const Path = require('path')
 const Migrations = require('@mojaloop/central-services-database').Migrations
 const Knexfile = require('../../config/knexfile')
 
-exports.migrate = function () {
-  return Migrations.migrate(updateMigrationsLocation(Knexfile))
+exports.migrate = async function () {
+  return await Migrations.migrate(updateMigrationsLocation(Knexfile))
 }
 
 const updateMigrationsLocation = (kf) => {

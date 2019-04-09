@@ -31,12 +31,17 @@
     "statements": 5,
     "functions": 5,
     "branches": 5,
+    "all":true,
     "include": [
       "src/**/*.js"
     ],
     "reporter": [
       "lcov",
       "text-summary"
+    ],
+    "exclude": [
+      "**/*.test.js",
+      "**/node_modules/**"
     ]
   },
   "dependencies": {
@@ -90,7 +95,7 @@
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
     "test": "ava test/unit/**/**.test.js",
-    "cover": "npx nyc report --reporter=lcov npm test",
+    "cover": "npx nyc --all report --reporter=lcov npm test",
     "lint": "eslint --ignore-path ../.eslintignore .",
     "migrate": "run-s migrate:latest seed:run",
     "migrate:latest": "knex $npm_package_config_knex migrate:latest",

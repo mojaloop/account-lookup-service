@@ -49,8 +49,8 @@ const openAdminAPIOptions = {
   handlers: Path.resolve(__dirname, './handlers')
 }
 
-const migrate = (isApi) => {
-  return Config.RUN_MIGRATIONS && !isApi ? Migrator.migrate() : {}
+const migrate = async (isApi) => {
+  return Config.RUN_MIGRATIONS && !isApi ? await Migrator.migrate() : {}
 }
 
 /**
@@ -114,7 +114,9 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
   const server = await createServer(port, isApi)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache()
+  if(isApi) {
+    await ParticipantEndpointCache.initializeCache()
+  }
   return server
 }
 
