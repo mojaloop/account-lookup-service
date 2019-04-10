@@ -55,7 +55,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
       if (oracleEndpointModel) {
         const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
         if (requesterParticipantModel) {
-          const url = oracleEndpointModel[0].value + req.raw.req.url
+          const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
           Logger.debug(`Oracle endpoints: ${url}`)
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload, true)
@@ -134,7 +134,7 @@ const postParticipants = async (req) => {
             oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
           }
           if (oracleEndpointModel.length > 0) {
-            const url = oracleEndpointModel[0].value + req.raw.req.url
+            const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
             Logger.debug(`postParticipants::sendRequest::oracle ${url}`)
             let response
             response = await request.sendRequest(url, req.headers, req.method, req.payload, true)
@@ -208,7 +208,7 @@ const postParticipantsBatch = async (req) => {
           oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(key)
         }
         if (oracleEndpointModel.length > 0) {
-          const url = oracleEndpointModel[0].value + req.raw.req.url
+          const url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
           Logger.debug(`Oracle endpoints: ${url}`)
           req.payload.partyList = value
           let response
@@ -253,7 +253,7 @@ const postParticipantsBatch = async (req) => {
  */
 const validateParticipant = async (fsp) => {
   try {
-    const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
+    const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp})
     Logger.debug(`validateParticipant url: ${getParticipantUrl}`)
     return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH))
   } catch (e) {

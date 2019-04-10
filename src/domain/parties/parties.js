@@ -33,6 +33,7 @@ const participant = require('../../domain/participants/participants')
 const participantEndpoint = require('../../domain/participants/cache/participantEndpoint')
 const util = require('../../lib/util')
 const Errors = require('../../lib/error')
+const Mustache = require('mustache')
 
 /**
  * @function getPartiesByTypeAndID
@@ -55,7 +56,7 @@ const getPartiesByTypeAndID = async (req) => {
       if (oracleEndpointModel) {
         const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
         if(requesterParticipantModel) {
-          const url = oracleEndpointModel[0].value + req.raw.req.url
+          const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
           Logger.debug(`Oracle endpoints: ${url}`)
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload, true)

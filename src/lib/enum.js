@@ -99,9 +99,11 @@ const headers = {
   }
 }
 
-const switchEndpoints = {
+const endpoints = {
   participantEndpoints: '/participants/{{fsp}}/endpoints',
-  participantsGet: '/participants/{{fsp}}'
+  participantsGet: '/participants/{{fsp}}',
+  oracleParticipantsTypeId: '/participants/{{partyIdType}}/{{partyIdentifier}}',
+  oracleParticipantsBatch: '/participants'
 }
 
 module.exports = {
@@ -111,6 +113,6 @@ module.exports = {
   endpointTypes,
   restMethods,
   defaultHeaderWhitelist,
-  switchEndpoints,
+  endpoints,
   headers
 }
