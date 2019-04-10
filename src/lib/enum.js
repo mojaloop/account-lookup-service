@@ -41,8 +41,7 @@ const resources = {
 }
 
 const apiServices = {
-  ALS: 'account-lookup-service',
-  CL: 'central-ledger-service'
+  SWITCH: 'switch'
 }
 
 // TODO need get all these endpoints from somewhere
@@ -76,6 +75,26 @@ const defaultHeaderWhitelist = [
   'content-type'
 ]
 
+const headers = {
+  FSPIOP: {
+    SWITCH: {
+      regex: /^switch$/i,
+      value: 'switch'
+    },
+    SOURCE: 'fspiop-source',
+    DESTINATION: 'fspiop-destination',
+    HTTP_METHOD: 'fspiop-http-method',
+    SIGNATURE: 'fspiop-signature',
+    URI: 'fspiop-uri'
+  },
+  GENERAL: {
+    ACCEPT: 'accept',
+    DATE: 'date',
+    CONTENT_LENGTH: 'content-length',
+    HOST: 'host'
+  }
+}
+
 const switchEndpoints = {
   participantEndpoints: '/participants/{{fsp}}/endpoints',
   participantsGet: '/participants/{{fsp}}'
@@ -88,5 +107,6 @@ module.exports = {
   endpointTypes,
   restMethods,
   defaultHeaderWhitelist,
-  switchEndpoints
+  switchEndpoints,
+  headers
 }

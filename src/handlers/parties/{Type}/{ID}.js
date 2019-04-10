@@ -39,13 +39,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function getPartiesByTypeAndID(req, h) {
-    const metadata = `${req.method} ${req.path}`
     try {
-      req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
       parties.getPartiesByTypeAndID(req)
-      req.server.log(['info'], `success: ${metadata}.`)
     } catch (err) {
-      req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`)
       // TODO: review this error message
     }
     return h.response().code(202)
@@ -59,13 +55,9 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function putPartiesByTypeAndID(req, h) {
-    const metadata = `${req.method} ${req.path}`
     try {
-      req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
       parties.putPartiesByTypeAndID(req)
-      req.server.log(['info'], `success: ${metadata}.`)
     } catch (err) {
-      req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`)
       // TODO: review this error message
     }
     return h.response().code(200)

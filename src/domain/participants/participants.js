@@ -43,6 +43,7 @@ const Errors = require('../../lib/error')
  */
 const getParticipantsByTypeAndID = async (requesterName, req) => {
   try {
+    Logger.info('getParticipantsByTypeAndID::begin')
     const type = req.params.Type
     if (Object.values(Enums.type).includes(type)) {
       let oracleEndpointModel
@@ -83,6 +84,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
       await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
         util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
     }
+    Logger.info('getParticipantsByTypeAndID::end')
   } catch (e) {
     Logger.error(e)
   }
@@ -119,6 +121,7 @@ const putParticipantsErrorByTypeAndID = async (req) => {
  */
 const postParticipants = async (req) => {
   try {
+    Logger.info('postParticipants::begin')
     const type = req.params.Type
     if (Object.values(Enums.type).includes(type)) {
       const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
@@ -132,12 +135,12 @@ const postParticipants = async (req) => {
           }
           if (oracleEndpointModel.length > 0) {
             const url = oracleEndpointModel[0].value + req.raw.req.url
-            Logger.debug(`Oracle endpoints: ${url}`)
+            Logger.debug(`postParticipants::sendRequest::oracle ${url}`)
             let response
             response = await request.sendRequest(url, req.headers, req.method, req.payload)
             if (response && response.data) {
               const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
-              Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
+              Logger.debug(`postParticipants::sendRequest::initiatorResponse:: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
               await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
             } else {
               // TODO: what happens when nothing is returned
@@ -159,6 +162,7 @@ const postParticipants = async (req) => {
       await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
         util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
     }
+    Logger.info('postParticipants::end')
   } catch (e) {
     Logger.error(e)
   }
@@ -174,6 +178,7 @@ const postParticipants = async (req) => {
  */
 const postParticipantsBatch = async (req) => {
   try {
+    Logger.info('postParticipantsBatch::begin')
     const typeMap = new Map()
     const overallReturnList = []
     const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
@@ -231,6 +236,7 @@ const postParticipantsBatch = async (req) => {
       Logger.error('Requester FSP not found')
       // TODO: handle issue where requester fsp not found send to error handling framework
     }
+    Logger.info('postParticipantsBatch::end')
   } catch (e) {
     Logger.error(e)
   }
@@ -249,7 +255,7 @@ const validateParticipant = async (fsp) => {
   try {
     const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.switchEndpoints.participantsGet, {fsp})
     Logger.debug(`validateParticipant url: ${getParticipantUrl}`)
-    return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.CL, Enums.resources.participants, Enums.apiServices.ALS))
+    return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH))
   } catch (e) {
     Logger.error(e)
     return null

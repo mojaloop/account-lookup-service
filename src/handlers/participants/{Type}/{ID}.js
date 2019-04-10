@@ -42,11 +42,9 @@ module.exports = {
     const metadata = `${req.method} ${req.path}`
     const requesterName = req.headers['fspiop-source']
     try {
-      Logger.info(`received: ${metadata}. ${req.params}`)
       participants.getParticipantsByTypeAndID(requesterName, req)
-      Logger.info(`success: ${metadata}.`)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack || pp(err)}`)
+      Logger.error(`ERROR - ${metadata}: ${err}`)
       // TODO: what if this fails? We need to log. What happens by default?
       // TODO: review this error message
     }
@@ -73,7 +71,6 @@ module.exports = {
     const metadata = `${request.method} ${request.path}`
     try {
       participants.postParticipants(request)
-      Logger.info(`success: ${metadata}.`)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       // TODO: review this error message

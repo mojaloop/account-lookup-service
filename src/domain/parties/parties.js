@@ -140,7 +140,7 @@ const putPartiesByTypeAndID = async (req) => {
 const putPartiesErrorByTypeAndID = async (req) => {
   try {
     const destinationParticipant = req.headers['fspiop-destination']
-    const destinationEndpoint = await participant.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, {partyIdType: req.params.Type, partyIdentifier: req.params.ID})
+    const destinationEndpoint = await participantEndpoint.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, {partyIdType: req.params.Type, partyIdentifier: req.params.ID})
     await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
     Logger.info(JSON.stringify(req))
   } catch (e) {

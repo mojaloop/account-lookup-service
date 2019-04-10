@@ -34,11 +34,11 @@ function defaultHeaders(destination, resource, source, version = '1.0') {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
   return {
-    'Accept': `application/vnd.interoperability.${resource}+json;version=${version}`,
-    'FSPIOP-Destination': destination ? destination : '',
-    'Content-Type': `application/vnd.interoperability.${resource}+json;version=${version}`,
-    'Date': (new Date()).toUTCString(),
-    'FSPIOP-Source': source
+    'accept': `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'fspiop-destination': destination ? destination : '',
+    'content-type': `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'date': (new Date()).toUTCString(),
+    'fspiop-source': source
   }
 }
 
@@ -82,10 +82,106 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
   await request.sendRequest(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 
+/**
+ * @function transformHeaders
+ *
+ * @description This will transform the headers before sending to kafka
+ * NOTE: Assumes incoming headers keys are lowercased. This is a safe
+ * assumption only if the headers parameter comes from node default http framework.
+ *
+ * see https://nodejs.org/dist/latest-v10.x/docs/api/http.html#http_message_headers
+ *
+ * @param {object} headers - the http header from the request
+ * @param {object} config - the required headers you with to alter
+ *
+ * @returns {object} Returns the normalized headers
+ */
+
+const transformHeaders = (headers, config) => {
+  // Normalized keys
+  let normalizedKeys = Object.keys(headers).reduce(
+    function (keys, k) {
+      keys[k.toLowerCase()] = k
+      return keys
+    }, {})
+
+  // Normalized headers
+  let normalizedHeaders = {}
+
+  // check to see if FSPIOP-Destination header has been left out of the initial request. If so then add it.
+  if (!normalizedKeys.hasOwnProperty(Enum.headers.FSPIOP.DESTINATION)) {
+    headers[Enum.headers.FSPIOP.DESTINATION] = ''
+  }
+
+  for (let headerKey in headers) {
+    let headerValue = headers[headerKey]
+    switch (headerKey.toLowerCase()) {
+    case (Enum.headers.GENERAL.DATE):
+      let tempDate = {}
+      if (typeof headerValue === 'object' && headerValue instanceof Date) {
+        tempDate = headerValue.toUTCString()
+      } else {
+        try {
+          tempDate = (new Date(headerValue)).toUTCString()
+          if (tempDate === 'Invalid Date') {
+            throw new Error('Invalid Date')
+          }
+        } catch (err) {
+          tempDate = headerValue
+        }
+      }
+      normalizedHeaders[headerKey] = tempDate
+      break
+    case (Enum.headers.GENERAL.CONTENT_LENGTH):
+      // Do nothing here, do not map. This will be inserted correctly by the Hapi framework.
+      break
+    case (Enum.headers.FSPIOP.URI):
+      // Do nothing here, do not map. This will be removed from the callback request.
+      break
+    case (Enum.headers.FSPIOP.HTTP_METHOD):
+      if (config.httpMethod.toLowerCase() === headerValue.toLowerCase()) {
+        // HTTP Methods match, and thus no change is required
+        normalizedHeaders[headerKey] = headerValue
+      } else {
+        // HTTP Methods DO NOT match, and thus a change is required for target HTTP Method
+        normalizedHeaders[headerKey] = config.httpMethod
+      }
+      break
+    case (Enum.headers.FSPIOP.SIGNATURE):
+      // Check to see if we find a regex match the source header containing the switch name.
+      // If so we include the signature otherwise we remove it.
+
+      if (headers[normalizedKeys[Enum.headers.FSPIOP.SOURCE]].match(Enum.headers.FSPIOP.SWITCH.regex) === null) {
+        normalizedHeaders[headerKey] = headerValue
+      }
+      break
+    case (Enum.headers.FSPIOP.SOURCE):
+      normalizedHeaders[headerKey] = config.sourceFsp
+      break
+    case (Enum.headers.FSPIOP.DESTINATION):
+      if(config.destinationFsp) {
+        normalizedHeaders[headerKey] = config.destinationFsp
+      }
+      break
+    case (Enum.headers.GENERAL.HOST):
+      break
+    default:
+      normalizedHeaders[headerKey] = headerValue
+    }
+  }
+
+  if (config && config.httpMethod !== Enum.restMethods.POST) {
+    delete normalizedHeaders[Enum.headers.GENERAL.ACCEPT]
+  }
+  return normalizedHeaders
+}
+
+
 module.exports = {
   defaultHeaders,
   setHeaders,
   filterHeaders,
   buildErrorObject,
-  sendErrorToErrorEndpoint
+  sendErrorToErrorEndpoint,
+  transformHeaders
 }

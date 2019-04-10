@@ -39,10 +39,8 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: function postParticipantsBatch(req, h) {
-    const metadata = `${req.method} ${req.path}`
     try {
       participants.postParticipantsBatch(req)
-      Logger.info(`success: ${metadata}.`)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       // TODO: review this error message

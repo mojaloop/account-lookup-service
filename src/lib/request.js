@@ -25,7 +25,7 @@
 
 const request = require('axios')
 const Logger = require('@mojaloop/central-services-shared').Logger
-
+const util = require('./util')
 /**
  * @function validateParticipant
  *
@@ -40,17 +40,17 @@ const Logger = require('@mojaloop/central-services-shared').Logger
  */
 const sendRequest = async (url, headers, method = 'get', payload = undefined) => {
   try {
+    const transformedHeaders = util.transformHeaders(headers, { httpMethod: method, sourceFsp: headers['fspiop-source'], destinationFsp: headers['fspiop-destination']})
     const requestOptions = {
       url,
       method: method,
-      headers: headers,
+      headers: transformedHeaders,
       data: payload,
       responseType: 'json'
     }
-    Logger.info(`Success: sendRequest::requestOptions ${requestOptions}`)
-    Logger.debug(`request: ${JSON.stringify(requestOptions)}`)
+    Logger.debug(`sendRequest::request ${JSON.stringify(requestOptions)}`)
     const response = await request(requestOptions)
-    Logger.debug(`Success: sendRequest::response ${response}`)
+    Logger.debug(`Success: sendRequest::response`)
     return response
   } catch (e) {
     Logger.error(e)
