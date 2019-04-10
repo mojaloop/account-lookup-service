@@ -58,7 +58,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
           const url = oracleEndpointModel[0].value + req.raw.req.url
           Logger.debug(`Oracle endpoints: ${url}`)
           const payload = req.payload || undefined
-          const response = await request.sendRequest(url, req.headers, req.method, payload)
+          const response = await request.sendRequest(url, req.headers, req.method, payload, true)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
             const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
             Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
@@ -137,7 +137,7 @@ const postParticipants = async (req) => {
             const url = oracleEndpointModel[0].value + req.raw.req.url
             Logger.debug(`postParticipants::sendRequest::oracle ${url}`)
             let response
-            response = await request.sendRequest(url, req.headers, req.method, req.payload)
+            response = await request.sendRequest(url, req.headers, req.method, req.payload, true)
             if (response && response.data) {
               const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
               Logger.debug(`postParticipants::sendRequest::initiatorResponse:: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
@@ -212,7 +212,7 @@ const postParticipantsBatch = async (req) => {
           Logger.debug(`Oracle endpoints: ${url}`)
           req.payload.partyList = value
           let response
-          response = await request.sendRequest(url, req.headers, req.method, req.payload)
+          response = await request.sendRequest(url, req.headers, req.method, req.payload, true)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
             overallReturnList.concat(response.data.partyList)
           } else {

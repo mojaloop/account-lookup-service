@@ -91,7 +91,11 @@ const headers = {
     ACCEPT: 'accept',
     DATE: 'date',
     CONTENT_LENGTH: 'content-length',
-    HOST: 'host'
+    HOST: 'host',
+    CONTENT_TYPE: 'content-type'
+  },
+  DEFAULT: {
+    APPLICATION_JSON: 'application/json'
   }
 }
 

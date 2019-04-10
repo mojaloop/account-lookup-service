@@ -97,7 +97,7 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
  * @returns {object} Returns the normalized headers
  */
 
-const transformHeaders = (headers, config) => {
+const transformHeaders = (headers, config, isOracle) => {
   // Normalized keys
   let normalizedKeys = Object.keys(headers).reduce(
     function (keys, k) {
@@ -164,6 +164,20 @@ const transformHeaders = (headers, config) => {
       }
       break
     case (Enum.headers.GENERAL.HOST):
+      break
+    case (Enum.headers.GENERAL.ACCEPT):
+      if (isOracle) {
+        normalizedHeaders[Enum.headers.GENERAL.ACCEPT] = Enum.headers.DEFAULT.APPLICATION_JSON
+      } else{
+        normalizedHeaders[headerKey] = headerValue
+      }
+      break
+    case (Enum.headers.GENERAL.CONTENT_TYPE):
+      if (isOracle) {
+        normalizedHeaders[Enum.headers.GENERAL.CONTENT_TYPE] = Enum.headers.DEFAULT.APPLICATION_JSON
+      }else {
+        normalizedHeaders[headerKey] = headerValue
+      }
       break
     default:
       normalizedHeaders[headerKey] = headerValue
