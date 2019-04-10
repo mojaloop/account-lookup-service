@@ -26,6 +26,7 @@
 const Enum = require('./enum')
 const request = require('./request')
 const participantEndpointCache = require('../domain/participants/cache/participantEndpoint')
+const Logger = require('@mojaloop/central-services-shared').Logger
 
 const getKeyCaseInsensitive = (o, key) => Object.keys(o).find(k => k.toLowerCase() === key.toLowerCase())
 
@@ -77,6 +78,7 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
     partySubIdOrType: req.params.SubId,
     requestId: req.payload.requestId
   })
+  Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
   await request.sendRequest(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 
