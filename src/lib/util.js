@@ -71,7 +71,12 @@ function buildErrorObject(error, extensionList) {
 }
 
 async function sendErrorToErrorEndpoint(req, participantName, endpointType, errorInformation) {
-  const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(participantName, endpointType)
+  const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(participantName, endpointType, {
+    partyIdType: req.params.Type,
+    partyIdentifier: req.params.ID,
+    partySubIdOrType: req.params.SubId,
+    requestId: req.payload.requestId
+  })
   await request.sendRequest(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 

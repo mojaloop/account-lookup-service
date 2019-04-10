@@ -88,6 +88,7 @@ const fetchEndpoints = async (fsp) => {
     let endpointMap = {}
     if (Array.isArray(endpoints)) {
       endpoints.forEach(item => {
+        Mustache.parse(item.value)
         endpointMap[item.type] = item.value
       })
     }
@@ -99,20 +100,21 @@ const fetchEndpoints = async (fsp) => {
 }
 
 /**
- * @function GetEndpoint
+ * @function getEndpoint
  *
  * @description It returns the endpoint for a given fsp and type from the cache if the cache is still valid, otherwise it will refresh the cache and return the value
  *
  * @param {string} fsp - the id of the fsp
  * @param {string} endpointType - the type of the endpoint
+ * @param {object} options - contains the options for the mustache template function
  *
  * @returns {string} - Returns the endpoint, throws error if failure occurs
  */
-exports.getEndpoint = async (fsp, endpointType) => {
+exports.getEndpoint = async (fsp, endpointType, options) => {
   Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
   try {
     let endpoints = await policy.get(fsp)
-    return new Map(endpoints).get(endpointType)
+    return Mustache.render(new Map(endpoints).get(endpointType), options)
   } catch (e) {
     Logger.error(`participantEndpointCache::getEndpoint:: ERROR:'${e}'`)
     throw e

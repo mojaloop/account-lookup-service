@@ -29,7 +29,8 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../models/oracle')
 const Enums = require('../../lib/enum')
 const request = require('../../lib/request')
-const participant = require('../../domain/participants')
+const participant = require('../../domain/participants/participants')
+const participantEndpoint = require('../../domain/participants/cache/participantEndpoint')
 const util = require('../../lib/util')
 const Errors = require('../../lib/error')
 
@@ -58,10 +59,9 @@ const getPartiesByTypeAndID = async (req) => {
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            const requesterEndpoint = await participant.getEndpoint(response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET)
+            const requesterEndpoint = await participantEndpoint.getEndpoint(response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, {partyIdType: type, partyIdentifier: req.params.ID})
             if (requesterEndpoint) {
-              const fspUrl = requesterEndpoint + req.raw.req.url
-              await request.sendRequest(fspUrl, req.headers)
+              await request.sendRequest(requesterEndpoint, req.headers)
               Logger.info('parties::getPartiesByTypeAndID::end')
             } else {
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
@@ -105,12 +105,12 @@ const putPartiesByTypeAndID = async (req) => {
       if (requesterParticipant) {
         const destinationParticipant = await participant.validateParticipant(req.headers['fspiop-destination'])
         if (destinationParticipant) {
-          const requestedEndpoint = await participant.getEndpoint(destinationParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT)
-          const url = requestedEndpoint + req.raw.req.url
-          await request.sendRequest(url, req.headers, Enums.restMethods.PUT, req.payload)
+          const requestedEndpoint = await participantEndpoint.getEndpoint(destinationParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
+          await request.sendRequest(requestedEndpoint, req.headers, Enums.restMethods.PUT, req.payload)
           Logger.info('parties::putPartiesByTypeAndID::end')
         } else {
           const requesterErrorEndpoint = await participant.getEndpoint(requesterParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
+
           await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT,
             util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
         }
@@ -137,7 +137,7 @@ const putPartiesByTypeAndID = async (req) => {
 const putPartiesErrorByTypeAndID = async (req) => {
   try {
     const destinationParticipant = req.headers['fspiop-destination']
-    const destinationEndpoint = await participant.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL)
+    const destinationEndpoint = await participant.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, {partyIdType: req.params.Type, partyIdentifier: req.params.ID})
     await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
     Logger.info(JSON.stringify(req))
   } catch (e) {

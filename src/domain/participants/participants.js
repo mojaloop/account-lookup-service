@@ -58,7 +58,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT)
+            const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
             if (requesterEndpoint) {
               await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
             } else {
@@ -134,9 +134,8 @@ const postParticipants = async (req) => {
             try {
               response = await request.sendRequest(url, req.headers, req.method, req.payload)
               if (response && response.data) {
-                const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT)
-                const url = requesterEndpoint + req.raw.req.url
-                await request.sendRequest(url, req.headers, Enums.restMethods.PUT, response.data)
+                const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
+                await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
               } else {
                 // TODO: what happens when nothing is returned
                 await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
@@ -233,9 +232,8 @@ const postParticipantsBatch = async (req) => {
         }
       }
       req.payload.partyList = overallReturnList
-      const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT)
-      const url = requesterEndpoint + req.raw.req.url + '/' + req.payload.requestId
-      await request.sendRequest(url, req.headers, Enums.restMethods.PUT, req.payload)
+      const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, {requestId: req.payload.requestId})
+      await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, req.payload)
     } else {
       Logger.error('Requester FSP not found')
       // TODO: handle issue where requester fsp not found send to error handling framework
