@@ -131,17 +131,11 @@ const postParticipants = async (req) => {
           if (oracleEndpointModel.length > 0) {
             const url = oracleEndpointModel[0].value + req.raw.req.url
             let response
-            try {
-              response = await request.sendRequest(url, req.headers, req.method, req.payload)
-              if (response && response.data) {
-                const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
-                await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
-              } else {
-                // TODO: what happens when nothing is returned
-                await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                  util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
-              }
-            } catch (e) {
+            response = await request.sendRequest(url, req.headers, req.method, req.payload)
+            if (response && response.data) {
+              const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
+              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
+            } else {
               // TODO: what happens when nothing is returned
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
                 util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
@@ -208,17 +202,10 @@ const postParticipantsBatch = async (req) => {
           const url = oracleEndpointModel[0].value + req.raw.req.url
           req.payload.partyList = value
           let response
-          try {
-            response = await request.sendRequest(url, req.headers, req.method, req.payload)
-            if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-              overallReturnList.concat(response.data.partyList)
-            } else {
-              // TODO: what happens when nothing is returned
-              for (let party of value) {
-                overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
-              }
-            }
-          } catch (e) {
+          response = await request.sendRequest(url, req.headers, req.method, req.payload)
+          if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+            overallReturnList.concat(response.data.partyList)
+          } else {
             // TODO: what happens when nothing is returned
             for (let party of value) {
               overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
