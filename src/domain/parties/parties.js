@@ -56,7 +56,19 @@ const getPartiesByTypeAndID = async (req) => {
       if (oracleEndpointModel) {
         const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
         if(requesterParticipantModel) {
-          const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
+          let url
+          if (req.query.currency) {
+            url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
+              partyIdType: type,
+              partyIdentifier: req.params.ID,
+              currency: req.query.currency
+            })
+          } else {
+            url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
+              partyIdType: type,
+              partyIdentifier: req.params.ID
+            })
+          }
           Logger.debug(`Oracle endpoints: ${url}`)
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload, true)
@@ -113,9 +125,7 @@ const putPartiesByTypeAndID = async (req) => {
           await request.sendRequest(requestedEndpoint, req.headers, Enums.restMethods.PUT, req.payload)
           Logger.info('parties::putPartiesByTypeAndID::end')
         } else {
-          const requesterErrorEndpoint = await participant.getEndpoint(requesterParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
-
-          await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT,
+          await util.sendErrorToErrorEndpoint(req, requesterParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
             util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
         }
       } else {

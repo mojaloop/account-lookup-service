@@ -103,6 +103,7 @@ const endpoints = {
   participantEndpoints: '/participants/{{fsp}}/endpoints',
   participantsGet: '/participants/{{fsp}}',
   oracleParticipantsTypeId: '/participants/{{partyIdType}}/{{partyIdentifier}}',
+  oracleParticipantsTypeIdCurrency: '/participants/{{partyIdType}}/{{partyIdentifier}}?currency={{currency}}',
   oracleParticipantsBatch: '/participants'
 }
 

@@ -55,7 +55,19 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
       if (oracleEndpointModel) {
         const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
         if (requesterParticipantModel) {
-          const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
+          let url
+          if (req.query.currency) {
+            url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
+              partyIdType: type,
+              partyIdentifier: req.params.ID,
+              currency: req.query.currency
+            })
+          } else {
+            url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
+              partyIdType: type,
+              partyIdentifier: req.params.ID
+            })
+          }
           Logger.debug(`Oracle endpoints: ${url}`)
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload, true)
@@ -63,7 +75,7 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
             const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
             Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
             if (requesterEndpoint) {
-              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
+              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, {fspId: response.data.partyList[0].fspId})
             } else {
               await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
                 util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
@@ -139,9 +151,19 @@ const postParticipants = async (req) => {
             let response
             response = await request.sendRequest(url, req.headers, req.method, req.payload, true)
             if (response && response.data) {
-              const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
-              Logger.debug(`postParticipants::sendRequest::initiatorResponse:: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
-              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, response.data)
+              const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, {requestId: req.params.ID})
+              Logger.debug(`postParticipants::sendRequest::initiatorResponse:: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT}`)
+              const partyList = {
+                partyList: [
+                  {
+                    partyIdType: type,
+                    partyIdentifier: req.params.ID,
+                    fspId: req.payload.fspId
+                  }
+                ],
+                currency: req.payload.currency
+              }
+              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, partyList)
             } else {
               // TODO: what happens when nothing is returned
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
@@ -210,9 +232,12 @@ const postParticipantsBatch = async (req) => {
         if (oracleEndpointModel.length > 0) {
           const url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
           Logger.debug(`Oracle endpoints: ${url}`)
-          req.payload.partyList = value
+          const payload = {
+            partyList: value,
+            currency: req.payload.currency
+          }
           let response
-          response = await request.sendRequest(url, req.headers, req.method, req.payload, true)
+          response = await request.sendRequest(url, req.headers, req.method, payload, true)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
             overallReturnList.concat(response.data.partyList)
           } else {
