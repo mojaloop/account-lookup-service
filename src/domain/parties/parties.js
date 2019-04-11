@@ -73,10 +73,10 @@ const getPartiesByTypeAndID = async (req) => {
           const payload = req.payload || undefined
           const response = await request.sendRequest(url, req.headers, req.method, payload, true)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            const requesterEndpoint = await participantEndpoint.getEndpoint(response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, {partyIdType: type, partyIdentifier: req.params.ID})
-            Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET}`)
-            if (requesterEndpoint) {
-              await request.sendRequest(requesterEndpoint, req.headers)
+            const requestedEndpoint = await participantEndpoint.getEndpoint(response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, {partyIdType: type, partyIdentifier: req.params.ID})
+            Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET}`)
+            if (requestedEndpoint) {
+              await request.sendRequest(requestedEndpoint, req.headers)
               Logger.info('parties::getPartiesByTypeAndID::end')
             } else {
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
