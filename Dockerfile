@@ -1,17 +1,18 @@
-FROM node:8.11.3-alpine
+FROM node:10.15-alpine
 
-WORKDIR /src
+WORKDIR /opt/account-lookup-service
+COPY . /opt/account-lookup-service
 
-CMD ["node", "/src/server.js"]
+RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
+    && cd $(npm root -g)/npm \
+    && npm config set unsafe-perm true \
+    && npm install -g node-gyp
 
-COPY ./src/package.json ./src/package-lock.json /src/
-COPY ./src/lib/pathfinder/package.json /src/lib/pathfinder/package.json
-COPY ./src/lib/error/package.json /src/lib/error/package.json
-COPY ./src/lib/logger/package.json /src/lib/logger/package.json
-COPY ./src/lib/requests/package.json /src/lib/requests/package.json
-COPY ./src/lib/validation/package.json /src/lib/validation/package.json
-COPY ./src/lib/e164/package.json /src/lib/e164/package.json
-COPY ./src/model/package.json /src/model/package.json
 RUN npm install --production
 
-COPY ./src/ /src/
+RUN apk del build-dependencies
+
+EXPOSE 4002
+EXPOSE 4001
+
+CMD node src/index.js server

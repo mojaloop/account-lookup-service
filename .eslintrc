@@ -1,12 +1,12 @@
 {
     "parserOptions": {
-        "ecmaVersion": 9,
+        "ecmaVersion": 9
     },
     "rules": {
       "no-console": ["off"],
         "indent": [
             2,
-            4
+            2
         ],
         "quotes": [
             2,
@@ -18,7 +18,7 @@
         ],
         "semi": [
             2,
-            "always"
+            "never"
         ]
     },
     "env": {

@@ -1,44 +1,52 @@
-'use strict';
+/*****
+ License
+ --------------
+ Copyright © 2017 Bill & Melinda Gates Foundation
+ The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
+ http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ Contributors
+ --------------
+ This is the official list of the Mojaloop project contributors for this file.
+ Names of the original copyright holders (individuals or organizations)
+ should be listed with a '*' in the first column. People who have
+ contributed from an organization can be listed under the organization
+ that actually holds the copyright for their contributions (see the
+ Gates Foundation organization for an example). Those individuals should have
+ their names indented and be marked with a '-'. Email address can be added
+ optionally within square brackets <email>.
+ * Gates Foundation
+ * Name Surname <name.surname@gatesfoundation.com>
 
-const model = require('@model/model').parties;
-const err = require('@lib/error');
-//const AppError = err.ApplicationError;
-const syncResponses = err.responses.build;
-const asyncResponses = err.responses.async;
-const pp = require('util').inspect;
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
+ --------------
+ ******/
+'use strict'
+
+const parties = require('../../../../domain/parties')
+const Logger = require('@mojaloop/central-services-shared').Logger
 /**
  * Operations on /parties/{Type}/{ID}/error
  */
 module.exports = {
-    /**
-     * summary: PartiesErrorByTypeAndID
-     * description: If the server is unable to find Party information of the provided identity, or another processing error occurred, the error callback PUT /parties/&lt;Type&gt;/&lt;ID&gt;/error (or PUT /parties/&lt;Type&gt;/&lt;ID&gt;/&lt;SubId&gt;/error) is used.
-     * parameters: Type, ID, body, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
-     * produces: application/json
-     * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
-     */
-    put: function PartiesErrorByTypeAndID(req, h) {
-        if (req.params.Type !== 'MSISDN') {
-            return syncResponses.badRequestMalformedType(h);
-        }
-        (async function() {
-            const metadata = `${req.method} ${req.path}`;
-            const { logger } = req.server.app;
-            try {
-                logger(`received: ${metadata}. ${pp(req.params)}`);
-                await model.handleMSISDNPartyErrorResponse(req.server.app, req);
-                logger(`success: ${metadata}.`);
-            }
-            catch(err) {
-                logger(`ERROR - ${metadata}: ${err.stack || pp(err)}`);
-                const requesterName = req.headers['fspiop-source']; // should not fail; should have been validated already
-                const { requests: rq, database: db } = req.server.app.requests;
-                const url = await rq.createErrorUrl(db, req.path, requesterName);
-                // TODO: review this error message
-                rq.sendError(url, asyncResponses.serverError, rq.defaultHeaders(requesterName, 'participants'), { logger });
-            }
-        })();
-        return h.response().code(200);
+  /**
+   * summary: PartiesErrorByTypeAndID
+   * description: If the server is unable to find Party information of the provided identity, or another processing error occurred, the error callback PUT /parties/&lt;Type&gt;/&lt;ID&gt;/error (or PUT /parties/&lt;Type&gt;/&lt;ID&gt;/&lt;SubId&gt;/error) is used.
+   * parameters: Type, ID, body, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
+   * produces: application/json
+   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
+   */
+  put: function PartiesErrorByTypeAndID(req, h) {
+    const metadata = `${req.method} ${req.path}`
+    const {logger} = req.server.app
+    try {
+      logger(`received: ${metadata}. ${pp(req.params)}`)
+      parties.putPartiesByTypeAndID(req)
+      logger(`success: ${metadata}.`)
+    } catch (err) {
+      Logger.error(err)
     }
-};
+    return h.response().code(200)
+  }
+}
