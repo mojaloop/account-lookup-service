@@ -8,13 +8,13 @@ const Mockgen = require('../../util/mockgen.js')
 const helper = require('../../util/helper')
 
 /**
- * summary: Get Oracles
- * description: The HTTP request GET /health is used to return the current status of the Admin API.
- * parameters:
+ * summary: Get Health
+ * description: The HTTP request GET /health is used to get the status of the server
+ * parameters: type, currency, accept, content-type, date
  * produces: application/json
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
-Test('AdminHealthGet get operation', async function (t) {
+Test('test Health get operation', async function (t) {
 
   const server = new Hapi.Server()
 
@@ -44,7 +44,7 @@ Test('AdminHealthGet get operation', async function (t) {
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'get',
-    url: '' + mock.request.path,
+    url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
@@ -63,6 +63,6 @@ Test('AdminHealthGet get operation', async function (t) {
   }
 
   const response = await server.inject(options)
-
+  await server.stop()
   t.is(response.statusCode, 200, 'Ok response status')
 })

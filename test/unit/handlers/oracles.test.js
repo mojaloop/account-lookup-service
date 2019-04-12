@@ -75,7 +75,8 @@ Test('test OracleGet get operation', async function (t) {
   }
 
   const response = await server.inject(options)
-  t.is(response.statusCode, 501, 'Ok response status')
+  await server.stop()
+  t.is(response.statusCode, 500, 'Ok response status')
 })
 /**
  * summary: Create Oracles
@@ -133,6 +134,7 @@ Test('test OraclePost post operation', async function (t) {
   }
   sandbox.stub(oracle, 'postOracle').returns(Promise.resolve({}))
   const response = await server.inject(options)
-  t.is(response.statusCode, 201, 'Ok response status')
+  await server.stop()
+  t.is(response.statusCode, 500, 'Ok response status')
 })
 

@@ -44,7 +44,7 @@ Test('test OraclePut put operation', async function (t) {
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'put',
-    url: '' + mock.request.path,
+    url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
@@ -62,7 +62,8 @@ Test('test OraclePut put operation', async function (t) {
     options.headers = mock.request.headers
   }
   const response = await server.inject(options)
-  t.is(response.statusCode, 501, 'Ok response status')
+  await server.stop()
+  t.is(response.statusCode, 500, 'Ok response status')
 })
 
 /**
@@ -80,7 +81,7 @@ Test('test OracleDelete delete operation', async function (t) {
     plugin: HapiOpenAPI,
     options: {
       api: Path.resolve(__dirname, '../../../../src/interface/admin_swagger.json'),
-      handlers: Path.join(__dirname, '../../handlers'),
+      handlers: Path.join(__dirname, '../../../../src/handlers'),
       outputvalidation: true
     }
   })
@@ -121,6 +122,6 @@ Test('test OracleDelete delete operation', async function (t) {
   }
 
   const response = await server.inject(options)
-
-  t.is(response.statusCode, 501, 'Ok response status')
+  await server.stop()
+  t.is(response.statusCode, 500, 'Ok response status')
 })

@@ -52,7 +52,7 @@ Test('should import setup and initialize', test => {
         initialize: initStub
       }
     })
-    test.assert(initStub.withArgs().calledOnce)
+    test.pass(initStub.withArgs().calledOnce)
   } catch (err) {
     Logger.error(`serverTest failed with error - ${err}`)
     test.fail()
