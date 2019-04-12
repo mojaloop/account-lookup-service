@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups",
-  "version": "5.5.8-snapshot",
+  "version": "5.5.0",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -31,7 +31,7 @@
     "statements": 5,
     "functions": 5,
     "branches": 5,
-    "all":true,
+    "all": true,
     "include": [
       "src/**/*.js"
     ],
@@ -112,6 +112,5 @@
   },
   "generator-swaggerize": {
     "version": "4.1.0"
-  },
-  "main": "./src"
+  }
 }

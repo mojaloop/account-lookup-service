@@ -13,5 +13,5 @@ RUN npm install --production && \
 
 RUN apk del build-dependencies
 
-EXPOSE 4002
+EXPOSE 4001
 CMD node src/index.js server --api

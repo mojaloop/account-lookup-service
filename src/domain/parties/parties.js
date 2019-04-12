@@ -38,7 +38,7 @@ const Mustache = require('mustache')
 /**
  * @function getPartiesByTypeAndID
  *
- * @description sends request to applicable oracle based on type and sends results back to requester
+ * @description sends request to applicable oracle based on type and sends results to a callback url
  *
  * @param {object} req The request object from the Hapi server
  */

@@ -1,49 +1,51 @@
-# Central directory
+# Account Lookup Server
+[![Git Commit](https://img.shields.io/github/last-commit/mojaloop/account-lookup-service.svg?style=flat)](https://github.com/mojaloop/account-lookup-service/commits/master)
+[![Git Releases](https://img.shields.io/github/release/mojaloop/account-lookup-service.svg?style=flat)](https://github.com/mojaloop/account-lookup-service/releases)
+[![Docker pulls](https://img.shields.io/docker/pulls/mojaloop/account-lookup-service.svg?style=flat)](https://hub.docker.com/r/mojaloop/account-lookup-service)
+[![CircleCI](https://circleci.com/gh/mojaloop/account-lookup-service.svg?style=svg)](https://circleci.com/gh/mojaloop/account-lookup-service)
 
-Swagger api [location](src/interface/api_swagger.json)
 
-# Database initialisation container/service
-Build the central-ledger-init container from the central-ledger-init repo. Note
-that the central-directory-init container inherits initialise.sh from that
-container. Then, from this repo root, run:
+
+## Documentation
+[Documentation](http://mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/) \
+[API Swagger](http://mojaloop.io/documentation/api/#als-oracle-api) \
+[Admin Swagger](http://mojaloop.io/documentation/api/#als-oracle-api) <!--This currently points to API but will be updated when Admin documentation is created-->
+
+
+## Database initialisation
+To populate the database with tables and seeded valued, ensure that the correct database URI is in the default.json and then run the following command
+ ```bash
+ npm run migrate
+ ```
+ 
+## Start API
+To run the API and/or Admin servers run the following commands
+##### Both 
 ```bash
-docker build -t central-directory-init:latest -f ./Dockerfile.dbinit ./
+NPM: npm start
+
+CLI: node src/index.js server
+```
+##### API 
+```bash
+NPM: npm run start:api
+
+CLI: node src/index.js server --api
+```
+##### Admin 
+```bash
+NPM: npm run start:admin
+
+CLI: node src/index.js server --admin
 ```
 
-# Updating dependencies
+## Tests
 
+##### Unit Testing 
+
+Running the test:
 ```bash
-cd src/
-npm run-script package-lock
-```
+NPM: npm run test
 
-# Testing
-
-Follow the README instructions to run the mysql container from the central-ledger-init repo, then
-build and run the central-ledger-init container. Then, from this repo root, run:
-```bash
-docker build -t central-directory-testinit:latest -f ./Dockerfile.testdbinit ./
-docker run --rm --link db:db -e CLEDG_DATABASE_URI='mysql://casa:casa@db:3306/central_ledger' central-directory-testinit:latest
-```
-
-Now you're ready to run the central directory service as follows:
-```bash
-cd src/
-npm run-script build
-npm run-script run
-curl localhost:3000
-```
-
-# Some useful tricks
-## Get an address that both you and your containers can bind to:
-```bash
-ip a # or ifconfig on older machines
-```
-Now look for the `docker0` (or similarly named) interface and find its
-associated IP address
-
-## Set up a local listen-server:
-```bash
-export ADDR=172.17.0.1 # you probably want this to be the address for your docker interface
-while true; do echo -e "HTTP/1.1 200 OK\n\n $(date)" | nc -l $ADDR 2999; done
+CLI: ava test/unit/**/**.test.js
 ```
