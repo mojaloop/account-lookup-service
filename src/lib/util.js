@@ -24,7 +24,7 @@
 'use strict'
 
 const Enum = require('./enum')
-const participantEnpdoint = require('../models/participantEndpoint/participantEndpoint')
+const participantEndpoint = require('../models/participantEndpoint/participantEndpoint')
 const participantEndpointCache = require('../domain/participants/cache/participantEndpoint')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
@@ -79,7 +79,7 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
     requestId: req.payload.requestId
   })
   Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-  await participantEnpdoint.requestParticipantEndpoint(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
+  await participantEndpoint.requestParticipantEndpoint(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 
 /**
