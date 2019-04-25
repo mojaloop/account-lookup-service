@@ -24,7 +24,7 @@
 'use strict'
 
 const Enum = require('./enum')
-const request = require('./request')
+const participantEnpdoint = require('../models/participantEndpoint/participantEndpoint')
 const participantEndpointCache = require('../domain/participants/cache/participantEndpoint')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
@@ -79,7 +79,7 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
     requestId: req.payload.requestId
   })
   Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-  await request.sendRequest(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
+  await participantEnpdoint.requestParticipantEndpoint(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 
 /**
@@ -93,6 +93,7 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
  *
  * @param {object} headers - the http header from the request
  * @param {object} config - the required headers you with to alter
+ * @param {boolean} isOracle - if the request is going to an oracle
  *
  * @returns {object} Returns the normalized headers
  */

@@ -29,13 +29,13 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const Config = require('../../../lib/config')
 const Catbox = require('catbox')
 const {Map} = require('immutable')
-const request = require('../../../lib/request')
 const util = require('../../../lib/util')
 const Enum = require('../../../lib/enum')
 const partition = 'endpoint-cache'
 const clientOptions = {partition}
 const policyOptions = Config.ENDPOINT_CACHE_CONFIG
 const Mustache = require('mustache')
+const participantEndpoint = require('../../../models/participantEndpoint/participantEndpoint')
 
 let client
 let policy
@@ -82,7 +82,7 @@ const fetchEndpoints = async (fsp) => {
     const defaultHeaders = util.defaultHeaders(Enum.apiServices.SWITCH, Enum.resources.participants, Enum.apiServices.SWITCH)
     const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.endpoints.participantEndpoints, {fsp})
     Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
-    const response = await request.sendRequest(url, defaultHeaders)
+    const response = await participantEndpoint.getParticipantEndpoint(url,defaultHeaders)
     Logger.debug(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.data)}`)
     let endpoints = response.data
     let endpointMap = {}

@@ -27,12 +27,13 @@
 const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../models/oracle')
 const Enums = require('../../lib/enum')
-const request = require('../../lib/request')
 const participantEndpointCache = require('./cache/participantEndpoint')
 const util = require('../../lib/util')
 const Mustache = require('mustache')
 const Config = require('../../lib/config')
 const Errors = require('../../lib/error')
+const oracle = require('../../models/oracle/oracle')
+const participantEndpoint = require('../../models/participantEndpoint/participantEndpoint')
 /**
  * @function getParticipantsByTypeAndID
  *
@@ -70,12 +71,12 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
           }
           Logger.debug(`Oracle endpoints: ${url}`)
           const payload = req.payload || undefined
-          const response = await request.sendRequest(url, req.headers, req.method, payload, true)
+          const response = await oracle.oracleRequest(url, req.headers, req.method, payload)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
             const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
             Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
             if (requesterEndpoint) {
-              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, {fspId: response.data.partyList[0].fspId})
+              await participantEndpoint.requestParticipantEndpoint(requesterEndpoint, req.headers, Enums.restMethods.PUT, {fspId: response.data.partyList[0].fspId})
             } else {
               await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
                 util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
@@ -107,9 +108,8 @@ const getParticipantsByTypeAndID = async (requesterName, req) => {
  *
  * @description This is a callback function
  *
- * @param {object} req The request object from the Hapi server
  */
-const putParticipantsErrorByTypeAndID = async (req) => {
+const putParticipantsErrorByTypeAndID = async () => {
   try {
     // const destinationParticipant = req.headers['fspiop-destination']
     // if (validateParticipant(destinationParticipant)) {
@@ -149,7 +149,7 @@ const postParticipants = async (req) => {
             const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
             Logger.debug(`postParticipants::sendRequest::oracle ${url}`)
             let response
-            response = await request.sendRequest(url, req.headers, req.method, req.payload, true)
+            response = await oracle.oracleRequest(url, req.headers, req.method, req.payload)
             if (response && response.data) {
               const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, {requestId: req.params.ID})
               Logger.debug(`postParticipants::sendRequest::initiatorResponse:: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT}`)
@@ -163,7 +163,7 @@ const postParticipants = async (req) => {
                 ],
                 currency: req.payload.currency
               }
-              await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, partyList)
+              await participantEndpoint.requestParticipantEndpoint(requesterEndpoint, req.headers, Enums.restMethods.PUT, partyList)
             } else {
               // TODO: what happens when nothing is returned
               await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
@@ -237,7 +237,7 @@ const postParticipantsBatch = async (req) => {
             currency: req.payload.currency
           }
           let response
-          response = await request.sendRequest(url, req.headers, req.method, payload, true)
+          response = await oracle.oracleRequest(url, req.headers, req.method, payload)
           if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
             overallReturnList.concat(response.data.partyList)
           } else {
@@ -256,7 +256,7 @@ const postParticipantsBatch = async (req) => {
       req.payload.partyList = overallReturnList
       const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, {requestId: req.payload.requestId})
       Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT}`)
-      await request.sendRequest(requesterEndpoint, req.headers, Enums.restMethods.PUT, req.payload)
+      await participantEndpoint.requestParticipantEndpoint(requesterEndpoint, req.headers, Enums.restMethods.PUT, req.payload)
     } else {
       Logger.error('Requester FSP not found')
       // TODO: handle issue where requester fsp not found send to error handling framework
@@ -280,7 +280,7 @@ const validateParticipant = async (fsp) => {
   try {
     const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp})
     Logger.debug(`validateParticipant url: ${getParticipantUrl}`)
-    return await request.sendRequest(getParticipantUrl, util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH))
+    return await participantEndpoint.getParticipantEndpoint(getParticipantUrl, util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH))
   } catch (e) {
     Logger.error(e)
     return null
