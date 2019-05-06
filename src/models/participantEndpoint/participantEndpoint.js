@@ -25,7 +25,7 @@
 'use strict'
 
 const request = require('../../lib/request')
-
+const Enum = require('../../lib/enum')
 
 /**
  * @function getParticipantEndpoint
@@ -51,6 +51,6 @@ exports.getParticipantEndpoint = async (url, headers) => {
  * @param {object} payload the body of the request being sent
  * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
  */
-exports.requestParticipantEndpoint =  async (url, headers, method = 'get', payload = undefined) => {
+exports.requestParticipantEndpoint =  async (url, headers, method = Enum.restMethods.GET.toLowerCase(), payload = undefined) => {
   return await request.sendRequest(url, headers, method, payload)
 }
