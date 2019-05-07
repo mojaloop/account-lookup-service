@@ -24,9 +24,6 @@
 'use strict'
 
 const Enum = require('./enum')
-const participantEndpoint = require('../models/participantEndpoint/participantEndpoint')
-const participantEndpointCache = require('../domain/participants/cache/participantEndpoint')
-const Logger = require('@mojaloop/central-services-shared').Logger
 
 /**
  * @function defaultHeaders
@@ -74,17 +71,6 @@ function buildErrorObject(error, extensionList) {
       extensionList
     }
   }
-}
-
-async function sendErrorToErrorEndpoint(req, participantName, endpointType, errorInformation) {
-  const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(participantName, endpointType, {
-    partyIdType: req.params.Type,
-    partyIdentifier: req.params.ID,
-    partySubIdOrType: req.params.SubId,
-    requestId: req.payload.requestId
-  })
-  Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-  await participantEndpoint.requestParticipantEndpoint(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 
 /**
@@ -199,6 +185,5 @@ const transformHeaders = (headers, config, isOracle) => {
 module.exports = {
   defaultHeaders,
   buildErrorObject,
-  sendErrorToErrorEndpoint,
   transformHeaders
 }

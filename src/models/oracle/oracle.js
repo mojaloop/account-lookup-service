@@ -25,19 +25,57 @@
 'use strict'
 
 const request = require('../../lib/request')
+const oracleEndpoint = require('../oracle')
+const Mustache = require('mustache')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const Enums = require('../../lib/enum')
 
 /**
  * @function oracleRequest
  *
  * @description This sends a request to the oracles that are registered to the ALS
  *
- * @param {string} url The url for the request
- * @param {object} headers  The headers that need to be passed in the request
- * @param {string} method http method being requested i.e. GET, POST, PUT and DELETE
- * @param {object} payload the body of the request being sent
- * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
+ * @param {object} req - The request that is being passed in
+ *
+ * @returns {object} returns the response from the oracle
  */
-exports.oracleRequest = async (url, headers, method, payload) => {
-  return await request.sendRequest(url, headers, method, payload, true)
+exports.oracleRequest = async (req) => {
+  let oracleEndpointModel
+  const type = req.params.Type
+  let url
+  if ((req.payload && req.payload.currency && req.payload.currency.length !== 0) || (req.query && req.query.currency && req.query.currency.length !== 0)) {
+    oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.query.currency || req.payload.currency)
+    url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
+      partyIdType: type,
+      partyIdentifier: req.params.ID,
+      currency: req.query.currency
+    })
+  } else {
+    oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+    url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
+      partyIdType: type,
+      partyIdentifier: req.params.ID
+    })
+  }
+  Logger.debug(`Oracle endpoints: ${url}`)
+  return await request.sendRequest(url, req.headers, req.method, req.payload || undefined, true)
 }
 
+/**
+ * @function oracleBatchRequest
+ *
+ * @description This sends a request to the oracles that are registered to the ALS
+ *
+ * @param {object} req - The request that is being passed in
+ * @param {string} type - oracle type
+ * @param {object} payload - the payload to send in the request
+ *
+ * @returns {object} returns the response from the oracle
+ */
+exports.oracleBatchRequest = async (req, type, payload) => {
+  let oracleEndpointModel
+  oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+  let url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
+  Logger.debug(`Oracle endpoints: ${url}`)
+  return await request.sendRequest(url, req.headers, req.method, payload || undefined, true)
+}

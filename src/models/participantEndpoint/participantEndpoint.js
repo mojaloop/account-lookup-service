@@ -18,39 +18,117 @@
  * Gates Foundation
  * Name Surname <name.surname@gatesfoundation.com>
 
+ * Shashikant Hirugade <shashikant.hirugade@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-const request = require('../../lib/request')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const Config = require('../../lib/config')
+const Catbox = require('catbox')
+const {Map} = require('immutable')
+const util = require('../../lib/util')
 const Enum = require('../../lib/enum')
+const partition = 'endpoint-cache'
+const clientOptions = {partition}
+const policyOptions = Config.ENDPOINT_CACHE_CONFIG
+const Mustache = require('mustache')
+const request = require('../../lib/request')
+
+let client
+let policy
 
 /**
- * @function getParticipantEndpoint
- *
- * @description This populates the cache of endpoints
- *
- * @param {string} url The url for the request
- * @param {object} headers  The headers that need to be passed in the request
- * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
+ * @module src/domain/participant/lib/cache
  */
-exports.getParticipantEndpoint = async (url, headers) => {
-  return await request.sendRequest(url,headers)
+
+/**
+ * @function initializeCache
+ *
+ * @description This initializes the cache for endpoints
+ *
+ * @returns {boolean} Returns true on successful initialization of the cache, throws error on falires
+ */
+exports.initializeCache = async () => {
+  try {
+    Logger.info(`participantEndpointCache::initializeCache::start::clientOptions - ${JSON.stringify(clientOptions)}`)
+    client = new Catbox.Client(require('catbox-memory'), clientOptions)
+    await client.start()
+    policyOptions.generateFunc = fetchEndpoints
+    Logger.info(`participantEndpointCache::initializeCache::start::policyOptions - ${JSON.stringify(policyOptions)}`)
+    policy = new Catbox.Policy(policyOptions, client, partition)
+    Logger.info('participantEndpointCache::initializeCache::Cache initialized successfully')
+    return true
+  } catch (err) {
+    Logger.error(`participantEndpointCache::Cache error:: ERROR:'${err}'`)
+    throw err
+  }
 }
 
 /**
- * @function requestParticipantEndpoint
+ * @function fetchEndpoints
  *
  * @description This populates the cache of endpoints
  *
- * @param {string} url The url for the request
- * @param {object} headers  The headers that need to be passed in the request
- * @param {string} method http method being requested i.e. GET, POST, PUT and DELETE
- * @param {object} payload the body of the request being sent
+ * @param {string} fsp The fsp id
  * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
  */
-exports.requestParticipantEndpoint =  async (url, headers, method = Enum.restMethods.GET.toLowerCase(), payload = undefined) => {
-  return await request.sendRequest(url, headers, method, payload)
+
+const fetchEndpoints = async (fsp) => {
+  try {
+    Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
+    const defaultHeaders = util.defaultHeaders(Enum.apiServices.SWITCH, Enum.resources.participants, Enum.apiServices.SWITCH)
+    const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.endpoints.participantEndpoints, {fsp})
+    Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
+    const response = await request.sendRequest(url, defaultHeaders)
+    Logger.debug(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.data)}`)
+    let endpoints = response.data
+    let endpointMap = {}
+    if (Array.isArray(endpoints)) {
+      endpoints.forEach(item => {
+        Mustache.parse(item.value)
+        endpointMap[item.type] = item.value
+      })
+    }
+    Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Returning the endpoints: ${JSON.stringify(endpointMap)}`)
+    return endpointMap
+  } catch (e) {
+    Logger.error(`participantEndpointCache::fetchEndpoints:: ERROR:'${e}'`)
+  }
 }
+
+/**
+ * @function getEndpoint
+ *
+ * @description It returns the endpoint for a given fsp and type from the cache if the cache is still valid, otherwise it will refresh the cache and return the value
+ *
+ * @param {string} fsp - the id of the fsp
+ * @param {string} endpointType - the type of the endpoint
+ * @param {object} options - contains the options for the mustache template function
+ *
+ * @returns {string} - Returns the endpoint, throws error if failure occurs
+ */
+exports.getEndpoint = async (fsp, endpointType, options = {}) => {
+  Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
+  try {
+    let endpoints = await policy.get(fsp)
+    return Mustache.render(new Map(endpoints).get(endpointType), options)
+  } catch (e) {
+    Logger.error(`participantEndpointCache::getEndpoint:: ERROR:'${e}'`)
+    throw e
+  }
+}
+
+// /**
+//  * @function stopCache
+//  *
+//  * @description It stops the cache client
+//  *
+//  * @returns {boolean} - Returns the status
+//  */
+// const stopCache = async () => {
+//   Logger.info('participantEndpointCache::stopCache::Stopping the cache')
+//   return client.stop()
+// }

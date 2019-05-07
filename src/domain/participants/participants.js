@@ -25,81 +25,54 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-const oracleEndpoint = require('../../models/oracle')
 const Enums = require('../../lib/enum')
-const participantEndpointCache = require('./cache/participantEndpoint')
 const util = require('../../lib/util')
-const Mustache = require('mustache')
-const Config = require('../../lib/config')
 const Errors = require('../../lib/error')
 const oracle = require('../../models/oracle/oracle')
-const participantEndpoint = require('../../models/participantEndpoint/participantEndpoint')
+const participant = require('../../models/participantEndpoint/facade')
+
 /**
  * @function getParticipantsByTypeAndID
  *
  * @description sends request to applicable oracle based on type and sends results back to requester
  *
- * @param {string} requesterName The FSPIOP-Source fsp id
  * @param {object} req The request object from the Hapi server
  */
-const getParticipantsByTypeAndID = async (requesterName, req) => {
+const getParticipantsByTypeAndID = async (req) => {
   try {
     Logger.info('getParticipantsByTypeAndID::begin')
     const type = req.params.Type
-    if (Object.values(Enums.type).includes(type)) {
-      let oracleEndpointModel
-      if (req.query && req.query.currency && req.query.currency.length !== 0) {
-        oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.query.currency)
-      } else {
-        oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-      }
-      if (oracleEndpointModel) {
-        const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
-        if (requesterParticipantModel) {
-          let url
-          if (req.query.currency) {
-            url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
-              partyIdType: type,
-              partyIdentifier: req.params.ID,
-              currency: req.query.currency
-            })
-          } else {
-            url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
-              partyIdType: type,
-              partyIdentifier: req.params.ID
-            })
+    const requesterName = req.headers['fspiop-source']
+    const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
+    if (requesterParticipantModel) {
+      if (Object.values(Enums.type).includes(type)) {
+        const response = await oracle.oracleRequest(req)
+        if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+          let options = {
+            partyIdType: type,
+            partyIdentifier: req.params.ID
           }
-          Logger.debug(`Oracle endpoints: ${url}`)
-          const payload = req.payload || undefined
-          const response = await oracle.oracleRequest(url, req.headers, req.method, payload)
-          if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            const requesterEndpoint = await participantEndpointCache.getEndpoint(requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, {partyIdType: type, partyIdentifier: req.params.ID})
-            Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT}`)
-            if (requesterEndpoint) {
-              await participantEndpoint.requestParticipantEndpoint(requesterEndpoint, req.headers, Enums.restMethods.PUT, {fspId: response.data.partyList[0].fspId})
-            } else {
-              await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
-            }
-          } else {
-            await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-              util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
+          let payload = {
+            fspId: response.data.partyList[0].fspId
           }
+          await participant.sendRequest(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.restMethods.PUT, payload, options)
         } else {
-          Logger.error('Requester FSP not found')
-          // TODO: handle issue where requester fsp not found. Pass to error handling framework
+          await participant.sendErrorToParticipant(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+            util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
         }
       } else {
-        await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+        await participant.sendErrorToParticipant(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
           util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
       }
+      Logger.info('getParticipantsByTypeAndID::end')
     } else {
-      await util.sendErrorToErrorEndpoint(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+      Logger.error('Requester FSP not found')
+      // TODO: handle issue where requester fsp not found. Pass to error handling framework
     }
-    Logger.info('getParticipantsByTypeAndID::end')
   } catch (e) {
     Logger.error(e)
+    await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+      util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: req.params.Type, value: req.params.ID}]))
   }
 }
 
@@ -136,57 +109,42 @@ const postParticipants = async (req) => {
     Logger.info('postParticipants::begin')
     const type = req.params.Type
     if (Object.values(Enums.type).includes(type)) {
-      const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
-      if (req.payload.fspId === req.headers['fspiop-source']) {
-        if (requesterParticipantModel) {
-          let oracleEndpointModel
-          if (req.payload.currency && req.payload.currency.length !== 0) {
-            oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.payload.currency)
-          } else {
-            oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-          }
-          if (oracleEndpointModel.length > 0) {
-            const url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {partyIdType: type, partyIdentifier: req.params.ID})
-            Logger.debug(`postParticipants::sendRequest::oracle ${url}`)
-            let response
-            response = await oracle.oracleRequest(url, req.headers, req.method, req.payload)
-            if (response && response.data) {
-              const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, {requestId: req.params.ID})
-              Logger.debug(`postParticipants::sendRequest::initiatorResponse:: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT}`)
-              const partyList = {
-                partyList: [
-                  {
-                    partyIdType: type,
-                    partyIdentifier: req.params.ID,
-                    fspId: req.payload.fspId
-                  }
-                ],
-                currency: req.payload.currency
+      const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
+      if (requesterParticipantModel) {
+        let response = await oracle.oracleRequest(req)
+        if (response && response.data) {
+          let payload = {
+            partyList: [
+              {
+                partyIdType: type,
+                partyIdentifier: req.params.ID,
+                fspId: req.payload.fspId
               }
-              await participantEndpoint.requestParticipantEndpoint(requesterEndpoint, req.headers, Enums.restMethods.PUT, partyList)
-            } else {
-              // TODO: what happens when nothing is returned
-              await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-                util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
-            }
+            ],
+            currency: req.payload.currency
           }
+          let options = {
+            requestId: req.params.ID
+          }
+          await participant.sendRequest(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.restMethods.PUT, payload, options)
         } else {
-          // TODO: what happens requester not found
-          await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+          // TODO: what happens when nothing is returned
+          await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT,
             util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
         }
       } else {
-        // TODO: what happens requester and fspId not the same
-        await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+        Logger.error('Requester FSP not found')
+        // TODO: handle issue where requester fsp not found. Pass to error handling framework
       }
     } else {
-      await util.sendErrorToErrorEndpoint(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+      await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
         util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
     }
     Logger.info('postParticipants::end')
   } catch (e) {
     Logger.error(e)
+    await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+      util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: req.params.Type, value: req.params.ID}]))
   }
 }
 
@@ -203,10 +161,12 @@ const postParticipantsBatch = async (req) => {
     Logger.info('postParticipantsBatch::begin')
     const typeMap = new Map()
     const overallReturnList = []
-    const requesterParticipantModel = await validateParticipant(req.headers['fspiop-source'])
+    const requestId = req.payload.requestId
+    const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
     if (requesterParticipantModel) {
       for (let party of req.payload.partyList) {
         if (Object.values(Enums.type).includes(party.partyIdType)) {
+          party.currency = req.payload.currency
           if (party.fspId === req.headers['fspiop-source']) {
             if (typeMap.get(party.partyIdType)) {
               const partyList = typeMap.get(party.partyIdType)
@@ -223,74 +183,38 @@ const postParticipantsBatch = async (req) => {
         }
       }
       for (let [key, value] of typeMap) {
-        let oracleEndpointModel
-        if (req.payload.currency && req.payload.currency.length !== 0) {
-          oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(key, req.payload.currency)
-        } else {
-          oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(key)
+        let payload = {
+          partyList: value
         }
-        if (oracleEndpointModel.length > 0) {
-          const url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
-          Logger.debug(`Oracle endpoints: ${url}`)
-          const payload = {
-            partyList: value,
-            currency: req.payload.currency
-          }
-          let response
-          response = await oracle.oracleRequest(url, req.headers, req.method, payload)
-          if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            overallReturnList.concat(response.data.partyList)
-          } else {
-            // TODO: what happens when nothing is returned
-            for (let party of value) {
-              overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
-            }
-          }
+        Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
+        let response = await oracle.oracleBatchRequest(req, key, payload)
+        if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+          overallReturnList.concat(response.data.partyList)
         } else {
-          // TODO: what happens oracle type not found
+          // TODO: what happens when nothing is returned
           for (let party of value) {
             overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         }
       }
-      req.payload.partyList = overallReturnList
-      const requesterEndpoint = await participantEndpointCache.getEndpoint(req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, {requestId: req.payload.requestId})
-      Logger.debug(`participant endpoint url: ${requesterEndpoint} for endpoint type ${Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT}`)
-      await participantEndpoint.requestParticipantEndpoint(requesterEndpoint, req.headers, Enums.restMethods.PUT, req.payload)
+      let payload = {
+        partyList: overallReturnList,
+        currency: req.payload.currency
+      }
+      await participant.sendRequest(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.restMethods.PUT, payload, {requestId})
+      Logger.info('postParticipantsBatch::end')
     } else {
       Logger.error('Requester FSP not found')
       // TODO: handle issue where requester fsp not found send to error handling framework
     }
-    Logger.info('postParticipantsBatch::end')
   } catch (e) {
     Logger.error(e)
-  }
-}
-
-
-/**
- * @function validateParticipant
- *
- * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
- *
- * @param {string} fsp The FSPIOP-Source fsp id
- * @returns the participants info in a successful case and
- */
-const validateParticipant = async (fsp) => {
-  try {
-    const getParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp})
-    Logger.debug(`validateParticipant url: ${getParticipantUrl}`)
-    return await participantEndpoint.getParticipantEndpoint(getParticipantUrl, util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH))
-  } catch (e) {
-    Logger.error(e)
-    return null
   }
 }
 
 module.exports = {
   getParticipantsByTypeAndID,
   putParticipantsErrorByTypeAndID,
-  validateParticipant,
   postParticipants,
   postParticipantsBatch
 }
