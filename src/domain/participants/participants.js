@@ -28,7 +28,7 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const Enums = require('../../lib/enum')
 const util = require('../../lib/util')
 const Errors = require('../../lib/error')
-const oracle = require('../../models/oracle/oracle')
+const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 
 /**

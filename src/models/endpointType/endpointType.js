@@ -25,8 +25,15 @@
 
 'use strict'
 
-const Db = require('@mojaloop/central-services-database').Db
+const Db = require('../../lib/db')
 
+/**
+ * @function getEndpointTypeByType
+ *
+ * @description Retrieve a valid currency entry
+ *
+ * @param {object} type The type of the endpoint i.e. URL
+ */
 const getEndpointTypeByType = async (type) => {
   try {
     return Db.endpointType.findOne({type, isActive: true})

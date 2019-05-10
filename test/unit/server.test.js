@@ -31,7 +31,7 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const Proxyquire = require('proxyquire')
 const Path = require('path')
 const Config = require('../../src/lib/config')
-const Db = require('@mojaloop/central-services-database').Db
+const Db = require('../../src/lib/db')
 
 let sandbox
 let serverStub

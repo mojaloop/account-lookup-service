@@ -24,7 +24,7 @@
 
 'use strict'
 
-const Boom = require('boom')
+const oracle = require('../../domain/oracle')
 
 /**
  * Operations on /oracles/{ID}
@@ -37,8 +37,13 @@ module.exports = {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function OraclePut(request, h) {
-    return Boom.notImplemented()
+  put: async (request, h) => {
+    try {
+      await oracle.updateOracle(request)
+      return h.response().code(204)
+    } catch (e) {
+      return h.response(e).code(400)
+    }
   },
   /**
    * summary: Delete Oracle
@@ -47,7 +52,12 @@ module.exports = {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function OracleDelete(request, h) {
-    return Boom.notImplemented()
+  delete: async (request, h) => {
+    try {
+      await oracle.deleteOracle(request)
+      return h.response().code(204)
+    } catch (e) {
+      return h.response(e).code(400)
+    }
   }
 }

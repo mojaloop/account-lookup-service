@@ -25,7 +25,7 @@
 
 'use strict'
 
-const Db = require('@mojaloop/central-services-database').Db
+const Db = require('../../lib/db')
 
 const getPartyIdTypeByName = async (name) => {
   try {

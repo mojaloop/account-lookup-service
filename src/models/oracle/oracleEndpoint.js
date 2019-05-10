@@ -25,7 +25,7 @@
 
 'use strict'
 
-const Db = require('@mojaloop/central-services-database').Db
+const Db = require('../../lib/db')
 
 const getOracleEndpointByType = async (type) => {
   try {
@@ -37,9 +37,11 @@ const getOracleEndpointByType = async (type) => {
           'pt.name': type,
           'pt.isActive': 1,
           'oracleEndpoint.isActive': 1,
-          'oracleEndpoint.isDefault': 1
+          'oracleEndpoint.isDefault': 1,
+          'et.isActive': 1
         })
-        .select('oracleEndpoint.value', 'et.type as endpointType')
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
     throw new Error(err.message)
@@ -56,9 +58,51 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
           'pt.name': type,
           'cu.currencyId': currencyId,
           'pt.isActive': 1,
-          'oracleEndpoint.isActive': 1
+          'oracleEndpoint.isActive': 1,
+          'et.isActive': 1
         })
-        .select('oracleEndpoint.value', 'et.type as endpointType')
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
+    })
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
+
+const getOracleEndpointByCurrency = async (currencyId) => {
+  try {
+    return Db.oracleEndpoint.query(builder => {
+      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
+        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+        .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
+        .where({
+          'cu.currencyId': currencyId,
+          'pt.isActive': 1,
+          'oracleEndpoint.isActive': 1,
+          'et.isActive': 1
+        })
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
+    })
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
+
+const getOracleEndpointById = async (oracleEndpointId) => {
+  try {
+    return Db.oracleEndpoint.query(builder => {
+      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
+        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+        .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
+        .where({
+          'oracleEndpoint.oracleEndpointId': oracleEndpointId,
+          'pt.isActive': 1,
+          'oracleEndpoint.isActive': 1,
+          'et.isActive': 1
+        })
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
     throw new Error(err.message)
@@ -67,7 +111,18 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
 
 const getAllOracleEndpoint = async () => {
   try {
-    return await Db.oracleEndpoint.find({isActive: true}, {order: 'name asc'})
+    return Db.oracleEndpoint.query(builder => {
+      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
+        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+        .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
+        .where({
+          'pt.isActive': 1,
+          'oracleEndpoint.isActive': 1,
+          'et.isActive': 1
+        })
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
+    })
   } catch (err) {
     throw new Error(err.message)
   }
@@ -81,9 +136,9 @@ const createOracleEndpoint = async (oracleEndpointModel) => {
   }
 }
 
-const updateOracleEndpoint = async (oracleType, value) => {
+const updateOracleEndpointById = async (id, oracleEndpointModel) => {
   try {
-    return await Db.oracleEndpoint.update({oracleType}, {value})
+    return await Db.oracleEndpoint.update({oracleEndpointId: id}, oracleEndpointModel)
   } catch (err) {
     throw new Error(err.message)
   }
@@ -97,9 +152,9 @@ const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   }
 }
 
-const destroyOracleEndpointByType = async (oracleType) => {
+const destroyOracleEndpointById = async (oracleEndpointId) => {
   try {
-    return await Db.oracleEndpoint.update({oracleType}, {isActive: false})
+    return await Db.oracleEndpoint.update({oracleEndpointId}, {isActive: false})
   } catch (err) {
     throw new Error(err.message)
   }
@@ -108,9 +163,11 @@ const destroyOracleEndpointByType = async (oracleType) => {
 module.exports = {
   getOracleEndpointByType,
   getOracleEndpointByTypeAndCurrency,
+  getOracleEndpointByCurrency,
   getAllOracleEndpoint,
+  getOracleEndpointById,
   createOracleEndpoint,
-  updateOracleEndpoint,
+  updateOracleEndpointById,
   setIsActiveOracleEndpoint,
-  destroyOracleEndpointByType
+  destroyOracleEndpointById
 }
