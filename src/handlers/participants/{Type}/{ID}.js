@@ -40,9 +40,8 @@ module.exports = {
    */
   get: function getParticipantsByTypeAndID(req, h) {
     const metadata = `${req.method} ${req.path}`
-    const requesterName = req.headers['fspiop-source']
     try {
-      participants.getParticipantsByTypeAndID(requesterName, req)
+      participants.getParticipantsByTypeAndID(req)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err}`)
       // TODO: what if this fails? We need to log. What happens by default?

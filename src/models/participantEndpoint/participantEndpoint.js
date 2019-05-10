@@ -26,16 +26,16 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Config = require('../../../lib/config')
+const Config = require('../../lib/config')
 const Catbox = require('catbox')
 const {Map} = require('immutable')
-const request = require('../../../lib/request')
-const util = require('../../../lib/util')
-const Enum = require('../../../lib/enum')
+const util = require('../../lib/util')
+const Enum = require('../../lib/enum')
 const partition = 'endpoint-cache'
 const clientOptions = {partition}
 const policyOptions = Config.ENDPOINT_CACHE_CONFIG
 const Mustache = require('mustache')
+const request = require('../../lib/request')
 
 let client
 let policy
@@ -110,7 +110,7 @@ const fetchEndpoints = async (fsp) => {
  *
  * @returns {string} - Returns the endpoint, throws error if failure occurs
  */
-exports.getEndpoint = async (fsp, endpointType, options) => {
+exports.getEndpoint = async (fsp, endpointType, options = {}) => {
   Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
   try {
     let endpoints = await policy.get(fsp)

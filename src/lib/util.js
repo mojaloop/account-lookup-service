@@ -24,12 +24,21 @@
 'use strict'
 
 const Enum = require('./enum')
-const request = require('./request')
-const participantEndpointCache = require('../domain/participants/cache/participantEndpoint')
-const Logger = require('@mojaloop/central-services-shared').Logger
 
-const getKeyCaseInsensitive = (o, key) => Object.keys(o).find(k => k.toLowerCase() === key.toLowerCase())
-
+/**
+ * @function defaultHeaders
+ *
+ * @description This returns a set of default headers used for requests
+ *
+ * see https://nodejs.org/dist/latest-v10.x/docs/api/http.html#http_message_headers
+ *
+ * @param {string} destination - to who the request is being sent
+ * @param {string} resource - the flow that is being requested i.e. participants
+ * @param {string} source - from who the request is made
+ * @param {string} version - the version for the accept and content-type headers
+ *
+ * @returns {object} Returns the default headers
+ */
 function defaultHeaders(destination, resource, source, version = '1.0') {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
@@ -42,44 +51,26 @@ function defaultHeaders(destination, resource, source, version = '1.0') {
   }
 }
 
-function setHeaders(headers, newHeaders) {
-  return Object.entries(newHeaders).reduce((pv, [header, value]) => {
-    const existingHeader = getKeyCaseInsensitive(headers, header)
-    if (existingHeader === undefined) {
-      return {...pv, [header]: value}
-    }
-    return {...pv, [existingHeader]: value}
-  }, headers)
-}
-
-function filterHeaders(headers) {
-  const keyInWhitelist = k => undefined !== Enum.defaultHeaderWhitelist.find(s => s.toLowerCase() === k.toLowerCase())
-  return filterObject(headers, keyInWhitelist)
-}
-
-function filterObject(headers, f) {
-  return Object.entries(headers).filter(([k, v]) => f(k, v)).reduce((pv, [k, v]) => ({...pv, [k]: v}), {})
-}
-
+/**
+ * @function buildErrorObject
+ *
+ * @description This returns an error object built from requested values
+ *
+ * see https://nodejs.org/dist/latest-v10.x/docs/api/http.html#http_message_headers
+ *
+ * @param {object} error - error object with error code and description
+ * @param {object} extensionList - extra
+ *
+ * @returns {object} Returns errorInformation object
+ */
 function buildErrorObject(error, extensionList) {
   return {
     errorInformation: {
-      errorCode: error.errorCode,
+      errorCode: error.errorCode.toString(),
       errorDescription: error.errorDescription,
       extensionList
     }
   }
-}
-
-async function sendErrorToErrorEndpoint(req, participantName, endpointType, errorInformation) {
-  const requesterErrorEndpoint = await participantEndpointCache.getEndpoint(participantName, endpointType, {
-    partyIdType: req.params.Type,
-    partyIdentifier: req.params.ID,
-    partySubIdOrType: req.params.SubId,
-    requestId: req.payload.requestId
-  })
-  Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-  await request.sendRequest(requesterErrorEndpoint, req.headers, Enum.restMethods.PUT, errorInformation)
 }
 
 /**
@@ -93,10 +84,10 @@ async function sendErrorToErrorEndpoint(req, participantName, endpointType, erro
  *
  * @param {object} headers - the http header from the request
  * @param {object} config - the required headers you with to alter
+ * @param {boolean} isOracle - if the request is going to an oracle
  *
  * @returns {object} Returns the normalized headers
  */
-
 const transformHeaders = (headers, config, isOracle) => {
   // Normalized keys
   let normalizedKeys = Object.keys(headers).reduce(
@@ -193,9 +184,6 @@ const transformHeaders = (headers, config, isOracle) => {
 
 module.exports = {
   defaultHeaders,
-  setHeaders,
-  filterHeaders,
   buildErrorObject,
-  sendErrorToErrorEndpoint,
   transformHeaders
 }
