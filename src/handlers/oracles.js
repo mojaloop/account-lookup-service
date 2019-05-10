@@ -54,7 +54,7 @@ module.exports = {
    */
   post: async (request, h) => {
     try {
-      await oracle.postOracle(request)
+      await oracle.createOracle(request)
       return h.response().code(201)
     } catch (e) {
       return h.response(e).code(400)
