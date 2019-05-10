@@ -28,15 +28,16 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
+const currency = require('../../models/currency')
 
 /**
- * @function postOracle
+ * @function createOracle
  *
  * @description This creates and entry in the oracleEndpoint table
  *
  * @param {object} req The request object from the Hapi server
  */
-const postOracle = async (req) => {
+exports.createOracle = async (req) => {
   try {
     let oracleEntity = {}
     const payload = req.payload
@@ -62,6 +63,113 @@ const postOracle = async (req) => {
   }
 }
 
-module.exports = {
-  postOracle
+/**
+ * @function getOracle
+ *
+ * @description Retrieves list of oracles may accept query parameters
+ *
+ * @param {object} req The request object from the Hapi server
+ */
+exports.getOracle = async (req) => {
+  try {
+    let oracleEndpointModelList
+    let isCurrency, isType = false
+    let oracleList = []
+    if (req.query.currency) {
+      isCurrency = true
+    }
+    if (req.query.type) {
+      isType = true
+    }
+    if (isCurrency && isType){
+      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(req.query.type, req.query.currency)
+    } else if (isCurrency && !isType){
+      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByCurrency(req.query.currency)
+    } else if (isType && !isCurrency) {
+      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByType(req.query.type)
+    } else {
+      oracleEndpointModelList = await oracleEndpoint.getAllOracleEndpoint()
+    }
+    for (let oracleEndpointModel of oracleEndpointModelList) {
+      let oracle = {
+        oracleId: oracleEndpointModel.oracleEndpointId,
+        oracleIdType: oracleEndpointModel.idType,
+        endpoint: {
+          value: oracleEndpointModel.value,
+          endpointType: oracleEndpointModel.endpointType
+        },
+        currency: oracleEndpointModel.currency,
+        isDefault: oracleEndpointModel.isDefault
+      }
+      oracleList.push(oracle)
+    }
+    return oracleList
+  } catch (e) {
+    Logger.error(e)
+    throw e
+  }
+}
+
+/**
+ * @function updateOracle
+ *
+ * @description This process updates properties of oracle entries
+ *
+ * @param {object} req The request object from the Hapi server
+ */
+exports.updateOracle = async (req) => {
+  try {
+    const payload = req.payload
+    const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(req.params.ID)
+    if (currentOracleEndpointList.length > 0) {
+      let currentOracleEndpoint = currentOracleEndpointList[0]
+      let newOracleEntry = {}
+      if (payload.oracleIdType && payload.oracleIdType !== currentOracleEndpoint.idType) {
+        let partyTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+        newOracleEntry.partyIdTypeId = partyTypeModel.partyIdTypeId
+      }
+      if (payload.endpoint && payload.endpoint.value && payload.endpoint.value !== currentOracleEndpoint.value) {
+        newOracleEntry.value = payload.endpoint.value
+      }
+      if (payload.endpoint && payload.endpoint.endpointType && payload.endpoint.endpointType !== currentOracleEndpoint.endpointType) {
+        let endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+        newOracleEntry.endpointTypeId = endpointTypeModel.endpointTypeId
+      }
+      if (payload.currency && payload.currency !== currentOracleEndpoint.currency) {
+        let currencyModel = await currency.getCurrencyById(payload.currency)
+        if (currencyModel) {
+          newOracleEntry.currencyId = payload.currency
+        } else {
+          throw new Error('Invalid currency code')
+        }
+      }
+      if (payload.isDefault && payload.isDefault !== currentOracleEndpoint.isDefault) {
+        newOracleEntry.isDefault = payload.isDefault
+      }
+      await oracleEndpoint.updateOracleEndpointById(req.params.ID, newOracleEntry)
+      return true
+    } else {
+      return false
+    }
+  } catch (e) {
+    Logger.error(e)
+    throw e
+  }
+}
+
+/**
+ * @function deleteOracle
+ *
+ * @description This process deletes an oracle endpoint by setting
+ *
+ * @param {object} req The request object from the Hapi server
+ */
+exports.deleteOracle = async (req) => {
+  try {
+    await oracleEndpoint.destroyOracleEndpointById(req.params.ID)
+    return true
+  } catch (e) {
+    Logger.error(e)
+    throw e
+  }
 }

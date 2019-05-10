@@ -132,7 +132,7 @@ Test('test OraclePost post operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-  sandbox.stub(oracle, 'postOracle').returns(Promise.resolve({}))
+  sandbox.stub(oracle, 'createOracle').returns(Promise.resolve({}))
   const response = await server.inject(options)
   await server.stop()
   t.is(response.statusCode, 500, 'Ok response status')

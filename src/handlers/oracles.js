@@ -24,7 +24,6 @@
 
 'use strict'
 
-const Boom = require('boom')
 const oracle = require('../domain/oracle')
 
 /**
@@ -38,8 +37,13 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function OracleGet(request, h) {
-    return Boom.notImplemented()
+  get: async (request, h) => {
+    try {
+      const response = await oracle.getOracle(request)
+      return h.response(response).code(200)
+    } catch (e) {
+      return h.response(e).code(400)
+    }
   },
   /**
    * summary: Create Oracles
@@ -50,7 +54,7 @@ module.exports = {
    */
   post: async (request, h) => {
     try {
-      await oracle.postOracle(request)
+      await oracle.createOracle(request)
       return h.response().code(201)
     } catch (e) {
       return h.response(e).code(400)

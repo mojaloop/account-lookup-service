@@ -30,7 +30,7 @@ const Enums = require('../../lib/enum')
 const participant = require('../../models/participantEndpoint/facade')
 const util = require('../../lib/util')
 const Errors = require('../../lib/error')
-const oracle = require('../../models/oracle/oracle')
+const oracle = require('../../models/oracle/facade')
 
 /**
  * @function getPartiesByTypeAndID

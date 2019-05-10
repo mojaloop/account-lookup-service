@@ -18,23 +18,30 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
 
  --------------
  ******/
 
 'use strict'
 
-const oracleEndpointModel = require('./oracleEndpoint')
+const Db = require('../../lib/db')
+
+/**
+ * @function getCurrencyById
+ *
+ * @description Retrieve a valid currency entry
+ *
+ * @param {object} currencyId The 3 character currency code
+ */
+const getCurrencyById = async (currencyId) => {
+  try {
+    return Db.currency.findOne({currencyId, isActive: true})
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
 
 module.exports = {
-  getOracleEndpointByType: oracleEndpointModel.getOracleEndpointByType,
-  getOracleEndpointByTypeAndCurrency: oracleEndpointModel.getOracleEndpointByTypeAndCurrency,
-  getOracleEndpointByCurrency: oracleEndpointModel.getOracleEndpointByCurrency,
-  getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint,
-  createOracleEndpoint: oracleEndpointModel.createOracleEndpoint,
-  updateOracleEndpointById: oracleEndpointModel.updateOracleEndpointById,
-  setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint,
-  destroyOracleEndpointById: oracleEndpointModel.destroyOracleEndpointById,
-  getOracleEndpointById: oracleEndpointModel.getOracleEndpointById
+  getCurrencyById
 }

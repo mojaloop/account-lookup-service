@@ -25,16 +25,8 @@
 
 'use strict'
 
-const oracleEndpointModel = require('./oracleEndpoint')
+const currency = require('./currency')
 
 module.exports = {
-  getOracleEndpointByType: oracleEndpointModel.getOracleEndpointByType,
-  getOracleEndpointByTypeAndCurrency: oracleEndpointModel.getOracleEndpointByTypeAndCurrency,
-  getOracleEndpointByCurrency: oracleEndpointModel.getOracleEndpointByCurrency,
-  getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint,
-  createOracleEndpoint: oracleEndpointModel.createOracleEndpoint,
-  updateOracleEndpointById: oracleEndpointModel.updateOracleEndpointById,
-  setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint,
-  destroyOracleEndpointById: oracleEndpointModel.destroyOracleEndpointById,
-  getOracleEndpointById: oracleEndpointModel.getOracleEndpointById
+  getCurrencyById: currency.getCurrencyById
 }

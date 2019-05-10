@@ -27,4 +27,7 @@
 
 const oracle = require('./oracle')
 
-exports.postOracle = oracle.postOracle
+exports.createOracle = oracle.createOracle
+exports.getOracle = oracle.getOracle
+exports.deleteOracle = oracle.deleteOracle
+exports.updateOracle = oracle.updateOracle
