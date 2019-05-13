@@ -14,4 +14,4 @@ RUN npm install --production && \
 RUN apk del build-dependencies
 
 EXPOSE 4002
-CMD node src/index.js server --admin
+CMD npm run start:admin
