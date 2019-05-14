@@ -48,7 +48,11 @@ const getPartiesByTypeAndID = async (req) => {
       if (Object.values(Enums.type).includes(type)) {
         const response = await oracle.oracleRequest(req)
         if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-          await participant.sendRequest(req, response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET)
+          let options = {
+            partyIdType: type,
+            partyIdentifier: req.params.ID
+          }
+          await participant.sendRequest(req, response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.restMethods.GET, undefined, options)
         } else {
           await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
             util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
