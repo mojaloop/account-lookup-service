@@ -24,6 +24,7 @@
 'use strict'
 
 const Package = require('../package')
+const Config = require('./lib/config')
 const Inert = require('inert')
 const Vision = require('vision')
 const Blipp = require('blipp')
@@ -33,7 +34,7 @@ const registerPlugins = async (server) => {
     plugin: require('hapi-swagger'),
     options: {
       info: {
-        'title': 'Central Ledger API Documentation',
+        'title': server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation':'ALS Admin Swagger Documentation',
         'version': Package.version
       }
     }
