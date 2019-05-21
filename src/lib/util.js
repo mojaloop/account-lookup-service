@@ -74,6 +74,32 @@ function buildErrorObject(error, extensionList) {
 }
 
 /**
+ * @function buildBatchErrorObject
+ *
+ * @description This returns an error object built from requested values
+ *
+ * see https://nodejs.org/dist/latest-v10.x/docs/api/http.html#http_message_headers
+ *
+ * @param {object} party - the party object
+ * @param {object} error - error object with error code and description
+ * @param {object} extensionList - extra
+ *
+ * @returns {object} Returns errorInformation object
+ */
+function buildBatchErrorObject(party, error, extensionList) {
+  party.currency = undefined
+  return {
+    partyId: party,
+    errorInformation: {
+      errorCode: error.errorCode.toString(),
+      errorDescription: error.errorDescription,
+      extensionList
+    }
+  }
+}
+
+
+/**
  * @function transformHeaders
  *
  * @description This will transform the headers before sending to kafka
@@ -185,5 +211,6 @@ const transformHeaders = (headers, config, isOracle) => {
 module.exports = {
   defaultHeaders,
   buildErrorObject,
+  buildBatchErrorObject,
   transformHeaders
 }

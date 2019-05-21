@@ -48,7 +48,7 @@ exports.oracleRequest = async (req) => {
     url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
       partyIdType: type,
       partyIdentifier: req.params.ID,
-      currency: req.query.currency
+      currency: req.query.currency || req.payload.currency
     })
   } else {
     oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)

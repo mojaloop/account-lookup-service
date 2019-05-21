@@ -112,7 +112,7 @@ const postParticipants = async (req) => {
       const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
       if (requesterParticipantModel) {
         let response = await oracle.oracleRequest(req)
-        if (response && response.data) {
+        if (response && (response.data !== null || response.data !== undefined)) {
           let payload = {
             partyList: [
               {
@@ -176,24 +176,34 @@ const postParticipantsBatch = async (req) => {
               typeMap.set(party.partyIdType, [party])
             }
           } else {
-            overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
+            overallReturnList.push(util.buildBatchErrorObject(party, Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         } else {
-          overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
+          overallReturnList.push(util.buildBatchErrorObject(party,Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
         }
       }
       for (let [key, value] of typeMap) {
         let payload = {
+          requestId: requestId,
           partyList: value
         }
         Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
         let response = await oracle.oracleBatchRequest(req, key, payload)
-        if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-          overallReturnList.concat(response.data.partyList)
+        if (response && (response.data !== null || response.data !== undefined)) {
+          if (Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+            for (let party of response.data.partyList) {
+              party.partyId.currency = undefined
+              overallReturnList.push(party)
+            }
+          } else {
+            for (let party of value) {
+              overallReturnList.push(util.buildBatchErrorObject(party, Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
+            }
+          }
         } else {
           // TODO: what happens when nothing is returned
           for (let party of value) {
-            overallReturnList.push(util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
+            overallReturnList.push(util.buildBatchErrorObject(party, Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         }
       }
