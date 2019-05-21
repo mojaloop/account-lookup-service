@@ -124,7 +124,8 @@ const postParticipants = async (req) => {
             currency: req.payload.currency
           }
           let options = {
-            requestId: req.params.ID
+            partyIdType: req.params.Type,
+            partyIdentifier: req.params.ID
           }
           await participant.sendRequest(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.restMethods.PUT, payload, options)
         } else {

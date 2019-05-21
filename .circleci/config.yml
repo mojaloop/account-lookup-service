@@ -489,7 +489,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /.*/
+              only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore:
                 - /feature*/
@@ -500,23 +500,12 @@ workflows:
             - setup
           filters:
             tags:
-              only: /.*/
+              only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore:
                 - /feature*/
                 - /bugfix*/
-#      - test-integration:
-#          context: org-global
-#          requires:
-#            - setup
-#          filters:
-#            tags:
-#              only: /.*/
-#            branches:
-#              ignore:
-#                - /feature*/
-#                - /bugfix*/
-      #      - test-functional:
+      #      - test-integration:
       #          context: org-global
       #          requires:
       #            - setup
@@ -527,24 +516,13 @@ workflows:
       #              ignore:
       #                - /feature*/
       #                - /bugfix*/
-      #       - test-spec:
-      #           context: org-global
-      #           requires:
-      #             - setup
-      #           filters:
-      #               tags:
-      #                 only: /.*/
-      #             branches:
-      #               ignore:
-      #                 - /feature*/
-      #                 - /bugfix*/
       - build-snapshot:
           context: org-global
           requires:
             - setup
-            - test-unit
-            - test-coverage
-#            - test-integration
+          #            - test-unit
+          #            - test-coverage
+          #            - test-integration
           #            - test-functional
           #            - test-spec
           filters:
@@ -569,7 +547,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-#            - test-integration
+          #            - test-integration
           #            - test-functional
           #            - test-spec
           filters:
@@ -584,7 +562,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-#            - test-integration
+          #            - test-integration
           #            - test-functional
           #            - test-spec
           filters:
@@ -602,4 +580,3 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore:
-                - /.*/
