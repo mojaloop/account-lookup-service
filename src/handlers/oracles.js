@@ -25,6 +25,7 @@
 'use strict'
 
 const oracle = require('../domain/oracle')
+const util  = require('../lib/util')
 
 /**
  * Operations on /oracles
@@ -42,7 +43,7 @@ module.exports = {
       const response = await oracle.getOracle(request)
       return h.response(response).code(200)
     } catch (e) {
-      return h.response(e).code(400)
+      return h.response(util.buildErrorObject({errorCode: 400, errorDescription: e.message}, [])).code(400)
     }
   },
   /**
@@ -57,7 +58,7 @@ module.exports = {
       await oracle.createOracle(request)
       return h.response().code(201)
     } catch (e) {
-      return h.response(e).code(400)
+      return h.response(util.buildErrorObject({errorCode: 400, errorDescription: e.message}, [])).code(400)
     }
   }
 }

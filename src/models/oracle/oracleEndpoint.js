@@ -132,7 +132,7 @@ const createOracleEndpoint = async (oracleEndpointModel) => {
   try {
     return await Db.oracleEndpoint.insert(oracleEndpointModel)
   } catch (err) {
-    throw new Error(err.message)
+    throw err
   }
 }
 
@@ -140,7 +140,7 @@ const updateOracleEndpointById = async (id, oracleEndpointModel) => {
   try {
     return await Db.oracleEndpoint.update({oracleEndpointId: id}, oracleEndpointModel)
   } catch (err) {
-    throw new Error(err.message)
+    throw err
   }
 }
 
@@ -148,7 +148,7 @@ const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   try {
     return await Db.oracleEndpoint.update({oracleType}, {isActive})
   } catch (err) {
-    throw new Error(err.message)
+    throw err
   }
 }
 
@@ -156,7 +156,7 @@ const destroyOracleEndpointById = async (oracleEndpointId) => {
   try {
     return await Db.oracleEndpoint.update({oracleEndpointId}, {isActive: false})
   } catch (err) {
-    throw new Error(err.message)
+    throw err
   }
 }
 

@@ -149,7 +149,7 @@ exports.updateOracle = async (req) => {
       await oracleEndpoint.updateOracleEndpointById(req.params.ID, newOracleEntry)
       return true
     } else {
-      return false
+      throw new Error('Oracle not found')
     }
   } catch (e) {
     Logger.error(e)
