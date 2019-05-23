@@ -58,11 +58,14 @@ const partyIdTypes = [
   }
 ]
 
-exports.seed = function (knex, Promise) {
-  // Deletes ALL existing entries
-  return knex('partyIdType').del()
-    .then(function () {
-      // Inserts seed entries
-      return knex('partyIdType').insert(partyIdTypes)
-    })
+exports.seed = async function (knex) {
+  try {
+    return await knex('partyIdType').insert(partyIdTypes)
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') return -1001
+    else {
+      console.log(`Uploading seeds for partyIdType has failed with the following error: ${err}`)
+      return -1000
+    }
+  }
 }

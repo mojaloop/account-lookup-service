@@ -2,7 +2,7 @@
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
   "DATABASE_URI": "mysql://account_lookup:password@localhost:3306/account_lookup",
-  "RUN_MIGRATIONS": false,
+  "RUN_MIGRATIONS": true,
   "ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
     "generateTimeout": 30000

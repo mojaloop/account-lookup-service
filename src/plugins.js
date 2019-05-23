@@ -25,7 +25,7 @@
 
 const Package = require('../package')
 const Config = require('./lib/config')
-const Inert = require('inert')
+const Inert = require('@hapi/inert')
 const Vision = require('vision')
 const Blipp = require('blipp')
 
