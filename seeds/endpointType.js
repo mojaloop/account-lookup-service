@@ -23,13 +23,21 @@
  ******/
 'use strict'
 
-exports.seed = function (knex, Promise) {
-  // Deletes ALL existing entries
-  return knex('endpointType').del()
-    .then(function () {
-      // Inserts seed entries
-      return knex('endpointType').insert([
-        {type: 'URL', description: 'REST URLs'}
-      ])
-    })
+const endpointTypes = [
+  {
+    'type': 'URL',
+    'description': 'REST URLs'
+  }
+]
+
+exports.seed = async function (knex) {
+  try {
+    return await knex('endpointType').insert(endpointTypes)
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') return -1001
+    else {
+      console.log(`Uploading seeds for endpointType has failed with the following error: ${err}`)
+      return -1000
+    }
+  }
 }
