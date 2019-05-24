@@ -183,18 +183,10 @@ const transformHeaders = (headers, config, isOracle) => {
     case (Enum.headers.GENERAL.HOST):
       break
     case (Enum.headers.GENERAL.ACCEPT):
-      if (isOracle) {
-        normalizedHeaders[Enum.headers.GENERAL.ACCEPT] = Enum.headers.DEFAULT.APPLICATION_JSON
-      } else{
-        normalizedHeaders[headerKey] = headerValue
-      }
+      normalizedHeaders[headerKey] = headerValue
       break
     case (Enum.headers.GENERAL.CONTENT_TYPE):
-      if (isOracle) {
-        normalizedHeaders[Enum.headers.GENERAL.CONTENT_TYPE] = Enum.headers.DEFAULT.APPLICATION_JSON
-      }else {
-        normalizedHeaders[headerKey] = headerValue
-      }
+      normalizedHeaders[headerKey] = headerValue
       break
     default:
       normalizedHeaders[headerKey] = headerValue
