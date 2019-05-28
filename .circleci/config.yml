@@ -215,6 +215,9 @@ jobs:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
       - run:
+          name: Create dir for test coverage results
+          command: mkdir -p ./.nyc_coverage
+      - run:
           name: Execute code coverage check
           command: npm -s run test:coverage
       - store_artifacts:
