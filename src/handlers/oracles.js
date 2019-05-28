@@ -26,6 +26,7 @@
 
 const oracle = require('../domain/oracle')
 const util  = require('../lib/util')
+const Boom = require('@hapi/boom')
 
 /**
  * Operations on /oracles
@@ -43,7 +44,7 @@ module.exports = {
       const response = await oracle.getOracle(request)
       return h.response(response).code(200)
     } catch (e) {
-      return h.response(util.buildErrorObject({errorCode: 400, errorDescription: e.message}, [])).code(400)
+      return Boom.badRequest(e.message)
     }
   },
   /**
@@ -58,7 +59,7 @@ module.exports = {
       await oracle.createOracle(request)
       return h.response().code(201)
     } catch (e) {
-      return h.response(util.buildErrorObject({errorCode: 400, errorDescription: e.message}, [])).code(400)
+      return Boom.badRequest(e.message)
     }
   }
 }
