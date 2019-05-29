@@ -6,6 +6,18 @@ const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Mockgen = require('../../../util/mockgen.js')
 const helper = require('../../../util/helper')
+const Sinon = require('sinon')
+const oracle = require('../../../../src/domain/oracle')
+
+let sandbox
+
+Test.beforeEach(async () => {
+  sandbox = Sinon.createSandbox()
+})
+
+Test.afterEach(async () => {
+  sandbox.restore()
+})
 
 /**
  * summary: Update Oracle
@@ -14,7 +26,7 @@ const helper = require('../../../util/helper')
  * produces: application/json
  * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
  */
-Test('test OraclePut put operation', async function (t) {
+Test.serial('test OraclePut put operation', async function (t) {
 
   const server = new Hapi.Server()
 
@@ -61,9 +73,10 @@ Test('test OraclePut put operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
+  sandbox.stub(oracle, 'updateOracle').returns(Promise.resolve({}))
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 500, 'Ok response status')
+  t.is(response.statusCode, 204, 'Ok response status')
 })
 
 /**
@@ -73,7 +86,7 @@ Test('test OraclePut put operation', async function (t) {
  * produces: application/json
  * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
  */
-Test('test OracleDelete delete operation', async function (t) {
+Test.serial('test OracleDelete delete operation', async function (t) {
 
   const server = new Hapi.Server()
 
@@ -120,8 +133,8 @@ Test('test OracleDelete delete operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-
+  sandbox.stub(oracle, 'deleteOracle').returns(Promise.resolve({}))
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 500, 'Ok response status')
+  t.is(response.statusCode, 204, 'Ok response status')
 })
