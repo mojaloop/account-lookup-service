@@ -27,7 +27,7 @@ Test.afterEach(async () => {
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test OracleGet get operation', async function (t) {
-
+  // console.log('test OracleGet get operation_1')
   const server = new Hapi.Server()
 
   await server.register({
@@ -86,7 +86,7 @@ Test('test OracleGet get operation', async function (t) {
  * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test OraclePost post operation', async function (t) {
-
+    // console.log('test OracleGet get operation_2')
   const server = new Hapi.Server()
 
   await server.register({
