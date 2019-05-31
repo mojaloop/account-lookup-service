@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Henk Kodde <henk.kodde@modusbox.com>
 
  --------------
  ******/
