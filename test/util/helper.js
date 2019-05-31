@@ -26,16 +26,42 @@
 'use strict'
 
 const Mustache = require('mustache')
-const util = require('../../src/lib/util')
 const Enums = require('../../src/lib/enum')
 const Config = require('../../src/lib/config')
 const payerfsp = 'payerfsp'
 const payeefsp = 'payeefsp'
 const validatePayerFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp: payerfsp})
 const validatePayeeFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp: payeefsp})
-const defaultSwitchHeaders = util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH)
+const defaultSwitchHeaders = defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH)
 const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantEndpoints, {fsp: payerfsp})
 const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantEndpoints, {fsp: payeefsp})
+
+
+/**
+ * @function defaultHeaders
+ *
+ * @description This returns a set of default headers used for requests
+ *
+ * see https://nodejs.org/dist/latest-v10.x/docs/api/http.html#http_message_headers
+ *
+ * @param {string} destination - to who the request is being sent
+ * @param {string} resource - the flow that is being requested i.e. participants
+ * @param {string} source - from who the request is made
+ * @param {string} version - the version for the accept and content-type headers
+ *
+ * @returns {object} Returns the default headers
+ */
+function defaultHeaders(destination, resource, source, version = '1.0') {
+  // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
+  // add/append to this field in all 'queueResponse' calls?
+  return {
+    'accept': `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'fspiop-destination': destination ? destination : '',
+    'content-type': `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'date': '2019-05-24 08:52:19',
+    'fspiop-source': source
+  }
+}
 
 const getOracleEndpointDatabaseResponse = [{
   oracleEndpointId: 1,
