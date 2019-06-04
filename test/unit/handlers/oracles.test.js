@@ -37,13 +37,9 @@ Test.afterEach(async () => {
  * produces: application/json
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
-// <<<<<<< HEAD
-// Test('test OracleGet get operation', async function (t) {
-//   console.log('test OracleGet get operation_1')
-// =======
+
 Test.serial('test OracleGet get operation', async function (t) {
 
-// >>>>>>> 2dbe78f65b0a35df54e8788229af3da98caf3ee2
   const server = new Hapi.Server()
 
   await server.register({
@@ -178,13 +174,10 @@ Test.serial('test OracleGet throws error', async function (t) {
  * produces: application/json
  * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
  */
-// <<<<<<< HEAD
-// Test('test OraclePost post operation', async function (t) {
-//     console.log('test OracleGet get operation_2')
-// =======
+
 Test.serial('test OraclePost post operation', async function (t) {
   sandbox.stub()
-// >>>>>>> 2dbe78f65b0a35df54e8788229af3da98caf3ee2
+
   const server = new Hapi.Server()
 
   await server.register({

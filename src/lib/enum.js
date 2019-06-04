@@ -100,6 +100,7 @@ const headers = {
 }
 
 const endpoints = {
+  partiesGet: '/parties/{{fsp}}',
   participantEndpoints: '/participants/{{fsp}}/endpoints',
   participantsGet: '/participants/{{fsp}}',
   oracleParticipantsTypeId: '/participants/{{partyIdType}}/{{partyIdentifier}}',

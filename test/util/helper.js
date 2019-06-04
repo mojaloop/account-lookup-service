@@ -51,6 +51,7 @@ const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.e
  *
  * @returns {object} Returns the default headers
  */
+
 function defaultHeaders(destination, resource, source, version = '1.0') {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
@@ -88,6 +89,38 @@ const getByTypeIdRequest = {
   method: 'get'
 }
 
+const getByTypeIdRequestError = {
+  query: {},
+  params: {
+    ID: '',
+    Type: ''
+  },
+  headers: {
+    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    'fspiop-destination': payeefsp,
+    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
+    'date': '2019-05-24 08:52:19',
+    'fspiop-source': payerfsp
+  },
+  method: 'get'
+}
+
+const putByTypeIdRequest = {
+  query: {},
+  params: {
+    ID: '123456',
+    Type: 'MSISDN'
+  },
+  headers: {
+    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    'fspiop-destination': payeefsp,
+    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
+    'date': '2019-05-24 08:52:19',
+    'fspiop-source': payerfsp
+  },
+  method: 'put'
+}
+
 const getByTypeIdCurrencyRequest = {
   query: {
     currency: 'USD'
@@ -106,6 +139,24 @@ const getByTypeIdCurrencyRequest = {
   method: 'get'
 }
 
+const postByTypeIdCurrencyRequest = {
+  query: {
+    currency: 'USD'
+  },
+  params: {
+    ID: '123456',
+    Type: 'MSISDN'
+  },
+  headers: {
+    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    'fspiop-destination': payeefsp,
+    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
+    'date': '2019-05-24 08:52:19',
+    'fspiop-source': payerfsp
+  },
+  method: 'post'
+}
+
 const oracleGetCurrencyUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
   partyIdType: getByTypeIdCurrencyRequest.params.Type,
   partyIdentifier: getByTypeIdCurrencyRequest.params.ID,
@@ -116,6 +167,12 @@ const oracleGetUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value 
   partyIdType: getByTypeIdRequest.params.Type,
   partyIdentifier: getByTypeIdRequest.params.ID
 })
+
+const oracleGetPartiesUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.endpoints.partiesGet, {
+  partyIdType: getByTypeIdRequest.params.Type,
+  partyIdentifier: getByTypeIdRequest.params.ID
+})
+
 
 const getOracleResponse = {
   data: {
@@ -185,10 +242,14 @@ module.exports = {
   getOracleEndpointDatabaseResponse,
   oracleGetCurrencyUri,
   oracleGetUri,
+  oracleGetPartiesUri,
   getByTypeIdRequest,
+  putByTypeIdRequest,
+  getByTypeIdRequestError,
   getByTypeIdCurrencyRequest,
   getOracleResponse,
   getEndPointsResponse,
   fspIdPayload,
-  participantPutEndpointOptions
+  participantPutEndpointOptions,
+  postByTypeIdCurrencyRequest
 }
