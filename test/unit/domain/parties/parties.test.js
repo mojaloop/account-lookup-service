@@ -35,7 +35,7 @@ Test.afterEach(() => {
 // GET /parties/{Type}/{ID}
 // GET /parties/MSISDN/123456789
 
-Test('getPartiesByTypeAndID should send a callback request to the requester', async (t) => {
+Test.serial('getPartiesByTypeAndID should send a callback request to the requester', async (t) => {
   try {
     request.sendRequest.withArgs(Helper.validatePayerFspUri, Helper.defaultSwitchHeaders).returns(Promise.resolve({}))
     DB.oracleEndpoint.query.returns(Helper.getOracleEndpointDatabaseResponse)
@@ -50,7 +50,7 @@ Test('getPartiesByTypeAndID should send a callback request to the requester', as
   }
 })
 
-Test('putPartiesByTypeAndID should send a callback request to the requester', async (t) => {
+Test.serial('putPartiesByTypeAndID should send a callback request to the requester', async (t) => {
   try {
     request.sendRequest.withArgs(Helper.validatePayerFspUri, Helper.defaultSwitchHeaders).returns(Promise.resolve({}))
     DB.oracleEndpoint.query.returns(Helper.getOracleEndpointDatabaseResponse)

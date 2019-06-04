@@ -48,7 +48,7 @@ Test.afterEach(async () => {
   sandbox.restore()
 })
 
-Test('test postParticipantsBatch endpoint', async test => {
+Test.serial('test postParticipantsBatch endpoint', async test => {
   try {
     server = await initServer(await getPort())
     const requests = new Promise((resolve, reject) => {
@@ -91,7 +91,7 @@ Test('test postParticipantsBatch endpoint', async test => {
   }
 })
 
-Test('test postParticipantsBatch endpoint - error', async test => {
+Test.serial('test postParticipantsBatch endpoint - error', async test => {
   try {
     server = await initServer(await getPort())
     const requests = new Promise((resolve, reject) => {
@@ -124,7 +124,7 @@ Test('test postParticipantsBatch endpoint - error', async test => {
     if (mock.request.headers && mock.request.headers.length > 0) {
       options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
     }
-    sandbox.stub(participants, 'postParticipantsBatch').returns({})
+    sandbox.stub(participants, 'postParticipantsBatch').throwsException()
     const response = await server.inject(options)
     await server.stop()
     test.is(response.statusCode, 500, 'Response should fail')

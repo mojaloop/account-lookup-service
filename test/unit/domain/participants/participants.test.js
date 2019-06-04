@@ -31,7 +31,7 @@ Test.afterEach(() => {
   sandbox.restore()
 })
 
-Test('getParticipantsByTypeAndID should send a callback request to the requester', async (t) => {
+Test.serial('getParticipantsByTypeAndID should send a callback request to the requester', async (t) => {
   try {
     request.sendRequest.withArgs(Helper.validatePayerFspUri, Helper.defaultSwitchHeaders).returns(Promise.resolve({}))
     DB.oracleEndpoint.query.returns(Helper.getOracleEndpointDatabaseResponse)
@@ -47,7 +47,7 @@ Test('getParticipantsByTypeAndID should send a callback request to the requester
   }
 })
 
-Test('postParticipantsByTypeAndID should send a callback request to the requester', async (t) => {
+Test.serial('postParticipantsByTypeAndID should send a callback request to the requester', async (t) => {
   try {
     request.sendRequest.withArgs(Helper.validatePayerFspUri, Helper.defaultSwitchHeaders).returns(Promise.resolve({}))
     DB.oracleEndpoint.query.returns(Helper.getOracleEndpointDatabaseResponse)
