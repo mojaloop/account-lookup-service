@@ -60,4 +60,11 @@ typings/
 # next.js build output
 .next
 
-\.idea/
+# --------------- #
+# IntelliJ #
+# --------------- #
+.idea/
+**/*.iml
+
+# VSCode directory
+.vscode
