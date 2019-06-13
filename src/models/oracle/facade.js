@@ -64,6 +64,7 @@ exports.oracleRequest = async (req) => {
           currency: req.query.currency || req.payload.currency
         })
       }
+    } else {
       Logger.error(`Oracle type:${type} and currency:${req.query.currency || req.payload.currency} not found`)
       return null
     }
@@ -86,6 +87,7 @@ exports.oracleRequest = async (req) => {
           partyIdentifier: req.params.ID
         })
       }
+    } else {
       Logger.error(`Oracle type:${type} not found`)
       return null
     }
