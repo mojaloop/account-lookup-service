@@ -38,7 +38,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function getParticipantsByTypeAndID(req, h) {
+  get: function (req, h) {
     const metadata = `${req.method} ${req.path}`
     try {
       participants.getParticipantsByTypeAndID(req)
@@ -56,7 +56,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function ParticipantsByTypeAndID3(request, h) {
+  put: function (request, h) {
     return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
   },
   /**
@@ -66,7 +66,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function postParticipants(request, h) {
+  post: function (request, h) {
     const metadata = `${request.method} ${request.path}`
     try {
       participants.postParticipants(request)
@@ -83,7 +83,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function ParticipantsByTypeAndID2(request, h) {
+  delete: function (request, h) {
     return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
   }
 

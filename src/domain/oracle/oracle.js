@@ -40,7 +40,7 @@ const currency = require('../../models/currency')
  */
 exports.createOracle = async (req) => {
   try {
-    let oracleEntity = {}
+    const oracleEntity = {}
     const payload = req.payload
     if(payload.isDefault){
       oracleEntity.isDefault = payload.isDefault
@@ -75,7 +75,7 @@ exports.getOracle = async (req) => {
   try {
     let oracleEndpointModelList
     let isCurrency, isType = false
-    let oracleList = []
+    const oracleList = []
     if (req.query.currency) {
       isCurrency = true
     }
@@ -91,8 +91,8 @@ exports.getOracle = async (req) => {
     } else {
       oracleEndpointModelList = await oracleEndpoint.getAllOracleEndpoint()
     }
-    for (let oracleEndpointModel of oracleEndpointModelList) {
-      let oracle = {
+    for (const oracleEndpointModel of oracleEndpointModelList) {
+      const oracle = {
         oracleId: oracleEndpointModel.oracleEndpointId,
         oracleIdType: oracleEndpointModel.idType,
         endpoint: {
@@ -123,21 +123,21 @@ exports.updateOracle = async (req) => {
     const payload = req.payload
     const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(req.params.ID)
     if (currentOracleEndpointList.length > 0) {
-      let currentOracleEndpoint = currentOracleEndpointList[0]
-      let newOracleEntry = {}
+      const currentOracleEndpoint = currentOracleEndpointList[0]
+      const newOracleEntry = {}
       if (payload.oracleIdType && payload.oracleIdType !== currentOracleEndpoint.idType) {
-        let partyTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+        const partyTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
         newOracleEntry.partyIdTypeId = partyTypeModel.partyIdTypeId
       }
       if (payload.endpoint && payload.endpoint.value && payload.endpoint.value !== currentOracleEndpoint.value) {
         newOracleEntry.value = payload.endpoint.value
       }
       if (payload.endpoint && payload.endpoint.endpointType && payload.endpoint.endpointType !== currentOracleEndpoint.endpointType) {
-        let endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+        const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
         newOracleEntry.endpointTypeId = endpointTypeModel.endpointTypeId
       }
       if (payload.currency && payload.currency !== currentOracleEndpoint.currency) {
-        let currencyModel = await currency.getCurrencyById(payload.currency)
+        const currencyModel = await currency.getCurrencyById(payload.currency)
         if (currencyModel) {
           newOracleEntry.currencyId = payload.currency
         } else {

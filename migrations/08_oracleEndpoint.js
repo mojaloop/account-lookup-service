@@ -25,7 +25,7 @@
 
 'use strict'
 
-exports.up = (knex, Promise) => {
+exports.up = (knex) => {
   return knex.schema.hasTable('oracleEndpoint').then(function (exists) {
     if (!exists) {
       return knex.schema.createTable('oracleEndpoint', (t) => {
@@ -46,6 +46,6 @@ exports.up = (knex, Promise) => {
   })
 }
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema.dropTableIfExists('oracleEndpoint')
 }

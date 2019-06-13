@@ -48,11 +48,11 @@ const getParticipantsByTypeAndID = async (req) => {
       if (Object.values(Enums.type).includes(type)) {
         const response = await oracle.oracleRequest(req)
         if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-          let options = {
+          const options = {
             partyIdType: type,
             partyIdentifier: req.params.ID
           }
-          let payload = {
+          const payload = {
             fspId: response.data.partyList[0].fspId
           }
           await participant.sendRequest(req, requesterName, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.restMethods.PUT, payload, options)
@@ -84,14 +84,7 @@ const getParticipantsByTypeAndID = async (req) => {
  */
 const putParticipantsErrorByTypeAndID = async () => {
   try {
-    // const destinationParticipant = req.headers['fspiop-destination']
-    // if (validateParticipant(destinationParticipant)) {
-    //   const destinationEndpoint = await participantEndpointCache.getEndpoint(destinationParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL)
-    //   await request.sendRequest(destinationEndpoint, req.headers, Enums.restMethods.PUT, req.body)
-    //   Logger.info(JSON.stringify(req))
-    // } else {
-    //
-    // }
+    Logger.info('Not Implemented')
   } catch (e) {
     Logger.error(e)
   }
@@ -111,9 +104,9 @@ const postParticipants = async (req) => {
     if (Object.values(Enums.type).includes(type)) {
       const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
       if (requesterParticipantModel) {
-        let response = await oracle.oracleRequest(req)
+        const response = await oracle.oracleRequest(req)
         if (response && (response.data !== null || response.data !== undefined)) {
-          let payload = {
+          const payload = {
             partyList: [
               {
                 partyIdType: type,
@@ -123,7 +116,7 @@ const postParticipants = async (req) => {
             ],
             currency: req.payload.currency
           }
-          let options = {
+          const options = {
             partyIdType: req.params.Type,
             partyIdentifier: req.params.ID
           }
@@ -165,7 +158,7 @@ const postParticipantsBatch = async (req) => {
     const requestId = req.payload.requestId
     const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
     if (requesterParticipantModel) {
-      for (let party of req.payload.partyList) {
+      for (const party of req.payload.partyList) {
         if (Object.values(Enums.type).includes(party.partyIdType)) {
           party.currency = req.payload.currency
           if (party.fspId === req.headers['fspiop-source']) {
@@ -184,15 +177,15 @@ const postParticipantsBatch = async (req) => {
         }
       }
       for (let [key, value] of typeMap) {
-        let payload = {
+        const payload = {
           requestId: requestId,
           partyList: value
         }
         Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
-        let response = await oracle.oracleBatchRequest(req, key, payload)
+        const response = await oracle.oracleBatchRequest(req, key, payload)
         if (response && (response.data !== null || response.data !== undefined)) {
           if (Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            for (let party of response.data.partyList) {
+            for (const party of response.data.partyList) {
               party.partyId.currency = undefined
               overallReturnList.push(party)
             }
@@ -203,12 +196,12 @@ const postParticipantsBatch = async (req) => {
           }
         } else {
           // TODO: what happens when nothing is returned
-          for (let party of value) {
+          for (const party of value) {
             overallReturnList.push(util.buildBatchErrorObject(party, Errors.ErrorObject.ADD_PARTY_ERROR, [{key: party.partyIdType, value: party.partyIdentifier}]))
           }
         }
       }
-      let payload = {
+      const payload = {
         partyList: overallReturnList,
         currency: req.payload.currency
       }

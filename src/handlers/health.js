@@ -35,7 +35,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function HealthGet(request, h) {
+  get: function (request, h) {
     return h.response({ status: 'OK' }).code(200)
   }
 }

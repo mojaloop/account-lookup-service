@@ -24,7 +24,7 @@
 
 'use strict'
 
-exports.up = (knex, Promise) => {
+exports.up = (knex) => {
   return knex.schema.hasTable('currency').then(function(exists) {
     if (!exists) {
       return knex.schema.createTable('currency', (t) => {
@@ -37,6 +37,6 @@ exports.up = (knex, Promise) => {
   })
 }
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema.dropTableIfExists('currency')
 }

@@ -30,8 +30,7 @@ const Db = require('../../lib/db')
 const getOracleEndpointByType = async (type) => {
   try {
     return Db.oracleEndpoint.query(builder => {
-      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
-        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+      return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
           'pt.name': type,
@@ -112,8 +111,7 @@ const getOracleEndpointById = async (oracleEndpointId) => {
 const getAllOracleEndpoint = async () => {
   try {
     return Db.oracleEndpoint.query(builder => {
-      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
-        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+      return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
           'pt.isActive': 1,

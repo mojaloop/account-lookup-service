@@ -38,7 +38,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function getPartiesByTypeAndID(req, h) {
+  get: function (req, h) {
     try {
       parties.getPartiesByTypeAndID(req)
     } catch (err) {
@@ -54,7 +54,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function putPartiesByTypeAndID(req, h) {
+  put: function (req, h) {
     try {
       parties.putPartiesByTypeAndID(req)
     } catch (err) {

@@ -38,7 +38,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function postParticipantsBatch(req, h) {
+  post: function (req, h) {
     try {
       participants.postParticipantsBatch(req)
     } catch (err) {

@@ -74,7 +74,7 @@ setupTest.beforeEach(() => {
     ConfigStub = Config
 
     SetupProxy = Proxyquire('../../src/server', {
-      'hapi': HapiStub,
+      '@hapi/hapi': HapiStub,
       'hapi-openapi': HapiOpenAPIStub,
       'path': PathStub,
       './lib/config': ConfigStub,
@@ -84,8 +84,6 @@ setupTest.beforeEach(() => {
     Logger.error(`setupTest failed with error - ${err}`)
   }
 })
-
-// console.log('TEST_!')
 
 setupTest.afterEach(() => {
   sandbox.restore()
