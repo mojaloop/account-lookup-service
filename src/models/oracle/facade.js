@@ -93,7 +93,7 @@ exports.oracleRequest = async (req) => {
     }
   }
   Logger.debug(`Oracle endpoints: ${url}`)
-  return await request.sendRequest(url, req.headers, req.method, req.payload || undefined, true)
+  return await request.sendRequest(url, req.headers, req.method, req.payload || undefined)
 }
 
 /**
@@ -127,7 +127,7 @@ exports.oracleBatchRequest = async (req, type, payload) => {
       url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
     }
     Logger.debug(`Oracle endpoints: ${url}`)
-    return await request.sendRequest(url, req.headers, req.method, payload || undefined, true)
+    return await request.sendRequest(url, req.headers, req.method, payload || undefined)
   } else {
     Logger.error(`Oracle type:${type} not found`)
     return null
