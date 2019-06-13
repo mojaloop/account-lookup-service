@@ -99,7 +99,7 @@ exports.getOracle = async (req) => {
           value: oracleEndpointModel.value,
           endpointType: oracleEndpointModel.endpointType
         },
-        currency: oracleEndpointModel.currency,
+        currency: oracleEndpointModel.currency || undefined,
         isDefault: oracleEndpointModel.isDefault
       }
       oracleList.push(oracle)

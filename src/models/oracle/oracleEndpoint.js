@@ -36,7 +36,6 @@ const getOracleEndpointByType = async (type) => {
           'pt.name': type,
           'pt.isActive': 1,
           'oracleEndpoint.isActive': 1,
-          'oracleEndpoint.isDefault': 1,
           'et.isActive': 1
         })
         .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
