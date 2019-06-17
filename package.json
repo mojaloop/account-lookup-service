@@ -52,7 +52,7 @@
     "@mojaloop/central-services-error-handling": "5.2.0",
     "@mojaloop/central-services-metrics": "5.2.0",
     "@mojaloop/central-services-shared": "5.2.0",
-    "axios": "0.18.0",
+    "axios": "0.18.1",
     "blipp": "4.0.0",
     "catbox": "10.0.6",
     "catbox-memory": "4.0.1",
