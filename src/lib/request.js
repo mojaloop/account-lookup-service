@@ -35,13 +35,12 @@ const util = require('./util')
  * @param {object} headers the http headers
  * @param {string} method http method being requested i.e. GET, POST, PUT
  * @param {object} payload the body of the request being sent
- * @param {boolean} isOracle if the request is going to an oracle
  *
  *@return {object} The response for the request being sent or error object with response included
  */
-const sendRequest = async (url, headers, method = 'get', payload = undefined, isOracle = false) => {
+const sendRequest = async (url, headers, method = 'get', payload = undefined) => {
   try {
-    const transformedHeaders = util.transformHeaders(headers, { httpMethod: method, sourceFsp: headers['fspiop-source'], destinationFsp: headers['fspiop-destination']}, isOracle)
+    const transformedHeaders = util.transformHeaders(headers, { httpMethod: method, sourceFsp: headers['fspiop-source'], destinationFsp: headers['fspiop-destination']})
     const requestOptions = {
       url,
       method: method,

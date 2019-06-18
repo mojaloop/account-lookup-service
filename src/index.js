@@ -46,25 +46,25 @@ Program.command('server') // sub-command name, coffeeType = type, required
   .action(async (args) => {
     if (args.api) {
       Logger.debug(`CLI: Executing --api`)
-      let options = {
+      const options = {
         port: Config.API_PORT,
         isAPI: true
       }
       module.exports = Server.initialize(options.port, options.isAPI)
     } else if (args.admin) {
       Logger.debug(`CLI: Executing --admin`)
-      let options = {
+      const options = {
         port: Config.ADMIN_PORT,
         isAPI: false
       }
       module.exports = Server.initialize(options.port, options.isAPI)
     } else {
-      let optionsAdmin = {
+      const optionsAdmin = {
         port: Config.ADMIN_PORT,
         isAPI: false
       }
       module.exports = Server.initialize(optionsAdmin.port, optionsAdmin.isAPI)
-      let optionsApi = {
+      const optionsApi = {
         port: Config.API_PORT,
         isAPI: true
       }

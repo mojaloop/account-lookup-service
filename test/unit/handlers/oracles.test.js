@@ -1,7 +1,7 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('hapi')
+const Hapi = require('@hapi/hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Mockgen = require('../../util/mockgen.js')
@@ -37,6 +37,7 @@ Test.afterEach(async () => {
  * produces: application/json
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
+
 Test.serial('test OracleGet get operation', async function (t) {
 
   const server = new Hapi.Server()
@@ -173,8 +174,10 @@ Test.serial('test OracleGet throws error', async function (t) {
  * produces: application/json
  * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
  */
+
 Test.serial('test OraclePost post operation', async function (t) {
   sandbox.stub()
+
   const server = new Hapi.Server()
 
   await server.register({

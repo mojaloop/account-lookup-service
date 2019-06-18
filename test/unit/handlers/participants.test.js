@@ -4,34 +4,46 @@ const Test = require('ava')
 const Hapi = require('@hapi/hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
-const Mockgen = require('../../util/mockgen.js')
+const Sinon = require('sinon')
+
+const Mockgen = require('../../util/mockgen')
 const helper = require('../../util/helper')
 
+let sandbox
+
+Test.beforeEach(async () => {
+  sandbox = Sinon.createSandbox()
+})
+
+Test.afterEach(async () => {
+  sandbox.restore()
+})
+
 /**
- * summary: Get Health
- * description: The HTTP request GET /health is used to get the status of the server
- * parameters: type, currency, accept, content-type, date
+ * summary: Participants
+ * description: The HTTP request POST /participants is used to create information in the server regarding the provided list of identities. This request should be used for bulk creation of FSP information for more than one Party. The optional currency parameter should indicate that each provided Party supports the currency
+ * parameters: body, Accept, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
  * produces: application/json
- * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
+ * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
  */
-Test('test Health get operation', async function (t) {
-  // console.log('test Health get operation_1')
+
+Test('test Participants Post operation', async function (t) {
 
   const server = new Hapi.Server()
 
   await server.register({
     plugin: HapiOpenAPI,
     options: {
-      api: Path.resolve(__dirname, '../../../src/interface/admin_swagger.json'),
+      api: Path.resolve(__dirname, '../../../src/interface/api_swagger.json'),
       handlers: Path.join(__dirname, '../../../src/handlers'),
       outputvalidation: true
     }
   })
 
   const requests = new Promise((resolve, reject) => {
-    Mockgen(false).requests({
-      path: '/health',
-      operation: 'get'
+    Mockgen().requests({
+      path: '/participants',
+      operation: 'post'
     }, function (error, mock) {
       return error ? reject(error) : resolve(mock)
     })
@@ -44,7 +56,7 @@ Test('test Health get operation', async function (t) {
   //Get the resolved path from mock request
   //Mock request Path templates({}) are resolved using path parameters
   const options = {
-    method: 'get',
+    method: 'post',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
@@ -65,5 +77,5 @@ Test('test Health get operation', async function (t) {
 
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 200, 'Ok response status')
+  t.is(response.statusCode, 500, 'Ok response status')
 })

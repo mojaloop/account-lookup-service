@@ -38,7 +38,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function putParticipantsErrorByTypeAndID(req, h) {
+  put: function (req, h) {
     (async function () {
       const metadata = `${req.method} ${req.path}`
       try {

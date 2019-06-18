@@ -25,15 +25,15 @@
 
 'use strict'
 
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema.table('oracleEndpoint', (t) => {
     t.index('partyIdTypeId')
     t.index('endpointTypeId')
-    t.unique(['partyIdTypeId', 'currencyId', 'isDefault'])
+    t.unique(['partyIdTypeId', 'isDefault'])
   })
 }
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema.table('oracleEndpoint', (t) => {
     t.dropIndex('partyIdTypeId')
     t.dropIndex('endpointTypeId')

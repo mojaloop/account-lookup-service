@@ -37,7 +37,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function PartiesErrorByTypeAndID(req, h) {
+  put: function (req, h) {
     const metadata = `${req.method} ${req.path}`
     const {logger} = req.server.app
     try {

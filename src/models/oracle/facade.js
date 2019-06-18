@@ -46,11 +46,24 @@ exports.oracleRequest = async (req) => {
   if ((req.payload && req.payload.currency && req.payload.currency.length !== 0) || (req.query && req.query.currency && req.query.currency.length !== 0)) {
     oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.query.currency || req.payload.currency)
     if (oracleEndpointModel.length > 0) {
-      url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
-        partyIdType: type,
-        partyIdentifier: req.params.ID,
-        currency: req.query.currency || req.payload.currency
-      })
+      if (oracleEndpointModel.length > 1) {
+        for (const record in oracleEndpointModel) {
+          if (oracleEndpointModel.hasOwnProperty(record) && record.isDefault) {
+            url = Mustache.render(record.value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
+              partyIdType: type,
+              partyIdentifier: req.params.ID,
+              currency: req.query.currency || req.payload.currency
+            })
+            break
+          }
+        }
+      } else {
+        url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
+          partyIdType: type,
+          partyIdentifier: req.params.ID,
+          currency: req.query.currency || req.payload.currency
+        })
+      }
     } else {
       Logger.error(`Oracle type:${type} and currency:${req.query.currency || req.payload.currency} not found`)
       return null
@@ -58,17 +71,29 @@ exports.oracleRequest = async (req) => {
   } else {
     oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
     if (oracleEndpointModel.length > 0) {
-      url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
-        partyIdType: type,
-        partyIdentifier: req.params.ID
-      })
+      if (oracleEndpointModel.length > 1) {
+        for (const record in oracleEndpointModel) {
+          if (oracleEndpointModel.hasOwnProperty(record) && record.isDefault) {
+            url = Mustache.render(record.value + Enums.endpoints.oracleParticipantsTypeId, {
+              partyIdType: type,
+              partyIdentifier: req.params.ID
+            })
+            break
+          }
+        }
+      } else {
+        url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
+          partyIdType: type,
+          partyIdentifier: req.params.ID
+        })
+      }
     } else {
       Logger.error(`Oracle type:${type} not found`)
       return null
     }
   }
   Logger.debug(`Oracle endpoints: ${url}`)
-  return await request.sendRequest(url, req.headers, req.method, req.payload || undefined, true)
+  return await request.sendRequest(url, req.headers, req.method, req.payload || undefined)
 }
 
 /**
@@ -84,15 +109,25 @@ exports.oracleRequest = async (req) => {
  */
 exports.oracleBatchRequest = async (req, type, payload) => {
   let oracleEndpointModel
+  let url
   if ((req.payload && req.payload.currency && req.payload.currency.length !== 0)) {
     oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.payload.currency)
   } else {
     oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
   }
   if (oracleEndpointModel.length > 0) {
-    let url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
+    if (oracleEndpointModel.length > 1) {
+      for (const record in oracleEndpointModel) {
+        if (oracleEndpointModel.hasOwnProperty(record) && record.isDefault) {
+          url = record.value + Enums.endpoints.oracleParticipantsBatch
+          break
+        }
+      }
+    } else {
+      url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
+    }
     Logger.debug(`Oracle endpoints: ${url}`)
-    return await request.sendRequest(url, req.headers, req.method, payload || undefined, true)
+    return await request.sendRequest(url, req.headers, req.method, payload || undefined)
   } else {
     Logger.error(`Oracle type:${type} not found`)
     return null

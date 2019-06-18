@@ -41,6 +41,39 @@ let client
 let policy
 
 /**
+ * @function fetchEndpoints
+ *
+ * @description This populates the cache of endpoints
+ *
+ * @param {string} fsp The fsp id
+ * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
+ */
+
+const fetchEndpoints = async (fsp) => {
+  try {
+    Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
+    const defaultHeaders = util.defaultHeaders(Enum.apiServices.SWITCH, Enum.resources.participants, Enum.apiServices.SWITCH)
+    const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.endpoints.participantEndpoints, {fsp})
+    Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
+    const response = await request.sendRequest(url, defaultHeaders)
+    Logger.debug(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.data)}`)
+    const endpoints = response.data
+    const endpointMap = {}
+    if (Array.isArray(endpoints)) {
+      endpoints.forEach(item => {
+        Mustache.parse(item.value)
+        endpointMap[item.type] = item.value
+      })
+    }
+    Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Returning the endpoints: ${JSON.stringify(endpointMap)}`)
+    return endpointMap
+  } catch (e) {
+    Logger.error(`participantEndpointCache::fetchEndpoints:: ERROR:'${e}'`)
+  }
+}
+
+
+/**
  * @module src/domain/participant/lib/cache
  */
 
@@ -68,38 +101,6 @@ exports.initializeCache = async () => {
 }
 
 /**
- * @function fetchEndpoints
- *
- * @description This populates the cache of endpoints
- *
- * @param {string} fsp The fsp id
- * @returns {object} endpointMap Returns the object containing the endpoints for given fsp id
- */
-
-const fetchEndpoints = async (fsp) => {
-  try {
-    Logger.info(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Refreshing the cache for FSP: ${fsp}`)
-    const defaultHeaders = util.defaultHeaders(Enum.apiServices.SWITCH, Enum.resources.participants, Enum.apiServices.SWITCH)
-    const url = Mustache.render(Config.SWITCH_ENDPOINT + Enum.endpoints.participantEndpoints, {fsp})
-    Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := URL for FSP: ${url}`)
-    const response = await request.sendRequest(url, defaultHeaders)
-    Logger.debug(`[fsp=${fsp}] ~ Model::participantEndpoint::fetchEndpoints := successful with body: ${JSON.stringify(response.data)}`)
-    let endpoints = response.data
-    let endpointMap = {}
-    if (Array.isArray(endpoints)) {
-      endpoints.forEach(item => {
-        Mustache.parse(item.value)
-        endpointMap[item.type] = item.value
-      })
-    }
-    Logger.debug(`[fsp=${fsp}] ~ participantEndpointCache::fetchEndpoints := Returning the endpoints: ${JSON.stringify(endpointMap)}`)
-    return endpointMap
-  } catch (e) {
-    Logger.error(`participantEndpointCache::fetchEndpoints:: ERROR:'${e}'`)
-  }
-}
-
-/**
  * @function getEndpoint
  *
  * @description It returns the endpoint for a given fsp and type from the cache if the cache is still valid, otherwise it will refresh the cache and return the value
@@ -113,7 +114,7 @@ const fetchEndpoints = async (fsp) => {
 exports.getEndpoint = async (fsp, endpointType, options = {}) => {
   Logger.info(`participantEndpointCache::getEndpoint::endpointType - ${endpointType}`)
   try {
-    let endpoints = await policy.get(fsp)
+    const endpoints = await policy.get(fsp)
     return Mustache.render(new Map(endpoints).get(endpointType), options)
   } catch (e) {
     Logger.error(`participantEndpointCache::getEndpoint:: ERROR:'${e}'`)

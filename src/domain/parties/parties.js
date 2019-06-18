@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Henk Kodde <henk.kodde@modusbox.com>
 
  --------------
  ******/
@@ -48,7 +49,7 @@ const getPartiesByTypeAndID = async (req) => {
       if (Object.values(Enums.type).includes(type)) {
         const response = await oracle.oracleRequest(req)
         if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-          let options = {
+          const options = {
             partyIdType: type,
             partyIdentifier: req.params.ID
           }
@@ -87,7 +88,7 @@ const putPartiesByTypeAndID = async (req) => {
       if (requesterParticipant) {
         const destinationParticipant = await participant.validateParticipant(req.headers['fspiop-destination'])
         if (destinationParticipant) {
-          let options = {
+          const options = {
             partyIdType: type,
             partyIdentifier: req.params.ID
           }

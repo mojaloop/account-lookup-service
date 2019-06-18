@@ -26,7 +26,7 @@
 const Package = require('../package')
 const Config = require('./lib/config')
 const Inert = require('@hapi/inert')
-const Vision = require('vision')
+const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 
 const registerPlugins = async (server) => {
@@ -41,7 +41,7 @@ const registerPlugins = async (server) => {
   })
 
   await server.register({
-    plugin: require('good'),
+    plugin: require('@hapi/good'),
     options: {
       ops: {
         interval: 10000
