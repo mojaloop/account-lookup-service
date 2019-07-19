@@ -1,6 +1,6 @@
 {
   "1065|@mojaloop/central-services-database>knex>lodash": {
-    "fix": 1
+    "ignore": 1
   },
   "1065|@mojaloop/central-services-database>lodash": {
     "ignore": 1
