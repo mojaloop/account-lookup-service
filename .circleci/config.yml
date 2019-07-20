@@ -17,6 +17,7 @@ defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add ca-certificates
   apk --no-cache add curl
   apk --no-cache add openssh-client
+  apk --no-cache add bash
   apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
   npm config set unsafe-perm true
   npm install -g node-gyp
@@ -30,6 +31,12 @@ defaults_awsCliDependencies: &defaults_awsCliDependencies |
           mailcap
   pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
   apk -v --purge del py-pip
+
+defaults_license_scanner: &defaults_license_scanner
+  name: Install and set up license-scanner
+  command: |
+    git clone https://github.com/mojaloop/license-scanner /tmp/license-scanner
+    cd /tmp/license-scanner && make build default-files set-up
 
 defaults_Environment: &defaults_environment
   name: Set default environment
@@ -333,6 +340,45 @@ jobs:
   #       - store_test_results:
   #           path: ./test/results
 
+  vulnerability-check:
+    <<: *defaults_working_directory
+    <<: *defaults_docker_node
+    steps:
+      - run:
+          name: Install general dependencies
+          command: *defaults_Dependencies
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Create dir for test results
+          command: mkdir -p ./audit/results
+      - run:
+          name: Check for new npm vulnerabilities
+          command: npm run audit:check -- --json > ./audit/results/auditResults.json 
+      - store_artifacts:
+          path: ./audit/results
+          prefix: audit
+          
+  audit-licenses:
+    <<: *defaults_working_directory
+    <<: *defaults_docker_node
+    steps:
+      - run:
+          name: Install general dependencies
+          command: *defaults_Dependencies
+      - run:
+          <<: *defaults_license_scanner
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Run the license-scanner
+          command: cd /tmp/license-scanner && pathToRepo=$CIRCLE_WORKING_DIRECTORY make run
+      - store_artifacts:
+          path: /tmp/license-scanner/results
+          prefix: licenses
+
   build-snapshot:
     machine: true
     <<: *defaults_working_directory
@@ -392,6 +438,14 @@ jobs:
           <<: *defaults_build_docker_login
       - run:
           <<: *defaults_build_docker_build
+      - run:
+          <<: *defaults_license_scanner
+      - run:
+          name: Run the license-scanner
+          command: cd /tmp/license-scanner && mode=docker dockerImage=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG make run
+      - store_artifacts:
+          path: /tmp/license-scanner/results
+          prefix: licenses
       - run:
           <<: *defaults_build_docker_build_release
       - run:
@@ -519,6 +573,28 @@ workflows:
       #              ignore:
       #                - /feature*/
       #                - /bugfix*/
+      - vulnerability-check:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
+      - audit-licenses:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - build-snapshot:
           context: org-global
           requires:
@@ -553,6 +629,8 @@ workflows:
           #            - test-integration
           #            - test-functional
           #            - test-spec
+            - vulnerability-check
+            - audit-licenses
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
@@ -568,6 +646,8 @@ workflows:
           #            - test-integration
           #            - test-functional
           #            - test-spec
+            - vulnerability-check
+            - audit-licenses
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*\-hotfix(\.[0-9]+)/
