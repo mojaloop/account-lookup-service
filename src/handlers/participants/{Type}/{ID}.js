@@ -74,7 +74,7 @@ module.exports = {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       // TODO: review this error message
     }
-    return h.response().code(200)
+    return h.response().code(202)
   },
   /**
    * summary: ParticipantsByTypeAndID

@@ -42,7 +42,7 @@ module.exports = {
     const {logger} = req.server.app
     try {
       logger(`received: ${metadata}. ${pp(req.params)}`)
-      parties.putPartiesByTypeAndID(req)
+      parties.putPartiesErrorByTypeAndID(req)
       logger(`success: ${metadata}.`)
     } catch (err) {
       Logger.error(err)
