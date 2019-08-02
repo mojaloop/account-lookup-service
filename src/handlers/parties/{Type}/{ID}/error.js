@@ -40,12 +40,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
-    const metadata = `${req.method} ${req.path}`
-    const { logger } = req.server.app
     try {
-      logger(`received: ${metadata}. ${pp(req.params)}`)
       parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload)
-      logger(`success: ${metadata}.`)
     } catch (err) {
       Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)

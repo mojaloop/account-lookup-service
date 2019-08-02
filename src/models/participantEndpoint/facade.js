@@ -70,7 +70,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
  */
 exports.validateParticipant = async (fsp) => {
   try {
-    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, { fsp })
+    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
     Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
     return await Util.Request.sendRequest(requestedParticipantUrl, Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value), Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.Headers.FSPIOP.SWITCH.value)
   } catch (err) {

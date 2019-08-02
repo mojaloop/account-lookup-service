@@ -69,7 +69,7 @@ module.exports = {
   post: function (request, h) {
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.postParticipants(request)
+      participants.postParticipants(request.headers, request.method, request.params, request.payload)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)

@@ -114,7 +114,7 @@ const postParticipants = async (headers, method, params, payload) => {
       if (requesterParticipantModel) {
         const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
         if (response && (response.data !== null || response.data !== undefined)) {
-          const payload = {
+          const responsePayload = {
             partyList: [
               {
                 partyIdType: type,
@@ -128,7 +128,7 @@ const postParticipants = async (headers, method, params, payload) => {
             partyIdType: params.Type,
             partyIdentifier: params.ID
           }
-          await participant.sendRequest(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, payload, options)
+          await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, responsePayload, options)
         } else {
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT,
             ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)

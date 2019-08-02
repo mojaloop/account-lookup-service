@@ -55,6 +55,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
             partyIdType: type,
             partyIdentifier: params.ID
           }
+          if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+            headers[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
+          }
           await participant.sendRequest(headers, response.data.partyList[0].fspId, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.Http.RestMethods.GET, undefined, options)
         } else {
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
