@@ -35,9 +35,9 @@ const getPort = require('get-port')
 
 let server
 let sandbox
-let destinationFsp = 'dfsp2'
-let sourceFsp = 'dfsp1'
-let resource = 'participants'
+const destinationFsp = 'dfsp2'
+const sourceFsp = 'dfsp1'
+const resource = 'participants'
 
 Test.before(async () => {
   sandbox = Sinon.createSandbox()

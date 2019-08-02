@@ -36,7 +36,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function (request, h) {
-    return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
+    return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501)
   },
   /**
    * summary: PartiesSubIdByTypeAndID
@@ -46,6 +46,6 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
+    return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501)
   }
 }

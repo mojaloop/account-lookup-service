@@ -26,6 +26,8 @@
 
 const parties = require('../../../../domain/parties')
 const Logger = require('@mojaloop/central-services-shared').Logger
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+
 /**
  * Operations on /parties/{Type}/{ID}/error
  */
@@ -39,13 +41,14 @@ module.exports = {
    */
   put: function (req, h) {
     const metadata = `${req.method} ${req.path}`
-    const {logger} = req.server.app
+    const { logger } = req.server.app
     try {
       logger(`received: ${metadata}. ${pp(req.params)}`)
-      parties.putPartiesErrorByTypeAndID(req)
+      parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload)
       logger(`success: ${metadata}.`)
     } catch (err) {
       Logger.error(err)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(200)
   }

@@ -43,7 +43,6 @@ Test.serial('getParticipantsByTypeAndID should send a callback request to the re
   } catch (e) {
     Logger.error(`getParticipantsByTypeAndID test failed with error - ${e}`)
     t.fail()
-
   }
 })
 

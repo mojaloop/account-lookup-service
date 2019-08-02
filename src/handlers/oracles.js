@@ -25,8 +25,7 @@
 'use strict'
 
 const oracle = require('../domain/oracle')
-const util  = require('../lib/util')
-const Boom = require('@hapi/boom')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /oracles
@@ -43,8 +42,8 @@ module.exports = {
     try {
       const response = await oracle.getOracle(request)
       return h.response(response).code(200)
-    } catch (e) {
-      return Boom.badRequest(e.message)
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
   /**
@@ -58,8 +57,8 @@ module.exports = {
     try {
       await oracle.createOracle(request)
       return h.response().code(201)
-    } catch (e) {
-      return Boom.badRequest(e.message)
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }

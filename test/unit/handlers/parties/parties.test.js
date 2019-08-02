@@ -35,58 +35,58 @@ const getPort = require('get-port')
 
 let server
 let sandbox
-let destinationFsp = 'dfsp2'
-let sourceFsp = 'dfsp1'
-let resource = 'participants'
+const destinationFsp = 'dfsp2'
+const sourceFsp = 'dfsp1'
+const resource = 'participants'
 
 Test.beforeEach(async () => {
-    sandbox = Sinon.createSandbox()
-    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  sandbox = Sinon.createSandbox()
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
 })
 
 Test.afterEach(async () => {
-    sandbox.restore()
+  sandbox.restore()
 })
 
 Test('test postParticipantsBatch endpoint', async test => {
-    try {
-        server = await initServer(await getPort())
-        const requests = new Promise((resolve, reject) => {
-            Mockgen().requests({
-                path: '/participants',
-                operation: 'post'
-            }, function (error, mock) {
-                return error ? reject(error) : resolve(mock)
-            })
-        })
+  try {
+    server = await initServer(await getPort())
+    const requests = new Promise((resolve, reject) => {
+      Mockgen().requests({
+        path: '/participants',
+        operation: 'post'
+      }, function (error, mock) {
+        return error ? reject(error) : resolve(mock)
+      })
+    })
 
-        const mock = await requests
-        test.pass(mock)
-        test.pass(mock.request)
-        const options = {
-            method: 'post',
-            url: mock.request.path,
-            headers: util.defaultHeaders(destinationFsp, resource, sourceFsp)
-        }
-        if (mock.request.body) {
-            // Send the request body
-            options.payload = mock.request.body
-        } else if (mock.request.formData) {
-            // Send the request form data
-            options.payload = mock.request.formData
-            // Set the Content-Type as application/x-www-form-urlencoded
-            options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp) || {}
-        }
-        // If headers are present, set the headers.
-        if (mock.request.headers && mock.request.headers.length > 0) {
-            options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
-        }
-        sandbox.stub(participants, 'postParticipantsBatch').returns({})
-        const response = await server.inject(options)
-        await server.stop()
-        test.is(response.statusCode, 200, 'Ok response status')
-    } catch (e) {
-        Logger.error(e)
-        test.fail()
+    const mock = await requests
+    test.pass(mock)
+    test.pass(mock.request)
+    const options = {
+      method: 'post',
+      url: mock.request.path,
+      headers: util.defaultHeaders(destinationFsp, resource, sourceFsp)
     }
+    if (mock.request.body) {
+      // Send the request body
+      options.payload = mock.request.body
+    } else if (mock.request.formData) {
+      // Send the request form data
+      options.payload = mock.request.formData
+      // Set the Content-Type as application/x-www-form-urlencoded
+      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp) || {}
+    }
+    // If headers are present, set the headers.
+    if (mock.request.headers && mock.request.headers.length > 0) {
+      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
+    }
+    sandbox.stub(participants, 'postParticipantsBatch').returns({})
+    const response = await server.inject(options)
+    await server.stop()
+    test.is(response.statusCode, 200, 'Ok response status')
+  } catch (e) {
+    Logger.error(e)
+    test.fail()
+  }
 })

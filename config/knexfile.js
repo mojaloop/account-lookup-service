@@ -11,7 +11,7 @@ module.exports = {
   connection: Config.DATABASE_URI,
   migrations: {
     directory: migrationsDirectory,
-    tableName: 'migration',
+    tableName: 'migration'
   },
   seeds: {
     directory: seedsDirectory,

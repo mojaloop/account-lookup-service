@@ -28,7 +28,6 @@ Test.afterEach(async () => {
  */
 
 Test('test Participants Post operation', async function (t) {
-
   const server = new Hapi.Server()
 
   await server.register({
@@ -53,20 +52,20 @@ Test('test Participants Post operation', async function (t) {
 
   t.pass(mock)
   t.pass(mock.request)
-  //Get the resolved path from mock request
-  //Mock request Path templates({}) are resolved using path parameters
+  // Get the resolved path from mock request
+  // Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'post',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
-    //Send the request body
+    // Send the request body
     options.payload = mock.request.body
   } else if (mock.request.formData) {
-    //Send the request form data
+    // Send the request form data
     options.payload = mock.request.formData
-    //Set the Content-Type as application/x-www-form-urlencoded
+    // Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
     options.headers = helper.defaultAdminHeaders()
   }

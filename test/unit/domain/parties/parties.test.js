@@ -14,7 +14,7 @@ const Helper = require('../../../util/helper')
 const DB = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
 const participant = require('../../../../src/models/participantEndpoint/participantEndpoint')
-//const oracle = require('../../../../src/models/oracle/facade')
+// const oracle = require('../../../../src/models/oracle/facade')
 
 let sandbox
 

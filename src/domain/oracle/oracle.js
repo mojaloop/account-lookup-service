@@ -30,6 +30,7 @@ const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * @function createOracle
@@ -42,25 +43,25 @@ exports.createOracle = async (req) => {
   try {
     const oracleEntity = {}
     const payload = req.payload
-    if(payload.isDefault){
+    if (payload.isDefault) {
       oracleEntity.isDefault = payload.isDefault
     } else {
       oracleEntity.isDefault = false
     }
-    if(payload.currency){
+    if (payload.currency) {
       oracleEntity.currencyId = payload.currency
     }
     oracleEntity.value = payload.endpoint.value
-    oracleEntity.createdBy =  'Admin'
+    oracleEntity.createdBy = 'Admin'
     const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
     const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
     oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
     oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
     await oracleEndpoint.createOracleEndpoint(oracleEntity)
     return true
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -74,7 +75,7 @@ exports.createOracle = async (req) => {
 exports.getOracle = async (req) => {
   try {
     let oracleEndpointModelList
-    let isCurrency, isType = false
+    let isCurrency; let isType = false
     const oracleList = []
     if (req.query.currency) {
       isCurrency = true
@@ -82,9 +83,9 @@ exports.getOracle = async (req) => {
     if (req.query.type) {
       isType = true
     }
-    if (isCurrency && isType){
+    if (isCurrency && isType) {
       oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(req.query.type, req.query.currency)
-    } else if (isCurrency && !isType){
+    } else if (isCurrency && !isType) {
       oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByCurrency(req.query.currency)
     } else if (isType && !isCurrency) {
       oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByType(req.query.type)
@@ -105,9 +106,9 @@ exports.getOracle = async (req) => {
       oracleList.push(oracle)
     }
     return oracleList
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -141,7 +142,7 @@ exports.updateOracle = async (req) => {
         if (currencyModel) {
           newOracleEntry.currencyId = payload.currency
         } else {
-          throw new Error('Invalid currency code')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code').toApiErrorObject()
         }
       }
       if (payload.isDefault && payload.isDefault !== currentOracleEndpoint.isDefault) {
@@ -150,11 +151,11 @@ exports.updateOracle = async (req) => {
       await oracleEndpoint.updateOracleEndpointById(req.params.ID, newOracleEntry)
       return true
     } else {
-      throw new Error('Oracle not found')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, 'Oracle not found').toApiErrorObject()
     }
   } catch (e) {
     Logger.error(e)
-    throw e
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -171,6 +172,6 @@ exports.deleteOracle = async (req) => {
     return true
   } catch (e) {
     Logger.error(e)
-    throw e
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

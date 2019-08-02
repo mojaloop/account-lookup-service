@@ -10,7 +10,7 @@ const Sinon = require('sinon')
 const helper = require('../../util/helper')
 const Logger = require('@mojaloop/central-services-shared').Logger
 
-let getResponse = [{
+const getResponse = [{
   oracleId: '1',
   oracleIdType: 'MSISDN',
   endpoint: {
@@ -39,7 +39,6 @@ Test.afterEach(async () => {
  */
 
 Test.serial('test OracleGet get operation', async function (t) {
-
   const server = new Hapi.Server()
 
   await server.register({
@@ -64,20 +63,20 @@ Test.serial('test OracleGet get operation', async function (t) {
 
   t.pass(mock)
   t.pass(mock.request)
-  //Get the resolved path from mock request
-  //Mock request Path templates({}) are resolved using path parameters
+  // Get the resolved path from mock request
+  // Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'get',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
-    //Send the request body
+    // Send the request body
     options.payload = mock.request.body
   } else if (mock.request.formData) {
-    //Send the request form data
+    // Send the request form data
     options.payload = mock.request.formData
-    //Set the Content-Type as application/x-www-form-urlencoded
+    // Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
     options.headers = helper.defaultAdminHeaders()
   }
@@ -115,7 +114,7 @@ Test.serial('test OracleGet throws error', async function (t) {
             errorInformation: {
               errorCode: error.statusCode,
               errorDescription: error.message,
-              extensionList:[{
+              extensionList: [{
                 key: '',
                 value: ''
               }]
@@ -141,20 +140,20 @@ Test.serial('test OracleGet throws error', async function (t) {
 
   t.pass(mock)
   t.pass(mock.request)
-  //Get the resolved path from mock request
-  //Mock request Path templates({}) are resolved using path parameters
+  // Get the resolved path from mock request
+  // Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'get',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
-    //Send the request body
+    // Send the request body
     options.payload = mock.request.body
   } else if (mock.request.formData) {
-    //Send the request form data
+    // Send the request form data
     options.payload = mock.request.formData
-    //Set the Content-Type as application/x-www-form-urlencoded
+    // Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
     options.headers = helper.defaultAdminHeaders()
   }
@@ -202,20 +201,20 @@ Test.serial('test OraclePost post operation', async function (t) {
 
   t.pass(mock)
   t.pass(mock.request)
-  //Get the resolved path from mock request
-  //Mock request Path templates({}) are resolved using path parameters
+  // Get the resolved path from mock request
+  // Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'post',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
-    //Send the request body
+    // Send the request body
     options.payload = mock.request.body
   } else if (mock.request.formData) {
-    //Send the request form data
+    // Send the request form data
     options.payload = mock.request.formData
-    //Set the Content-Type as application/x-www-form-urlencoded
+    // Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
     options.headers = helper.defaultAdminHeaders()
   }
@@ -253,7 +252,7 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
             errorInformation: {
               errorCode: error.statusCode,
               errorDescription: error.message,
-              extensionList:[{
+              extensionList: [{
                 key: '',
                 value: ''
               }]
@@ -279,20 +278,20 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
 
   t.pass(mock)
   t.pass(mock.request)
-  //Get the resolved path from mock request
-  //Mock request Path templates({}) are resolved using path parameters
+  // Get the resolved path from mock request
+  // Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'post',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
-    //Send the request body
+    // Send the request body
     options.payload = mock.request.body
   } else if (mock.request.formData) {
-    //Send the request form data
+    // Send the request form data
     options.payload = mock.request.formData
-    //Set the Content-Type as application/x-www-form-urlencoded
+    // Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
     options.headers = helper.defaultAdminHeaders()
   }
@@ -305,4 +304,3 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
   await server.stop()
   t.is(response.statusCode, 400, 'Error Thrown')
 })
-

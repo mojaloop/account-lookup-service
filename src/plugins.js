@@ -34,8 +34,8 @@ const registerPlugins = async (server) => {
     plugin: require('hapi-swagger'),
     options: {
       info: {
-        'title': server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation':'ALS Admin Swagger Documentation',
-        'version': Package.version
+        title: server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation' : 'ALS Admin Swagger Documentation',
+        version: Package.version
       }
     }
   })
@@ -47,6 +47,18 @@ const registerPlugins = async (server) => {
         interval: 10000
       }
     }
+  })
+
+  await server.register({
+    plugin: require('@hapi/basic')
+  })
+
+  await server.register({
+    plugin: require('@now-ims/hapi-now-auth')
+  })
+
+  await server.register({
+    plugin: require('hapi-auth-bearer-token')
   })
 
   await server.register([Inert, Vision, Blipp])

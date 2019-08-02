@@ -32,8 +32,9 @@ const Config = require('./lib/config.js')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
-const ParticipantEndpointCache = require('./models/participantEndpoint/participantEndpoint')
+const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const Migrator = require('./lib/migrator')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const connectDatabase = async () => {
   return await Db.connect(Config.DATABASE_URI)
@@ -64,7 +65,15 @@ const migrate = async (isApi) => {
  */
 const createServer = async (port, isApi) => {
   const server = await new Hapi.Server({
-    port
+    port,
+    routes: {
+      validate: {
+        options: ErrorHandler.validateRoutes(),
+        failAction: async (request, h, err) => {
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
+        }
+      }
+    }
   })
   await Plugins.registerPlugins(server)
   await server.register([
@@ -84,22 +93,7 @@ const createServer = async (port, isApi) => {
     {
       type: 'onPreResponse',
       method: (request, h) => {
-        if (!request.response.isBoom) {
-          RequestLogger.logResponse(request.response)
-        } else {
-          const error = request.response
-          error.message = {
-            errorInformation: {
-              errorCode: error.statusCode,
-              errorDescription: error.message,
-              extensionList:[{
-                key: '',
-                value: ''
-              }]
-            }
-          }
-          error.reformat()
-        }
+        RequestLogger.logResponse(request.response)
         return h.continue
       }
     }
@@ -114,8 +108,8 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
   const server = await createServer(port, isApi)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  if(isApi) {
-    await ParticipantEndpointCache.initializeCache()
+  if (isApi) {
+    await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   }
   return server
 }

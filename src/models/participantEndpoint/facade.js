@@ -25,10 +25,9 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Cache = require('./participantEndpoint')
-const request = require('../../lib/request')
-const Enums = require('../../lib/enum')
-const util = require('../../lib/util')
+const Util = require('@mojaloop/central-services-shared').Util
+const Enums = require('@mojaloop/central-services-shared').Enum
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Mustache = require('mustache')
 const Config = require('../../lib/config')
 
@@ -41,7 +40,7 @@ const Config = require('../../lib/config')
  *
  * @description it gets the applicable endpoints and sends through the response to them
  *
- * @param {object} req - initial request coming in
+ * @param {object} headers - incoming http request headers
  * @param {string} requestedParticipant - the participant the request needs to be sent to
  * @param {string} endpointType - the type of endpoint being requested
  * @param {string} method - the http method
@@ -50,13 +49,14 @@ const Config = require('../../lib/config')
  *
  * @returns {object} - Returns http response from request endpoint
  */
-exports.sendRequest = async (req, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined) => {
+exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined) => {
   try {
-    const requestedEndpoint = await Cache.getEndpoint(requestedParticipant, endpointType, options || undefined)
+    const requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
     Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
-    return await request.sendRequest(requestedEndpoint, req.headers, method, payload)
-  } catch (e) {
-    throw e
+    return await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -70,12 +70,12 @@ exports.sendRequest = async (req, requestedParticipant, endpointType, method = u
  */
 exports.validateParticipant = async (fsp) => {
   try {
-    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp})
+    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, { fsp })
     Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
-    return await request.sendRequest(requestedParticipantUrl, util.defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH))
-  } catch (e) {
-    Logger.error(e)
-    return null
+    return await Util.Request.sendRequest(requestedParticipantUrl, Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value), Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.Headers.FSPIOP.SWITCH.value)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -84,24 +84,31 @@ exports.validateParticipant = async (fsp) => {
  *
  * @description it gets the applicable endpoints and sends through an error message
  *
- * @param {object} req - initial request coming in
  * @param {string} participantName - the participant the request needs to be sent to
  * @param {string} endpointType - the type of endpoint being requested
  * @param {object} errorInformation - payload of the error information being sent out
+ * @param {object} headers - incoming http request headers
+ * @param {object} params - uri parameters of the http request
+ * @param {object} payload - payload of the request being sent out
  *
  * @returns {object} - Returns http response from request endpoint
  */
-exports.sendErrorToParticipant = async (req, participantName, endpointType, errorInformation) => {
-  let requestIdExists = false
-  if(req.payload && req.payload.requestId){
-    requestIdExists = true
+exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined ) => {
+  try {
+    let requestIdExists = false
+    if (payload && payload.requestId) {
+      requestIdExists = true
+    }
+    const requesterErrorEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, participantName, endpointType, {
+      partyIdType: params.Type || undefined,
+      partyIdentifier: params.ID|| undefined,
+      partySubIdOrType: params.SubId || undefined,
+      requestId: requestIdExists ? payload.requestId : undefined
+    })
+    Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
+    await Util.Request.sendRequest(requesterErrorEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
-  const requesterErrorEndpoint = await Cache.getEndpoint(participantName, endpointType, {
-    partyIdType: req.params.Type,
-    partyIdentifier: req.params.ID,
-    partySubIdOrType: req.params.SubId || undefined,
-    requestId: requestIdExists ? req.payload.requestId : undefined
-  })
-  Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-  await request.sendRequest(requesterErrorEndpoint, req.headers, Enums.restMethods.PUT, errorInformation)
 }
