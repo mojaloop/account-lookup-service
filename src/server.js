@@ -71,6 +71,10 @@ const createServer = async (port, isApi) => {
         failAction: async (request, h, err) => {
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
+      },
+      payload: {
+        parse: true,
+        output: 'stream'
       }
     }
   })

@@ -128,6 +128,9 @@ const postParticipants = async (headers, method, params, payload) => {
             partyIdType: params.Type,
             partyIdentifier: params.ID
           }
+          if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+            headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
+          }
           await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, responsePayload, options)
         } else {
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT,

@@ -56,7 +56,7 @@ module.exports = {
    */
   put: function (req, h) {
     try {
-      parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload)
+      parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }

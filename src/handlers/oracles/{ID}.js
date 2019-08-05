@@ -40,7 +40,7 @@ module.exports = {
    */
   put: async (request, h) => {
     try {
-      await oracle.updateOracle(request)
+      await oracle.updateOracle(request.params, request.payload)
       return h.response().code(204)
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -55,7 +55,7 @@ module.exports = {
    */
   delete: async (request, h) => {
     try {
-      await oracle.deleteOracle(request)
+      await oracle.deleteOracle(request.params)
       return h.response().code(204)
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)

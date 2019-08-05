@@ -15,7 +15,6 @@ const Helper = require('../../../util/helper')
 const DB = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
 const Config = require('../../../../src/lib/config')
-// const oracle = require('../../../../src/models/oracle/facade')
 
 let sandbox
 

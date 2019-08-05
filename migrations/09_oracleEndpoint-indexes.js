@@ -29,7 +29,7 @@ exports.up = function (knex) {
   return knex.schema.table('oracleEndpoint', (t) => {
     t.index('partyIdTypeId')
     t.index('endpointTypeId')
-    t.unique(['partyIdTypeId', 'isDefault'])
+    t.unique(['partyIdTypeId', 'isDefault', 'isActive'])
   })
 }
 

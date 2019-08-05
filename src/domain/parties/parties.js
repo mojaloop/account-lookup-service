@@ -31,6 +31,7 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 const participant = require('../../models/participantEndpoint/facade')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const oracle = require('../../models/oracle/facade')
+const decodePayload = require('@mojaloop/central-services-stream').Kafka.Protocol.decodePayload
 
 /**
  * @function getPartiesByTypeAndID
@@ -86,8 +87,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
  * @param {object} params - uri parameters of the http request
  * @param {string} method - http request method
  * @param {object} payload - payload of the request being sent out
+ * @param {string} dataUri - encoded payload of the request being sent out
  */
-const putPartiesByTypeAndID = async (headers, params, method, payload) => {
+const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) => {
   try {
     Logger.info('parties::putPartiesByTypeAndID::begin')
     const requesterParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
@@ -100,7 +102,8 @@ const putPartiesByTypeAndID = async (headers, params, method, payload) => {
             partyIdType: type,
             partyIdentifier: params.ID
           }
-          await participant.sendRequest(headers, destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT, Enums.Http.RestMethods.PUT, payload, options)
+          const decodedPayload = decodePayload(dataUri, { asParsed: false })
+          await participant.sendRequest(headers, destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT, Enums.Http.RestMethods.PUT, decodedPayload.body.toString(), options)
           Logger.info('parties::putPartiesByTypeAndID::end')
         } else {
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
@@ -128,14 +131,16 @@ const putPartiesByTypeAndID = async (headers, params, method, payload) => {
  * @param {object} headers - incoming http request headers
  * @param {object} params - uri parameters of the http request
  * @param {object} payload - payload of the request being sent out
+ * @param {string} dataUri - encoded payload of the request being sent out
  */
-const putPartiesErrorByTypeAndID = async (headers, params, payload) => {
+const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri) => {
   try {
     const type = params.Type
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
       if (destinationParticipant) {
-        await participant.sendErrorToParticipant(destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, payload, headers, params)
+        const decodedPayload = decodePayload(dataUri, { asParsed: false })
+        await participant.sendErrorToParticipant(destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, decodedPayload.body.toString(), headers, params)
       } else {
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)

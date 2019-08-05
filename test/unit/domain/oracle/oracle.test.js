@@ -124,7 +124,7 @@ Test.afterEach(() => {
 
 Test('createOracle should create an oracle isDefault true', async (test) => {
   try {
-    const response = await oracleDomain.createOracle(createOracleRequestIsDefault)
+    const response = await oracleDomain.createOracle(createOracleRequestIsDefault.payload)
     test.is(response, true, 'create oracle isDefault completed successfully')
   } catch (err) {
     Logger.error(`createOracle test failed with error - ${err}`)
@@ -134,7 +134,7 @@ Test('createOracle should create an oracle isDefault true', async (test) => {
 
 Test('createOracle should create an oracle isDefault false', async (test) => {
   try {
-    const response = await oracleDomain.createOracle(createOracleRequest)
+    const response = await oracleDomain.createOracle(createOracleRequest.payload)
     test.is(response, true, 'create oracle completed successfully')
   } catch (err) {
     Logger.error(`createOracle test failed with error - ${err}`)
@@ -149,7 +149,7 @@ Test('createOracle should throw and error', async (test) => {
       findOne: sandbox.stub()
     }
     Db.partyIdType.findOne.throws(new Error())
-    await oracleDomain.createOracle(createOracleRequest)
+    await oracleDomain.createOracle(createOracleRequest.payload)
     test.fail()
   } catch (err) {
     test.pass()
@@ -158,7 +158,7 @@ Test('createOracle should throw and error', async (test) => {
 
 Test('getOracle should get the details of the requested oracle without currency and type', async (test) => {
   try {
-    const response = await oracleDomain.getOracle(getOracleRequest)
+    const response = await oracleDomain.getOracle(getOracleRequest.query)
     test.deepEqual(response, getOracleResponse, 'get oracle without currency completed successfully')
   } catch (err) {
     Logger.error(`getOracle test failed with error - ${err}`)
@@ -169,7 +169,7 @@ Test('getOracle should get the details of the requested oracle without currency 
 Test('getOracle should get the details of the requested oracle with currency', async (test) => {
   try {
     getOracleRequest.query.currency = 'USD'
-    const response = await oracleDomain.getOracle(getOracleRequest)
+    const response = await oracleDomain.getOracle(getOracleRequest.query)
     test.deepEqual(response, getOracleResponse, 'get oracle with currency completed successfully')
   } catch (err) {
     Logger.error(`getOracle test failed with error - ${err}`)
@@ -181,7 +181,7 @@ Test('getOracle should get the details of the requested oracle with type', async
   try {
     getOracleRequest.query.currency = undefined
     getOracleRequest.query.type = 'MSISDN'
-    const response = await oracleDomain.getOracle(getOracleRequest)
+    const response = await oracleDomain.getOracle(getOracleRequest.query)
     test.deepEqual(response, getOracleResponse, 'get oracle with type completed successfully')
   } catch (err) {
     Logger.error(`getOracle test failed with error - ${err}`)
@@ -193,7 +193,7 @@ Test('getOracle should get the details of the requested oracle with currency and
   try {
     getOracleRequest.query.currency = 'USD'
     getOracleRequest.query.type = 'MSISDN'
-    const response = await oracleDomain.getOracle(getOracleRequest)
+    const response = await oracleDomain.getOracle(getOracleRequest.query)
     test.deepEqual(response, getOracleResponse, 'get oracle with currency and type completed successfully')
   } catch (err) {
     Logger.error(`getOracle test failed with error - ${err}`)
