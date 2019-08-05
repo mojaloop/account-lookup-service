@@ -135,7 +135,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload) => {
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
       if (destinationParticipant) {
-        await participant.sendErrorToParticipant(destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, headers, params, payload)
+        await participant.sendErrorToParticipant(destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, payload, headers, params)
       } else {
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)

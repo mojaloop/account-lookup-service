@@ -106,22 +106,6 @@ Test.serial('test OracleGet throws error', async function (t) {
     {
       type: 'onPreResponse',
       method: (request, h) => {
-        if (!request.response.isBoom) {
-          Logger.info('Not Boom error')
-        } else {
-          const error = request.response
-          error.message = {
-            errorInformation: {
-              errorCode: error.statusCode,
-              errorDescription: error.message,
-              extensionList: [{
-                key: '',
-                value: ''
-              }]
-            }
-          }
-          error.reformat()
-        }
         return h.continue
       }
     }
@@ -244,22 +228,6 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
     {
       type: 'onPreResponse',
       method: (request, h) => {
-        if (!request.response.isBoom) {
-          Logger.info('Not Boom error')
-        } else {
-          const error = request.response
-          error.message = {
-            errorInformation: {
-              errorCode: error.statusCode,
-              errorDescription: error.message,
-              extensionList: [{
-                key: '',
-                value: ''
-              }]
-            }
-          }
-          error.reformat()
-        }
         return h.continue
       }
     }

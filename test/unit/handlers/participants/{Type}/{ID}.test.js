@@ -29,16 +29,13 @@ const Mockgen = require('../../../../util/mockgen.js')
 const initServer = require('../../../../../src/server').initialize
 const Db = require('../../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
-const util = require('../../../../../src/lib/util')
 const participants = require('../../../../../src/domain/participants')
 const getPort = require('get-port')
 const requestLogger = require('../../../../../src/lib/requestLogger')
+const Helper = require('../../../../util/helper')
 
 let server
 let sandbox
-const destinationFsp = 'dfsp2'
-const sourceFsp = 'dfsp1'
-const resource = 'participants'
 
 Test.beforeEach(async () => {
   sandbox = Sinon.createSandbox()
@@ -69,7 +66,7 @@ Test('test getParticipantsByTypeAndID endpoint', async test => {
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      headers: Helper.defaultSwitchHeaders
     }
     if (mock.request.body) {
       // Send the request body
@@ -78,11 +75,11 @@ Test('test getParticipantsByTypeAndID endpoint', async test => {
       // Send the request form data
       options.payload = mock.request.formData
       // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp) || {}
+      options.headers = Helper.defaultSwitchHeaders || {}
     }
     // If headers are present, set the headers.
     if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      options.headers = Helper.defaultSwitchHeaders
     }
     sandbox.stub(participants, 'getParticipantsByTypeAndID').returns({})
     const response = await server.inject(options)
