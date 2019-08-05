@@ -28,6 +28,7 @@ const Config = require('./lib/config')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
+const ErrorHandling = require('@mojaloop/central-services-error-handling')
 
 const registerPlugins = async (server) => {
   await server.register({
@@ -61,7 +62,7 @@ const registerPlugins = async (server) => {
     plugin: require('hapi-auth-bearer-token')
   })
 
-  await server.register([Inert, Vision, Blipp])
+  await server.register([Inert, Vision, ErrorHandling, Blipp])
 }
 
 module.exports = {

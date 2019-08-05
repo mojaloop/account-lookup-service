@@ -26,11 +26,9 @@
 const Test = require('ava')
 const Sinon = require('sinon')
 const Mockgen = require('../../../../util/mockgen.js')
-const initServer = require('../../../../../src/server').initialize
 const Db = require('../../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const participants = require('../../../../../src/domain/participants')
-const getPort = require('get-port')
 const requestLogger = require('../../../../../src/lib/requestLogger')
 const Helper = require('../../../../util/helper')
 
@@ -50,7 +48,7 @@ Test.afterEach(async () => {
 
 Test('test getParticipantsByTypeAndID endpoint', async test => {
   try {
-    server = await initServer(await getPort())
+    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants/{Type}/{ID}',

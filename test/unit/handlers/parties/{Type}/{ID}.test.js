@@ -26,11 +26,9 @@
 const Test = require('ava')
 const Sinon = require('sinon')
 const Mockgen = require('../../../../util/mockgen.js')
-const initServer = require('../../../../../src/server').initialize
 const Db = require('../../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const parties = require('../../../../../src/domain/parties')
-const getPort = require('get-port')
 const Helper = require('../../../../util/helper')
 
 let server
@@ -39,7 +37,7 @@ let sandbox
 Test.before(async () => {
   sandbox = Sinon.createSandbox()
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  server = await initServer(await getPort())
+  server = await Helper.apiServer()
 })
 
 Test.after(async () => {

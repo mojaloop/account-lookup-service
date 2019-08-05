@@ -65,7 +65,7 @@
     "nyc": "14.1.1",
     "proxyquire": "2.1.1",
     "sinon": "7.3.2",
-    "standard": "^13.1.0",
+    "standard": "13.1.0",
     "swagmock": "1.0.0",
     "tap-xunit": "2.4.1"
   },
@@ -74,7 +74,7 @@
     "start:all": "run-p start:api start:admin",
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
-    "test": "npx ava test/unit/ match=.test.js",
+    "test": "npx ava",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "testing": "npx ava",
     "test:coverage": "nyc ava",

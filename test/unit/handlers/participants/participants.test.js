@@ -26,18 +26,13 @@
 const Test = require('ava')
 const Sinon = require('sinon')
 const Mockgen = require('../../../util/mockgen.js')
-const initServer = require('../../../../src/server').initialize
 const Db = require('../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
-const getPort = require('get-port')
 
 let server
 let sandbox
-const destinationFsp = 'dfsp2'
-const sourceFsp = 'dfsp1'
-const resource = 'participants'
 
 Test.beforeEach(async () => {
   sandbox = Sinon.createSandbox()
@@ -50,7 +45,7 @@ Test.afterEach(async () => {
 
 Test.serial('test postParticipantsBatch endpoint', async test => {
   try {
-    server = await initServer(await getPort())
+    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants',
@@ -93,7 +88,7 @@ Test.serial('test postParticipantsBatch endpoint', async test => {
 
 Test.serial('test postParticipantsBatch endpoint - error', async test => {
   try {
-    server = await initServer(await getPort())
+    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants',

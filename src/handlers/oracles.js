@@ -25,7 +25,6 @@
 'use strict'
 
 const oracle = require('../domain/oracle')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /oracles
@@ -39,12 +38,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
-    try {
-      const response = await oracle.getOracle(request)
-      return h.response(response).code(200)
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    const response = await oracle.getOracle(request)
+    return h.response(response).code(200)
   },
   /**
    * summary: Create Oracles
@@ -54,11 +49,8 @@ module.exports = {
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    try {
-      await oracle.createOracle(request)
-      return h.response().code(201)
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    await oracle.createOracle(request)
+    return h.response().code(201)
+
   }
 }

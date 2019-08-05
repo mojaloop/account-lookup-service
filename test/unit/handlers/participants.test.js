@@ -1,9 +1,6 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
 const Sinon = require('sinon')
 
 const Mockgen = require('../../util/mockgen')
@@ -28,16 +25,7 @@ Test.afterEach(async () => {
  */
 
 Test('test Participants Post operation', async function (t) {
-  const server = new Hapi.Server()
-
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/api_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: true
-    }
-  })
+  const server = await helper.apiServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({

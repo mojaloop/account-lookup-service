@@ -1,14 +1,10 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
 const Mockgen = require('../../util/mockgen.js')
 const oracle = require('../../../src/domain/oracle')
 const Sinon = require('sinon')
 const helper = require('../../util/helper')
-const Logger = require('@mojaloop/central-services-shared').Logger
 
 const getResponse = [{
   oracleId: '1',
@@ -22,11 +18,11 @@ const getResponse = [{
 
 let sandbox
 
-Test.beforeEach(async () => {
+Test.serial.beforeEach(async () => {
   sandbox = Sinon.createSandbox()
 })
 
-Test.afterEach(async () => {
+Test.serial.afterEach(async () => {
   sandbox.restore()
 })
 
@@ -39,17 +35,7 @@ Test.afterEach(async () => {
  */
 
 Test.serial('test OracleGet get operation', async function (t) {
-  const server = new Hapi.Server()
-
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/admin_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: true
-    }
-  })
-
+  const server = await helper.adminServer()
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -92,24 +78,7 @@ Test.serial('test OracleGet get operation', async function (t) {
 
 Test.serial('test OracleGet throws error', async function (t) {
   sandbox.stub(oracle, 'getOracle').throws(new Error('Error Thrown'))
-  const server = new Hapi.Server()
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/admin_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: false
-    }
-  })
-
-  await server.ext([
-    {
-      type: 'onPreResponse',
-      method: (request, h) => {
-        return h.continue
-      }
-    }
-  ])
+  const server = await helper.adminServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
@@ -147,7 +116,7 @@ Test.serial('test OracleGet throws error', async function (t) {
   }
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 400, 'Error thrown')
+  t.is(response.statusCode, 500, 'Error thrown')
 })
 
 /**
@@ -161,16 +130,7 @@ Test.serial('test OracleGet throws error', async function (t) {
 Test.serial('test OraclePost post operation', async function (t) {
   sandbox.stub()
 
-  const server = new Hapi.Server()
-
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/admin_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: true
-    }
-  })
+  const server = await helper.adminServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
@@ -213,25 +173,7 @@ Test.serial('test OraclePost post operation', async function (t) {
 })
 
 Test.serial('test OraclePost post operation throws error', async function (t) {
-  const server = new Hapi.Server()
-
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/admin_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: false
-    }
-  })
-
-  await server.ext([
-    {
-      type: 'onPreResponse',
-      method: (request, h) => {
-        return h.continue
-      }
-    }
-  ])
+  const server = await helper.adminServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
@@ -270,5 +212,5 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
   sandbox.stub(oracle, 'createOracle').throws(new Error('Error Thrown'))
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 400, 'Error Thrown')
+  t.is(response.statusCode, 500, 'Error Thrown')
 })

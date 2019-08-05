@@ -29,16 +29,7 @@ Test.afterEach(async () => {
  */
 Test.serial('test OraclePut put operation', async function (t) {
   try {
-    const server = new Hapi.Server()
-
-    await server.register({
-      plugin: HapiOpenAPI,
-      options: {
-        api: Path.resolve(__dirname, '../../../../src/interface/admin_swagger.json'),
-        handlers: Path.join(__dirname, '../../../../src/handlers'),
-        outputvalidation: true
-      }
-    })
+    const server = await helper.adminServer()
 
     const requests = new Promise((resolve, reject) => {
       Mockgen(false).requests({

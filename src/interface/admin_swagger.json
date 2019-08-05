@@ -541,6 +541,19 @@
         "errorDescription"
       ]
     },
+    "ErrorInformationObject": {
+      "title": "ErrorInformationObject",
+      "type": "object",
+      "description": "Data model for the complex type object that contains ErrorInformation.",
+      "properties": {
+        "errorInformation": {
+          "$ref": "#/definitions/ErrorInformation"
+        }
+      },
+      "required": [
+        "errorInformation"
+      ]
+    },
     "ErrorInformationResponse": {
       "title": "ErrorInformationResponse",
       "type": "object",

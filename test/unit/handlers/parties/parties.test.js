@@ -26,12 +26,10 @@
 const Test = require('ava')
 const Sinon = require('sinon')
 const Mockgen = require('../../../util/mockgen.js')
-const initServer = require('../../../../src/server').initialize
 const Db = require('../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
-const getPort = require('get-port')
 
 let server
 let sandbox
@@ -47,7 +45,7 @@ Test.afterEach(async () => {
 
 Test('test postParticipantsBatch endpoint', async test => {
   try {
-    server = await initServer(await getPort())
+    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants',

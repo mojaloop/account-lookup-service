@@ -1,9 +1,6 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
 const Mockgen = require('../../util/mockgen.js')
 const helper = require('../../util/helper')
 
@@ -17,16 +14,7 @@ const helper = require('../../util/helper')
 Test('test Health get operation', async function (t) {
   // console.log('test Health get operation_1')
 
-  const server = new Hapi.Server()
-
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/admin_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: true
-    }
-  })
+  const server = await helper.adminServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
