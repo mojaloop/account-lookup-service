@@ -49,7 +49,6 @@ Test.after(async () => {
 
 Test('test postParticipantsBatch endpoint', async test => {
   try {
-    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants',
@@ -83,6 +82,7 @@ Test('test postParticipantsBatch endpoint', async test => {
     sandbox.stub(participants, 'postParticipantsBatch').returns({})
     const response = await server.inject(options)
     test.is(response.statusCode, 200, 'Ok response status')
+    participants.postParticipantsBatch.restore()
   } catch (e) {
     Logger.error(e)
     test.fail()

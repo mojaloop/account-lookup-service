@@ -49,7 +49,6 @@ Test.after(async () => {
 
 Test.serial('test postParticipantsBatch endpoint', async test => {
   try {
-    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants',
@@ -92,7 +91,6 @@ Test.serial('test postParticipantsBatch endpoint', async test => {
 
 Test.serial('test postParticipantsBatch endpoint - error', async test => {
   try {
-    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants',

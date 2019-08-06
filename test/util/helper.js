@@ -35,9 +35,6 @@ const validatePayeeFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPo
 const defaultSwitchHeaders = defaultHeaders(Enums.Http.HeaderResources.SWITCH, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.HeaderResources.SWITCH)
 const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payerfsp })
 const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payeefsp })
-const Server = require('../../src/server')
-const getPort = require('get-port')
-
 
 /**
  * @function defaultHeaders

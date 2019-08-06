@@ -118,6 +118,5 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
 }
 
 module.exports = {
-  initialize,
-  connectDatabase
+  initialize
 }
