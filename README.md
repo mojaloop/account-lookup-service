@@ -66,4 +66,5 @@ npm run audit:check
 
 And commit the changed `audit-resolv.json` to ensure that CircleCI will build correctly.
 
-Note: For all put parties callbacks FSPIOP-Destination header is considered to be mandatory. 
+## Note: 
+#### For all put parties callbacks FSPIOP-Destination header is considered to be mandatory. 
