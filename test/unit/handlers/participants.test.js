@@ -2,17 +2,23 @@
 
 const Test = require('ava')
 const Sinon = require('sinon')
-
+const initServer = require('../../../src/server').initialize
 const Mockgen = require('../../util/mockgen')
 const helper = require('../../util/helper')
+const Db = require('../../../src/lib/db')
+const getPort = require('get-port')
 
 let sandbox
+let server
 
 Test.beforeEach(async () => {
   sandbox = Sinon.createSandbox()
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  server = await initServer(await getPort())
 })
 
 Test.afterEach(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
@@ -25,8 +31,6 @@ Test.afterEach(async () => {
  */
 
 Test('test Participants Post operation', async function (t) {
-  const server = await helper.apiServer()
-
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',

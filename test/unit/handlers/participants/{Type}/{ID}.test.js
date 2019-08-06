@@ -31,24 +31,27 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const participants = require('../../../../../src/domain/participants')
 const requestLogger = require('../../../../../src/lib/requestLogger')
 const Helper = require('../../../../util/helper')
+const initServer = require('../../../../../src/server').initialize
+const getPort = require('get-port')
 
 let server
 let sandbox
 
-Test.beforeEach(async () => {
+Test.before(async () => {
   sandbox = Sinon.createSandbox()
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
   sandbox.stub(requestLogger, 'logRequest').returns({})
   sandbox.stub(requestLogger, 'logResponse').returns({})
+  server = await initServer(await getPort())
 })
 
-Test.afterEach(async () => {
+Test.after(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
 Test('test getParticipantsByTypeAndID endpoint', async test => {
   try {
-    server = await Helper.apiServer()
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants/{Type}/{ID}',
@@ -81,8 +84,8 @@ Test('test getParticipantsByTypeAndID endpoint', async test => {
     }
     sandbox.stub(participants, 'getParticipantsByTypeAndID').returns({})
     const response = await server.inject(options)
-    await server.stop()
     test.is(response.statusCode, 202, 'Ok response status')
+    participants.getParticipantsByTypeAndID.restore()
   } catch (e) {
     Logger.error(e)
     test.fail()

@@ -9,14 +9,23 @@ const helper = require('../../../util/helper')
 const Sinon = require('sinon')
 const oracle = require('../../../../src/domain/oracle')
 const Logger = require('@mojaloop/central-services-shared').Logger
+const initServer = require('../../../../src/server').initialize
+const getPort = require('get-port')
+const Db = require('../../../../src/lib/db')
+const Migrator = require('../../../../src/lib/migrator')
 
 let sandbox
+let server
 
-Test.beforeEach(async () => {
+Test.before(async () => {
   sandbox = Sinon.createSandbox()
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
+  server = await initServer(await getPort(), false)
 })
 
-Test.afterEach(async () => {
+Test.after(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
@@ -29,8 +38,6 @@ Test.afterEach(async () => {
  */
 Test.serial('test OraclePut put operation', async function (t) {
   try {
-    const server = await helper.adminServer()
-
     const requests = new Promise((resolve, reject) => {
       Mockgen(false).requests({
         path: '/oracles/{ID}',
@@ -67,8 +74,8 @@ Test.serial('test OraclePut put operation', async function (t) {
     }
     sandbox.stub(oracle, 'updateOracle').returns(Promise.resolve({}))
     const response = await server.inject(options)
-    await server.stop()
     t.is(response.statusCode, 204, 'Ok response status')
+    oracle.updateOracle.restore()
   } catch (e) {
     Logger.error(`testing error ${e}`)
     t.fail()
@@ -84,17 +91,6 @@ Test.serial('test OraclePut put operation', async function (t) {
  */
 Test.serial('test OracleDelete delete operation', async function (t) {
   try {
-    const server = new Hapi.Server()
-
-    await server.register({
-      plugin: HapiOpenAPI,
-      options: {
-        api: Path.resolve(__dirname, '../../../../src/interface/admin_swagger.json'),
-        handlers: Path.join(__dirname, '../../../../src/handlers'),
-        outputvalidation: true
-      }
-    })
-
     const requests = new Promise((resolve, reject) => {
       Mockgen(false).requests({
         path: '/oracles/{ID}',
@@ -131,8 +127,8 @@ Test.serial('test OracleDelete delete operation', async function (t) {
     }
     sandbox.stub(oracle, 'deleteOracle').returns(Promise.resolve({}))
     const response = await server.inject(options)
-    await server.stop()
     t.is(response.statusCode, 204, 'Ok response status')
+    oracle.deleteOracle.restore()
   } catch (e) {
     Logger.error(`testing error ${e}`)
     t.fail()

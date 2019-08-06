@@ -5,6 +5,10 @@ const Mockgen = require('../../util/mockgen.js')
 const oracle = require('../../../src/domain/oracle')
 const Sinon = require('sinon')
 const helper = require('../../util/helper')
+const initServer = require('../../../src/server').initialize
+const Db = require('../../../src/lib/db')
+const getPort = require('get-port')
+const Migrator = require('../../../src/lib/migrator')
 
 const getResponse = [{
   oracleId: '1',
@@ -17,12 +21,17 @@ const getResponse = [{
 }]
 
 let sandbox
+let server
 
-Test.serial.beforeEach(async () => {
+Test.before(async () => {
   sandbox = Sinon.createSandbox()
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
+  server = await initServer(await getPort(), false)
 })
 
-Test.serial.afterEach(async () => {
+Test.after(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
@@ -35,7 +44,6 @@ Test.serial.afterEach(async () => {
  */
 
 Test.serial('test OracleGet get operation', async function (t) {
-  const server = await helper.adminServer()
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -72,13 +80,12 @@ Test.serial('test OracleGet get operation', async function (t) {
   }
   sandbox.stub(oracle, 'getOracle').returns(Promise.resolve(getResponse))
   const response = await server.inject(options)
-  await server.stop()
   t.is(response.statusCode, 200, 'Ok response status')
+  oracle.getOracle.restore()
 })
 
 Test.serial('test OracleGet throws error', async function (t) {
   sandbox.stub(oracle, 'getOracle').throws(new Error('Error Thrown'))
-  const server = await helper.adminServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
@@ -115,8 +122,8 @@ Test.serial('test OracleGet throws error', async function (t) {
     options.headers = mock.request.headers
   }
   const response = await server.inject(options)
-  await server.stop()
   t.is(response.statusCode, 500, 'Error thrown')
+  oracle.getOracle.restore()
 })
 
 /**
@@ -128,10 +135,6 @@ Test.serial('test OracleGet throws error', async function (t) {
  */
 
 Test.serial('test OraclePost post operation', async function (t) {
-  sandbox.stub()
-
-  const server = await helper.adminServer()
-
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -168,13 +171,11 @@ Test.serial('test OraclePost post operation', async function (t) {
   }
   sandbox.stub(oracle, 'createOracle').returns(Promise.resolve({}))
   const response = await server.inject(options)
-  await server.stop()
   t.is(response.statusCode, 201, 'Ok response status')
+  oracle.createOracle.restore()
 })
 
 Test.serial('test OraclePost post operation throws error', async function (t) {
-  const server = await helper.adminServer()
-
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -211,6 +212,6 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
   }
   sandbox.stub(oracle, 'createOracle').throws(new Error('Error Thrown'))
   const response = await server.inject(options)
-  await server.stop()
   t.is(response.statusCode, 500, 'Error Thrown')
+  oracle.createOracle.restore()
 })

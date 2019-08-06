@@ -30,16 +30,20 @@ const Db = require('../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
+const initServer = require('../../../../src/server').initialize
+const getPort = require('get-port')
 
 let server
 let sandbox
 
-Test.beforeEach(async () => {
+Test.before(async () => {
   sandbox = Sinon.createSandbox()
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  server = await initServer(await getPort())
 })
 
-Test.afterEach(async () => {
+Test.after(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
@@ -78,7 +82,6 @@ Test('test postParticipantsBatch endpoint', async test => {
     }
     sandbox.stub(participants, 'postParticipantsBatch').returns({})
     const response = await server.inject(options)
-    await server.stop()
     test.is(response.statusCode, 200, 'Ok response status')
   } catch (e) {
     Logger.error(e)

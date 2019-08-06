@@ -233,14 +233,6 @@ function defaultAdminHeaders () {
   }
 }
 
-const adminServer = async () => {
-  return Server.initialize(await getPort(), false)
-}
-
-const apiServer = async () => {
-  return Server.initialize(await getPort(), true)
-}
-
 module.exports = {
   defaultAdminHeaders,
   validatePayerFspUri,
@@ -260,7 +252,5 @@ module.exports = {
   getEndPointsResponse,
   fspIdPayload,
   participantPutEndpointOptions,
-  postByTypeIdCurrencyRequest,
-  adminServer,
-  apiServer
+  postByTypeIdCurrencyRequest
 }

@@ -3,7 +3,24 @@
 const Test = require('ava')
 const Mockgen = require('../../util/mockgen.js')
 const helper = require('../../util/helper')
+const Db = require('../../../src/lib/db')
+const initServer = require('../../../src/server').initialize
+const getPort = require('get-port')
+const Sinon = require('sinon')
 
+let sandbox
+let server
+
+Test.beforeEach(async () => {
+  sandbox = Sinon.createSandbox()
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  server = await initServer(await getPort())
+})
+
+Test.afterEach(async () => {
+  await server.stop()
+  sandbox.restore()
+})
 /**
  * summary: Get Health
  * description: The HTTP request GET /health is used to get the status of the server
@@ -12,9 +29,6 @@ const helper = require('../../util/helper')
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test Health get operation', async function (t) {
-  // console.log('test Health get operation_1')
-
-  const server = await helper.adminServer()
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
@@ -50,8 +64,6 @@ Test('test Health get operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-
   const response = await server.inject(options)
-  await server.stop()
   t.is(response.statusCode, 200, 'Ok response status')
 })
