@@ -3929,7 +3929,9 @@
       "name": "ID",
       "in": "path",
       "required": true,
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
     },
     "Type": {
       "name": "Type",
