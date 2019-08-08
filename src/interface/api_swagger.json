@@ -3937,7 +3937,17 @@
       "name": "Type",
       "in": "path",
       "required": true,
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "MSISDN",
+        "EMAIL",
+        "PERSONAL_ID",
+        "BUSINESS",
+        "DEVICE",
+        "ACCOUNT_ID",
+        "IBAN",
+        "ALIAS"
+      ]
     },
     "SubId": {
       "name": "SubId",
