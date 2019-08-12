@@ -24,6 +24,8 @@
  ******/
 'use strict'
 
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}/error
  */
@@ -36,6 +38,6 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    return h.response({ errorInformation: { errorCode: '501', errorDescription: 'Not implemented' } }).code(501)
+    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 }

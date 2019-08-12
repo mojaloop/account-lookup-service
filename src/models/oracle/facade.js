@@ -95,7 +95,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         }
       } else {
         Logger.error(`Oracle type:${type} not found`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`).toApiErrorObject()
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
       }
     }
     Logger.debug(`Oracle endpoints: ${url}`)
@@ -143,7 +143,7 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
       return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method, payload || undefined)
     } else {
       Logger.error(`Oracle type:${type} not found`)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`).toApiErrorObject()
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
     }
   } catch (err) {
     Logger.error(err)

@@ -34,6 +34,7 @@ const RequestLogger = require('./lib/requestLogger')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const Migrator = require('./lib/migrator')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Boom = require('@hapi/boom')
 
 const connectDatabase = async () => {
   return await Db.connect(Config.DATABASE_URI)
@@ -69,7 +70,7 @@ const createServer = async (port, isApi) => {
       validate: {
         options: ErrorHandler.validateRoutes(),
         failAction: async (request, h, err) => {
-          throw ErrorHandler.Factory.createFSPIOPErrorFromJoiError(err)
+          throw Boom.boomify(err)
         }
       },
       payload: {

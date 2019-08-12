@@ -68,5 +68,5 @@ Test('test Participants Post operation', async function (t) {
 
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 500, 'Ok response status')
+  t.is(response.statusCode, 400, 'Ok response status')
 })

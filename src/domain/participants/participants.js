@@ -70,7 +70,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
       Logger.info('getParticipantsByTypeAndID::end')
     } else {
       Logger.error('Requester FSP not found')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found').toApiErrorObject()
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
   } catch (err) {
     Logger.error(err)
@@ -138,7 +138,7 @@ const postParticipants = async (headers, method, params, payload) => {
         }
       } else {
         Logger.error('Requester FSP not found')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found').toApiErrorObject()
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
       }
     } else {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
@@ -232,7 +232,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
       Logger.info('postParticipantsBatch::end')
     } else {
       Logger.error('Requester FSP not found')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found').toApiErrorObject()
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
   } catch (err) {
     Logger.error(err)
