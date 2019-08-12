@@ -69,7 +69,7 @@ const createServer = async (port, isApi) => {
       validate: {
         options: ErrorHandler.validateRoutes(),
         failAction: async (request, h, err) => {
-          throw ErrorHandler.Factory.reformatFSPIOPError(err)
+          throw ErrorHandler.Factory.createFSPIOPErrorFromJoiError(err)
         }
       },
       payload: {
