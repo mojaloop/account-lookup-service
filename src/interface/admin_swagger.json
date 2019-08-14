@@ -541,6 +541,19 @@
         "errorDescription"
       ]
     },
+    "ErrorInformationObject": {
+      "title": "ErrorInformationObject",
+      "type": "object",
+      "description": "Data model for the complex type object that contains ErrorInformation.",
+      "properties": {
+        "errorInformation": {
+          "$ref": "#/definitions/ErrorInformation"
+        }
+      },
+      "required": [
+        "errorInformation"
+      ]
+    },
     "ErrorInformationResponse": {
       "title": "ErrorInformationResponse",
       "type": "object",
@@ -700,7 +713,24 @@
         "status": {
           "type": "string",
           "description": "The return status, usually \"OK\""
+        },
+        "uptime": {
+          "type": "number",
+          "description": "The amount of time in seconds that the server has been up for."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The UTC time that the server started up"
+        },
+        "versionNumber": {
+          "type": "string",
+          "description": "Current version of the API"
+        },
+        "services": {
+          "type": "array",
+          "description": "An list of the statuses of services that the API requires"
         }
+
       }
     }
   },

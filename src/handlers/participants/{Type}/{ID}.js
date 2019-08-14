@@ -26,6 +26,7 @@
 
 const participants = require('../../../domain/participants')
 const Logger = require('@mojaloop/central-services-shared').Logger
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -41,11 +42,10 @@ module.exports = {
   get: function (req, h) {
     const metadata = `${req.method} ${req.path}`
     try {
-      participants.getParticipantsByTypeAndID(req)
+      participants.getParticipantsByTypeAndID(req.headers, req.params, req.method, req.query)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err}`)
-      // TODO: what if this fails? We need to log. What happens by default?
-      // TODO: review this error message
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)
   },
@@ -57,7 +57,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
+    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
    * summary: ParticipantsByIDAndType
@@ -69,12 +69,12 @@ module.exports = {
   post: function (request, h) {
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.postParticipants(request)
+      participants.postParticipants(request.headers, request.method, request.params, request.payload)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      // TODO: review this error message
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-    return h.response().code(200)
+    return h.response().code(202)
   },
   /**
    * summary: ParticipantsByTypeAndID
@@ -84,8 +84,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: function (request, h) {
-    return h.response({errorInformation: {errorCode: '501', errorDescription: 'Not implemented'}}).code(501)
+    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 
 }
-

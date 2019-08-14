@@ -76,7 +76,7 @@ setupTest.beforeEach(() => {
     SetupProxy = Proxyquire('../../src/server', {
       '@hapi/hapi': HapiStub,
       'hapi-openapi': HapiOpenAPIStub,
-      'path': PathStub,
+      path: PathStub,
       './lib/config': ConfigStub,
       '@mojaloop/central-services-database': DbStub
     })
@@ -92,7 +92,7 @@ setupTest.afterEach(() => {
 setupTest('initialize ', async test => {
   try {
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    let server = await SetupProxy.initialize()
+    const server = await SetupProxy.initialize()
     test.assert(server, 'return server object')
     test.assert(HapiStub.Server.calledOnce, 'Hapi.Server called once')
     test.assert(serverStub.start.calledOnce, 'server.start called once')

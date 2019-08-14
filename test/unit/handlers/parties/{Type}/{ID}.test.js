@@ -29,15 +29,12 @@ const Mockgen = require('../../../../util/mockgen.js')
 const initServer = require('../../../../../src/server').initialize
 const Db = require('../../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
-const util = require('../../../../../src/lib/util')
 const parties = require('../../../../../src/domain/parties')
 const getPort = require('get-port')
+const Helper = require('../../../../util/helper')
 
 let server
 let sandbox
-let destinationFsp = 'dfsp2'
-let sourceFsp = 'dfsp1'
-let resource = 'participants'
 
 Test.before(async () => {
   sandbox = Sinon.createSandbox()
@@ -67,7 +64,7 @@ Test.serial('test getPartiesByTypeAndID endpoint', async test => {
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      headers: Helper.defaultSwitchHeaders
     }
     if (mock.request.body) {
       // Send the request body
@@ -76,11 +73,11 @@ Test.serial('test getPartiesByTypeAndID endpoint', async test => {
       // Send the request form data
       options.payload = mock.request.formData
       // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp) || {}
+      options.headers = Helper.defaultSwitchHeaders || {}
     }
     // If headers are present, set the headers.
     if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      options.headers = Helper.defaultSwitchHeaders
     }
     sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
     const response = await server.inject(options)
@@ -108,7 +105,7 @@ Test.serial('test putPartiesByTypeAndID endpoint', async test => {
     const options = {
       method: 'put',
       url: mock.request.path,
-      headers: util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      headers: Helper.defaultSwitchHeaders
     }
     if (mock.request.body) {
       // Send the request body
@@ -117,11 +114,11 @@ Test.serial('test putPartiesByTypeAndID endpoint', async test => {
       // Send the request form data
       options.payload = mock.request.formData
       // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp) || {}
+      options.headers = Helper.defaultSwitchHeaders || {}
     }
     // If headers are present, set the headers.
     if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      options.headers = Helper.defaultSwitchHeaders
     }
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
     const response = await server.inject(options)

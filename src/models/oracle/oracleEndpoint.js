@@ -26,6 +26,7 @@
 'use strict'
 
 const Db = require('../../lib/db')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const getOracleEndpointByType = async (type) => {
   try {
@@ -42,7 +43,7 @@ const getOracleEndpointByType = async (type) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -63,7 +64,7 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -83,7 +84,7 @@ const getOracleEndpointByCurrency = async (currencyId) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -103,7 +104,7 @@ const getOracleEndpointById = async (oracleEndpointId) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -121,7 +122,7 @@ const getAllOracleEndpoint = async () => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -129,31 +130,31 @@ const createOracleEndpoint = async (oracleEndpointModel) => {
   try {
     return await Db.oracleEndpoint.insert(oracleEndpointModel)
   } catch (err) {
-    throw err
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 const updateOracleEndpointById = async (id, oracleEndpointModel) => {
   try {
-    return await Db.oracleEndpoint.update({oracleEndpointId: id}, oracleEndpointModel)
+    return await Db.oracleEndpoint.update({ oracleEndpointId: id }, oracleEndpointModel)
   } catch (err) {
-    throw err
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   try {
-    return await Db.oracleEndpoint.update({oracleType}, {isActive})
+    return await Db.oracleEndpoint.update({ oracleType }, { isActive })
   } catch (err) {
-    throw err
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 const destroyOracleEndpointById = async (oracleEndpointId) => {
   try {
-    return await Db.oracleEndpoint.update({oracleEndpointId}, {isActive: false})
+    return await Db.oracleEndpoint.update({ oracleEndpointId }, { isActive: false })
   } catch (err) {
-    throw err
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
