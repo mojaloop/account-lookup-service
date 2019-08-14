@@ -24,76 +24,86 @@
 
 'use strict'
 
-const request = require('../../lib/request')
+const request = require('@mojaloop/central-services-shared').Util.Request
 const oracleEndpoint = require('../oracle')
 const Mustache = require('mustache')
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Enums = require('../../lib/enum')
+const Enums = require('@mojaloop/central-services-shared').Enum
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * @function oracleRequest
  *
  * @description This sends a request to the oracles that are registered to the ALS
  *
- * @param {object} req - The request that is being passed in
+ * @param {object} headers - incoming http request headers
+ * @param {string} method - incoming http request method
+ * @param {object} params - uri parameters of the http request
+ * @param {object} query - the query parameter on the uri of the http request
+ * @param {object} payload - payload of the request being sent out
  *
  * @returns {object} returns the response from the oracle
  */
-exports.oracleRequest = async (req) => {
-  let oracleEndpointModel
-  const type = req.params.Type
-  let url
-  if ((req.payload && req.payload.currency && req.payload.currency.length !== 0) || (req.query && req.query.currency && req.query.currency.length !== 0)) {
-    oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.query.currency || req.payload.currency)
-    if (oracleEndpointModel.length > 0) {
-      if (oracleEndpointModel.length > 1) {
-        for (const record in oracleEndpointModel) {
-          if (oracleEndpointModel.hasOwnProperty(record) && record.isDefault) {
-            url = Mustache.render(record.value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
-              partyIdType: type,
-              partyIdentifier: req.params.ID,
-              currency: req.query.currency || req.payload.currency
-            })
-            break
+exports.oracleRequest = async (headers, method, params = {}, query = {}, payload = undefined) => {
+  try {
+    let oracleEndpointModel
+    const type = params.Type
+    let url
+    if ((payload && payload.currency && payload.currency.length !== 0) || (query && query.currency && query.currency.length !== 0)) {
+      oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, query.currency || payload.currency)
+      if (oracleEndpointModel.length > 0) {
+        if (oracleEndpointModel.length > 1) {
+          for (const record of oracleEndpointModel) {
+            if (record.isDefault) {
+              url = Mustache.render(record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY, {
+                partyIdType: type,
+                partyIdentifier: params.ID,
+                currency: query.currency || payload.currency
+              })
+              break
+            }
           }
+        } else {
+          url = Mustache.render(oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY, {
+            partyIdType: type,
+            partyIdentifier: params.ID,
+            currency: query.currency || payload.currency
+          })
         }
       } else {
-        url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
-          partyIdType: type,
-          partyIdentifier: req.params.ID,
-          currency: req.query.currency || req.payload.currency
-        })
+        Logger.error(`Oracle type:${type} and currency:${query.currency || payload.currency} not found`)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} and currency:${query.currency || payload.currency} not found`).toApiErrorObject()
       }
     } else {
-      Logger.error(`Oracle type:${type} and currency:${req.query.currency || req.payload.currency} not found`)
-      return null
-    }
-  } else {
-    oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-    if (oracleEndpointModel.length > 0) {
-      if (oracleEndpointModel.length > 1) {
-        for (const record in oracleEndpointModel) {
-          if (oracleEndpointModel.hasOwnProperty(record) && record.isDefault) {
-            url = Mustache.render(record.value + Enums.endpoints.oracleParticipantsTypeId, {
-              partyIdType: type,
-              partyIdentifier: req.params.ID
-            })
-            break
+      oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
+      if (oracleEndpointModel.length > 0) {
+        if (oracleEndpointModel.length > 1) {
+          for (const record of oracleEndpointModel) {
+            if (record.isDefault) {
+              url = Mustache.render(record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID, {
+                partyIdType: type,
+                partyIdentifier: params.ID
+              })
+              break
+            }
           }
+        } else {
+          url = Mustache.render(oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID, {
+            partyIdType: type,
+            partyIdentifier: params.ID
+          })
         }
       } else {
-        url = Mustache.render(oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsTypeId, {
-          partyIdType: type,
-          partyIdentifier: req.params.ID
-        })
+        Logger.error(`Oracle type:${type} not found`)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
       }
-    } else {
-      Logger.error(`Oracle type:${type} not found`)
-      return null
     }
+    Logger.debug(`Oracle endpoints: ${url}`)
+    return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
-  Logger.debug(`Oracle endpoints: ${url}`)
-  return await request.sendRequest(url, req.headers, req.method, req.payload || undefined)
 }
 
 /**
@@ -101,35 +111,42 @@ exports.oracleRequest = async (req) => {
  *
  * @description This sends a request to the oracles that are registered to the ALS
  *
- * @param {object} req - The request that is being passed in
+ * @param {object} headers - incoming http request headers
+ * @param {object} method - incoming http request method
+ * @param {object} requestPayload - the requestPayload from the original request
  * @param {string} type - oracle type
  * @param {object} payload - the payload to send in the request
  *
  * @returns {object} returns the response from the oracle
  */
-exports.oracleBatchRequest = async (req, type, payload) => {
-  let oracleEndpointModel
-  let url
-  if ((req.payload && req.payload.currency && req.payload.currency.length !== 0)) {
-    oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, req.payload.currency)
-  } else {
-    oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-  }
-  if (oracleEndpointModel.length > 0) {
-    if (oracleEndpointModel.length > 1) {
-      for (const record in oracleEndpointModel) {
-        if (oracleEndpointModel.hasOwnProperty(record) && record.isDefault) {
-          url = record.value + Enums.endpoints.oracleParticipantsBatch
-          break
-        }
-      }
+exports.oracleBatchRequest = async (headers, method, requestPayload, type, payload) => {
+  try {
+    let oracleEndpointModel
+    let url
+    if ((requestPayload && requestPayload.currency && requestPayload.currency.length !== 0)) {
+      oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, requestPayload.currency)
     } else {
-      url = oracleEndpointModel[0].value + Enums.endpoints.oracleParticipantsBatch
+      oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
     }
-    Logger.debug(`Oracle endpoints: ${url}`)
-    return await request.sendRequest(url, req.headers, req.method, payload || undefined)
-  } else {
-    Logger.error(`Oracle type:${type} not found`)
-    return null
+    if (oracleEndpointModel.length > 0) {
+      if (oracleEndpointModel.length > 1) {
+        for (const record of oracleEndpointModel) {
+          if (record.isDefault) {
+            url = record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
+            break
+          }
+        }
+      } else {
+        url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
+      }
+      Logger.debug(`Oracle endpoints: ${url}`)
+      return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method, payload || undefined)
+    } else {
+      Logger.error(`Oracle type:${type} not found`)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
+    }
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

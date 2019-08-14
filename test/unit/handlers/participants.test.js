@@ -1,21 +1,24 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
 const Sinon = require('sinon')
-
+const initServer = require('../../../src/server').initialize
 const Mockgen = require('../../util/mockgen')
 const helper = require('../../util/helper')
+const Db = require('../../../src/lib/db')
+const getPort = require('get-port')
 
 let sandbox
+let server
 
 Test.beforeEach(async () => {
   sandbox = Sinon.createSandbox()
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  server = await initServer(await getPort())
 })
 
 Test.afterEach(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
@@ -28,18 +31,6 @@ Test.afterEach(async () => {
  */
 
 Test('test Participants Post operation', async function (t) {
-
-  const server = new Hapi.Server()
-
-  await server.register({
-    plugin: HapiOpenAPI,
-    options: {
-      api: Path.resolve(__dirname, '../../../src/interface/api_swagger.json'),
-      handlers: Path.join(__dirname, '../../../src/handlers'),
-      outputvalidation: true
-    }
-  })
-
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',
@@ -53,20 +44,20 @@ Test('test Participants Post operation', async function (t) {
 
   t.pass(mock)
   t.pass(mock.request)
-  //Get the resolved path from mock request
-  //Mock request Path templates({}) are resolved using path parameters
+  // Get the resolved path from mock request
+  // Mock request Path templates({}) are resolved using path parameters
   const options = {
     method: 'post',
     url: mock.request.path,
     headers: helper.defaultAdminHeaders()
   }
   if (mock.request.body) {
-    //Send the request body
+    // Send the request body
     options.payload = mock.request.body
   } else if (mock.request.formData) {
-    //Send the request form data
+    // Send the request form data
     options.payload = mock.request.formData
-    //Set the Content-Type as application/x-www-form-urlencoded
+    // Set the Content-Type as application/x-www-form-urlencoded
     options.headers = options.headers || {}
     options.headers = helper.defaultAdminHeaders()
   }
@@ -77,5 +68,5 @@ Test('test Participants Post operation', async function (t) {
 
   const response = await server.inject(options)
   await server.stop()
-  t.is(response.statusCode, 500, 'Ok response status')
+  t.is(response.statusCode, 400, 'Ok response status')
 })

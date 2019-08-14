@@ -46,7 +46,7 @@ Test.afterEach(() => {
 
 Test('should import setup and initialize', test => {
   try {
-    let initStub = sandbox.stub()
+    const initStub = sandbox.stub()
     Proxyquire('../../src/index', {
       './server': {
         initialize: initStub

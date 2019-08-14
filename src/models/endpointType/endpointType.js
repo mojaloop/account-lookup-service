@@ -26,6 +26,7 @@
 'use strict'
 
 const Db = require('../../lib/db')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * @function getEndpointTypeByType
@@ -36,9 +37,9 @@ const Db = require('../../lib/db')
  */
 const getEndpointTypeByType = async (type) => {
   try {
-    return Db.endpointType.findOne({type, isActive: true})
+    return Db.endpointType.findOne({ type, isActive: true })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 

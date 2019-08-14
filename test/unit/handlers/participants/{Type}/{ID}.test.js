@@ -26,34 +26,32 @@
 const Test = require('ava')
 const Sinon = require('sinon')
 const Mockgen = require('../../../../util/mockgen.js')
-const initServer = require('../../../../../src/server').initialize
 const Db = require('../../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-shared').Logger
-const util = require('../../../../../src/lib/util')
 const participants = require('../../../../../src/domain/participants')
-const getPort = require('get-port')
 const requestLogger = require('../../../../../src/lib/requestLogger')
+const Helper = require('../../../../util/helper')
+const initServer = require('../../../../../src/server').initialize
+const getPort = require('get-port')
 
 let server
 let sandbox
-let destinationFsp = 'dfsp2'
-let sourceFsp = 'dfsp1'
-let resource = 'participants'
 
-Test.beforeEach(async () => {
+Test.before(async () => {
   sandbox = Sinon.createSandbox()
   sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
   sandbox.stub(requestLogger, 'logRequest').returns({})
   sandbox.stub(requestLogger, 'logResponse').returns({})
+  server = await initServer(await getPort())
 })
 
-Test.afterEach(async () => {
+Test.after(async () => {
+  await server.stop()
   sandbox.restore()
 })
 
 Test('test getParticipantsByTypeAndID endpoint', async test => {
   try {
-    server = await initServer(await getPort())
     const requests = new Promise((resolve, reject) => {
       Mockgen().requests({
         path: '/participants/{Type}/{ID}',
@@ -69,7 +67,7 @@ Test('test getParticipantsByTypeAndID endpoint', async test => {
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      headers: Helper.defaultSwitchHeaders
     }
     if (mock.request.body) {
       // Send the request body
@@ -78,16 +76,16 @@ Test('test getParticipantsByTypeAndID endpoint', async test => {
       // Send the request form data
       options.payload = mock.request.formData
       // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp) || {}
+      options.headers = Helper.defaultSwitchHeaders || {}
     }
     // If headers are present, set the headers.
     if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = util.defaultHeaders(destinationFsp, resource, sourceFsp)
+      options.headers = Helper.defaultSwitchHeaders
     }
     sandbox.stub(participants, 'getParticipantsByTypeAndID').returns({})
     const response = await server.inject(options)
-    await server.stop()
     test.is(response.statusCode, 202, 'Ok response status')
+    participants.getParticipantsByTypeAndID.restore()
   } catch (e) {
     Logger.error(e)
     test.fail()
