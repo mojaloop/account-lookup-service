@@ -24,10 +24,6 @@
  *****/
 'use strict'
 
-const participants = require('../domain/participants')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-
 /**
  * Operations on /participants
  */
@@ -40,11 +36,12 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: function (req, h) {
+    const { Central, domain, logger } = req.server.app;
     try {
-      participants.postParticipantsBatch(req.headers, req.method, req.payload)
+      domain.participants.postParticipantsBatch(req.headers, req.method, req.payload)
     } catch (err) {
-      Logger.error(`ERROR - : ${err.stack}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      logger.error(`ERROR - : ${err.stack}`)
+      throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(200)
   }

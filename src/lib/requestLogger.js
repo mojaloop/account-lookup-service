@@ -27,15 +27,15 @@
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Util = require('util')
 
-const logRequest = function (request) {
-  Logger.debug(`ALS-Trace - Method: ${request.method} Path: ${request.url.path} Query: ${JSON.stringify(request.query)}`)
-  Logger.debug(`ALS-Trace - Headers: ${JSON.stringify(request.headers)}`)
+const logRequest = function (request, logger = Logger) {
+  logger.debug(`ALS-Trace - Method: ${request.method} Path: ${request.url.path} Query: ${JSON.stringify(request.query)}`)
+  logger.debug(`ALS-Trace - Headers: ${JSON.stringify(request.headers)}`)
   if (request.body) {
-    Logger.debug(`ALS-Trace - Body: ${request.body}`)
+    logger.debug(`ALS-Trace - Body: ${request.body}`)
   }
 }
 
-const logResponse = function (request) {
+const logResponse = function (request, logger = Logger) {
   if (request.response) {
     let response
     try {
@@ -44,9 +44,9 @@ const logResponse = function (request) {
       response = Util.inspect(request.response.source)
     }
     if (!response) {
-      Logger.info(`ALS-Trace - Response: ${request.response}`)
+      logger.info(`ALS-Trace - Response: ${request.response}`)
     } else {
-      Logger.info(`ALS-Trace - Response: ${response} Status: ${request.response.statusCode}`)
+      logger.info(`ALS-Trace - Response: ${response} Status: ${request.response.statusCode}`)
     }
   }
 }

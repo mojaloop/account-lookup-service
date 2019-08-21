@@ -24,8 +24,6 @@
 
 'use strict'
 
-const oracle = require('../domain/oracle')
-
 /**
  * Operations on /oracles
  */
@@ -38,6 +36,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
+    const { oracle } = request.server.app.domain;
     const response = await oracle.getOracle(request.query)
     return h.response(response).code(200)
   },
@@ -49,8 +48,8 @@ module.exports = {
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
+    const { oracle } = request.server.app.domain;
     await oracle.createOracle(request.payload)
     return h.response().code(201)
-
   }
 }

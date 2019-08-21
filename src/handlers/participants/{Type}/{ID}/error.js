@@ -25,8 +25,6 @@
 'use strict'
 
 const pp = require('util').inspect
-const participants = require('../../../../domain/participants')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants/{Type}/{ID}/error
@@ -40,15 +38,16 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
+    const { Central, domain } = req.server.app
     (async function () {
       const metadata = `${req.method} ${req.path}`
       try {
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req)
+        await domain.participants.putParticipantsErrorByTypeAndID(req)
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`)
-        throw ErrorHandler.Factory.reformatFSPIOPError(err)
+        throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()
     return h.response().code(202)

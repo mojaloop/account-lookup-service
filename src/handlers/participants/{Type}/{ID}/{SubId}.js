@@ -24,8 +24,6 @@
  ******/
 'use strict'
 
-const ErrorHandling = require('@mojaloop/central-services-error-handling')
-
 /**
  * Operations on /participants/{Type}/{ID}/{SubId}
  */
@@ -37,7 +35,8 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (request, h) {
+  get: function (req, h) {
+    const { Central } = req.server.app
     return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
@@ -47,7 +46,8 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
+  put: function (req, h) {
+    const { Central } = req.server.app
     return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
@@ -57,7 +57,8 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function (request, h) {
+  post: function (req, h) {
+    const { Central } = req.server.app
     return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
@@ -67,7 +68,8 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function (request, h) {
+  delete: function (req, h) {
+    const { Central } = req.server.app
     return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 }

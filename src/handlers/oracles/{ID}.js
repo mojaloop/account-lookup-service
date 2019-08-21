@@ -24,9 +24,6 @@
 
 'use strict'
 
-const oracle = require('../../domain/oracle')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-
 /**
  * Operations on /oracles/{ID}
  */
@@ -39,11 +36,12 @@ module.exports = {
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (request, h) => {
+    const { Central, domain } = request.server.app;
     try {
-      await oracle.updateOracle(request.params, request.payload)
+      await domain.oracle.updateOracle(request.params, request.payload)
       return h.response().code(204)
     } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
   /**
@@ -54,11 +52,12 @@ module.exports = {
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (request, h) => {
+    const { Central, domain } = request.server.app;
     try {
-      await oracle.deleteOracle(request.params)
+      await domain.oracle.deleteOracle(request.params)
       return h.response().code(204)
     } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }

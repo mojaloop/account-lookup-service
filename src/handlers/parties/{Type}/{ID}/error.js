@@ -24,10 +24,6 @@
  ******/
 'use strict'
 
-const parties = require('../../../../domain/parties')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-
 /**
  * Operations on /parties/{Type}/{ID}/error
  */
@@ -40,11 +36,12 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
+    const { domain, logger, Central } = request.server.app
     try {
-      parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
+      domain.parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
     } catch (err) {
-      Logger.error(err)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      logger.error(err)
+      throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(200)
   }

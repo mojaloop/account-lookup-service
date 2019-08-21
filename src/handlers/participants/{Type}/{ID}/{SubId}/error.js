@@ -24,8 +24,6 @@
  ******/
 'use strict'
 
-const ErrorHandling = require('@mojaloop/central-services-error-handling')
-
 /**
  * Operations on /participants/{Type}/{ID}/{SubId}/error
  */
@@ -38,6 +36,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Central } = req.server.app
+    return h.response(Central.ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 }

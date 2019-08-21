@@ -31,10 +31,16 @@ const Config = require('./lib/config.js')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
-const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
+const CSUtil = require('@mojaloop/central-services-shared').Util
+const ParticipantEndpointCache = CSUtil.Endpoints
 const Migrator = require('./lib/migrator')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Boom = require('@hapi/boom')
+const models = require('./models')
+const domain = require('./domain')
+const Central = {
+  ErrorHandler
+}
 
 const connectDatabase = async () => {
   return await Db.connect(Config.DATABASE_URI)
@@ -63,7 +69,7 @@ const migrate = async (isApi) => {
  * @param {boolean} isApi to check if admin or api server
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, isApi) => {
+const createServer = async (port, isApi, app) => {
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -90,28 +96,35 @@ const createServer = async (port, isApi) => {
     {
       type: 'onPreHandler',
       method: (request, h) => {
-        RequestLogger.logResponse(request)
+        RequestLogger.logResponse(request, app.logger)
         return h.continue
       }
     },
     {
       type: 'onPreResponse',
       method: (request, h) => {
-        RequestLogger.logResponse(request.response)
+        RequestLogger.logResponse(request.response, app.logger)
         return h.continue
       }
     }
   ])
-  await server.start()
+  server.app = app
+  app.logger.transports.forEach(t => t.silent = true)
   return server
 }
 
-const initialize = async (port = Config.API_PORT, isApi = true) => {
+const initialize = async (port = Config.API_PORT, isApi = true, logger = Logger) => {
   await connectDatabase()
   await migrate(isApi)
-  const server = await createServer(port, isApi)
+  const server = await createServer(port, isApi, {
+    models,
+    domain,
+    logger,
+    Central
+  })
+  await server.start()
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  server.app.logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   if (isApi) {
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   }
@@ -119,5 +132,6 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
 }
 
 module.exports = {
-  initialize
+  initialize,
+  createServer
 }

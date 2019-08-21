@@ -24,10 +24,6 @@
  ******/
 'use strict'
 
-const participants = require('../../../domain/participants')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-
 /**
  * Operations on /participants/{Type}/{ID}
  */
@@ -40,12 +36,13 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function (req, h) {
+    const { domain, Central, logger } = req.server.app
     const metadata = `${req.method} ${req.path}`
     try {
-      participants.getParticipantsByTypeAndID(req.headers, req.params, req.method, req.query)
+      domain.participants.getParticipantsByTypeAndID(req.headers, req.params, req.method, req.query)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      logger.error(`ERROR - ${metadata}: ${err}`)
+      throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)
   },
@@ -56,8 +53,9 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  put: function (req, h) {
+    const { Central } = req.server.app
+    return h.response(Central.ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
    * summary: ParticipantsByIDAndType
@@ -66,13 +64,14 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function (request, h) {
-    const metadata = `${request.method} ${request.path}`
+  post: function (req, h) {
+    const metadata = `${req.method} ${req.path}`
+    const { domain, Central, logger } = req.server.app
     try {
-      participants.postParticipants(request.headers, request.method, request.params, request.payload)
+      domain.participants.postParticipants(req.headers, req.method, req.params, req.payload)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      throw Central.ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)
   },
@@ -83,7 +82,8 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function (request, h) {
+  delete: function (req, h) {
+    const { Central } = req.server.app
     return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 
