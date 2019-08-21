@@ -49,7 +49,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     let oracleEndpointModel
     const type = params.Type
     let url
-    if ((payload && payload.currency && payload.currency.length !== 0) || (query && query.currency && query.currency.length !== 0)) {
+    if (((payload && payload.currency && payload.currency.length !== 0) || (query && query.currency && query.currency.length !== 0)) && method.toUpperCase() === Enums.Http.RestMethods.GET) {
       oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, query.currency || payload.currency)
       if (oracleEndpointModel.length > 0) {
         if (oracleEndpointModel.length > 1) {

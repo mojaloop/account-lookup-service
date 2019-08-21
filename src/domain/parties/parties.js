@@ -142,7 +142,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri) => 
         const decodedPayload = decodePayload(dataUri, { asParsed: false })
         await participant.sendErrorToParticipant(destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, decodedPayload.body.toString(), headers, params)
       } else {
-        await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+        await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)
       }
     } else {
