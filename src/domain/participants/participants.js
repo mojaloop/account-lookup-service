@@ -58,6 +58,9 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
           const payload = {
             fspId: response.data.partyList[0].fspId
           }
+          if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+            headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
+          }
           await participant.sendRequest(headers, requesterName, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, payload, options)
         } else {
           await participant.sendErrorToParticipant(requesterName, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
@@ -130,6 +133,7 @@ const postParticipants = async (headers, method, params, payload) => {
           }
           if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
             headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
+            headers[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
           }
           await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, responsePayload, options)
         } else {
@@ -171,7 +175,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
       for (const party of requestPayload.partyList) {
-        if (Object.values(Enums.type).includes(party.partyIdType)) {
+        if (Object.values(Enums.Accounts.PartyAccountTypes).includes(party.partyIdType)) {
           party.currency = requestPayload.currency
           if (party.fspId === headers[Enums.Http.Headers.FSPIOP.SOURCE]) {
             if (typeMap.get(party.partyIdType)) {
@@ -227,6 +231,10 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
       const payload = {
         partyList: overallReturnList,
         currency: requestPayload.currency
+      }
+      if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+        headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.partyList[0].partyId.fspId
+        headers[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
       }
       await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, {requestId})
       Logger.info('postParticipantsBatch::end')
