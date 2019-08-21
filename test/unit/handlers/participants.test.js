@@ -1,25 +1,22 @@
 'use strict'
 
 const Test = require('ava')
-const Sinon = require('sinon')
-const initServer = require('../../../src/server').initialize
 const Mockgen = require('../../util/mockgen')
 const helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
-const getPort = require('get-port')
+const { startTestAPIServer } = require('../../_helpers')
 
-let sandbox
-let server
-
-Test.beforeEach(async () => {
-  sandbox = Sinon.createSandbox()
-  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  server = await initServer(await getPort())
+const app = () => ({
+  domain: {
+    participants: {
+      postParticipantsBatch: () => {}
+    }
+  },
 })
 
-Test.afterEach(async () => {
-  await server.stop()
-  sandbox.restore()
+Test.beforeEach(startTestAPIServer(app))
+
+Test.afterEach(async t => {
+  await t.context.server.stop()
 })
 
 /**
@@ -31,6 +28,7 @@ Test.afterEach(async () => {
  */
 
 Test('test Participants Post operation', async function (t) {
+  const { server } = t.context;
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',
@@ -67,6 +65,5 @@ Test('test Participants Post operation', async function (t) {
   }
 
   const response = await server.inject(options)
-  await server.stop()
   t.is(response.statusCode, 400, 'Ok response status')
 })

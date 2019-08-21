@@ -45,16 +45,11 @@ Test.afterEach(() => {
 })
 
 Test('should import setup and initialize', test => {
-  try {
-    const initStub = sandbox.stub()
-    Proxyquire('../../src/index', {
-      './server': {
-        initialize: initStub
-      }
-    })
-    test.pass(initStub.withArgs().calledOnce)
-  } catch (err) {
-    Logger.error(`serverTest failed with error - ${err}`)
-    test.fail()
-  }
+  const initStub = sandbox.stub()
+  Proxyquire('../../src/index', {
+    './server': {
+      initialize: initStub
+    }
+  })
+  test.pass(initStub.withArgs().calledOnce)
 })

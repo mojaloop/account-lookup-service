@@ -38,22 +38,26 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Boom = require('@hapi/boom')
 const models = require('./models')
 const domain = require('./domain')
-const Central = {
-  ErrorHandler
-}
+const Central = { ErrorHandler }
 
 const connectDatabase = async () => {
   return await Db.connect(Config.DATABASE_URI)
 }
 
-const openAPIOptions = {
-  api: Path.resolve(__dirname, './interface/api_swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
+const serviceType = {
+  ADMIN: 'ADMIN',
+  API: 'API'
 }
 
-const openAdminAPIOptions = {
-  api: Path.resolve(__dirname, './interface/admin_swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
+const openAPIOptions = {
+  [serviceType.API]: {
+    api: Path.resolve(__dirname, './interface/api_swagger.json'),
+    handlers: Path.resolve(__dirname, './handlers')
+  },
+  [serviceType.ADMIN]: {
+    api: Path.resolve(__dirname, './interface/admin_swagger.json'),
+    handlers: Path.resolve(__dirname, './handlers')
+  }
 }
 
 const migrate = async (isApi) => {
@@ -69,7 +73,7 @@ const migrate = async (isApi) => {
  * @param {boolean} isApi to check if admin or api server
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, isApi, app) => {
+const createServer = async (port, service, app) => {
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -89,7 +93,7 @@ const createServer = async (port, isApi, app) => {
   await server.register([
     {
       plugin: HapiOpenAPI,
-      options: isApi ? openAPIOptions : openAdminAPIOptions
+      options: openAPIOptions[service]
     }
   ])
   await server.ext([
@@ -109,14 +113,13 @@ const createServer = async (port, isApi, app) => {
     }
   ])
   server.app = app
-  app.logger.transports.forEach(t => t.silent = true)
   return server
 }
 
-const initialize = async (port = Config.API_PORT, isApi = true, logger = Logger) => {
+const initialize = async (port = Config.API_PORT, service, logger = Logger) => {
   await connectDatabase()
-  await migrate(isApi)
-  const server = await createServer(port, isApi, {
+  await migrate(service === serviceType.API)
+  const server = await createServer(port, service, {
     models,
     domain,
     logger,
@@ -125,7 +128,7 @@ const initialize = async (port = Config.API_PORT, isApi = true, logger = Logger)
   await server.start()
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
   server.app.logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  if (isApi) {
+  if (service === serviceType.API) {
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   }
   return server
@@ -133,5 +136,6 @@ const initialize = async (port = Config.API_PORT, isApi = true, logger = Logger)
 
 module.exports = {
   initialize,
-  createServer
+  createServer,
+  service: serviceType
 }

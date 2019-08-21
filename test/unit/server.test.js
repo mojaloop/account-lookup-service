@@ -43,7 +43,6 @@ let SetupProxy
 let DbStub
 
 setupTest.beforeEach(() => {
-  try {
     sandbox = Sinon.createSandbox()
 
     serverStub = {
@@ -68,7 +67,7 @@ setupTest.beforeEach(() => {
     HapiStub = {
       Server: sandbox.stub().returns(serverStub)
     }
-    DbStub = sandbox.stub()
+    DbStub = { connect: sandbox.stub() }
     HapiOpenAPIStub = sandbox.stub()
     PathStub = Path
     ConfigStub = Config
@@ -78,11 +77,8 @@ setupTest.beforeEach(() => {
       'hapi-openapi': HapiOpenAPIStub,
       path: PathStub,
       './lib/config': ConfigStub,
-      '@mojaloop/central-services-database': DbStub
+      './lib/db': DbStub
     })
-  } catch (err) {
-    Logger.error(`setupTest failed with error - ${err}`)
-  }
 })
 
 setupTest.afterEach(() => {
@@ -90,15 +86,10 @@ setupTest.afterEach(() => {
 })
 
 setupTest('initialize ', async test => {
-  try {
-    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    const server = await SetupProxy.initialize()
-    test.assert(server, 'return server object')
-    test.assert(HapiStub.Server.calledOnce, 'Hapi.Server called once')
-    test.assert(serverStub.start.calledOnce, 'server.start called once')
-    test.assert(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
-  } catch (err) {
-    Logger.error(`init failed with error - ${err}`)
-    test.fail()
-  }
+  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+  const server = await SetupProxy.initialize()
+  test.assert(server, 'return server object')
+  test.assert(HapiStub.Server.calledOnce, 'Hapi.Server called once')
+  test.assert(serverStub.start.calledOnce, 'server.start called once')
+  test.assert(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
 })

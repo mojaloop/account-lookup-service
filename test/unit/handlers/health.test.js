@@ -3,24 +3,14 @@
 const Test = require('ava')
 const Mockgen = require('../../util/mockgen.js')
 const helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
-const initServer = require('../../../src/server').initialize
-const getPort = require('get-port')
-const Sinon = require('sinon')
+const { startTestAPIServer } = require('../../_helpers')
 
-let sandbox
-let server
+Test.beforeEach(startTestAPIServer())
 
-Test.beforeEach(async () => {
-  sandbox = Sinon.createSandbox()
-  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  server = await initServer(await getPort())
+Test.afterEach(async t => {
+  await t.context.server.stop()
 })
 
-Test.afterEach(async () => {
-  await server.stop()
-  sandbox.restore()
-})
 /**
  * summary: Get Health
  * description: The HTTP request GET /health is used to get the status of the server
@@ -29,7 +19,7 @@ Test.afterEach(async () => {
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test Health get operation', async function (t) {
-
+  const { server } = t.context;
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/health',

@@ -24,107 +24,94 @@
 'use strict'
 
 const Test = require('ava')
-const Sinon = require('sinon')
 const Mockgen = require('../../../../util/mockgen.js')
-const initServer = require('../../../../../src/server').initialize
-const Db = require('../../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const parties = require('../../../../../src/domain/parties')
-const getPort = require('get-port')
 const Helper = require('../../../../util/helper')
+const { startTestAPIServer } = require('../../../../_helpers')
 
-let server
-let sandbox
-
-Test.before(async () => {
-  sandbox = Sinon.createSandbox()
-  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  server = await initServer(await getPort())
+const app = () => ({
+  domain: {
+    parties: {
+      putPartiesByTypeAndID: () => {},
+      getPartiesByTypeAndID: () => {},
+    }
+  },
 })
 
-Test.after(async () => {
-  await server.stop()
-  sandbox.restore()
+Test.beforeEach(startTestAPIServer(app))
+
+Test.afterEach(async t => {
+  await t.context.server.stop()
 })
 
-Test.serial('test getPartiesByTypeAndID endpoint', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/parties/{Type}/{ID}',
-        operation: 'get'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
+Test('test getPartiesByTypeAndID endpoint', async test => {
+  const { server } = test.context
+  const requests = new Promise((resolve, reject) => {
+    Mockgen().requests({
+      path: '/parties/{Type}/{ID}',
+      operation: 'get'
+    }, function (error, mock) {
+      return error ? reject(error) : resolve(mock)
     })
+  })
 
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
-    const options = {
-      method: 'get',
-      url: mock.request.path,
-      headers: Helper.defaultSwitchHeaders
-    }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultSwitchHeaders || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultSwitchHeaders
-    }
-    sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
-    const response = await server.inject(options)
-    test.is(response.statusCode, 202, 'Ok response status')
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
+  const mock = await requests
+  test.pass(mock)
+  test.pass(mock.request)
+  const options = {
+    method: 'get',
+    url: mock.request.path,
+    headers: Helper.defaultSwitchHeaders
   }
+  if (mock.request.body) {
+    // Send the request body
+    options.payload = mock.request.body
+  } else if (mock.request.formData) {
+    // Send the request form data
+    options.payload = mock.request.formData
+    // Set the Content-Type as application/x-www-form-urlencoded
+    options.headers = Helper.defaultSwitchHeaders || {}
+  }
+  // If headers are present, set the headers.
+  if (mock.request.headers && mock.request.headers.length > 0) {
+    options.headers = Helper.defaultSwitchHeaders
+  }
+  const response = await server.inject(options)
+  test.is(response.statusCode, 202, 'Ok response status')
 })
 
-Test.serial('test putPartiesByTypeAndID endpoint', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/parties/{Type}/{ID}',
-        operation: 'put'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
+Test('test putPartiesByTypeAndID endpoint', async test => {
+  const { server } = test.context
+  const requests = new Promise((resolve, reject) => {
+    Mockgen().requests({
+      path: '/parties/{Type}/{ID}',
+      operation: 'put'
+    }, function (error, mock) {
+      return error ? reject(error) : resolve(mock)
     })
+  })
 
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
-    const options = {
-      method: 'put',
-      url: mock.request.path,
-      headers: Helper.defaultSwitchHeaders
-    }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultSwitchHeaders || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultSwitchHeaders
-    }
-    sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
-    const response = await server.inject(options)
-    test.is(response.statusCode, 200, 'Ok response status')
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
+  const mock = await requests
+  test.pass(mock)
+  test.pass(mock.request)
+  const options = {
+    method: 'put',
+    url: mock.request.path,
+    headers: Helper.defaultSwitchHeaders
   }
+  if (mock.request.body) {
+    // Send the request body
+    options.payload = mock.request.body
+  } else if (mock.request.formData) {
+    // Send the request form data
+    options.payload = mock.request.formData
+    // Set the Content-Type as application/x-www-form-urlencoded
+    options.headers = Helper.defaultSwitchHeaders || {}
+  }
+  // If headers are present, set the headers.
+  if (mock.request.headers && mock.request.headers.length > 0) {
+    options.headers = Helper.defaultSwitchHeaders
+  }
+  const response = await server.inject(options)
+  test.is(response.statusCode, 200, 'Ok response status')
 })

@@ -2,13 +2,9 @@
 
 const Test = require('ava')
 const Mockgen = require('../../util/mockgen.js')
-const oracle = require('../../../src/domain/oracle')
 const Sinon = require('sinon')
 const helper = require('../../util/helper')
-const initServer = require('../../../src/server').initialize
-const Db = require('../../../src/lib/db')
-const getPort = require('get-port')
-const Migrator = require('../../../src/lib/migrator')
+const { startTestAdminServer } = require('../../_helpers')
 
 const getResponse = [{
   oracleId: '1',
@@ -20,19 +16,18 @@ const getResponse = [{
   isDefault: true
 }]
 
-let sandbox
-let server
-
-Test.before(async () => {
-  sandbox = Sinon.createSandbox()
-  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
-  server = await initServer(await getPort(), false)
+const app = () => ({
+  domain: {
+    oracle: {
+      createOracle: () => {}
+    }
+  },
 })
 
-Test.after(async () => {
-  await server.stop()
-  sandbox.restore()
+Test.beforeEach(startTestAdminServer(app))
+
+Test.afterEach(async t => {
+  await t.context.server.stop()
 })
 
 /**
@@ -43,7 +38,8 @@ Test.after(async () => {
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
 
-Test.serial('test OracleGet get operation', async function (t) {
+Test('test OracleGet get operation', async function (t) {
+  const { server } = t.context
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -78,14 +74,14 @@ Test.serial('test OracleGet get operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-  sandbox.stub(oracle, 'getOracle').returns(Promise.resolve(getResponse))
+  t.context.server.app.domain.oracle.getOracle = () => Promise.resolve(getResponse);
   const response = await server.inject(options)
   t.is(response.statusCode, 200, 'Ok response status')
-  oracle.getOracle.restore()
 })
 
-Test.serial('test OracleGet throws error', async function (t) {
-  sandbox.stub(oracle, 'getOracle').throws(new Error('Error Thrown'))
+Test('test OracleGet throws error', async function (t) {
+  const { server } = t.context
+  server.app.domain.oracle.getOracle = () => { throw new Error('Error Thrown') }
 
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
@@ -123,7 +119,6 @@ Test.serial('test OracleGet throws error', async function (t) {
   }
   const response = await server.inject(options)
   t.is(response.statusCode, 500, 'Error thrown')
-  oracle.getOracle.restore()
 })
 
 /**
@@ -134,7 +129,8 @@ Test.serial('test OracleGet throws error', async function (t) {
  * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
  */
 
-Test.serial('test OraclePost post operation', async function (t) {
+Test('test OraclePost post operation', async function (t) {
+  const { server } = t.context
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -169,13 +165,13 @@ Test.serial('test OraclePost post operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-  sandbox.stub(oracle, 'createOracle').returns(Promise.resolve({}))
+  server.app.domain.oracle.createOracle = () => { Promise.resolve({}) }
   const response = await server.inject(options)
   t.is(response.statusCode, 201, 'Ok response status')
-  oracle.createOracle.restore()
 })
 
-Test.serial('test OraclePost post operation throws error', async function (t) {
+Test('test OraclePost post operation throws error', async function (t) {
+  const { server } = t.context
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles',
@@ -210,8 +206,7 @@ Test.serial('test OraclePost post operation throws error', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-  sandbox.stub(oracle, 'createOracle').throws(new Error('Error Thrown'))
+  server.app.domain.oracle.createOracle = () => { throw new Error('Error Thrown') }
   const response = await server.inject(options)
   t.is(response.statusCode, 500, 'Error Thrown')
-  oracle.createOracle.restore()
 })
