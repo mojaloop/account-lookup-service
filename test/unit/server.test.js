@@ -41,44 +41,47 @@ let PathStub
 let ConfigStub
 let SetupProxy
 let DbStub
+let MigratorStub
 
 setupTest.beforeEach(() => {
-    sandbox = Sinon.createSandbox()
+  sandbox = Sinon.createSandbox()
 
-    serverStub = {
-      register: sandbox.stub(),
-      method: sandbox.stub(),
-      start: sandbox.stub(),
-      log: sandbox.stub(),
-      plugins: {
-        openapi: {
-          setHost: Sinon.spy()
-        }
-      },
-      info: {
-        port: Config.PORT
-      },
-      ext: Sinon.spy()
-      // ext: {
-      //   type: sandbox.stub(),
-      //   method: sandbox.stub()
-      // }
-    }
-    HapiStub = {
-      Server: sandbox.stub().returns(serverStub)
-    }
-    DbStub = { connect: sandbox.stub() }
-    HapiOpenAPIStub = sandbox.stub()
-    PathStub = Path
-    ConfigStub = Config
+  serverStub = {
+    register: sandbox.stub(),
+    method: sandbox.stub(),
+    start: sandbox.stub(),
+    log: sandbox.stub(),
+    plugins: {
+      openapi: {
+        setHost: Sinon.spy()
+      }
+    },
+    info: {
+      port: Config.PORT
+    },
+    ext: Sinon.spy()
+    // ext: {
+    //   type: sandbox.stub(),
+    //   method: sandbox.stub()
+    // }
+  }
+  HapiStub = {
+    Server: sandbox.stub().returns(serverStub)
+  }
+  DbStub = { connect: sandbox.stub() }
+  HapiOpenAPIStub = sandbox.stub()
+  PathStub = Path
+  ConfigStub = Config
+  MigratorStub = { migrate: sandbox.stub() }
 
-    SetupProxy = Proxyquire('../../src/server', {
-      '@hapi/hapi': HapiStub,
-      'hapi-openapi': HapiOpenAPIStub,
-      path: PathStub,
-      './lib/config': ConfigStub,
-      './lib/db': DbStub
-    })
+  SetupProxy = Proxyquire('../../src/server', {
+    './lib/migrator': MigratorStub,
+    '@hapi/hapi': HapiStub,
+    'hapi-openapi': HapiOpenAPIStub,
+    path: PathStub,
+    './lib/config': ConfigStub,
+    './lib/db': DbStub,
+  })
 })
 
 setupTest.afterEach(() => {

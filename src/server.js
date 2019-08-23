@@ -41,7 +41,7 @@ const domain = require('./domain')
 const Central = { ErrorHandler }
 
 const connectDatabase = async () => {
-  return await Db.connect(Config.DATABASE_URI)
+  await Db.connect(Config.DATABASE_URI)
 }
 
 const serviceType = {

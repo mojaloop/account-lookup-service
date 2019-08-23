@@ -89,7 +89,7 @@
     "build": "docker build -t account-lookup-service:local -f ./Dockerfile .",
     "build:api": "docker build -t account-lookup-service-api:local -f ./api.Dockerfile .",
     "build:admin": "docker build -t account-lookup-service-admin:local -f ./admin.Dockerfile .",
-    "run": "docker run -p 3000:3000 --rm --link db:mysql central-directory:local",
+    "run": "docker run -p 3000:3000 --link db:mysql -v $PWD/config/:/opt/account-lookup-service/config --rm account-lookup-service:local",
     "package-lock": "docker run --rm -it central-directory:local cat package-lock.json > package-lock.json",
     "generate-docs": "jsdoc -c jsdoc.json",
     "audit:resolve": "SHELL=sh resolve-audit",
