@@ -4,3 +4,6 @@
 - modify/parallelise domain tests
 - inject into domain/model where possible/appropriate
 - parties.test.js is in fact a participants test
+- move validation plugin to plugin.js
+- create all mock requests in a helper, in beforeEach, to simplify and focus test content?
+- see TODO in server.js

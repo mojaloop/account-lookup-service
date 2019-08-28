@@ -16,13 +16,15 @@ const DB = require('../../../../src/lib/db')
 const Config = require('../../../../src/lib/config')
 const Util = require('@mojaloop/central-services-shared').Util
 
+const participantsSwitchHeaders = Helper.defaultSwitchHeaders('participants')
+
 let sandbox
 
 Test.beforeEach(async () => {
   await Endpoints.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   sandbox = Sinon.createSandbox()
   sandbox.stub(request)
-  sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)
+  sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(participantsSwitchHeaders)
   DB.oracleEndpoint = {
     query: sandbox.stub()
   }
@@ -34,10 +36,10 @@ Test.afterEach(() => {
 
 Test.serial('getParticipantsByTypeAndID should send a callback request to the requester', async (t) => {
   try {
-    request.sendRequest.withArgs(Helper.validatePayerFspUri, Helper.defaultSwitchHeaders, Helper.defaultSwitchHeaders['fspiop-destination'], Helper.defaultSwitchHeaders['fspiop-source']).returns(Promise.resolve({}))
+    request.sendRequest.withArgs(Helper.validatePayerFspUri, participantsSwitchHeaders, participantsSwitchHeaders['fspiop-destination'], participantsSwitchHeaders['fspiop-source']).returns(Promise.resolve({}))
     DB.oracleEndpoint.query.returns(Helper.getOracleEndpointDatabaseResponse)
     request.sendRequest.withArgs(Helper.oracleGetCurrencyUri, Helper.getByTypeIdCurrencyRequest.headers, Helper.getByTypeIdCurrencyRequest.method, undefined, true).returns(Promise.resolve(Helper.getOracleResponse))
-    request.sendRequest.withArgs(Helper.getPayerfspEndpointsUri, Helper.defaultSwitchHeaders, Helper.defaultSwitchHeaders['fspiop-destination'], Helper.defaultSwitchHeaders['fspiop-source']).returns(Promise.resolve(Helper.getEndPointsResponse))
+    request.sendRequest.withArgs(Helper.getPayerfspEndpointsUri, participantsSwitchHeaders, participantsSwitchHeaders['fspiop-destination'], participantsSwitchHeaders['fspiop-source']).returns(Promise.resolve(Helper.getEndPointsResponse))
     request.sendRequest.withArgs(Helper.getEndPointsResponse.data[0].value, Helper.getByTypeIdCurrencyRequest.headers, Enums.Http.RestMethods.PUT, Helper.fspIdPayload).returns(Promise.resolve({}))
     await participantsDomain.getParticipantsByTypeAndID(Helper.getByTypeIdCurrencyRequest.headers, Helper.getByTypeIdCurrencyRequest.params, Helper.getByTypeIdCurrencyRequest.method, Helper.getByTypeIdCurrencyRequest.query)
     t.is(request.sendRequest.callCount, 4, 'send request called 4 times')
@@ -49,10 +51,10 @@ Test.serial('getParticipantsByTypeAndID should send a callback request to the re
 
 Test.serial('postParticipantsByTypeAndID should send a callback request to the requester', async (t) => {
   try {
-    request.sendRequest.withArgs(Helper.validatePayerFspUri, Helper.defaultSwitchHeaders, Helper.defaultSwitchHeaders['fspiop-destination'], Helper.defaultSwitchHeaders['fspiop-source']).returns(Promise.resolve({}))
+    request.sendRequest.withArgs(Helper.validatePayerFspUri, participantsSwitchHeaders, participantsSwitchHeaders['fspiop-destination'], participantsSwitchHeaders['fspiop-source']).returns(Promise.resolve({}))
     DB.oracleEndpoint.query.returns(Helper.getOracleEndpointDatabaseResponse)
     request.sendRequest.withArgs(Helper.oracleGetCurrencyUri, Helper.postByTypeIdCurrencyRequest.headers, Helper.postByTypeIdCurrencyRequest.method, undefined, true).returns(Promise.resolve())
-    request.sendRequest.withArgs(Helper.getPayerfspEndpointsUri, Helper.defaultSwitchHeaders, Helper.defaultSwitchHeaders['fspiop-destination'], Helper.defaultSwitchHeaders['fspiop-source']).returns(Promise.resolve(Helper.getEndPointsResponse))
+    request.sendRequest.withArgs(Helper.getPayerfspEndpointsUri, participantsSwitchHeaders, participantsSwitchHeaders['fspiop-destination'], participantsSwitchHeaders['fspiop-source']).returns(Promise.resolve(Helper.getEndPointsResponse))
     request.sendRequest.withArgs(Helper.getEndPointsResponse.data[0].value, Helper.getByTypeIdCurrencyRequest.headers, Enums.Http.RestMethods.POST, Helper.fspIdPayload).returns(Promise.resolve({}))
     await participantsDomain.postParticipants(Helper.getByTypeIdCurrencyRequest.headers, Helper.getByTypeIdCurrencyRequest.params, Helper.getByTypeIdCurrencyRequest.method, Helper.getByTypeIdCurrencyRequest.query)
     t.is(request.sendRequest.callCount, 2, 'send request called 2 times')

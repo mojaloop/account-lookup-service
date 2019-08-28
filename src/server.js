@@ -39,6 +39,7 @@ const Boom = require('@hapi/boom')
 const models = require('./models')
 const domain = require('./domain')
 const Central = { ErrorHandler }
+const HeaderValidator = require('./lib/validation')
 
 const connectDatabase = async () => {
   await Db.connect(Config.DATABASE_URI)
@@ -97,6 +98,47 @@ const createServer = async (port, service, app) => {
     }
   ])
   await server.ext([
+    {
+      type: 'onPreHandler',
+      method: (request, h) => {
+        // Perform content-type and accept header validation on API routes- not on admin routes,
+        // and not on the health endpoint. Note that hapi-openapi does not correctly validate
+        // headers on routes where the headers are specified at the path level, instead of the
+        // method level. And does not _appear_ to correctly validate the content of `string` +
+        // `pattern` headers at all, although the accuracy of this statement has not been
+        // thoroughly tested.
+        if (service !== serviceType.API || request.path === '/health') {
+          return h.continue;
+        }
+
+        // Always validate the accept header for a get request, or optionally if it has been
+        // supplied
+        if (request.method.toLowerCase() === 'get' || request.headers['accept']) {
+          const accept = HeaderValidator.parseAcceptHeader(request.path, request.headers['accept'])
+          if (!accept.valid) {
+            throw Boom.badRequest('Invalid accept header')
+          }
+          const supportedApiVersions = ['1', '1.0', HeaderValidator.anyVersion]
+          if (!supportedApiVersions.some(supportedVer => accept.versions.has(supportedVer))) {
+            throw Boom.badRequest('Unacceptable version requested')
+            // TODO: we should really be doing something like one of the following, but hapi
+            // doesn't like it for some reason. Similarly elsewhere we throw a Boom error.
+            // throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.UNACCEPTABLE_VERSION)
+            // return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.UNACCEPTABLE_VERSION))
+            // return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.UNACCEPTABLE_VERSION).toApiErrorObject()).code(406).takeover()
+          }
+        }
+
+        // Always validate the content-type header
+        const contentType = HeaderValidator.parseContentTypeHeader(request.path,
+          request.headers['content-type'])
+        if (!contentType.valid) {
+          throw Boom.badRequest('Invalid content-type header')
+        }
+        RequestLogger.logResponse(request, app.logger)
+        return h.continue
+      }
+    },
     {
       type: 'onPreHandler',
       method: (request, h) => {

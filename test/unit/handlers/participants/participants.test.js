@@ -59,7 +59,7 @@ Test('test postParticipantsBatch endpoint', async test => {
   const options = {
     method: 'post',
     url: mock.request.path,
-    headers: Helper.defaultSwitchHeaders
+    headers: Helper.defaultSwitchHeaders('participants')
   }
   if (mock.request.body) {
     // Send the request body
@@ -67,13 +67,8 @@ Test('test postParticipantsBatch endpoint', async test => {
   } else if (mock.request.formData) {
     // Send the request form data
     options.payload = mock.request.formData
-    // Set the Content-Type as application/x-www-form-urlencoded
-    options.headers = Helper.defaultSwitchHeaders || {}
   }
   // If headers are present, set the headers.
-  if (mock.request.headers && mock.request.headers.length > 0) {
-    options.headers = Helper.defaultSwitchHeaders
-  }
   const response = await server.inject(options)
   test.is(response.statusCode, 200, 'Ok response status')
 })
@@ -95,7 +90,7 @@ Test('test postParticipantsBatch endpoint - error', async test => {
   const options = {
     method: 'post',
     url: mock.request.path,
-    headers: Helper.defaultSwitchHeaders
+    headers: Helper.defaultSwitchHeaders('participants')
   }
   if (mock.request.body) {
     // Send the request body
@@ -103,12 +98,6 @@ Test('test postParticipantsBatch endpoint - error', async test => {
   } else if (mock.request.formData) {
     // Send the request form data
     options.payload = mock.request.formData
-    // Set the Content-Type as application/x-www-form-urlencoded
-    options.headers = Helper.defaultSwitchHeaders || {}
-  }
-  // If headers are present, set the headers.
-  if (mock.request.headers && mock.request.headers.length > 0) {
-    options.headers = Helper.defaultSwitchHeaders
   }
   server.app.domain.participants.postParticipantsBatch = () => { throw new Error('whatever') }
   const response = await server.inject(options)

@@ -43,6 +43,8 @@ Test.afterEach(async t => {
   await t.context.server.stop()
 })
 
+// TODO: note this is handlers/parties/parties.test.js (_parties_) and the following test is for
+// _participants_
 Test('test postParticipantsBatch endpoint', async test => {
   const { server } = test.context;
   const requests = new Promise((resolve, reject) => {
@@ -60,7 +62,7 @@ Test('test postParticipantsBatch endpoint', async test => {
   const options = {
     method: 'post',
     url: mock.request.path,
-    headers: Helper.defaultSwitchHeaders
+    headers: Helper.defaultSwitchHeaders('participants')
   }
   if (mock.request.body) {
     // Send the request body
@@ -68,12 +70,6 @@ Test('test postParticipantsBatch endpoint', async test => {
   } else if (mock.request.formData) {
     // Send the request form data
     options.payload = mock.request.formData
-    // Set the Content-Type as application/x-www-form-urlencoded
-    options.headers = Helper.defaultSwitchHeaders || {}
-  }
-  // If headers are present, set the headers.
-  if (mock.request.headers && mock.request.headers.length > 0) {
-    options.headers = Helper.defaultSwitchHeaders
   }
   const response = await server.inject(options)
   test.is(response.statusCode, 200, 'Ok response status')
