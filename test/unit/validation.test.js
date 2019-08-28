@@ -124,6 +124,22 @@ Test('test parties GET operation with invalid accept header', async function (t)
   t.is(response.result.errorInformation.errorCode, '3101')
 })
 
+Test('test parties GET operation with invalid {Type}', async function (t) {
+  const { server } = t.context
+  const options = await getMockRequest('get', '/parties/{Type}/{ID}')
+  options.url = '/parties/ZZZ/12345'
+
+  const response = await server.inject(options)
+  t.is(response.statusCode, 400, 'Bad request response status')
+  t.is(
+    response.result.errorInformation.errorDescription,
+    'Validation error - Type'
+  )
+  // TODO: this should _probably_ be a 3101 but the scope of changes to the central services error
+  // handling to support this exceed the time available to implement at present.
+  t.is(response.result.errorInformation.errorCode, '3100')
+})
+
 Test('test parties GET operation with invalid content-type header', async function (t) {
   const { server } = t.context
   const options = await getMockRequest('get', '/parties/{Type}/{ID}')
