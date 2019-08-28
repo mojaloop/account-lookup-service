@@ -60,7 +60,7 @@ Test('test getPartiesByTypeAndID endpoint', async test => {
   const options = {
     method: 'get',
     url: mock.request.path,
-    headers: Helper.defaultSwitchHeaders('parties')
+    headers: Helper.defaultStandardHeaders('parties')
   }
   if (mock.request.body) {
     // Send the request body
@@ -90,7 +90,7 @@ Test('test putPartiesByTypeAndID endpoint', async test => {
   const options = {
     method: 'put',
     url: mock.request.path,
-    headers: Helper.defaultSwitchHeaders('parties')
+    headers: Helper.defaultStandardHeaders('parties')
   }
   if (mock.request.body) {
     // Send the request body

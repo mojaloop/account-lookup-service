@@ -33,6 +33,7 @@ const payeefsp = 'payeefsp'
 const validatePayerFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payerfsp })
 const validatePayeeFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payeefsp })
 const defaultSwitchHeaders = resource => defaultHeaders(Enums.Http.HeaderResources.SWITCH, resource, Enums.Http.HeaderResources.SWITCH)
+const defaultStandardHeaders = resource => defaultHeaders(payerfsp, resource, payeefsp)
 const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payerfsp })
 const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payeefsp })
 const { createServer, service } = require('../../src/server')
@@ -101,7 +102,8 @@ function defaultHeaders (destination, resource, source, version = '1.0') {
     'fspiop-destination': destination || '',
     'content-type': `application/vnd.interoperability.${resource}+json;version=${version}`,
     date: '2019-05-24 08:52:19',
-    'fspiop-source': source
+    'fspiop-source': source,
+    'fspiop-signature': '{"signature":"iU4GBXSfY8twZMj1zXX1CTe3LDO8Zvgui53icrriBxCUF_wltQmnjgWLWI4ZUEueVeOeTbDPBZazpBWYvBYpl5WJSUoXi14nVlangcsmu2vYkQUPmHtjOW-yb2ng6_aPfwd7oHLWrWzcsjTF-S4dW7GZRPHEbY_qCOhEwmmMOnE1FWF1OLvP0dM0r4y7FlnrZNhmuVIFhk_pMbEC44rtQmMFv4pm4EVGqmIm3eyXz0GkX8q_O1kGBoyIeV_P6RRcZ0nL6YUVMhPFSLJo6CIhL2zPm54Qdl2nVzDFWn_shVyV0Cl5vpcMJxJ--O_Zcbmpv6lxqDdygTC782Ob3CNMvg\\",\\"protectedHeader\\":\\"eyJhbGciOiJSUzI1NiIsIkZTUElPUC1VUkkiOiIvdHJhbnNmZXJzIiwiRlNQSU9QLUhUVFAtTWV0aG9kIjoiUE9TVCIsIkZTUElPUC1Tb3VyY2UiOiJPTUwiLCJGU1BJT1AtRGVzdGluYXRpb24iOiJNVE5Nb2JpbGVNb25leSIsIkRhdGUiOiIifQ"}'
   }
 }
 
@@ -277,6 +279,7 @@ module.exports = {
   validatePayerFspUri,
   validatePayeeFspUri,
   defaultSwitchHeaders,
+  defaultStandardHeaders,
   getPayerfspEndpointsUri,
   getPayeefspEndpointsUri,
   getOracleEndpointDatabaseResponse,
