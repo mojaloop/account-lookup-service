@@ -25,7 +25,6 @@
 
 const Test = require('ava')
 const Mockgen = require('../../../../util/mockgen.js')
-const parties = require('../../../../../src/domain/parties')
 const Helper = require('../../../../util/helper')
 const { startTestAPIServer } = require('../../../../_helpers')
 

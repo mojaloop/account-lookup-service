@@ -36,7 +36,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: function (req, h) {
-    const { Central, domain, logger } = req.server.app;
+    const { Central, domain, logger } = req.server.app
     try {
       domain.participants.postParticipantsBatch(req.headers, req.method, req.payload)
     } catch (err) {

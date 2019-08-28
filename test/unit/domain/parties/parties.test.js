@@ -16,7 +16,7 @@ const DB = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
 const Config = require('../../../../src/lib/config')
 
-const partiesSwitchHeaders = Helper.defaultSwitchHeaders('parties');
+const partiesSwitchHeaders = Helper.defaultSwitchHeaders('parties')
 
 let sandbox
 

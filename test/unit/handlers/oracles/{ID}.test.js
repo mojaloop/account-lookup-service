@@ -1,14 +1,8 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
 const Mockgen = require('../../../util/mockgen.js')
 const helper = require('../../../util/helper')
-const Sinon = require('sinon')
-const oracle = require('../../../../src/domain/oracle')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const { startTestAdminServer } = require('../../../_helpers')
 
 const app = () => ({
@@ -34,7 +28,7 @@ Test.afterEach(async t => {
  * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test OraclePut put operation', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles/{ID}',
@@ -81,7 +75,7 @@ Test('test OraclePut put operation', async function (t) {
  * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test OracleDelete delete operation', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/oracles/{ID}',

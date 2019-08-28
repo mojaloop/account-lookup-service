@@ -36,7 +36,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
-    const { domain, logger, Central } = request.server.app
+    const { domain, logger, Central } = req.server.app
     try {
       domain.parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
     } catch (err) {

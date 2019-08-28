@@ -43,7 +43,7 @@ Test.afterEach(async t => {
 })
 
 Test('test postParticipantsBatch endpoint', async test => {
-  const { server } = test.context;
+  const { server } = test.context
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',
@@ -74,7 +74,7 @@ Test('test postParticipantsBatch endpoint', async test => {
 })
 
 Test('test postParticipantsBatch endpoint - error', async test => {
-  const { server } = test.context;
+  const { server } = test.context
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',

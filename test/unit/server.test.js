@@ -27,7 +27,6 @@
 
 const setupTest = require('ava')
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const Proxyquire = require('proxyquire')
 const Path = require('path')
 const Config = require('../../src/lib/config')

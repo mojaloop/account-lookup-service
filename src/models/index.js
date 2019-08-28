@@ -6,9 +6,9 @@ const participantEndpoint = require('./participantEndpoint/facade')
 const partyIdType = require('./partyIdType')
 
 module.exports = {
-    currency,
-    endpointType,
-    oracle,
-    participantEndpoint,
-    partyIdType
+  currency,
+  endpointType,
+  oracle,
+  participantEndpoint,
+  partyIdType
 }

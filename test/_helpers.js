@@ -1,5 +1,5 @@
 
-const { createServer, service } = require('../src/server');
+const { createServer, service } = require('../src/server')
 const getPort = require('get-port')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const DefaultCentral = { ErrorHandler }
@@ -27,8 +27,8 @@ const startTestServer = (service, buildAppMocks) => async t => {
   //   here, or delete or comment this line and put up with getting Blipped in your test output
   const listenerRegex = /const out = .*\n.*console\.log\(out\)/
   t.context.server.events._eventListeners.start.handlers.find(h => listenerRegex.test(h.listener))
-    .listener = () => {};
-  await t.context.server.start();
+    .listener = () => {}
+  await t.context.server.start()
 }
 
 module.exports = {

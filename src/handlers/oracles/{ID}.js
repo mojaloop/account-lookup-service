@@ -36,7 +36,7 @@ module.exports = {
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (request, h) => {
-    const { Central, domain } = request.server.app;
+    const { Central, domain } = request.server.app
     try {
       await domain.oracle.updateOracle(request.params, request.payload)
       return h.response().code(204)
@@ -52,7 +52,7 @@ module.exports = {
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (request, h) => {
-    const { Central, domain } = request.server.app;
+    const { Central, domain } = request.server.app
     try {
       await domain.oracle.deleteOracle(request.params)
       return h.response().code(204)

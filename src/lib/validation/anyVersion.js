@@ -1,3 +1,3 @@
-'use strict';
+'use strict'
 
-module.exports = Symbol('Any version');
+module.exports = Symbol('Any version')

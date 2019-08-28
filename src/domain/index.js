@@ -4,7 +4,7 @@ const participants = require('./participants')
 const parties = require('./parties')
 
 module.exports = {
-    oracle,
-    participants,
-    parties
+  oracle,
+  participants,
+  parties
 }

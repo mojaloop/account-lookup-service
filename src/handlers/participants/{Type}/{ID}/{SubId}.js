@@ -36,8 +36,8 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function (req, h) {
-    const { Central } = req.server.app
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
    * summary: ParticipantsSubIdByTypeAndID
@@ -47,8 +47,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
-    const { Central } = req.server.app
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
    * summary: ParticipantsSubIdByTypeAndID
@@ -58,8 +58,8 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: function (req, h) {
-    const { Central } = req.server.app
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
    * summary: ParticipantsSubIdByTypeAndID
@@ -69,7 +69,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: function (req, h) {
-    const { Central } = req.server.app
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 }

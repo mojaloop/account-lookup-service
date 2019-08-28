@@ -26,7 +26,6 @@ Test.afterEach(async t => {
 
 // operation: HTTP method
 // path: e.g. /participants or /parties or /parties/{Type}/{ID}
-const Enums = require('@mojaloop/central-services-shared').Enum
 const getMockRequest = async (operation, path) => {
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
@@ -63,7 +62,7 @@ const getMockRequest = async (operation, path) => {
 Test('test parties PUT operation with missing accept header', async function (t) {
   // validation shouldn't occur when the accept header is missing and the request is not a GET
   // request
-  const { server } = t.context;
+  const { server } = t.context
   const options = await getMockRequest('put', '/parties/{Type}/{ID}')
   options.headers = {
     ...options.headers
@@ -75,7 +74,7 @@ Test('test parties PUT operation with missing accept header', async function (t)
 })
 
 Test('test parties GET operation with unacceptable version', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const options = await getMockRequest('get', '/parties/{Type}/{ID}')
   options.headers = {
     ...options.headers,
@@ -92,7 +91,7 @@ Test('test parties GET operation with unacceptable version', async function (t) 
 })
 
 Test('test parties GET operation with missing accept header', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const options = await getMockRequest('get', '/parties/{Type}/{ID}')
   options.headers = {
     ...options.headers
@@ -109,7 +108,7 @@ Test('test parties GET operation with missing accept header', async function (t)
 })
 
 Test('test parties GET operation with invalid accept header', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const options = await getMockRequest('get', '/parties/{Type}/{ID}')
   options.headers = {
     ...options.headers,
@@ -126,7 +125,7 @@ Test('test parties GET operation with invalid accept header', async function (t)
 })
 
 Test('test parties GET operation with invalid content-type header', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const options = await getMockRequest('get', '/parties/{Type}/{ID}')
   options.headers = {
     ...options.headers,

@@ -28,7 +28,7 @@ Test.afterEach(async t => {
  */
 
 Test('test Participants Post operation', async function (t) {
-  const { server } = t.context;
+  const { server } = t.context
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',

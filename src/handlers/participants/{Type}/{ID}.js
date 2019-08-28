@@ -54,8 +54,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
-    const { Central } = req.server.app
-    return h.response(Central.ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   },
   /**
    * summary: ParticipantsByIDAndType
@@ -83,8 +83,8 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: function (req, h) {
-    const { Central } = req.server.app
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 
 }

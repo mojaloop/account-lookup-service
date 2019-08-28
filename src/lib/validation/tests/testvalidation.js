@@ -60,7 +60,7 @@ test('Run positive accept test suite', t => {
   const positiveTestSuite = validAcceptHeaders(RESOURCE)
   const failures = positiveTestSuite.filter(h => null === h.match(acceptRes))
   if (failures.length !== 0) {
-    return t.fail(`Positive test suite failed. Failures: \n\'${failures.join('\'\n\'')}.`)
+    return t.fail(`Positive test suite failed. Failures: \n'${failures.join('\'\n\'')}'.`)
   }
   t.pass()
 })
@@ -69,7 +69,7 @@ test('Run negative accept test suite', t => {
   const negativeTestSuite = invalidAcceptHeaders(RESOURCE)
   const failures = negativeTestSuite.filter(h => null !== h.match(acceptRes))
   if (failures.length !== 0) {
-    return t.fail(`Negative test suite failed. Failures: \n\'${failures.join('\'\n\'')}.`)
+    return t.fail(`Negative test suite failed. Failures: \n'${failures.join('\'\n\'')}'.`)
   }
   t.pass()
 })
@@ -134,7 +134,7 @@ test('Run positive content-type test suite', t => {
   const positiveTestSuite = validContentTypeHeaders(RESOURCE)
   const failures = positiveTestSuite.filter(h => null === h.match(contentTypeRes))
   if (failures.length !== 0) {
-    return t.fail(`Positive test suite failed. Failures: \n\'${failures.join('\'\n\'')}.`)
+    return t.fail(`Positive test suite failed. Failures: \n'${failures.join('\'\n\'')}'.`)
   }
   t.pass()
 })
@@ -143,7 +143,7 @@ test('Run negative content-type test suite', t => {
   const negativeTestSuite = invalidContentTypeHeaders(RESOURCE)
   const failures = negativeTestSuite.filter(h => null !== h.match(contentTypeRes))
   if (failures.length !== 0) {
-    return t.fail(`Negative test suite failed. Failures: \n\'${failures.join('\'\n\'')}.`)
+    return t.fail(`Negative test suite failed. Failures: \n'${failures.join('\'\n\'')}'.`)
   }
   t.pass()
 })

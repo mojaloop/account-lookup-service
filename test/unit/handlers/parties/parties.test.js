@@ -25,7 +25,6 @@
 
 const Test = require('ava')
 const Mockgen = require('../../../util/mockgen.js')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const Helper = require('../../../util/helper')
 const { startTestAPIServer } = require('../../../_helpers')
 
@@ -46,7 +45,7 @@ Test.afterEach(async t => {
 // TODO: note this is handlers/parties/parties.test.js (_parties_) and the following test is for
 // _participants_
 Test('test postParticipantsBatch endpoint', async test => {
-  const { server } = test.context;
+  const { server } = test.context
   const requests = new Promise((resolve, reject) => {
     Mockgen().requests({
       path: '/participants',

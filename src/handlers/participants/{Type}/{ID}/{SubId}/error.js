@@ -35,8 +35,8 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
-    const { Central } = req.server.app
-    return h.response(Central.ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  put: function (req, h) {
+    const { Factory, Enums } = req.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 }

@@ -2,7 +2,6 @@
 
 const Test = require('ava')
 const Mockgen = require('../../util/mockgen.js')
-const Sinon = require('sinon')
 const helper = require('../../util/helper')
 const { startTestAdminServer } = require('../../_helpers')
 
@@ -74,7 +73,7 @@ Test('test OracleGet get operation', async function (t) {
   if (mock.request.headers && mock.request.headers.length > 0) {
     options.headers = mock.request.headers
   }
-  t.context.server.app.domain.oracle.getOracle = () => Promise.resolve(getResponse);
+  t.context.server.app.domain.oracle.getOracle = () => Promise.resolve(getResponse)
   const response = await server.inject(options)
   t.is(response.statusCode, 200, 'Ok response status')
 })

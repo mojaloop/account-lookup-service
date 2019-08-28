@@ -36,7 +36,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    const ErrorHandler = request.server.app.Central.ErrorHandler;
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { Enums, Factory } = request.server.app.Central.ErrorHandler
+    return h.response(Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
   }
 }

@@ -108,7 +108,7 @@ const createServer = async (port, service, app) => {
         // `pattern` headers at all, although the accuracy of this statement has not been
         // thoroughly tested.
         if (service !== serviceType.API || request.path === '/health') {
-          return h.continue;
+          return h.continue
         }
 
         // Always validate the accept header for a get request, or optionally if it has been
