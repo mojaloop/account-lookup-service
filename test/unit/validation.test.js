@@ -3,7 +3,7 @@
 const Test = require('ava')
 const Mockgen = require('../util/mockgen')
 const helper = require('../util/helper')
-const { startTestAPIServer } = require('../_helpers')
+const { startTestAPIServer } = helper
 const assert = require('assert').strict
 
 const app = () => ({

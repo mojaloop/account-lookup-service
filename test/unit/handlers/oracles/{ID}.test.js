@@ -3,7 +3,7 @@
 const Test = require('ava')
 const Mockgen = require('../../../util/mockgen.js')
 const helper = require('../../../util/helper')
-const { startTestAdminServer } = require('../../../_helpers')
+const { startTestAdminServer } = helper
 
 const app = () => ({
   domain: {

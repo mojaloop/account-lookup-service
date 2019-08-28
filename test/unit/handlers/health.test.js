@@ -3,7 +3,7 @@
 const Test = require('ava')
 const Mockgen = require('../../util/mockgen.js')
 const helper = require('../../util/helper')
-const { startTestAPIServer } = require('../../_helpers')
+const { startTestAPIServer } = helper
 
 Test.beforeEach(startTestAPIServer())
 
