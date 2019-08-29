@@ -26,6 +26,7 @@
 
 const pp = require('util').inspect
 const participants = require('../../../../domain/participants')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants/{Type}/{ID}/error
@@ -47,7 +48,7 @@ module.exports = {
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`)
-        // TODO: review this error message
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()
     return h.response().code(202)

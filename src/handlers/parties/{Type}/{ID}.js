@@ -25,7 +25,7 @@
 'use strict'
 
 const parties = require('../../../domain/parties')
-const pp = require('util').inspect
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -40,9 +40,9 @@ module.exports = {
    */
   get: function (req, h) {
     try {
-      parties.getPartiesByTypeAndID(req)
+      parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query)
     } catch (err) {
-      // TODO: review this error message
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)
   },
@@ -56,9 +56,9 @@ module.exports = {
    */
   put: function (req, h) {
     try {
-      parties.putPartiesByTypeAndID(req)
+      parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
     } catch (err) {
-      // TODO: review this error message
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(200)
   }

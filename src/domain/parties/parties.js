@@ -27,48 +27,54 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Enums = require('../../lib/enum')
+const Enums = require('@mojaloop/central-services-shared').Enum
 const participant = require('../../models/participantEndpoint/facade')
-const util = require('../../lib/util')
-const Errors = require('../../lib/error')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const oracle = require('../../models/oracle/facade')
+const decodePayload = require('@mojaloop/central-services-stream').Kafka.Protocol.decodePayload
 
 /**
  * @function getPartiesByTypeAndID
  *
  * @description sends request to applicable oracle based on type and sends results to a callback url
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} headers - incoming http request headers
+ * @param {object} params - uri parameters of the http request
+ * @param {string} method - http request method
+ * @param {object} query - uri query parameters of the http request
  */
-const getPartiesByTypeAndID = async (req) => {
+const getPartiesByTypeAndID = async (headers, params, method, query) => {
   try {
     Logger.info('parties::getPartiesByTypeAndID::begin')
-    const type = req.params.Type
-    const requesterParticipantModel = await participant.validateParticipant(req.headers['fspiop-source'])
-    if(requesterParticipantModel) {
-      if (Object.values(Enums.type).includes(type)) {
-        const response = await oracle.oracleRequest(req)
+    const type = params.Type
+    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
+    if (requesterParticipantModel) {
+      if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
+        const response = await oracle.oracleRequest(headers, method, params, query)
         if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
           const options = {
             partyIdType: type,
-            partyIdentifier: req.params.ID
+            partyIdentifier: params.ID
           }
-          await participant.sendRequest(req, response.data.partyList[0].fspId, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.restMethods.GET, undefined, options)
+          if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+            headers[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
+          }
+          await participant.sendRequest(headers, response.data.partyList[0].fspId, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.Http.RestMethods.GET, undefined, options)
         } else {
-          await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-            util.buildErrorObject(Errors.ErrorObject.PARTY_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
+          await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+            ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), headers, params)
         }
       } else {
-        await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-          util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+        await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
       }
     } else {
       Logger.error('Requester FSP not found')
-      // TODO: handle issue where requester fsp not found
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
-  } catch (e) {
-
-    Logger.error(e)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -77,37 +83,43 @@ const getPartiesByTypeAndID = async (req) => {
  *
  * @description This sends a callback to inform participant of successful lookup
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} headers - incoming http request headers
+ * @param {object} params - uri parameters of the http request
+ * @param {string} method - http request method
+ * @param {object} payload - payload of the request being sent out
+ * @param {string} dataUri - encoded payload of the request being sent out
  */
-const putPartiesByTypeAndID = async (req) => {
+const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) => {
   try {
     Logger.info('parties::putPartiesByTypeAndID::begin')
-    const requesterParticipant = await participant.validateParticipant(req.headers['fspiop-source'])
-    const type = req.params.Type
-    if (Object.values(Enums.type).includes(type)) {
+    const requesterParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
+    const type = params.Type
+    if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       if (requesterParticipant) {
-        const destinationParticipant = await participant.validateParticipant(req.headers['fspiop-destination'])
+        const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
         if (destinationParticipant) {
           const options = {
             partyIdType: type,
-            partyIdentifier: req.params.ID
+            partyIdentifier: params.ID
           }
-          await participant.sendRequest(req, destinationParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT, Enums.restMethods.PUT, req.payload, options)
+          const decodedPayload = decodePayload(dataUri, { asParsed: false })
+          await participant.sendRequest(headers, destinationParticipant.data.name, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT, Enums.Http.RestMethods.PUT, decodedPayload.body.toString(), options)
           Logger.info('parties::putPartiesByTypeAndID::end')
         } else {
-          await participant.sendErrorToParticipant(req, requesterParticipant, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-            util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
+          await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+            ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params)
         }
       } else {
         Logger.error('Requester FSP not found')
-        // TODO: handle issue where requester fsp not found
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
       }
     } else {
-      await participant.sendErrorToParticipant(req, req.headers['fspiop-source'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-        util.buildErrorObject(Errors.ErrorObject.ADD_PARTY_ERROR, [{key: type, value: req.params.ID}]))
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
     }
-  } catch (e) {
-    Logger.error(e)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -116,19 +128,30 @@ const putPartiesByTypeAndID = async (req) => {
  *
  * @description This populates the cache of endpoints
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} headers - incoming http request headers
+ * @param {object} params - uri parameters of the http request
+ * @param {object} payload - payload of the request being sent out
+ * @param {string} dataUri - encoded payload of the request being sent out
  */
-const putPartiesErrorByTypeAndID = async (req) => {
+const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri) => {
   try {
-    const destinationParticipant = await participant.validateParticipant(req.headers['fspiop-destination'])
-    if (destinationParticipant) {
-      await participant.sendErrorToParticipant(req, destinationParticipant.data.name, Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, req.body)
+    const type = params.Type
+    if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
+      const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
+      if (destinationParticipant) {
+        const decodedPayload = decodePayload(dataUri, { asParsed: false })
+        await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR, decodedPayload.body.toString(), headers, params)
+      } else {
+        await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)
+      }
     } else {
-      await participant.sendErrorToParticipant(req, req.headers['fspiop-destination'], Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-        util.buildErrorObject(Errors.ErrorObject.DESTINATION_FSP_NOT_FOUND_ERROR, [{key: type, value: req.params.ID}]))
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
     }
-  } catch (e) {
-    Logger.error(e)
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 

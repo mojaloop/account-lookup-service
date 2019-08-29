@@ -26,16 +26,16 @@
 'use strict'
 
 const Mustache = require('mustache')
-const Enums = require('../../src/lib/enum')
+const Enums = require('@mojaloop/central-services-shared').Enum
 const Config = require('../../src/lib/config')
 const payerfsp = 'payerfsp'
 const payeefsp = 'payeefsp'
-const validatePayerFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp: payerfsp})
-const validatePayeeFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantsGet, {fsp: payeefsp})
-const defaultSwitchHeaders = defaultHeaders(Enums.apiServices.SWITCH, Enums.resources.participants, Enums.apiServices.SWITCH)
-const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantEndpoints, {fsp: payerfsp})
-const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.endpoints.participantEndpoints, {fsp: payeefsp})
-
+const validatePayerFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payerfsp })
+const validatePayeeFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payeefsp })
+const defaultSwitchHeaders = defaultHeaders(Enums.Http.HeaderResources.SWITCH, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.HeaderResources.SWITCH)
+const defaultStandardHeaders = defaultHeaders(payerfsp, Enums.Http.HeaderResources.PARTICIPANTS, payeefsp)
+const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payerfsp })
+const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payeefsp })
 
 /**
  * @function defaultHeaders
@@ -52,15 +52,16 @@ const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.e
  * @returns {object} Returns the default headers
  */
 
-function defaultHeaders(destination, resource, source, version = '1.0') {
+function defaultHeaders (destination, resource, source, version = '1.0') {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
   return {
-    'accept': `application/vnd.interoperability.${resource}+json;version=${version}`,
-    'fspiop-destination': destination ? destination : '',
+    accept: `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'fspiop-destination': destination || '',
     'content-type': `application/vnd.interoperability.${resource}+json;version=${version}`,
-    'date': '2019-05-24 08:52:19',
-    'fspiop-source': source
+    date: '2019-05-24 08:52:19',
+    'fspiop-source': source,
+    'fspiop-signature': '{"signature":"iU4GBXSfY8twZMj1zXX1CTe3LDO8Zvgui53icrriBxCUF_wltQmnjgWLWI4ZUEueVeOeTbDPBZazpBWYvBYpl5WJSUoXi14nVlangcsmu2vYkQUPmHtjOW-yb2ng6_aPfwd7oHLWrWzcsjTF-S4dW7GZRPHEbY_qCOhEwmmMOnE1FWF1OLvP0dM0r4y7FlnrZNhmuVIFhk_pMbEC44rtQmMFv4pm4EVGqmIm3eyXz0GkX8q_O1kGBoyIeV_P6RRcZ0nL6YUVMhPFSLJo6CIhL2zPm54Qdl2nVzDFWn_shVyV0Cl5vpcMJxJ--O_Zcbmpv6lxqDdygTC782Ob3CNMvg\\",\\"protectedHeader\\":\\"eyJhbGciOiJSUzI1NiIsIkZTUElPUC1VUkkiOiIvdHJhbnNmZXJzIiwiRlNQSU9QLUhUVFAtTWV0aG9kIjoiUE9TVCIsIkZTUElPUC1Tb3VyY2UiOiJPTUwiLCJGU1BJT1AtRGVzdGluYXRpb24iOiJNVE5Nb2JpbGVNb25leSIsIkRhdGUiOiIifQ"}'
   }
 }
 
@@ -80,10 +81,10 @@ const getByTypeIdRequest = {
     Type: 'MSISDN'
   },
   headers: {
-    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
-    'date': '2019-05-24 08:52:19',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
   method: 'get'
@@ -96,10 +97,10 @@ const getByTypeIdRequestError = {
     Type: ''
   },
   headers: {
-    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
-    'date': '2019-05-24 08:52:19',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
   method: 'get'
@@ -112,10 +113,10 @@ const putByTypeIdRequest = {
     Type: 'MSISDN'
   },
   headers: {
-    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
-    'date': '2019-05-24 08:52:19',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
   method: 'put'
@@ -130,10 +131,10 @@ const getByTypeIdCurrencyRequest = {
     Type: 'MSISDN'
   },
   headers: {
-    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
-    'date': '2019-05-24 08:52:19',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
   method: 'get'
@@ -148,31 +149,30 @@ const postByTypeIdCurrencyRequest = {
     Type: 'MSISDN'
   },
   headers: {
-    'accept': `application/vnd.interoperability.participants+json;version=1`,
+    accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': `application/vnd.interoperability.participants+json;version=1.0`,
-    'date': '2019-05-24 08:52:19',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
   method: 'post'
 }
 
-const oracleGetCurrencyUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.endpoints.oracleParticipantsTypeIdCurrency, {
+const oracleGetCurrencyUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY, {
   partyIdType: getByTypeIdCurrencyRequest.params.Type,
   partyIdentifier: getByTypeIdCurrencyRequest.params.ID,
   currency: getByTypeIdCurrencyRequest.query.currency
 })
 
-const oracleGetUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.endpoints.oracleParticipantsTypeId, {
+const oracleGetUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID, {
   partyIdType: getByTypeIdRequest.params.Type,
   partyIdentifier: getByTypeIdRequest.params.ID
 })
 
-const oracleGetPartiesUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.endpoints.partiesGet, {
+const oracleGetPartiesUri = Mustache.render(getOracleEndpointDatabaseResponse[0].value + Enums.EndPoints.FspEndpointTemplates.PARTIES_GET, {
   partyIdType: getByTypeIdRequest.params.Type,
   partyIdentifier: getByTypeIdRequest.params.ID
 })
-
 
 const getOracleResponse = {
   data: {
@@ -185,31 +185,31 @@ const getOracleResponse = {
 const getEndPointsResponse = {
   data: [
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT,
       value: 'localhost:33350'
     },
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
       value: 'localhost:33351'
     },
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT,
       value: 'localhost:33352'
     },
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
       value: 'localhost:33353'
     },
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET,
       value: 'localhost:33354'
     },
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT,
       value: 'localhost:33355'
     },
     {
-      type: Enums.endpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+      type: Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
       value: 'localhost:33356'
     }
   ]
@@ -224,11 +224,11 @@ const participantPutEndpointOptions = {
   partyIdentifier: getByTypeIdCurrencyRequest.params.ID
 }
 
-function defaultAdminHeaders() {
+function defaultAdminHeaders () {
   return {
-    'Accept': 'application/vnd.interoperability.oracles+json;version=1',
+    Accept: 'application/vnd.interoperability.oracles+json;version=1',
     'Content-Type': 'application/vnd.interoperability.oracles+json;version=1.0',
-    'Date': (new Date()).toUTCString()
+    Date: (new Date()).toUTCString()
   }
 }
 
@@ -237,6 +237,7 @@ module.exports = {
   validatePayerFspUri,
   validatePayeeFspUri,
   defaultSwitchHeaders,
+  defaultStandardHeaders,
   getPayerfspEndpointsUri,
   getPayeefspEndpointsUri,
   getOracleEndpointDatabaseResponse,

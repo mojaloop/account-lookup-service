@@ -26,6 +26,7 @@
 
 const participants = require('../domain/participants')
 const Logger = require('@mojaloop/central-services-shared').Logger
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants
@@ -40,10 +41,10 @@ module.exports = {
    */
   post: function (req, h) {
     try {
-      participants.postParticipantsBatch(req)
+      participants.postParticipantsBatch(req.headers, req.method, req.payload)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      // TODO: review this error message
+      Logger.error(`ERROR - : ${err.stack}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(200)
   }

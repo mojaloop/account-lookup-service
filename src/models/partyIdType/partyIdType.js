@@ -26,12 +26,13 @@
 'use strict'
 
 const Db = require('../../lib/db')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const getPartyIdTypeByName = async (name) => {
   try {
-    return Db.partyIdType.findOne({name, isActive: true})
+    return Db.partyIdType.findOne({ name, isActive: true })
   } catch (err) {
-    throw new Error(err.message)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
