@@ -85,7 +85,7 @@ Test('test parties GET operation with unacceptable version', async function (t) 
   t.is(response.statusCode, 406, 'Not acceptable response status')
   t.is(
     response.result.errorInformation.errorDescription,
-    'Unacceptable version - Unacceptable version requested'
+    'Unacceptable version requested - Client requested to use a protocol version which is not supported by the server'
   )
   t.is(response.result.errorInformation.errorCode, '3001')
 })
