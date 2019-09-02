@@ -48,27 +48,22 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
     const requesterName = headers[Enums.Http.Headers.FSPIOP.SOURCE]
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
-      if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
-        const response = await oracle.oracleRequest(headers, method, params, query)
-        if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-          const options = {
-            partyIdType: type,
-            partyIdentifier: params.ID
-          }
-          const payload = {
-            fspId: response.data.partyList[0].fspId
-          }
-          if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
-            headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
-          }
-          await participant.sendRequest(headers, requesterName, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, payload, options)
-        } else {
-          await participant.sendErrorToParticipant(requesterName, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-            ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), headers, params)
+      const response = await oracle.oracleRequest(headers, method, params, query)
+      if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+        const options = {
+          partyIdType: type,
+          partyIdentifier: params.ID
         }
+        const payload = {
+          fspId: response.data.partyList[0].fspId
+        }
+        if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+          headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
+        }
+        await participant.sendRequest(headers, requesterName, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, payload, options)
       } else {
         await participant.sendErrorToParticipant(requesterName, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
+          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), headers, params)
       }
       Logger.info('getParticipantsByTypeAndID::end')
     } else {
