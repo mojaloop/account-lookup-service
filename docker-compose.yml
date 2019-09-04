@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  account_lookup_service:
+    build:
+      context: .
+      cache_from:
+        - mojaloop/account-lookup-service
+    container_name: als_account-lookup-service
+    links:
+      - mysql
+    depends_on:
+      - "mysql"
+    ports:
+      - "4001:4001"
+      - "4002:4002"
+    volumes: 
+      - ./docker/als/default.json:/opt/account-lookup-service/config/default.json
+      - ./docker/wait-for:/opt/wait-for
+    command: 
+      - "sh"
+      - "-c"
+      - "sh /opt/wait-for/wait-for.sh mysql:3306 && npm run start"
+
+  mysql:
+    image: mysql/mysql-server
+    container_name: als_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      #this fixes the permissions issue, but docker-compose up will fail on first attempt
+      - ./docker/sql-init/:/docker-entrypoint-initdb.d/
+    environment:
+      - MYSQL_USER=${DBUSER:-account_lookup}
+      - MYSQL_PASSWORD=${DBPASS:-password}
+      - MYSQL_DATABASE=${DBUSER:-account_lookup}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true

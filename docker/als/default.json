@@ -1,0 +1,27 @@
+{
+    "ADMIN_PORT": 4001,
+    "API_PORT": 4002,
+    "DATABASE_URI": "mysql://account_lookup:password@172.17.0.1:3306/account_lookup",
+    "RUN_MIGRATIONS": true,
+    "ENDPOINT_CACHE_CONFIG": {
+      "expiresIn": 180000,
+      "generateTimeout": 30000
+    },
+    "SWITCH_ENDPOINT": "http://host.docker.internal:3001",
+    "INSTRUMENTATION": {
+      "METRICS": {
+        "DISABLED": false,
+        "labels": {
+          "fspId": "*"
+        },
+        "config": {
+          "timeout": 5000,
+          "prefix": "moja_",
+          "defaultLabels": {
+            "serviceName": "account-lookup-service"
+          }
+        }
+      }
+    }
+  }
+  
