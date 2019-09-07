@@ -45,14 +45,14 @@ Program.command('server') // sub-command name, coffeeType = type, required
   // function to execute when command is uses
   .action(async (args) => {
     if (args.api) {
-      Logger.debug(`CLI: Executing --api`)
+      Logger.debug('CLI: Executing --api')
       const options = {
         port: Config.API_PORT,
         isAPI: true
       }
       module.exports = Server.initialize(options.port, options.isAPI)
     } else if (args.admin) {
-      Logger.debug(`CLI: Executing --admin`)
+      Logger.debug('CLI: Executing --admin')
       const options = {
         port: Config.ADMIN_PORT,
         isAPI: false

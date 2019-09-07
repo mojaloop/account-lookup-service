@@ -38,7 +38,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Boom = require('@hapi/boom')
 
 const connectDatabase = async () => {
-  return await Db.connect(Config.DATABASE_URI)
+  return Db.connect(Config.DATABASE_URI)
 }
 
 const openAPIOptions = {
@@ -52,7 +52,7 @@ const openAdminAPIOptions = {
 }
 
 const migrate = async (isApi) => {
-  return Config.RUN_MIGRATIONS && !isApi ? await Migrator.migrate() : {}
+  return Config.RUN_MIGRATIONS && !isApi ? Migrator.migrate() : {}
 }
 
 /**

@@ -1,9 +1,6 @@
 'use strict'
 
 const Test = require('ava')
-const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
 const Mockgen = require('../../../util/mockgen.js')
 const helper = require('../../../util/helper')
 const Sinon = require('sinon')

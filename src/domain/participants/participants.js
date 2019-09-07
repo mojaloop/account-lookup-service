@@ -231,7 +231,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
         headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.partyList[0].partyId.fspId
         headers[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
       }
-      await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, {requestId})
+      await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId })
       Logger.info('postParticipantsBatch::end')
     } else {
       Logger.error('Requester FSP not found')
