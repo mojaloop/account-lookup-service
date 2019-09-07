@@ -125,7 +125,6 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) 
  */
 const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri) => {
   try {
-    const type = params.Type
     const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
     if (destinationParticipant) {
       const decodedPayload = decodePayload(dataUri, { asParsed: false })

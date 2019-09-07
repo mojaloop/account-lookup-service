@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups",
-  "version": "7.5.0",
+  "version": "7.5.1",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -24,6 +24,11 @@
       "src/**/*.js"
     ]
   },
+  "pre-commit": [
+    "standard",
+    "dep:check",
+    "test"
+  ],
   "dependencies": {
     "@hapi/basic": "5.1.1",
     "@hapi/boom": "7.4.3",
@@ -32,14 +37,14 @@
     "@hapi/inert": "5.2.1",
     "@hapi/vision": "5.5.3",
     "@mojaloop/central-services-database": "7.4.0",
-    "@mojaloop/central-services-error-handling": "7.4.2",
+    "@mojaloop/central-services-error-handling": "7.4.5",
     "@mojaloop/central-services-health": "7.0.0",
     "@mojaloop/central-services-metrics": "5.2.0",
     "@mojaloop/central-services-shared": "7.5.0",
-    "@mojaloop/central-services-stream": "6.2.2",
+    "@mojaloop/central-services-stream": "7.4.2",
     "@now-ims/hapi-now-auth": "2.0.0",
     "blipp": "4.0.0",
-    "commander": "3.0.0",
+    "commander": "3.0.1",
     "docdash": "1.1.1",
     "hapi-auth-bearer-token": "6.2.1",
     "hapi-openapi": "1.2.2",
@@ -55,13 +60,15 @@
   },
   "devDependencies": {
     "ava": "2.3.0",
-    "eslint": "6.2.2",
+    "eslint": "6.3.0",
     "eslint-plugin-ava": "8.0.0",
     "get-port": "5.0.0",
     "npm-audit-resolver": "1.5.0",
+    "npm-check-updates": "3.1.21",
     "nyc": "14.1.1",
+    "pre-commit": "1.2.2",
     "proxyquire": "2.1.3",
-    "sinon": "7.4.1",
+    "sinon": "7.4.2",
     "standard": "14.1.0",
     "swagmock": "1.0.0",
     "tap-xunit": "2.4.1"
@@ -71,6 +78,7 @@
     "start:all": "run-p start:api start:admin",
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
+    "standard": "standard",
     "test": "npx ava",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "testing": "npx ava",
@@ -91,7 +99,9 @@
     "package-lock": "docker run --rm -it central-directory:local cat package-lock.json > package-lock.json",
     "generate-docs": "jsdoc -c jsdoc.json",
     "audit:resolve": "SHELL=sh resolve-audit",
-    "audit:check": "SHELL=sh check-audit"
+    "audit:check": "SHELL=sh check-audit",
+    "dep:check": "npx ncu -e 2",
+    "dep:update": "npx ncu -u"
   },
   "generator-swaggerize": {
     "version": "4.1.0"

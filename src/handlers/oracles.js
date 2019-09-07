@@ -51,6 +51,5 @@ module.exports = {
   post: async (request, h) => {
     await oracle.createOracle(request.payload)
     return h.response().code(201)
-
   }
 }

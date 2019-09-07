@@ -29,7 +29,6 @@ Test.afterEach(async () => {
  * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
  */
 Test('test Health get operation', async function (t) {
-
   const requests = new Promise((resolve, reject) => {
     Mockgen(false).requests({
       path: '/health',
