@@ -13,5 +13,5 @@ const updateMigrationsLocation = (kf) => {
 }
 
 exports.migrate = async function () {
-  return await Migrations.migrate(updateMigrationsLocation(Knexfile))
+  return Migrations.migrate(updateMigrationsLocation(Knexfile))
 }
