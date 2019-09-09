@@ -1,14 +1,12 @@
 version: "3.7"
 
 services:
-  account_lookup_service:
+  account-lookup-service:
     build:
       context: .
       cache_from:
         - mojaloop/account-lookup-service
     container_name: als_account-lookup-service
-    links:
-      - mysql
     depends_on:
       - "mysql"
     ports:
@@ -21,17 +19,45 @@ services:
       - "sh"
       - "-c"
       - "sh /opt/wait-for/wait-for.sh mysql:3306 && npm run start"
+    healthcheck:
+      test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4001/health"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
 
   mysql:
     image: mysql/mysql-server
     container_name: als_mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
-      #this fixes the permissions issue, but docker-compose up will fail on first attempt
+      # Note: this fixes the permissions issue, but docker-compose up will fail on first attempt
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
       - MYSQL_USER=${DBUSER:-account_lookup}
       - MYSQL_PASSWORD=${DBPASS:-password}
       - MYSQL_DATABASE=${DBUSER:-account_lookup}
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
+  
+  simulator:
+    image: mojaloop/simulator:latest
+    container_name: als_simulator
+    ports:
+      - "8444:8444"
+    environment:
+      - LOG_LEVEL=info
+      - TRANSFERS_ENDPOINT=http://host.docker.internal:3000
+      - QUOTES_ENDPOINT=http://host.docker.internal:3002
+      - PARTIES_ENDPOINT=http://host.docker.internal:4002
+      - TRANSFERS_FULFIL_RESPONSE_DISABLED=false
+    healthcheck:
+      test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:8444/health"]
+      timeout: 20s
+      retries: 10
+      interval: 30s

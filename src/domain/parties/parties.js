@@ -32,6 +32,7 @@ const participant = require('../../models/participantEndpoint/facade')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const oracle = require('../../models/oracle/facade')
 const decodePayload = require('@mojaloop/central-services-stream').Kafka.Protocol.decodePayload
+const createCallbackHeaders = require('../../lib/headers').createCallbackHeaders
 
 /**
  * @function getPartiesByTypeAndID
@@ -60,8 +61,14 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
         }
         await participant.sendRequest(headers, response.data.partyList[0].fspId, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.Http.RestMethods.GET, undefined, options)
       } else {
+        const callbackHeaders = createCallbackHeaders({
+          requestHeaders: headers,
+          partyType: params.Type,
+          partyIdentifier: params.ID,
+          endpointTemplate: Enums.EndPoints.FspEndpointTemplates.PARTIES_PUT_ERROR
+        })
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), headers, params)
+          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), callbackHeaders, params)
       }
     } else {
       Logger.error('Requester FSP not found')
@@ -125,7 +132,6 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) 
  */
 const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri) => {
   try {
-    const type = params.Type
     const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
     if (destinationParticipant) {
       const decodedPayload = decodePayload(dataUri, { asParsed: false })

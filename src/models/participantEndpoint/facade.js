@@ -93,7 +93,7 @@ exports.validateParticipant = async (fsp) => {
  *
  * @returns {object} - Returns http response from request endpoint
  */
-exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined ) => {
+exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined) => {
   try {
     let requestIdExists = false
     if (payload && payload.requestId) {
@@ -101,14 +101,16 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     }
     const requesterErrorEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, participantName, endpointType, {
       partyIdType: params.Type || undefined,
-      partyIdentifier: params.ID|| undefined,
+      partyIdentifier: params.ID || undefined,
       partySubIdOrType: params.SubId || undefined,
       requestId: requestIdExists ? payload.requestId : undefined
     })
+
     if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = headers[Enums.Http.Headers.FSPIOP.SOURCE]
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
     }
+
     Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
     await Util.Request.sendRequest(requesterErrorEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation)
   } catch (err) {
