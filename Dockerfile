@@ -2,9 +2,6 @@ FROM node:10.15.3-alpine
 
 WORKDIR /opt/account-lookup-service
 
-RUN echo "https://mirror.csclub.uwaterloo.ca/alpine/v3.9/main" > /etc/apk/repositories
-RUN echo "https://mirror.csclub.uwaterloo.ca/alpine/v3.9/community" >>/etc/apk/repositories
-
 RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
     && cd $(npm root -g)/npm \
     && npm config set unsafe-perm true \
