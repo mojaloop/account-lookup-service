@@ -102,6 +102,15 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
   } catch (err) {
     Logger.error(err)
+    // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
+    // initiator of the request.
+    if (
+      err.name === 'FSPIOPError' &&
+      err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code &&
+      err.extensions.some(ext => (ext.key === 'status' && ext.value === 400))
+    ) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+    }
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
