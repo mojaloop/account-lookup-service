@@ -25,8 +25,6 @@
 'use strict'
 
 const participants = require('../domain/participants')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants
@@ -40,12 +38,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: function (req, h) {
-    try {
-      participants.postParticipantsBatch(req.headers, req.method, req.payload)
-    } catch (err) {
-      Logger.error(`ERROR - : ${err.stack}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    // Here we call an async function- but as we send an immediate sync response, _all_ errors
+    // _must_ be handled by postParticipantsBatch.
+    participants.postParticipantsBatch(req.headers, req.method, req.payload)
     return h.response().code(200)
   }
 }
