@@ -72,9 +72,14 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
     }
   } catch (err) {
     Logger.error(err)
-    await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-      ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
-    throw err
+    try {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+        ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 
@@ -146,9 +151,14 @@ const postParticipants = async (headers, method, params, payload) => {
     Logger.info('postParticipants::end')
   } catch (err) {
     Logger.error(err)
-    await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
-      ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
-    throw err
+    try {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+        ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 
@@ -239,7 +249,14 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
     }
   } catch (err) {
     Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    try {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 

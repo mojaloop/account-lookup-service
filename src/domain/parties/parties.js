@@ -69,7 +69,14 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
     }
   } catch (err) {
     Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    try {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 
@@ -109,7 +116,14 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) 
     }
   } catch (err) {
     Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    try {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 
@@ -135,7 +149,14 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri) => 
     }
   } catch (err) {
     Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    try {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 
