@@ -29,7 +29,7 @@ services:
     image: mysql/mysql-server
     container_name: als_mysql
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       # Note: this fixes the permissions issue, but docker-compose up will fail on first attempt
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
