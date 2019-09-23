@@ -251,7 +251,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
     Logger.error(err)
     try {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
-        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers)
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
