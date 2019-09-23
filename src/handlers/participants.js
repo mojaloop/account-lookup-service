@@ -25,8 +25,6 @@
 'use strict'
 
 const participants = require('../domain/participants')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants

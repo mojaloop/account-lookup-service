@@ -25,7 +25,6 @@
 'use strict'
 
 const parties = require('../../../domain/parties')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /parties/{Type}/{ID}

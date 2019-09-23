@@ -92,9 +92,9 @@ const createServer = async (port, isApi) => {
   ])
   await server.ext([
     {
-      type: 'onPreHandler',
+      type: 'onRequest',
       method: (request, h) => {
-        RequestLogger.logResponse(request)
+        RequestLogger.logRequest(request)
         return h.continue
       }
     },

@@ -135,7 +135,7 @@ Test.serial('test getParticipantsByTypeAndID endpoint sends async 3200 to /error
       'Failed to send HTTP request to host',
       {},
       {},
-      [ { key: 'status', value: 400 } ]
+      [{ key: 'status', value: 400 }]
     )
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
