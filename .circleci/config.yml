@@ -176,6 +176,16 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
+      - run:
+          name: Delete node_modules
+          command: rm -rf ./node_modules
+      - run:
+          name: npm install production
+          command: npm install --production
+      - save_cache:
+          key: dependency-cache-production-{{ checksum "package.json" }}
+          paths:
+            - node_modules
 
   test-unit:
     <<: *defaults_working_directory
@@ -371,7 +381,7 @@ jobs:
           <<: *defaults_license_scanner
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: dependency-cache-production-{{ checksum "package.json" }}
       - run:
           name: Run the license-scanner
           command: cd /tmp/license-scanner && pathToRepo=$CIRCLE_WORKING_DIRECTORY make run
@@ -442,7 +452,7 @@ jobs:
           <<: *defaults_license_scanner
       - run:
           name: Run the license-scanner
-          command: cd /tmp/license-scanner && mode=docker dockerImage=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG make run
+          command: cd /tmp/license-scanner && mode=docker dockerImages=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG make run
       - store_artifacts:
           path: /tmp/license-scanner/results
           prefix: licenses
