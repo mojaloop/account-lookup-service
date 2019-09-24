@@ -169,9 +169,6 @@ jobs:
       - run:
           name: Update NPM install
           command: npm install
-      - run:
-          name: Delete build dependencies
-          command: apk del build-dependencies
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -186,6 +183,9 @@ jobs:
           key: dependency-cache-production-{{ checksum "package.json" }}
           paths:
             - node_modules
+      - run:
+          name: Delete build dependencies
+          command: apk del build-dependencies
 
   test-unit:
     <<: *defaults_working_directory
