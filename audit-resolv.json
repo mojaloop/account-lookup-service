@@ -4,5 +4,11 @@
   },
   "1065|@mojaloop/central-services-database>lodash": {
     "ignore": 1
+  },
+  "1164|hapi-swagger>handlebars": {
+    "fix": 1
+  },
+  "1164|nyc>istanbul-reports>handlebars": {
+    "fix": 1
   }
 }
