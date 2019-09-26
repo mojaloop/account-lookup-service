@@ -43,7 +43,7 @@
     "@mojaloop/central-services-shared": "7.5.2",
     "@mojaloop/central-services-stream": "7.4.2",
     "@now-ims/hapi-now-auth": "2.0.0",
-    "blipp": "4.0.0",
+    "blipp": "4.0.1",
     "commander": "3.0.1",
     "docdash": "1.1.1",
     "hapi-auth-bearer-token": "6.2.1",
