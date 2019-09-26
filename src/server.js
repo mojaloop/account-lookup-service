@@ -28,7 +28,7 @@ const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./lib/db')
 const Config = require('./lib/config.js')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
@@ -115,7 +115,7 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
   await migrate(isApi)
   const server = await createServer(port, isApi)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-  console.log('Server running on', server.info
+  console.log('Server running on', server.info)
 
   // Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   if (isApi) {

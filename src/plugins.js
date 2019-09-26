@@ -70,7 +70,7 @@ const registerPlugins = async (server) => {
     RawPayloadToDataUri
   ])
 
-  if (Config.DISPLAY_ROUTES) {
+  if (Config.DISPLAY_ROUTES === true) {
     await server.register([Blipp])
   }
 }

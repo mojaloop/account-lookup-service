@@ -28,7 +28,7 @@ const Server = require('./server')
 const PJson = require('../package.json')
 const { Command } = require('commander')
 const Config = require('./lib/config')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 
 const Program = new Command()
 

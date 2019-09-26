@@ -25,7 +25,7 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
