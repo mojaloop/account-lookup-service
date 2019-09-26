@@ -64,9 +64,9 @@ const registerPlugins = async (server) => {
   })
 
   await server.register([
-    Inert, 
-    Vision, 
-    ErrorHandling, 
+    Inert,
+    Vision,
+    ErrorHandling,
     RawPayloadToDataUri
   ])
 
