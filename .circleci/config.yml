@@ -191,14 +191,12 @@ jobs:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: Install ava tap tap-xunit
-          command: npm install -g ava tap tap-xunit
-      - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute unit tests
-          command: ava --tap | tap-xunit > ./test/results/ava.xml
+          # TODO: figure out the command that will print output properly
+          command: npm run test:unit
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -372,6 +370,9 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Prune non-production packages before running license-scanner
+          command: npm prune --production
       - run:
           name: Run the license-scanner
           command: cd /tmp/license-scanner && pathToRepo=$CIRCLE_WORKING_DIRECTORY make run

@@ -47,7 +47,7 @@ module.exports = {
         await participants.putParticipantsErrorByTypeAndID(req)
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
-        req.server.log(['error'], `ERROR - ${metadata}: ${err.stack || pp(err)}`)
+        req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()

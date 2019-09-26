@@ -16,19 +16,22 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * ModusBox
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+
+ * Crosslake
+ - Lewis Daly <lewisd@crosslaketech.com>
+
  --------------
  ******/
 
 'use strict'
 
-const Test = require('ava')
 const Sinon = require('sinon')
-const Mockgen = require('../../../../util/mockgen.js')
 const initServer = require('../../../../../src/server').initialize
 const Db = require('../../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const oracleEndpoint = require('../../../../../src/models/oracle')
 const parties = require('../../../../../src/domain/parties')
 const participant = require('../../../../../src/models/participantEndpoint/facade')
@@ -41,90 +44,43 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 let server
 let sandbox
 
-Test.before(async () => {
-  sandbox = Sinon.createSandbox()
-  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  server = await initServer(await getPort())
-})
+describe('/parties', () => {
+  beforeAll(async () => {
+    sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    server = await initServer(await getPort())
+  })
 
-Test.after(async () => {
-  await server.stop()
-  sandbox.restore()
-})
+  afterAll(async () => {
+    await server.stop()
+    sandbox.restore()
+  })
 
-Test.serial('test getPartiesByTypeAndID endpoint', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/parties/{Type}/{ID}',
-        operation: 'get'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
-    })
-
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
+  it('getPartiesByTypeAndID success', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
     const options = {
       method: 'get',
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
-    }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultStandardHeaders('parties') || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultStandardHeaders('parties')
     }
     sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
+
+    // Act
     const response = await server.inject(options)
-    test.is(response.statusCode, 202, 'Ok response status')
+
+    // Assert
+    expect(response.statusCode).toBe(202)
     parties.getPartiesByTypeAndID.restore()
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
-  }
-})
+  })
 
-Test.serial('test getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/parties/{Type}/{ID}',
-        operation: 'get'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
-    })
-
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
+  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
     const options = {
       method: 'get',
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
-    }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultStandardHeaders('parties') || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultStandardHeaders('parties')
     }
 
     const badRequestError = ErrorHandler.Factory.createFSPIOPError(
@@ -140,55 +96,33 @@ Test.serial('test getPartiesByTypeAndID endpoint sends async 3200 to /error for 
       sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
     ]
+
+    // Act
     const response = await server.inject(options)
+
+    // Assert
     const errorCallStub = stubs[0]
-    test.is(errorCallStub.args[0][2].errorInformation.errorCode, '3204')
-    test.is(errorCallStub.args[0][1], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
-    test.is(response.statusCode, 202, 'Ok response status')
+    expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
+    expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
+    expect(response.statusCode).toBe(202)
     stubs.forEach(s => s.restore())
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
-  }
-})
+  })
 
-Test.serial('test putPartiesByTypeAndID endpoint', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/parties/{Type}/{ID}',
-        operation: 'put'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
-    })
-
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
+  it('putPartiesByTypeAndID endpoint', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'put')
     const options = {
       method: 'put',
       url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties')
-    }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultStandardHeaders('parties') || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultStandardHeaders('parties')
+      headers: Helper.defaultStandardHeaders('parties'),
+      payload: mock.request.body
     }
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
+
+    // Act
     const response = await server.inject(options)
-    test.is(response.statusCode, 200, 'Ok response status')
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
-  }
+
+    // Assert
+    expect(response.statusCode).toBe(200)
+  })
 })

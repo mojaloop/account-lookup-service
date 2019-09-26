@@ -25,7 +25,7 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
@@ -150,7 +150,7 @@ exports.updateOracle = async (params, payload) => {
       await oracleEndpoint.updateOracleEndpointById(params.ID, newOracleEntry)
       return true
     } else {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, 'Oracle not found').toApiErrorObject()
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, 'Oracle not found')
     }
   } catch (err) {
     Logger.error(err)

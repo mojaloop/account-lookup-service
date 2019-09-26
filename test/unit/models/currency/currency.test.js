@@ -18,9 +18,6 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModusBox
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
-
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
 
@@ -29,47 +26,59 @@
 
 'use strict'
 
-const Helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
-const initServer = require('../../../src/server').initialize
-const getPort = require('get-port')
 const Sinon = require('sinon')
 
-let sandbox
-let server
+const Db = require('../../../../src/lib/db')
+const { getCurrencyById } = require('../../../../src/models/currency')
 
-describe('/health', () => {
-  beforeEach(async () => {
+let sandbox
+
+describe('currency model', () => {
+  beforeEach(() => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
   })
 
-  afterEach(async () => {
-    await server.stop()
+  afterEach(() => {
     sandbox.restore()
   })
 
-  /**
-   * summary: Get Health
-   * description: The HTTP request GET /health is used to get the status of the server
-   * parameters: type, currency, accept, content-type, date
-   * produces: application/json
-   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-  it('GET /health', async () => {
-    // Arrange
-    const mock = await Helper.generateMockRequest('/health', 'get')
-    const options = {
-      method: 'get',
-      url: mock.request.path,
-      headers: Helper.defaultAdminHeaders()
-    }
+  describe('getCurrencyById', () => {
+    it('gets a currency by id', async () => {
+      // Arrange
+      const expected = {
+        currencyId: 'AUD',
+        name: 'Australian Dollars',
+        isActive: true,
+        createdDate: (new Date()).toISOString()
+      }
+      const findOneStub = sandbox.stub()
+      findOneStub.resolves(expected)
+      Db.currency = {
+        findOne: findOneStub
+      }
 
-    // Act
-    const response = await server.inject(options)
+      // Act
+      const result = await getCurrencyById('AUD')
 
-    // Assert
-    expect(response.statusCode).toBe(200)
+      // Assert
+      expect(result).toMatchObject(expected)
+      expect(findOneStub.calledOnce).toBe(true)
+    })
+
+    it('Errors when cannot find a currency', async () => {
+      // Arrange
+      const findOneStub = sandbox.stub()
+      findOneStub.throws(new Error('Error finding currency'))
+      Db.currency = {
+        findOne: findOneStub
+      }
+
+      // Act
+      const action = async () => getCurrencyById('XXX')
+
+      // Assert
+      await expect(action()).rejects.toThrow()
+    })
   })
 })

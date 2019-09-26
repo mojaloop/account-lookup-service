@@ -16,18 +16,21 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * ModusBox
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+
+ * Crosslake
+ - Lewis Daly <lewisd@crosslaketech.com>
+
  --------------
  ******/
 
 'use strict'
 
-const Test = require('ava')
 const Sinon = require('sinon')
-const Mockgen = require('../../../util/mockgen.js')
 const Db = require('../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
 const initServer = require('../../../../src/server').initialize
@@ -36,97 +39,53 @@ const getPort = require('get-port')
 let server
 let sandbox
 
-Test.before(async () => {
-  sandbox = Sinon.createSandbox()
-  sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-  server = await initServer(await getPort())
-})
+describe('/participants', () => {
+  beforeAll(async () => {
+    sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    server = await initServer(await getPort())
+  })
 
-Test.after(async () => {
-  await server.stop()
-  sandbox.restore()
-})
+  afterAll(async () => {
+    await server.stop()
+    sandbox.restore()
+  })
 
-Test.serial('test postParticipantsBatch endpoint', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/participants',
-        operation: 'post'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
-    })
-
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
+  it('postParticipantsBatch success', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/participants', 'post')
     const options = {
       method: 'post',
       url: mock.request.path,
-      headers: Helper.defaultSwitchHeaders
-    }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultSwitchHeaders || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultSwitchHeaders
+      headers: Helper.defaultSwitchHeaders,
+      payload: mock.request.body
     }
     sandbox.stub(participants, 'postParticipantsBatch').returns({})
+
+    // Act
     const response = await server.inject(options)
-    test.is(response.statusCode, 200, 'Ok response status')
+
+    // Assert
+    expect(response.statusCode).toBe(200)
     participants.postParticipantsBatch.restore()
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
-  }
-})
+  })
 
-Test.serial('test postParticipantsBatch endpoint - error', async test => {
-  try {
-    const requests = new Promise((resolve, reject) => {
-      Mockgen().requests({
-        path: '/participants',
-        operation: 'post'
-      }, function (error, mock) {
-        return error ? reject(error) : resolve(mock)
-      })
-    })
-
-    const mock = await requests
-    test.pass(mock)
-    test.pass(mock.request)
+  it('postParticipantsBatch error', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/participants', 'post')
     const options = {
       method: 'post',
       url: mock.request.path,
-      headers: Helper.defaultSwitchHeaders
+      headers: Helper.defaultSwitchHeaders,
+      payload: mock.request.body
     }
-    if (mock.request.body) {
-      // Send the request body
-      options.payload = mock.request.body
-    } else if (mock.request.formData) {
-      // Send the request form data
-      options.payload = mock.request.formData
-      // Set the Content-Type as application/x-www-form-urlencoded
-      options.headers = Helper.defaultSwitchHeaders || {}
-    }
-    // If headers are present, set the headers.
-    if (mock.request.headers && mock.request.headers.length > 0) {
-      options.headers = Helper.defaultSwitchHeaders
-    }
+
+    // Act
     sandbox.stub(participants, 'postParticipantsBatch').throwsException()
     const response = await server.inject(options)
-    test.is(response.statusCode, 500, 'Response should fail')
+
+    // Assert
+    expect(response.statusCode).toBe(500)
     participants.postParticipantsBatch.restore()
-  } catch (e) {
-    Logger.error(e)
-    test.fail()
-  }
+  })
 })

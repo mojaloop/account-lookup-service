@@ -1,3 +1,4 @@
+
 /*****
  License
  --------------
@@ -18,9 +19,6 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModusBox
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
-
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
 
@@ -30,52 +28,68 @@
 'use strict'
 
 const Sinon = require('sinon')
-const initServer = require('../../../src/server').initialize
-const Helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
 const getPort = require('get-port')
 
-let sandbox
-let server
+const src = '../../../../../../src'
 
-describe('/participants', () => {
-  beforeEach(async () => {
+const initServer = require(`${src}/server`).initialize
+const Db = require(`${src}/lib/db`)
+const parties = require(`${src}/domain/parties`)
+const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/error`)
+const Helper = require('../../../../../util/helper')
+
+let server
+let sandbox
+
+describe('/parties/{Type}/{ID}/error', () => {
+  beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     server = await initServer(await getPort())
   })
 
-  afterEach(async () => {
+  afterAll(async () => {
     await server.stop()
     sandbox.restore()
   })
 
-  /**
-   * summary: Participants
-   * description: The HTTP request POST /participants is used to create information in the server regarding the provided list of identities. This request should be used for bulk creation of FSP information for more than one Party. The optional currency parameter should indicate that each provided Party supports the currency
-   * parameters: body, Accept, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
-   * produces: application/json
-   * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-
-  it('POST /participants', async () => {
+  it('handles PUT /error', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
-
-    // Get the resolved path from mock request
-    // Mock request Path templates({}) are resolved using path parameters
-    const options = {
-      method: 'post',
-      url: mock.request.path,
-      headers: Helper.defaultAdminHeaders(),
-      payload: mock.request.body
+    const codeStub = sandbox.stub()
+    const handler = {
+      response: sandbox.stub().returns({
+        code: codeStub
+      })
     }
 
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
+
     // Act
-    const response = await server.inject(options)
+    ErrHandler.put(mock.request, handler)
 
     // Assert
-    expect(response.statusCode).toBe(500)
-    await server.stop()
+    expect(codeStub.calledWith(200)).toBe(true)
+    parties.putPartiesErrorByTypeAndID.restore()
+  })
+
+  it('handles error when putPartiesErrorByTypeAndID fails', async () => {
+    // Arrange
+    const codeStub = sandbox.stub()
+    const handler = {
+      response: sandbox.stub().returns({
+        code: codeStub
+      })
+    }
+
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').throws(new Error('Error in putPartiesErrorByTypeAndId'))
+
+    // Act
+    const action = async () => ErrHandler.put(mock.request, handler)
+
+    // Assert
+    await expect(action()).rejects.toThrowError('Error in putPartiesErrorByTypeAndId')
+    parties.putPartiesErrorByTypeAndID.restore()
   })
 })

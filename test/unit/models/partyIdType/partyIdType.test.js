@@ -30,52 +30,51 @@
 'use strict'
 
 const Sinon = require('sinon')
-const initServer = require('../../../src/server').initialize
-const Helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
-const getPort = require('get-port')
 
-let sandbox
-let server
+const { getPartyIdTypeByName } = require('../../../../src/models/partyIdType/partyIdType')
+const Db = require('../../../../src/lib/db')
 
-describe('/participants', () => {
-  beforeEach(async () => {
+describe('partyIdType Model', () => {
+  let sandbox
+
+  beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
   })
 
-  afterEach(async () => {
-    await server.stop()
+  afterEach(() => {
     sandbox.restore()
   })
 
-  /**
-   * summary: Participants
-   * description: The HTTP request POST /participants is used to create information in the server regarding the provided list of identities. This request should be used for bulk creation of FSP information for more than one Party. The optional currency parameter should indicate that each provided Party supports the currency
-   * parameters: body, Accept, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
-   * produces: application/json
-   * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-
-  it('POST /participants', async () => {
+  it('Gets the partyIdType by name', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
-
-    // Get the resolved path from mock request
-    // Mock request Path templates({}) are resolved using path parameters
-    const options = {
-      method: 'post',
-      url: mock.request.path,
-      headers: Helper.defaultAdminHeaders(),
-      payload: mock.request.body
+    const partyIdType = {
+      partyIdTypeId: 1,
+      name: 'MSISDN',
+      description: 'A MSISDN (Mobile Station International Subscriber Directory Number, that is, the phone number)',
+      isActive: true,
+      createdDate: '2019-05-24 08:52:19'
+    }
+    Db.partyIdType = {
+      findOne: sandbox.stub().resolves(partyIdType)
     }
 
     // Act
-    const response = await server.inject(options)
+    const response = await getPartyIdTypeByName('MSISDN')
 
     // Assert
-    expect(response.statusCode).toBe(500)
-    await server.stop()
+    expect(response).toEqual(partyIdType)
+  })
+
+  it('throws an error if Db call fails', async () => {
+    // Arrange
+    Db.partyIdType = {
+      findOne: sandbox.stub().throws(new Error('Error finding partyIdType'))
+    }
+
+    // Act
+    const action = async () => getPartyIdTypeByName('MSISDN')
+
+    // Assert
+    await expect(action()).rejects.toThrowError(new RegExp('Error finding partyIdType'))
   })
 })
