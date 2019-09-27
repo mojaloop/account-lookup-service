@@ -27,7 +27,7 @@
 const request = require('@mojaloop/central-services-shared').Util.Request
 const oracleEndpoint = require('../oracle')
 const Mustache = require('mustache')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 

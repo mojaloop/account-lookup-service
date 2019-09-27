@@ -24,7 +24,7 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')

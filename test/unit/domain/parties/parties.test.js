@@ -6,7 +6,7 @@
 
 const Test = require('ava')
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const request = require('@mojaloop/central-services-shared').Util.Request
 const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
 const Enums = require('@mojaloop/central-services-shared').Enum
