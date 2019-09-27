@@ -34,6 +34,7 @@ const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Ut
 const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
 const Migrator = require('./lib/migrator')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
 const Boom = require('@hapi/boom')
 
 const connectDatabase = async () => {
@@ -114,9 +115,7 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
   await migrate(isApi)
   const server = await createServer(port, isApi)
   server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-  console.log('Server running on', server.info)
-
-  // Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   if (isApi) {
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   }
