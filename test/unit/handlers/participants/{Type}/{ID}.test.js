@@ -27,7 +27,7 @@ const Test = require('ava')
 const Sinon = require('sinon')
 const Mockgen = require('../../../../util/mockgen.js')
 const Db = require('../../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const oracleEndpoint = require('../../../../../src/models/oracle')
 const participant = require('../../../../../src/models/participantEndpoint/facade')
 const participants = require('../../../../../src/domain/participants')
@@ -135,7 +135,7 @@ Test.serial('test getParticipantsByTypeAndID endpoint sends async 3200 to /error
       'Failed to send HTTP request to host',
       {},
       {},
-      [ { key: 'status', value: 400 } ]
+      [{ key: 'status', value: 400 }]
     )
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').returns({}),

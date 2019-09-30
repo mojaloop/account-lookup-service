@@ -26,7 +26,7 @@
 
 const Test = require('ava')
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Proxyquire = require('proxyquire')
 
 let sandbox
