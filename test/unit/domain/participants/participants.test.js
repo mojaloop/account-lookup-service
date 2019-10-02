@@ -30,7 +30,6 @@
 'use strict'
 
 const Sinon = require('sinon')
-
 const Enums = require('@mojaloop/central-services-shared').Enum
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')

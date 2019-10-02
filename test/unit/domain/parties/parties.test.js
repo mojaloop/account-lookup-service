@@ -30,7 +30,6 @@
 'use strict'
 
 const Sinon = require('sinon')
-
 const request = require('@mojaloop/central-services-shared').Util.Request
 const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
 const Util = require('@mojaloop/central-services-shared').Util
