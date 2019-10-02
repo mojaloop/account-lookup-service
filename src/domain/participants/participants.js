@@ -213,7 +213,6 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
         const response = await oracle.oracleBatchRequest(headers, method, requestPayload, key, payload)
         if (response && (response.data !== null || response.data !== undefined)) {
           if (Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            console.log('iterating through response.data.partyList')
             for (const party of response.data.partyList) {
               party.partyId.currency = undefined
               overallReturnList.push(party)

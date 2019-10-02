@@ -195,8 +195,7 @@ jobs:
           command: mkdir -p ./test/results
       - run:
           name: Execute unit tests
-          # TODO: figure out the command that will print output properly
-          command: npm run test:unit
+          command: JEST_JUNIT_OUTPUT_DIR='./test/results' JEST_JUNIT_OUTPUT_NAME='junit.xml' npm run test:junit
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -224,7 +223,7 @@ jobs:
           command: mkdir -p ./.nyc_output
       - run:
           name: Execute code coverage check
-          command: npm -s run test:coverage
+          command: npm -s run test:coverage-check
       - store_artifacts:
           path: coverage
           prefix: test

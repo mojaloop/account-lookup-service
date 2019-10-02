@@ -37,7 +37,6 @@ let sandbox
 describe('requestLogger', () => {
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    // sandbox.stub(Logger)
   })
 
   afterEach(() => {

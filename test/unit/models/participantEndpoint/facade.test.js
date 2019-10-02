@@ -27,6 +27,7 @@
 'use strict'
 
 const Sinon = require('sinon')
+const Enums = require('@mojaloop/central-services-shared').Enum
 const request = require('@mojaloop/central-services-shared').Util.Request
 const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
 
@@ -62,7 +63,6 @@ describe('Oracle Facade', () => {
 
       // Assert
       expect(result).toBe(true)
-      // await expect(action()).rejects.toThrow('Request failed')
     })
 
     it('fails to send the request', async () => {
@@ -101,6 +101,28 @@ describe('Oracle Facade', () => {
   })
 
   describe('sendErrorToParticipant', () => {
+    it('handles default arguments', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.throws(new Error('Request failed'))
+      Endpoints.getEndpoint = sandbox.stub().resolves('https://example.com/12345')
+
+      const participantName = 'fsp1'
+      const endpointType = 'URL'
+      const errorInformation = {
+        message: 'Test error message'
+      }
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp1'
+
+      // Act
+      const action = async () => ParticipantFacade.sendErrorToParticipant(participantName, endpointType, errorInformation, headers)
+
+      // Assert
+      await expect(action()).rejects.toThrow('Request failed')
+    })
+
     it('throws an error when the request fails', async () => {
       // Arrange
       const requestStub = sandbox.stub()

@@ -27,48 +27,113 @@
  --------------
  ******/
 
-const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
-
-// const server = require('../../src/server')
-
+/*
+  For testing the server imports, we need to use jest.resetModules() between tests
+  This means specifying future imports here and actually doing the importing in `beforeEach`
+*/
+// let sandbox
+let Sinon
+let Command
 let sandbox
 
 describe('Base Tests', () => {
   beforeEach(() => {
-    try {
-      sandbox = Sinon.createSandbox()
-    } catch (err) {
-      Logger.error(`serverTest failed with error - ${err}`)
-      console.error(err.message)
-    }
+    jest.resetModules()
+
+    Sinon = require('sinon')
+    Command = require('commander').Command
+
+    sandbox = Sinon.createSandbox()
   })
 
   afterEach(() => {
-    sandbox.restore()
+    jest.restoreAllMocks()
   })
 
-  // TODO: we need to fix this!
-  it('should import setup and initialize', () => {
+  it('should display help if called with no args', () => {
     // Arrange
-    // const initializeSpy = jest.spyOn(server, 'initialize')
-    // const initStub = sandbox.stub()
-    // console.log(initializeSpy)
-    // server.initialize.mock
+    const sandbox = Sinon.createSandbox()
+    const mockInitStub = sandbox.stub()
+    const helpStub = sandbox.stub(Command.prototype, 'help').returns(true)
+
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => []
+    }))
 
     // Act
-    // we just need to mock out the initialize function...
+    require('../../src/index')
+    // Assert
+    // When starting with help, the help() method gets called
+    expect(helpStub.callCount).toBe(1)
+  })
 
-    // Proxyquire('../../src/index', {
-    //   './server': {
-    //     initialize: initStub
-    //   }
-    // })
+  it('should start the server with the default config', () => {
+    // Arrange
+    const mockInitStub = sandbox.stub()
+    const mockArgs = [
+      'node',
+      'src/index.js',
+      'server'
+    ]
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => mockArgs
+    }))
+
+    // Act
+    require('../../src/index.js')
 
     // Assert
-    // Somehow I think Proxyquire actually imported index and called it.
-    // We need a different approach for Jest - maybe refer to quoting service
-    // expect(initializeSpy).toBeCalled()
-    expect(true).toBe(true)
+    // When starting with default args, both the admin and api servers get startec
+    expect(mockInitStub.calledTwice).toBe(true)
+  })
+
+  it('should start the server with the --api config', () => {
+    // Arrange
+    const mockInitStub = sandbox.stub()
+    const mockArgs = [
+      'node',
+      'src/index.js',
+      'server',
+      '--api'
+    ]
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => mockArgs
+    }))
+
+    // Act
+    require('../../src/index.js')
+
+    // Assert
+    // When starting with default args, both the admin and api servers get startec
+    expect(mockInitStub.callCount).toBe(1)
+    const initStubArgs = mockInitStub.getCall(0).args
+    expect(initStubArgs[1]).toBe(true) // true is API
+  })
+
+  it('should start the server with the --api config', () => {
+    // Arrange
+    const mockInitStub = sandbox.stub()
+    const mockArgs = [
+      'node',
+      'src/index.js',
+      'server',
+      '--admin'
+    ]
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => mockArgs
+    }))
+
+    // Act
+    require('../../src/index.js')
+
+    // Assert
+    // When starting with default args, both the admin and api servers get startec
+    expect(mockInitStub.callCount).toBe(1)
+    const initStubArgs = mockInitStub.getCall(0).args
+    expect(initStubArgs[1]).toBe(false) // false is admin
   })
 })
