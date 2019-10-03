@@ -31,7 +31,6 @@
   For testing the server imports, we need to use jest.resetModules() between tests
   This means specifying future imports here and actually doing the importing in `beforeEach`
 */
-// let sandbox
 let Sinon
 let Command
 let sandbox
