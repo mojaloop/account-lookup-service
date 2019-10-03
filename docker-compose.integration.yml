@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  account-lookup-service:
+    build:
+      context: .
+      stage: builder
+    volumes:
+      - ./test/integration-config.json:/opt/account-lookup-service/config/default.json
+    command:
+      - sh
+      - -c
+      - "tail -f /dev/null"

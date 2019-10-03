@@ -1,0 +1,117 @@
+version: "3.7"
+
+networks:
+  als-mojaloop-net:
+    name: als-mojaloop-net
+
+services:
+  account-lookup-service:
+    build:
+      context: .
+    container_name: dt_account-lookup-service
+    links:
+      - mysql-als
+      - central-ledger
+    ports:
+      - "4001:4001"
+      - "4002:4002"
+    networks:
+      - als-mojaloop-net
+    volumes:
+      - ./test/integration-config.json:/opt/account-lookup-service/config/default.json
+    command:
+      - sh
+      - -c
+      - "tail -f /dev/null"
+
+  central-ledger:
+    image: mojaloop/central-ledger
+    container_name: cl_central-ledger
+    command:
+      - "sh"
+      - "-c"
+      - "sh /opt/wait-for/wait-for-central-ledger.sh && node src/api/index.js"
+    ports:
+      - "3001:3001"
+    volumes:
+       - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+       - ./docker/wait-for:/opt/wait-for
+    environment:
+      - LOG_LEVEL=info
+      - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql-central-ledger:3306/central_ledger
+      - CLEDG_SIDECAR__DISABLED=true
+      - CLEDG_MONGODB__DISABLED=false
+    networks:
+      - als-mojaloop-net
+    depends_on:
+      - mysql_central_ledger
+      - kafka
+    healthcheck:
+      test: ["CMD", "bash", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:3001/health"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
+
+  kafka:
+    image: johnnypark/kafka-zookeeper:2.3.0
+    container_name: cl_kafka
+    # Disable logging as it is far too verbose for debugging locally
+    # logging:
+      # driver: none
+    volumes:
+      - ./docker/kafka/:/opt/kafka_2.12-2.3.0/config/
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+    environment:
+      - ZOO_LOG4J_PROP=WARN
+    networks:
+      - als-mojaloop-net
+    healthcheck:
+      test: ["CMD" ,"/opt/kafka_2.12-2.3.0/bin/kafka-broker-api-versions.sh","--bootstrap-server","localhost:9092"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
+
+  mysql-als:
+    image: mysql/mysql-server
+    container_name: als_mysql_central_ledger
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/sql-init/:/docker-entrypoint-initdb.d/
+    environment:
+      - MYSQL_USER=${DBUSER:-account_lookup}
+      - MYSQL_PASSWORD=${DBPASS:-password}
+      - MYSQL_DATABASE=${DBUSER:-central_ledger}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    networks:
+      - als-mojaloop-net
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
+
+  mysql_central_ledger:
+    image: mysql/mysql-server
+    container_name: als_mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./docker/sql-init-central-ledger/:/docker-entrypoint-initdb.d/
+    environment:
+      - MYSQL_USER=${DBUSER:-account_lookup}
+      - MYSQL_PASSWORD=${DBPASS:-password}
+      - MYSQL_DATABASE=${DBUSER:-central_ledger}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    networks:
+      - als-mojaloop-net
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
