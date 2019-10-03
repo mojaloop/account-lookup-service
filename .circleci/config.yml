@@ -1,5 +1,5 @@
 # CircleCI v2 Config
-version: 2
+version: 2.1
 
 defaults_working_directory: &defaults_working_directory
   working_directory: /home/circleci/project
@@ -241,20 +241,19 @@ jobs:
             fi
 
   test-integration:
-    machine: true
+    machine: 
+      image: ubuntu-1604:201903-01
     <<: *defaults_working_directory
     steps:
       - checkout
       - run:
           <<: *defaults_environment
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute integration tests
-          command: npm -s run test:integration
+          command: RESULTS_DIR="./test/results" npm -s run test:integration
           no_output_timeout: 25m
       - store_artifacts:
           path: ./test/results
@@ -380,7 +379,8 @@ jobs:
           prefix: licenses
 
   build-snapshot:
-    machine: true
+    machine: 
+      image: ubuntu-1604:201903-01
     <<: *defaults_working_directory
     steps:
       - checkout
@@ -404,7 +404,8 @@ jobs:
           <<: *defaults_slack_announcement
 
   build-hotfix:
-    machine: true
+    machine: 
+      image: ubuntu-1604:201903-01
     # <<: *default_env
     steps:
       - checkout
@@ -424,7 +425,8 @@ jobs:
           <<: *defaults_slack_announcement
 
   build:
-    machine: true
+    machine: 
+      image: ubuntu-1604:201903-01
     # <<: *default_env
     steps:
       - checkout
@@ -562,17 +564,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      #      - test-integration:
-      #          context: org-global
-      #          requires:
-      #            - setup
-      #          filters:
-      #            tags:
-      #              only: /.*/
-      #            branches:
-      #              ignore:
-      #                - /feature*/
-      #                - /bugfix*/
+      - test-integration:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
@@ -599,9 +601,9 @@ workflows:
           context: org-global
           requires:
             - setup
-          #            - test-unit
-          #            - test-coverage
-          #            - test-integration
+            - test-unit
+            - test-coverage
+            - test-integration
           #            - test-functional
           #            - test-spec
           filters:
@@ -626,7 +628,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-          #            - test-integration
+            - test-integration
           #            - test-functional
           #            - test-spec
             - vulnerability-check
@@ -643,7 +645,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-          #            - test-integration
+            - test-integration
           #            - test-functional
           #            - test-spec
             - vulnerability-check

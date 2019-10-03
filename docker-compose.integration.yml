@@ -1,11 +1,16 @@
 version: "3.7"
+
 services:
   account-lookup-service:
     build:
       context: .
-      stage: builder
+      target: builder
     volumes:
+      - ./src:/opt/account-lookup-service/src
+      - ./test:/opt/account-lookup-service/test
+      - ./package.json:/opt/account-lookup-service/package.json
       - ./test/integration-config.json:/opt/account-lookup-service/config/default.json
+      - ./docker/wait-for:/opt/wait-for
     command:
       - sh
       - -c

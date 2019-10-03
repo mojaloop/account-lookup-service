@@ -2,9 +2,9 @@
 
 echo "** STARTUP - Checking for Account-Lookup-Service..."
 
-# TODO: these envs aren't so friendly
 source /opt/wait-for/wait-for.env
 
-sh /opt/wait-for/wait-for-mysql.sh
+sh /opt/wait-for/wait-for-mysql-als.sh
+sh /opt/wait-for/wait-for-mysql-central-ledger.sh
 
 echo "** STARTUP - Account-Lookup-Service successful!"
