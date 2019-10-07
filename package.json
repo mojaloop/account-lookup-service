@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups",
-  "version": "8.2.0",
+  "version": "8.2.1",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -73,7 +73,6 @@
     "@mojaloop/central-services-logger": "8.1.1",
     "@mojaloop/central-services-metrics": "5.2.0",
     "@mojaloop/central-services-shared": "8.1.5",
-    "@mojaloop/central-services-stream": "8.1.1",
     "@now-ims/hapi-now-auth": "2.0.0",
     "blipp": "4.0.1",
     "commander": "3.0.2",
