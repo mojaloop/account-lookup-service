@@ -40,7 +40,9 @@ services:
     # Disable logging as it is far too verbose for debugging locally
     logging:
       driver: none
-    # Map mysql port to 3307 on host machine to prevent conflict my central-ledger's mysql container.
+    # Map mysql port to 3307 on host machine to prevent conflict with central-ledger's mysql container.
+    # To run ALS with 'npm start' locally (i.e outside of docker) with mysql running in a docker container,
+    # please change 'DATABASE_URL' port to '3307' in config/default.json.
     ports:
       - "3307:3306"
     volumes:

@@ -17,6 +17,9 @@ To populate the database with tables and seeded valued, ensure that the correct 
  ```bash
  npm run migrate
  ```
+
+ ### Note
+ If you're running ALS with `npm start` or `node src/index.js ...` locally (i.e outside of docker as described below) and running mysql within docker with `docker-compose up mysql -d`, you would need to change port `3306` to `3307` for `DATABASE_URL` in `config/default.json`. This is not necessary if you're running ALS with `docker-compose up`, in which case, both the API and mysql are running within docker. Otherwise, you can simply run this service locally with `docker-compose up -d`.
  
 ## Start API
 To run the API and/or Admin servers run the following commands
