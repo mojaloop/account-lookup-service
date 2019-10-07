@@ -30,11 +30,6 @@ services:
       timeout: 20s
       retries: 10
       interval: 30s
-    # command:
-    #   - sh
-    #   - -c 
-    #   # - tail -f /dev/null
-    #   - npm run dev
 
   central-ledger:
     image: mojaloop/central-ledger:latest
@@ -77,7 +72,7 @@ services:
     networks:
       - als-mojaloop-net
     healthcheck:
-      test: ["CMD" ,"/opt/kafka_2.12-2.3.0/bin/kafka-broker-api-versions.sh","--bootstrap-server","localhost:9092"]
+      test: ["CMD", "/opt/kafka_2.12-2.3.0/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "kafka:29092"]
       timeout: 20s
       retries: 10
       start_period: 40s
@@ -98,7 +93,7 @@ services:
     networks:
       - als-mojaloop-net
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql-als"]
       timeout: 20s
       retries: 10
       start_period: 40s
@@ -119,7 +114,7 @@ services:
     networks:
       - als-mojaloop-net
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql-cl"]
       timeout: 20s
       retries: 10
       start_period: 40s
