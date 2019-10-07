@@ -22,7 +22,7 @@ JEST_JUNIT_OUTPUT_DIR="${JEST_JUNIT_OUTPUT_DIR:-"/tmp"}"
 JEST_JUNIT_OUTPUT_NAME="${JEST_JUNIT_OUTPUT_NAME:-"junit.xml"}"
 
 #on host machine
-RESULTS_DIR="${RESULTS_DIR:-'/tmp'}"
+RESULTS_DIR="${RESULTS_DIR:-"/tmp"}"
 
 function startDocker() {
   docker-compose \
@@ -41,12 +41,12 @@ function runMigration() {
 }
 
 function runTests() {
-  docker exec -it als_account-lookup-service sh -c "JEST_JUNIT_OUTPUT_DIR=${JEST_JUNIT_OUTPUT_DIR} JEST_JUNIT_OUTPUT_NAME=${JEST_JUNIT_OUTPUT_NAME} npm run test:int"
+  docker exec -it als_account-lookup-service-int sh -c "JEST_JUNIT_OUTPUT_DIR=${JEST_JUNIT_OUTPUT_DIR} JEST_JUNIT_OUTPUT_NAME=${JEST_JUNIT_OUTPUT_NAME} npm run test:int"
 }
 
 function copyResults() {
   echo "Copying results from: ${JEST_JUNIT_OUTPUT_DIR}/${JEST_JUNIT_OUTPUT_NAME} to: ${RESULTS_DIR}"
-  docker cp als_account-lookup-service:${JEST_JUNIT_OUTPUT_DIR}/${JEST_JUNIT_OUTPUT_NAME} ${RESULTS_DIR}
+  docker cp als_account-lookup-service-int:${JEST_JUNIT_OUTPUT_DIR}/${JEST_JUNIT_OUTPUT_NAME} ${RESULTS_DIR}
 }
 
 startDocker
