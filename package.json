@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@hapi/basic": "5.1.1",
-    "@hapi/boom": "7.4.4",
+    "@hapi/boom": "8.0.1",
     "@hapi/good": "8.2.3",
     "@hapi/hapi": "18.4.0",
     "@hapi/inert": "5.2.2",
@@ -92,7 +92,7 @@
   },
   "devDependencies": {
     "@types/jest": "24.0.18",
-    "eslint": "6.4.0",
+    "eslint": "6.5.1",
     "get-port": "5.0.0",
     "jest": "24.9.0",
     "jest-junit": "8.0.0",
