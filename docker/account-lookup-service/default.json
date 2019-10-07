@@ -8,7 +8,7 @@
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
-  "SWITCH_ENDPOINT": "http://localhost:3001",
+  "SWITCH_ENDPOINT": "http://172.17.0.1:3001",
   "INSTRUMENTATION": {
     "METRICS": {
       "DISABLED": false,
