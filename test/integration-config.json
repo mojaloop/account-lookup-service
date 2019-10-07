@@ -1,4 +1,5 @@
 {
+  "TEST_ALS_HOST":"account-lookup-service",
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
   "DATABASE_URI": "mysql://account_lookup:password@mysql-als:3306/account_lookup",

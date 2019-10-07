@@ -22,8 +22,14 @@ services:
       - mysql-als
       - central-ledger
     volumes:
+      - ./src:/opt/account-lookup-service/src
       - ./test/integration-config.json:/opt/account-lookup-service/config/default.json
       - ./docker/wait-for:/opt/wait-for
+    # command:
+    #   - sh
+    #   - -c 
+    #   # - tail -f /dev/null
+    #   - npm run dev
 
   central-ledger:
     image: mojaloop/central-ledger:latest
