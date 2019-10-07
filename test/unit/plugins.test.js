@@ -27,55 +27,57 @@
  --------------
  ******/
 
-'use strict'
-
 const Sinon = require('sinon')
-const initServer = require('../../../src/server').initialize
-const Helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
-const getPort = require('get-port')
+
+const { registerPlugins } = require('../../src/plugins')
+const Config = require('../../src/lib/config')
 
 let sandbox
-let server
 
-describe('/participants', () => {
-  beforeEach(async () => {
+describe('Plugin Tests', () => {
+  beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
   })
 
-  afterEach(async () => {
-    await server.stop()
+  afterEach(() => {
     sandbox.restore()
   })
 
-  /**
-   * summary: Participants
-   * description: The HTTP request POST /participants is used to create information in the server regarding the provided list of identities. This request should be used for bulk creation of FSP information for more than one Party. The optional currency parameter should indicate that each provided Party supports the currency
-   * parameters: body, Accept, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
-   * produces: application/json
-   * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-
-  it('POST /participants', async () => {
+  it('should change the title based on the API_PORT', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
-
-    // Get the resolved path from mock request
-    // Mock request Path templates({}) are resolved using path parameters
-    const options = {
-      method: 'post',
-      url: mock.request.path,
-      headers: Helper.defaultAdminHeaders(),
-      payload: mock.request.body
+    const server = {
+      register: sandbox.spy(),
+      info: {
+        port: '8000'
+      }
     }
+    sandbox.mock(Config)
+    Config.API_PORT = '8000'
 
     // Act
-    const response = await server.inject(options)
+    await registerPlugins(server)
 
     // Assert
-    expect(response.statusCode).toBe(500)
-    await server.stop()
+    expect(server.register.callCount).toBe(7)
+    const firstCallArgs = server.register.getCall(0).args
+    expect(firstCallArgs[0].options.info.title).toBe('ALS API Swagger Documentation')
+  })
+
+  it('should not register Blipp if DISPLAY_ROUTES is false', async () => {
+    // Arrange
+    const server = {
+      register: sandbox.spy(),
+      info: {
+        port: '8000'
+      }
+    }
+    sandbox.mock(Config)
+    Config.DISPLAY_ROUTES = false
+
+    // Act
+    await registerPlugins(server)
+
+    // Assert
+    expect(server.register.callCount).toBe(6)
   })
 })

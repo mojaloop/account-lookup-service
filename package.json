@@ -1,12 +1,13 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups",
-  "version": "8.1.1",
+  "version": "8.2.1",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
     "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
-    "Matt Kingston <matt.kingston@modusbox.com>"
+    "Matt Kingston <matt.kingston@modusbox.com>",
+    "Lewis Daly <lewisd@crosslaketech.com>"
   ],
   "repository": {
     "type": "git",
@@ -16,12 +17,9 @@
   "config": {
     "knex": "--knexfile ./config/knexfile.js"
   },
-  "ava": {
-    "files": [
-      "test/unit/**/**.test.js"
-    ],
-    "sources": [
-      "src/**/*.js"
+  "standard": {
+    "env": [
+      "jest"
     ]
   },
   "pre-commit": [
@@ -36,11 +34,12 @@
     "start:admin": "node src/index.js server --admin",
     "standard": "standard",
     "dev": "nodemon src/index.js server",
-    "test": "npx ava",
-    "test:unit": "",
+    "test": "npm run test:unit",
+    "test:unit": "jest --testMatch '**/test/unit/**/*.test.js'",
+    "test:coverage": "jest --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.js'",
+    "test:coverage-check": "jest --coverage --testMatch '**/test/unit/**/*.test.js'",
+    "test:junit": "jest --reporters=default --reporters=jest-junit --testMatch '**/test/unit/**/*.test.js'",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
-    "testing": "npx ava",
-    "test:coverage": "nyc ava",
     "lint": "eslint --ignore-path ../.eslintignore .",
     "migrate": "run-s migrate:latest seed:run",
     "migrate:latest": "knex $npm_package_config_knex migrate:latest",
@@ -63,7 +62,7 @@
   },
   "dependencies": {
     "@hapi/basic": "5.1.1",
-    "@hapi/boom": "8.0.1",
+    "@hapi/boom": "7.4.4",
     "@hapi/good": "8.2.3",
     "@hapi/hapi": "18.4.0",
     "@hapi/inert": "5.2.2",
@@ -90,10 +89,11 @@
     "uuid4": "1.1.4"
   },
   "devDependencies": {
-    "ava": "2.4.0",
-    "eslint": "6.5.1",
-    "eslint-plugin-ava": "9.0.0",
+    "@types/jest": "24.0.18",
+    "eslint": "6.4.0",
     "get-port": "5.0.0",
+    "jest": "24.9.0",
+    "jest-junit": "8.0.0",
     "jsdoc": "3.6.3",
     "npm-audit-resolver": "2.0.1",
     "npm-check-updates": "3.1.24",

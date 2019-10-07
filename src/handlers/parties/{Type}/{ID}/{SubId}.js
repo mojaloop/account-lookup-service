@@ -23,6 +23,7 @@
  --------------
  ******/
 'use strict'
+/* istanbul ignore file */
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 

@@ -16,29 +16,24 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- * Name Surname <name.surname@gatesfoundation.com>
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
-
+ * Crosslake
+ - Lewis daly <lewisd@crosslaketech.com>
  --------------
  ******/
-/* istanbul ignore file */
-'use strict'
-
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
- * Operations on /participants/{ID}/error
+ * @name getArgs
+ *
+ * @description Provide a mockable way to override the process.argv
+ *
+ * @returns {Array<String>} - A list of the process args
  */
+const getArgs = () => {
+  return process.argv
+}
+
 module.exports = {
-  /**
-   * summary: ParticipantsByIDAndError
-   * description: If there is an error during FSP information creation in the server, the error callback PUT /participants/&lt;ID&gt;/error is used. The &lt;ID&gt; in the URI should contain the requestId that was used for the creation of the participant information.
-   * parameters: ID, body, Content-Length, Content-Type, Date, X-Forwarded-For, FSPIOP-Source, FSPIOP-Destination, FSPIOP-Encryption, FSPIOP-Signature, FSPIOP-URI, FSPIOP-HTTP-Method
-   * produces: application/json
-   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-  put: function (request, h) {
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
-  }
+  getArgs
 }

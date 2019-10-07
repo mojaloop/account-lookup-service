@@ -35,7 +35,6 @@ const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.F
 const Migrator = require('./lib/migrator')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
-const Boom = require('@hapi/boom')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE_URI)
@@ -71,7 +70,7 @@ const createServer = async (port, isApi) => {
       validate: {
         options: ErrorHandler.validateRoutes(),
         failAction: async (request, h, err) => {
-          throw Boom.boomify(err)
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       },
       payload: {
