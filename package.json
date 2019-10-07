@@ -74,7 +74,6 @@
     "@mojaloop/central-services-logger": "8.1.1",
     "@mojaloop/central-services-metrics": "5.2.0",
     "@mojaloop/central-services-shared": "8.1.5",
-    "@mojaloop/central-services-stream": "8.1.1",
     "@now-ims/hapi-now-auth": "2.0.0",
     "blipp": "4.0.1",
     "commander": "3.0.2",
