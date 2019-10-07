@@ -17,11 +17,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TEST_MODE="${TEST_MODE:-"default"}"
 
 
-#internal to docker
+# Controls where Jest places test outputs inside of `als_account-lookup-service-int` container
 JEST_JUNIT_OUTPUT_DIR="${JEST_JUNIT_OUTPUT_DIR:-"/tmp"}"
 JEST_JUNIT_OUTPUT_NAME="${JEST_JUNIT_OUTPUT_NAME:-"junit.xml"}"
 
-#on host machine
+# Test output on host machine
 RESULTS_DIR="${RESULTS_DIR:-"/tmp"}"
 
 function startDocker() {
