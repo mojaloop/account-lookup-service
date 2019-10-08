@@ -241,8 +241,7 @@ jobs:
             fi
 
   test-integration:
-    machine: 
-      image: ubuntu-1604:201903-01
+    machine: true
     <<: *defaults_working_directory
     steps:
       - checkout
@@ -379,8 +378,7 @@ jobs:
           prefix: licenses
 
   build-snapshot:
-    machine: 
-      image: ubuntu-1604:201903-01
+    machine: true
     <<: *defaults_working_directory
     steps:
       - checkout
@@ -404,8 +402,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   build-hotfix:
-    machine: 
-      image: ubuntu-1604:201903-01
+    machine: true
     # <<: *default_env
     steps:
       - checkout
@@ -425,8 +422,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   build:
-    machine: 
-      image: ubuntu-1604:201903-01
+    machine: true
     # <<: *default_env
     steps:
       - checkout
