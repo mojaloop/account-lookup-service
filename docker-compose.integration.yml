@@ -1,0 +1,23 @@
+version: "3.7"
+
+services:
+  account-lookup-service-int:
+    build:
+      context: .
+      target: builder
+    container_name: als_account-lookup-service-int
+    networks:
+      - als-mojaloop-net
+    command:
+      - sh
+      - -c
+      - "tail -f /dev/null"
+    depends_on:
+      - mysql-als
+      - central-ledger
+    volumes:
+      - ./src:/opt/account-lookup-service/src
+      - ./test:/opt/account-lookup-service/test
+      - ./package.json:/opt/account-lookup-service/package.json
+      - ./test/integration-config.json:/opt/account-lookup-service/config/default.json
+      - ./docker/wait-for:/opt/wait-for

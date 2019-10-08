@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups",
-  "version": "8.2.1",
+  "version": "8.2.3",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -36,9 +36,11 @@
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
     "test:unit": "jest --testMatch '**/test/unit/**/*.test.js'",
+    "test:int": "jest --reporters=default --reporters=jest-junit --testMatch '**/test/integration/**/*.test.js'",
     "test:coverage": "jest --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.js'",
     "test:coverage-check": "jest --coverage --testMatch '**/test/unit/**/*.test.js'",
     "test:junit": "jest --reporters=default --reporters=jest-junit --testMatch '**/test/unit/**/*.test.js'",
+    "test:integration": "./test/integration-runner.sh ",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "lint": "eslint --ignore-path ../.eslintignore .",
     "migrate": "run-s migrate:latest seed:run",
@@ -62,7 +64,7 @@
   },
   "dependencies": {
     "@hapi/basic": "5.1.1",
-    "@hapi/boom": "7.4.4",
+    "@hapi/boom": "8.0.1",
     "@hapi/good": "8.2.3",
     "@hapi/hapi": "18.4.0",
     "@hapi/inert": "5.2.2",
@@ -90,11 +92,12 @@
   },
   "devDependencies": {
     "@types/jest": "24.0.18",
-    "eslint": "6.4.0",
+    "eslint": "6.5.1",
     "get-port": "5.0.0",
     "jest": "24.9.0",
     "jest-junit": "8.0.0",
     "jsdoc": "3.6.3",
+    "nodemon": "1.19.3",
     "npm-audit-resolver": "2.0.1",
     "npm-check-updates": "3.1.24",
     "nyc": "14.1.1",
