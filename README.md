@@ -12,7 +12,14 @@
 
 
 ## Database initialisation
-To populate the database with tables and seeded valued, ensure that the correct database URI is in the default.json and then run the following command
+
+You can start the database easily within docker, using docker-compose:
+```bash
+docker-compose up mysql-als
+```
+
+
+To populate the database with tables and seeded valued, ensure that the correct database URI is in the `default.json` file, or set the `ALS_DATABASE_URI` accordingly,  and run the following command:
 
 ```bash
 npm run migrate
