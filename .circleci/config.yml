@@ -1,16 +1,30 @@
-# CircleCI v2 Config
+# CircleCI v2.1 Config
 version: 2.1
+
+executors:
+  default-docker:
+    docker: 
+      - image: node:10.15.3-alpine
+
+  default-machine:
+    machine:
+      image: ubuntu-1604:201903-01
+
+  helm-kube:
+    docker: 
+      - image: hypnoglow/kubernetes-helm
+
 
 defaults_working_directory: &defaults_working_directory
   working_directory: /home/circleci/project
 
-defaults_docker_node: &defaults_docker_node
-  docker:
-    - image: node:10.15.3-alpine
+# defaults_docker_node: &defaults_docker_node
+#   docker:
+#     - image: node:10.15.3-alpine
 
-defaults_docker_helm_kube: &defaults_docker_helm_kube
-  docker:
-    - image: hypnoglow/kubernetes-helm
+# defaults_docker_helm_kube: &defaults_docker_helm_kube
+#   docker:
+#     - image: hypnoglow/kubernetes-helm
 
 defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add git
@@ -145,14 +159,13 @@ defaults_slack_announcement: &defaults_slack_announcement
       $SLACK_WEBHOOK_ANNOUNCEMENT \
       -H 'Content-type: application/json' \
       -H 'cache-control: no-cache' \
-      -d "{
-      \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"
-    }"
+      -d "{ \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"}"
 
 jobs:
   setup:
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    # <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -179,7 +192,8 @@ jobs:
 
   test-unit:
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    # <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -204,7 +218,8 @@ jobs:
 
   test-coverage:
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    # <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -241,7 +256,7 @@ jobs:
             fi
 
   test-integration:
-    machine: true
+    executor: default-machine
     <<: *defaults_working_directory
     steps:
       - checkout
@@ -336,8 +351,9 @@ jobs:
   #           path: ./test/results
 
   vulnerability-check:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    # <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -356,8 +372,9 @@ jobs:
           prefix: audit
           
   audit-licenses:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    # <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -378,7 +395,8 @@ jobs:
           prefix: licenses
 
   build-snapshot:
-    machine: true
+    executor: default-machine
+    # machine: true
     <<: *defaults_working_directory
     steps:
       - checkout
@@ -402,7 +420,8 @@ jobs:
           <<: *defaults_slack_announcement
 
   build-hotfix:
-    machine: true
+    executor: default-machine
+    # machine: true
     # <<: *default_env
     steps:
       - checkout
@@ -422,7 +441,8 @@ jobs:
           <<: *defaults_slack_announcement
 
   build:
-    machine: true
+    executor: default-machine
+    # machine: true
     # <<: *default_env
     steps:
       - checkout
@@ -454,8 +474,9 @@ jobs:
           <<: *defaults_slack_announcement
 
   deploy-snapshot:
+    executor: helm-kube
     <<: *defaults_working_directory
-    <<: *defaults_docker_helm_kube
+    # <<: *defaults_docker_helm_kube
     steps:
       - run:
           <<: *defaults_environment
@@ -490,8 +511,9 @@ jobs:
           <<: *defaults_deploy_install_or_upgrade_helm_chart
 
   deploy:
+    executor: helm-kube
     <<: *defaults_working_directory
-    <<: *defaults_docker_helm_kube
+    # <<: *defaults_docker_helm_kube
     steps:
       - run:
           <<: *defaults_environment
