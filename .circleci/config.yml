@@ -1,9 +1,6 @@
 # CircleCI v2.1 Config
 version: 2.1
 
-defaults_working_directory: &defaults_working_directory
-  working_directory: /home/circleci/project
-
 defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add git
   apk --no-cache add ca-certificates
@@ -146,7 +143,6 @@ executors:
       - image: node:10.15.3-alpine
 
   default-machine:
-    # working_directory: /home/circleci/project
     machine:
       image: ubuntu-1604:201903-01
 
@@ -157,7 +153,6 @@ executors:
 
 jobs:
   setup:
-    # <<: *defaults_working_directory
     executor: default-docker
     steps:
       - checkout
@@ -184,7 +179,6 @@ jobs:
             - node_modules
 
   test-unit:
-    # <<: *defaults_working_directory
     executor: default-docker
     steps:
       - checkout
@@ -209,7 +203,6 @@ jobs:
           path: ./test/results
 
   test-coverage:
-    # <<: *defaults_working_directory
     executor: default-docker
     steps:
       - checkout
@@ -248,7 +241,6 @@ jobs:
 
   test-integration:
     executor: default-machine
-    # <<: *defaults_working_directory
     steps:
       - checkout
       - run:
@@ -343,7 +335,6 @@ jobs:
 
   vulnerability-check:
     executor: default-docker
-    # <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -363,7 +354,6 @@ jobs:
           
   audit-licenses:
     executor: default-docker
-    # <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -385,8 +375,6 @@ jobs:
 
   build-snapshot:
     executor: default-machine
-    # machine: true
-    # <<: *defaults_working_directory
     steps:
       - checkout
       - run:
@@ -410,7 +398,6 @@ jobs:
 
   build-hotfix:
     executor: default-machine
-    # machine: true
     # <<: *default_env
     steps:
       - checkout
@@ -431,7 +418,6 @@ jobs:
 
   build:
     executor: default-machine
-    # machine: true
     # <<: *default_env
     steps:
       - checkout
@@ -464,7 +450,6 @@ jobs:
 
   deploy-snapshot:
     executor: helm-kube
-    # <<: *defaults_working_directory
     steps:
       - run:
           <<: *defaults_environment
@@ -500,7 +485,6 @@ jobs:
 
   deploy:
     executor: helm-kube
-    # <<: *defaults_working_directory
     steps:
       - run:
           <<: *defaults_environment
