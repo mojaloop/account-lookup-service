@@ -31,7 +31,45 @@ const RC = require('rc')('ALS', require('../../config/default.json'))
 
 module.exports = {
   API_PORT: RC.API_PORT,
-  DATABASE_URI: RC.DATABASE_URI,
+  DATABASE: {
+    client: RC.DATABASE.DIALECT,
+    connection: {
+      host: RC.DATABASE.HOST.replace(/\/$/, ''),
+      port: RC.DATABASE.PORT,
+      user: RC.DATABASE.USER,
+      password: RC.DATABASE.PASSWORD,
+      database: RC.DATABASE.DATABASE
+    },
+    pool: {
+      // minimum size
+      min: RC.DATABASE.POOL_MIN_SIZE ? RC.DATABASE.POOL_MIN_SIZE : 2,
+
+      // maximum size
+      max: RC.DATABASE.POOL_MAX_SIZE ? RC.DATABASE.POOL_MAX_SIZE : 10,
+      // acquire promises are rejected after this many milliseconds
+      // if a resource cannot be acquired
+      acquireTimeoutMillis: RC.DATABASE.ACQUIRE_TIMEOUT_MILLIS ? RC.DATABASE.ACQUIRE_TIMEOUT_MILLIS : 30000,
+
+      // create operations are cancelled after this many milliseconds
+      // if a resource cannot be acquired
+      createTimeoutMillis: RC.DATABASE.CREATE_TIMEOUT_MILLIS ? RC.DATABASE.CREATE_TIMEOUT_MILLIS : 3000,
+
+      // destroy operations are awaited for at most this many milliseconds
+      // new resources will be created after this timeout
+      destroyTimeoutMillis: RC.DATABASE.DESTROY_TIMEOUT_MILLIS ? RC.DATABASE.DESTROY_TIMEOUT_MILLIS : 5000,
+
+      // free resouces are destroyed after this many milliseconds
+      idleTimeoutMillis: RC.DATABASE.IDLE_TIMEOUT_MILLIS ? RC.DATABASE.IDLE_TIMEOUT_MILLIS : 30000,
+
+      // how often to check for idle resources to destroy
+      reapIntervalMillis: RC.DATABASE.REAP_INTERVAL_MILLIS ? RC.DATABASE.REAP_INTERVAL_MILLIS : 1000,
+
+      // long long to idle after failed create before trying again
+      createRetryIntervalMillis: RC.DATABASE.CREATE_RETRY_INTERVAL_MILLIS ? RC.DATABASE.CREATE_RETRY_INTERVAL_MILLIS : 200
+      // ping: function (conn, cb) { conn.query('SELECT 1', cb) }
+    },
+    debug: RC.DATABASE.DEBUG ? RC.DATABASE.DEBUG : false
+  },
   DISPLAY_ROUTES: RC.DISPLAY_ROUTES,
   RUN_MIGRATIONS: RC.RUN_MIGRATIONS,
   ADMIN_PORT: RC.ADMIN_PORT,
