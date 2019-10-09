@@ -151,6 +151,9 @@ executors:
     docker: 
       - image: hypnoglow/kubernetes-helm
 
+orbs:
+  anchore-engine: anchore/anchore-engine@1.6.0
+
 jobs:
   setup:
     executor: default-docker
@@ -432,6 +435,28 @@ jobs:
       - run:
           <<: *defaults_build_docker_build
       - run:
+          name: save docker image to workspace
+          command: docker save -o /tmp/docker-image.tar $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+
+       # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job. 
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
+          # taken to be the root directory of the workspace.
+          root: /tmp
+          # Must be relative path from root
+          paths:
+            - ./docker-image.tar
+      
+  license-scan:
+    executor: default-machine
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp
+      - run:
+          name: refresh docker image from workspace
+          command: docker load -i ./docker-image.tar
+      - run:
           <<: *defaults_license_scanner
       - run:
           name: Run the license-scanner
@@ -439,6 +464,38 @@ jobs:
       - store_artifacts:
           path: /tmp/license-scanner/results
           prefix: licenses
+
+  image-scan:
+    executor: anchore/anchore_engine
+    steps:
+      - setup_remote_docker
+      - checkout
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp
+      - run:
+          name: refresh docker image from workspace
+          command: docker load -i ./docker-image.tar
+      - anchore/analyze_local_image:
+          dockerfile_path: ./Dockerfile
+          image_name: $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+          policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
+          policy_failure: true
+          timeout: '500'
+      - anchore/parse_reports
+      - store_artifacts:
+          path: anchore-reports
+
+  publish:
+    executor: default-machine
+    steps:
+    # TODO: make sure we have restored from cache
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp
+      - run:
+          name: refresh docker image from workspace
+          command: docker load -i ./docker-image.tar
       - run:
           <<: *defaults_build_docker_build_release
       - run:
@@ -586,31 +643,31 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - build-snapshot:
-          context: org-global
-          requires:
-            - setup
-            - test-unit
-            - test-coverage
-            - test-integration
-          #            - test-functional
-          #            - test-spec
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*\-snapshot/
-            branches:
-              ignore:
-                - /.*/
-      - deploy-snapshot:
-          context: org-global
-          requires:
-            - build-snapshot
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*\-snapshot/
-            branches:
-              ignore:
-                - /.*/
+      # - build-snapshot:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #       - test-unit
+      #       - test-coverage
+      #       - test-integration
+      #     #            - test-functional
+      #     #            - test-spec
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*\-snapshot/
+      #       branches:
+      #         ignore:
+      #           - /.*/
+      # - deploy-snapshot:
+      #     context: org-global
+      #     requires:
+      #       - build-snapshot
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*\-snapshot/
+      #       branches:
+      #         ignore:
+      #           - /.*/
       - build:
           context: org-global
           requires:
@@ -628,7 +685,58 @@ workflows:
             branches:
               ignore:
                 - /.*/
-      - build-hotfix:
+      # - build-hotfix:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #       - test-unit
+      #       - test-coverage
+      #       - test-integration
+      #     #            - test-functional
+      #     #            - test-spec
+      #       - vulnerability-check
+      #       - audit-licenses
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*\-hotfix(\.[0-9]+)/
+      #       branches:
+      #         ignore:
+      #           - /.*/
+      - license-scan:
+          context: org-global
+          requires:
+            - build
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            # branches:
+            #   ignore:
+            #     - /.*/
+
+      - image-scan:
+          context: org-global
+          requires:
+            - build
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            # branches:
+            #   ignore:
+            #     - /.*/
+
+      - publish:
+          context: org-global
+          requires:
+            - license-scan
+            - image-scan
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            # branches:
+            #   ignore:
+            #     - /.*/
+
+      - scan-image:
           context: org-global
           requires:
             - setup
@@ -641,10 +749,11 @@ workflows:
             - audit-licenses
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*\-hotfix(\.[0-9]+)/
+              only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore:
                 - /.*/
+
       - deploy:
           context: org-global
           requires:
