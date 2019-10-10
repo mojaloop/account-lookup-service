@@ -1,5 +1,7 @@
 # CircleCI v2.1 Config
 version: 2.1
+orbs:
+  anchore: anchore/anchore-engine@1.6.0
 
 
 defaults_Dependencies: &defaults_Dependencies |
@@ -152,8 +154,6 @@ executors:
     docker: 
       - image: hypnoglow/kubernetes-helm
 
-orbs:
-  anchore-engine: anchore/anchore-engine@1.6.0
 
 jobs:
   setup:
@@ -736,24 +736,6 @@ workflows:
             # branches:
             #   ignore:
             #     - /.*/
-
-      - scan-image:
-          context: org-global
-          requires:
-            - setup
-            - test-unit
-            - test-coverage
-            - test-integration
-          #            - test-functional
-          #            - test-spec
-            - vulnerability-check
-            - audit-licenses
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore:
-                - /.*/
 
       - deploy:
           context: org-global
