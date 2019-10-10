@@ -73,7 +73,7 @@ module.exports = {
       reapIntervalMillis: getOrDefault(RC.DATABASE.REAP_INTERVAL_MILLIS, 1000),
 
       // long long to idle after failed create before trying again
-      createRetryIntervalMillis: getOrDefault(RC.DATABASE.CREATE_RETRY_INTERVAL_MILLIS, : 20)
+      createRetryIntervalMillis: getOrDefault(RC.DATABASE.CREATE_RETRY_INTERVAL_MILLIS, 20)
       // ping: function (conn, cb) { conn.query('SELECT 1', cb) }
     },
     debug: getOrDefault(RC.DATABASE.DEBUG, false)
