@@ -75,7 +75,7 @@ case ${TEST_MODE} in
     runTests
     EXIT_RESULT=$?
     copyResults
-    exit $?
+    exit ${EXIT_RESULT}
   ;;
 
   wait)
@@ -87,7 +87,7 @@ case ${TEST_MODE} in
     EXIT_RESULT=$?
     copyResults
     tearDown
-    exit $?
+    exit ${EXIT_RESULT}
   ;;
 
   *)
