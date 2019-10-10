@@ -600,29 +600,29 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - test-unit:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
-      - test-coverage:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
       # TODO: disabled temporarily to speed up testing
+      # - test-unit:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*/
+      #       branches:
+      #         ignore:
+      #           - /feature*/
+      #           - /bugfix*/
+      # - test-coverage:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*/
+      #       branches:
+      #         ignore:
+      #           - /feature*/
+      #           - /bugfix*/
       # - test-integration:
       #     context: org-global
       #     requires:
@@ -634,28 +634,28 @@ workflows:
       #         ignore:
       #           - /feature*/
       #           - /bugfix*/
-      - vulnerability-check:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
-      - audit-licenses:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
+      # - vulnerability-check:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      #       branches:
+      #         ignore:
+      #           - /feature*/
+      #           - /bugfix*/
+      # - audit-licenses:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      #       branches:
+      #         ignore:
+      #           - /feature*/
+      #           - /bugfix*/
       # - build-snapshot:
       #     context: org-global
       #     requires:
@@ -685,15 +685,12 @@ workflows:
           context: org-global
           requires:
             - setup
-            - test-unit
-            - test-coverage
             # TODO: disabled temporarily to speed up testing
+            # - test-unit
+            # - test-coverage
             # - test-integration
-
-          #            - test-functional
-          #            - test-spec
-            - vulnerability-check
-            - audit-licenses
+            # - vulnerability-check
+            # - audit-licenses
           # filters:
             # TODO: change back to ignore all branches and only build tags
             # tags:
