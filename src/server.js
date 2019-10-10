@@ -37,7 +37,6 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 
 const connectDatabase = async () => {
-  console.log('connecting to database with config', Config.DATABASE)
   return Db.connect(Config.DATABASE)
 }
 
