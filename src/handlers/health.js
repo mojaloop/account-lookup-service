@@ -25,10 +25,10 @@
 
 'use strict'
 
-const packageJson = require('../../package.json')
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
+const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
+const packageJson = require('../../package.json')
 
 const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
 
