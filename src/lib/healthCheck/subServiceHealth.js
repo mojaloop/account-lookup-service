@@ -1,3 +1,4 @@
+
 /*****
  License
  --------------
@@ -16,32 +17,46 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Steven Oderayi <steven.oderayi@mousbox.com>
-
+ * Lewis Daly <lewis@vesselstech.com>
  --------------
  ******/
-
 'use strict'
 
-const packageJson = require('../../package.json')
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
-const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
+const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
+const Logger = require('@mojaloop/central-services-logger')
 
-const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
+const MigrationLockModel = require('../../models/misc/migrationLock')
 
 /**
- * Operations on /health
+ * @function getSubServiceHealthDatastore
+ *
+ * @description
+ *   Gets the health of the Datastore by ensuring the table is currently locked
+ *   in a migration state. This implicity checks the connection with the database.
+ *
+ * @returns Promise<SubServiceHealth> The SubService health object for the datastore
  */
+const getSubServiceHealthDatastore = async () => {
+  let status = statusEnum.OK
+
+  try {
+    const isLocked = await MigrationLockModel.getIsMigrationLocked()
+    if (isLocked) {
+      status = statusEnum.DOWN
+    }
+  } catch (err) {
+    Logger.debug(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    status = statusEnum.DOWN
+  }
+
+  return {
+    name: serviceName.datastore,
+    status
+  }
+}
+
 module.exports = {
-  /**
-   * summary: Get Oracles
-   * description: The HTTP request GET /health is used to return the current status of the API .
-   * parameters:
-   * produces: application/json
-   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-  get: defaultHealthHandler(healthCheck)
+  getSubServiceHealthDatastore
 }

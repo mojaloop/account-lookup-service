@@ -16,32 +16,34 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Steven Oderayi <steven.oderayi@mousbox.com>
-
+ * Lewis Daly <lewis@vesselstech.com>
  --------------
  ******/
 
 'use strict'
 
-const packageJson = require('../../package.json')
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
-const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
-
-const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
+const Db = require('../../lib/db')
 
 /**
- * Operations on /health
+ * @function getIsMigrationLocked
+ *
+ * @description Gets whether or not the database is locked based on the migration_lock
+ * @returns {Promise<boolean>} - true if locked, false if not. Rejects if an error occours
  */
+const getIsMigrationLocked = async () => {
+  const result = await Db.migration_lock.query(async builder => {
+    builder.select('is_locked AS isLocked')
+      .orderBy('index', 'desc')
+      .first()
+
+    return builder
+  })
+
+  return result.isLocked
+}
+
 module.exports = {
-  /**
-   * summary: Get Oracles
-   * description: The HTTP request GET /health is used to return the current status of the API .
-   * parameters:
-   * produces: application/json
-   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
-   */
-  get: defaultHealthHandler(healthCheck)
+  getIsMigrationLocked
 }
