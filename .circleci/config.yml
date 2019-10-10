@@ -699,7 +699,10 @@ workflows:
             # tags:
             #   only: /v[0-9]+(\.[0-9]+)*/
             branches:
-              only: /feature\/1003.*/
+              ignore:
+                - /feature*/
+                - /bugfix*/
+              # only: /feature\/1003.*/
               # ignore:
               #   - /.*/
 
@@ -729,7 +732,10 @@ workflows:
             # tags:
             #   only: /v[0-9]+(\.[0-9]+)*/
             branches:
-              only: /feature\/1003.*/
+              ignore:
+                - /feature*/
+                - /bugfix*/
+              # only: /feature\/1003.*/
               # ignore:
               #   - /.*/
 
@@ -742,7 +748,10 @@ workflows:
             # tags:
             #   only: /v[0-9]+(\.[0-9]+)*/
             branches:
-              only: /feature\/1003.*/
+              ignore:
+                - /feature*/
+                - /bugfix*/
+              # only: /feature\/1003.*/
               # ignore:
               #   - /.*/
 
