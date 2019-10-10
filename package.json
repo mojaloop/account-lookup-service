@@ -69,7 +69,7 @@
     "@hapi/hapi": "18.4.0",
     "@hapi/inert": "5.2.2",
     "@hapi/vision": "5.5.4",
-    "@mojaloop/central-services-database": "/Users/ldaly/developer/vessels/mojaloop-github/central-services-database",
+    "@mojaloop/central-services-database": "8.2.1",
     "@mojaloop/central-services-error-handling": "8.2.0",
     "@mojaloop/central-services-health": "8.1.1",
     "@mojaloop/central-services-logger": "8.1.2",
