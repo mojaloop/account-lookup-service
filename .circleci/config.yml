@@ -3,6 +3,11 @@ version: 2.1
 orbs:
   anchore: anchore/anchore-engine@1.6.0
 
+# Use this command to set the `CIRCLE_TAG` environment variable when testing without git tags
+test_env: &test_env
+  name: Set the sample CIRCLE_TAG
+  command: |
+    echo 'export CIRCLE_TAG=test' >> $BASH_ENV
 
 defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add git
@@ -402,9 +407,10 @@ jobs:
 
   build-hotfix:
     executor: default-machine
-    # <<: *default_env
     steps:
       - checkout
+      - run:
+          <<: *test_env
       - run:
           <<: *defaults_environment
       - run:
@@ -422,9 +428,10 @@ jobs:
 
   build:
     executor: default-machine
-    <<: *default_env
     steps:
       - checkout
+      - run:
+          <<: *test_env
       - run:
           <<: *defaults_environment
       - run:
@@ -450,8 +457,9 @@ jobs:
       
   license-scan:
     executor: default-machine
-    <<: *default_env
     steps:
+      - run:
+          <<: *test_env
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: /tmp
@@ -469,10 +477,11 @@ jobs:
 
   image-scan:
     executor: anchore/anchore_engine
-    <<: *default_env
     steps:
       - setup_remote_docker
       - checkout
+      - run:
+          <<: *test_env
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: /tmp
