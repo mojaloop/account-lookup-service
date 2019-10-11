@@ -30,7 +30,7 @@
 const RC = require('rc')('ALS', require('../../config/default.json'))
 
 const getOrDefault = (value, defaultValue) => {
-  if (value === null || value === undefined) {
+  if (value === undefined) {
     return defaultValue
   }
 
@@ -39,7 +39,7 @@ const getOrDefault = (value, defaultValue) => {
 
 module.exports = {
   API_PORT: RC.API_PORT,
-  DATABASE: RC.DATABASE_URI || {
+  DATABASE: {
     client: RC.DATABASE.DIALECT,
     connection: {
       host: RC.DATABASE.HOST.replace(/\/$/, ''),
