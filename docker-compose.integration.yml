@@ -5,6 +5,9 @@ services:
     build:
       context: .
       target: builder
+      cache_from:
+        - mojaloop/account-lookup-service
+        - account-lookup-service
     container_name: als_account-lookup-service-int
     networks:
       - als-mojaloop-net
