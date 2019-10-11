@@ -26,6 +26,7 @@
 'use strict'
 
 const Mustache = require('mustache')
+const Mockgen = require('./mockgen')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const Config = require('../../src/lib/config')
 const payerfsp = 'payerfsp'
@@ -36,6 +37,29 @@ const defaultSwitchHeaders = defaultHeaders(Enums.Http.HeaderResources.SWITCH, E
 const defaultStandardHeaders = (resource = Enums.Http.HeaderResources.PARTICIPANTS) => defaultHeaders(payerfsp, resource, payeefsp)
 const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payerfsp })
 const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payeefsp })
+
+/**
+ * @function generateMockRequest
+ *
+ * @description Uses MockGen to create a mock request given a URI and endpoint
+ *
+ * @example
+ *  const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'get')
+ *
+ * @param {*} path - A URI Path. e.g. `/participants/{Type}/{ID}`
+ * @param {*} operation - A HTTP Method (lowercase). e.g. `get`
+ */
+
+const generateMockRequest = async (path, operation, isApi = true) => {
+  return new Promise((resolve, reject) => {
+    Mockgen(isApi).requests({
+      path,
+      operation
+    }, function (error, mock) {
+      return error ? reject(error) : resolve(mock)
+    })
+  })
+}
 
 /**
  * @function defaultHeaders
@@ -238,6 +262,7 @@ module.exports = {
   validatePayeeFspUri,
   defaultSwitchHeaders,
   defaultStandardHeaders,
+  generateMockRequest,
   getPayerfspEndpointsUri,
   getPayeefspEndpointsUri,
   getOracleEndpointDatabaseResponse,

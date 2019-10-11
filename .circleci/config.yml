@@ -1,16 +1,5 @@
-# CircleCI v2 Config
-version: 2
-
-defaults_working_directory: &defaults_working_directory
-  working_directory: /home/circleci/project
-
-defaults_docker_node: &defaults_docker_node
-  docker:
-    - image: node:10.15.3-alpine
-
-defaults_docker_helm_kube: &defaults_docker_helm_kube
-  docker:
-    - image: hypnoglow/kubernetes-helm
+# CircleCI v2.1 Config
+version: 2.1
 
 defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add git
@@ -145,14 +134,26 @@ defaults_slack_announcement: &defaults_slack_announcement
       $SLACK_WEBHOOK_ANNOUNCEMENT \
       -H 'Content-type: application/json' \
       -H 'cache-control: no-cache' \
-      -d "{
-      \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"
-    }"
+      -d "{ \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"}"
+
+executors:
+  default-docker:
+    working_directory: /home/circleci/project
+    docker: 
+      - image: node:10.15.3-alpine
+
+  default-machine:
+    machine:
+      image: ubuntu-1604:201903-01
+
+  helm-kube:
+    working_directory: /home/circleci/project
+    docker: 
+      - image: hypnoglow/kubernetes-helm
 
 jobs:
   setup:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -178,8 +179,7 @@ jobs:
             - node_modules
 
   test-unit:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -191,14 +191,11 @@ jobs:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: Install ava tap tap-xunit
-          command: npm install -g ava tap tap-xunit
-      - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute unit tests
-          command: ava --tap | tap-xunit > ./test/results/ava.xml
+          command: JEST_JUNIT_OUTPUT_DIR='./test/results' JEST_JUNIT_OUTPUT_NAME='junit.xml' npm run test:junit
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -206,8 +203,7 @@ jobs:
           path: ./test/results
 
   test-coverage:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -226,7 +222,7 @@ jobs:
           command: mkdir -p ./.nyc_output
       - run:
           name: Execute code coverage check
-          command: npm -s run test:coverage
+          command: npm -s run test:coverage-check
       - store_artifacts:
           path: coverage
           prefix: test
@@ -244,20 +240,17 @@ jobs:
             fi
 
   test-integration:
-    machine: true
-    <<: *defaults_working_directory
+    executor: default-machine
     steps:
       - checkout
       - run:
           <<: *defaults_environment
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute integration tests
-          command: npm -s run test:integration
+          command: RESULTS_DIR="./test/results" npm -s run test:integration
           no_output_timeout: 25m
       - store_artifacts:
           path: ./test/results
@@ -341,8 +334,7 @@ jobs:
   #           path: ./test/results
 
   vulnerability-check:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - run:
           name: Install general dependencies
@@ -361,8 +353,7 @@ jobs:
           prefix: audit
           
   audit-licenses:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - run:
           name: Install general dependencies
@@ -383,8 +374,7 @@ jobs:
           prefix: licenses
 
   build-snapshot:
-    machine: true
-    <<: *defaults_working_directory
+    executor: default-machine
     steps:
       - checkout
       - run:
@@ -407,7 +397,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   build-hotfix:
-    machine: true
+    executor: default-machine
     # <<: *default_env
     steps:
       - checkout
@@ -427,7 +417,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   build:
-    machine: true
+    executor: default-machine
     # <<: *default_env
     steps:
       - checkout
@@ -459,8 +449,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   deploy-snapshot:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_helm_kube
+    executor: helm-kube
     steps:
       - run:
           <<: *defaults_environment
@@ -495,8 +484,7 @@ jobs:
           <<: *defaults_deploy_install_or_upgrade_helm_chart
 
   deploy:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_helm_kube
+    executor: helm-kube
     steps:
       - run:
           <<: *defaults_environment
@@ -565,17 +553,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      #      - test-integration:
-      #          context: org-global
-      #          requires:
-      #            - setup
-      #          filters:
-      #            tags:
-      #              only: /.*/
-      #            branches:
-      #              ignore:
-      #                - /feature*/
-      #                - /bugfix*/
+      - test-integration:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
@@ -602,9 +590,9 @@ workflows:
           context: org-global
           requires:
             - setup
-          #            - test-unit
-          #            - test-coverage
-          #            - test-integration
+            - test-unit
+            - test-coverage
+            - test-integration
           #            - test-functional
           #            - test-spec
           filters:
@@ -629,7 +617,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-          #            - test-integration
+            - test-integration
           #            - test-functional
           #            - test-spec
             - vulnerability-check
@@ -646,7 +634,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-          #            - test-integration
+            - test-integration
           #            - test-functional
           #            - test-spec
             - vulnerability-check

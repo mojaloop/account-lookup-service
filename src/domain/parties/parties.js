@@ -31,7 +31,7 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 const participant = require('../../models/participantEndpoint/facade')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const oracle = require('../../models/oracle/facade')
-const decodePayload = require('@mojaloop/central-services-stream').Kafka.Protocol.decodePayload
+const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 
 /**
  * @function getPartiesByTypeAndID
