@@ -32,7 +32,7 @@ const { getCurrencyById } = require('../../../../src/models/currency')
 
 describe('currency model', () => {
   beforeAll(async () => {
-    await Db.connect(Config.DATABASE_URI)
+    await Db.connect(Config.DATABASE)
   })
 
   afterAll(async () => {

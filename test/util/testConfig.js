@@ -29,25 +29,16 @@
  --------------
  ******/
 const RC = require('rc')('ALS', require('../../config/default.json'))
+const defaultConfig = require('../../src/lib/config')
 
 /**
- * testConfig is based on the ./src/lib/config.js file,
- * with additional fields added for tests only
+ * testConfig extends ./src/lib/config.js with test-specific
+ * environment variable config
  */
 
 module.exports = {
   /* Test Config */
   TEST_ALS_HOST: RC.TEST_ALS_HOST,
 
-  /* Original Config */
-  ADMIN_PORT: RC.ADMIN_PORT,
-  API_PORT: RC.API_PORT,
-  DATABASE_URI: RC.DATABASE_URI,
-  DISPLAY_ROUTES: RC.DISPLAY_ROUTES,
-  RUN_MIGRATIONS: RC.RUN_MIGRATIONS,
-  ENDPOINT_CACHE_CONFIG: RC.ENDPOINT_CACHE_CONFIG,
-  SWITCH_ENDPOINT: RC.SWITCH_ENDPOINT,
-  INSTRUMENTATION_METRICS_DISABLED: RC.INSTRUMENTATION.METRICS.DISABLED,
-  INSTRUMENTATION_METRICS_LABELS: RC.INSTRUMENTATION.METRICS.labels,
-  INSTRUMENTATION_METRICS_CONFIG: RC.INSTRUMENTATION.METRICS.config
+  ...defaultConfig,
 }
