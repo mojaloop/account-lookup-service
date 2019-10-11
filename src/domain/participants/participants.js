@@ -24,7 +24,7 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
@@ -103,8 +103,8 @@ const putParticipantsErrorByTypeAndID = async () => {
  * @description This sends request to all applicable oracles to store
  *
  * @param {object} headers - incoming http request headers
- * @param {object} params - uri parameters of the http request
  * @param {string} method - http request method
+ * @param {object} params - uri parameters of the http request
  * @param {object} payload - payload of the request being sent out
  *
  */
@@ -116,7 +116,7 @@ const postParticipants = async (headers, method, params, payload) => {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
-        if (response && (response.data !== null || response.data !== undefined)) {
+        if (response && response.data) {
           const responsePayload = {
             partyList: [
               {
@@ -203,6 +203,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
           }]).toApiErrorObject())
         }
       }
+
       for (const [key, value] of typeMap) {
         const payload = {
           requestId: requestId,
@@ -237,6 +238,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
         partyList: overallReturnList,
         currency: requestPayload.currency
       }
+
       if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
         headers[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.partyList[0].partyId.fspId
         headers[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value

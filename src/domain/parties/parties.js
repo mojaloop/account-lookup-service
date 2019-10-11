@@ -26,13 +26,13 @@
 
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const participant = require('../../models/participantEndpoint/facade')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const oracle = require('../../models/oracle/facade')
-const decodePayload = require('@mojaloop/central-services-stream').Kafka.Protocol.decodePayload
 const createCallbackHeaders = require('../../lib/headers').createCallbackHeaders
+const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 
 /**
  * @function getPartiesByTypeAndID

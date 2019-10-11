@@ -28,17 +28,16 @@ const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./lib/db')
 const Config = require('./lib/config.js')
-const Logger = require('@mojaloop/central-services-shared').Logger
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
 const Migrator = require('./lib/migrator')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Boom = require('@hapi/boom')
+const Logger = require('@mojaloop/central-services-logger')
 
 const connectDatabase = async () => {
-  return Db.connect(Config.DATABASE_URI)
+  return Db.connect(Config.DATABASE)
 }
 
 const openAPIOptions = {
@@ -71,7 +70,7 @@ const createServer = async (port, isApi) => {
       validate: {
         options: ErrorHandler.validateRoutes(),
         failAction: async (request, h, err) => {
-          throw Boom.boomify(err)
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       },
       payload: {
@@ -92,9 +91,9 @@ const createServer = async (port, isApi) => {
   ])
   await server.ext([
     {
-      type: 'onPreHandler',
+      type: 'onRequest',
       method: (request, h) => {
-        RequestLogger.logResponse(request)
+        RequestLogger.logRequest(request)
         return h.continue
       }
     },

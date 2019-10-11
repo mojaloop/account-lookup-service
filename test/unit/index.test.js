@@ -18,43 +18,121 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * ModusBox
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+
+ * Crosslake
+ - Lewis Daly <lewisd@crosslaketech.com>
+
  --------------
  ******/
 
-'use strict'
-
-const Test = require('ava')
-const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const Proxyquire = require('proxyquire')
-
+/*
+  For testing the server imports, we need to use jest.resetModules() between tests
+  This means specifying future imports here and actually doing the importing in `beforeEach`
+*/
+let Sinon
+let Command
 let sandbox
 
-Test.beforeEach(() => {
-  try {
+describe('Base Tests', () => {
+  beforeEach(() => {
+    jest.resetModules()
+
+    Sinon = require('sinon')
+    Command = require('commander').Command
+
     sandbox = Sinon.createSandbox()
-  } catch (err) {
-    Logger.error(`serverTest failed with error - ${err}`)
-    console.error(err.message)
-  }
-})
+  })
 
-Test.afterEach(() => {
-  sandbox.restore()
-})
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
 
-Test('should import setup and initialize', test => {
-  try {
-    const initStub = sandbox.stub()
-    Proxyquire('../../src/index', {
-      './server': {
-        initialize: initStub
-      }
-    })
-    test.pass(initStub.withArgs().calledOnce)
-  } catch (err) {
-    Logger.error(`serverTest failed with error - ${err}`)
-    test.fail()
-  }
+  it('should display help if called with no args', () => {
+    // Arrange
+    const sandbox = Sinon.createSandbox()
+    const mockInitStub = sandbox.stub()
+    const helpStub = sandbox.stub(Command.prototype, 'help').returns(true)
+
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => []
+    }))
+
+    // Act
+    require('../../src/index')
+    // Assert
+    // When starting with help, the help() method gets called
+    expect(helpStub.callCount).toBe(1)
+  })
+
+  it('should start the server with the default config', () => {
+    // Arrange
+    const mockInitStub = sandbox.stub()
+    const mockArgs = [
+      'node',
+      'src/index.js',
+      'server'
+    ]
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => mockArgs
+    }))
+
+    // Act
+    require('../../src/index.js')
+
+    // Assert
+    // When starting with default args, both the admin and api servers get startec
+    expect(mockInitStub.calledTwice).toBe(true)
+  })
+
+  it('should start the server with the --api config', () => {
+    // Arrange
+    const mockInitStub = sandbox.stub()
+    const mockArgs = [
+      'node',
+      'src/index.js',
+      'server',
+      '--api'
+    ]
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => mockArgs
+    }))
+
+    // Act
+    require('../../src/index.js')
+
+    // Assert
+    // When starting with default args, both the admin and api servers get startec
+    expect(mockInitStub.callCount).toBe(1)
+    const initStubArgs = mockInitStub.getCall(0).args
+    expect(initStubArgs[1]).toBe(true) // true is API
+  })
+
+  it('should start the server with the --api config', () => {
+    // Arrange
+    const mockInitStub = sandbox.stub()
+    const mockArgs = [
+      'node',
+      'src/index.js',
+      'server',
+      '--admin'
+    ]
+    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/lib/argv.js', () => ({
+      getArgs: () => mockArgs
+    }))
+
+    // Act
+    require('../../src/index.js')
+
+    // Assert
+    // When starting with default args, both the admin and api servers get startec
+    expect(mockInitStub.callCount).toBe(1)
+    const initStubArgs = mockInitStub.getCall(0).args
+    expect(initStubArgs[1]).toBe(false) // false is admin
+  })
 })
