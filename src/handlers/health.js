@@ -18,6 +18,7 @@
  * Gates Foundation
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Steven Oderayi <steven.oderayi@mousbox.com>
 
  --------------
  ******/
@@ -26,9 +27,10 @@
 
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
 const { defaultHealthHandler } = require('@mojaloop/central-services-health')
+const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
 const packageJson = require('../../package.json')
 
-const healthCheck = new HealthCheck(packageJson, [])
+const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
 
 /**
  * Operations on /health
