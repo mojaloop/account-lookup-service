@@ -20,6 +20,7 @@
 
  * ModusBox
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Steven Oderayi <steven.oderayi@modusbox.com>
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
@@ -34,6 +35,7 @@ const Db = require('../../../src/lib/db')
 const initServer = require('../../../src/server').initialize
 const getPort = require('get-port')
 const Sinon = require('sinon')
+const MigrationLockModel = require('../../../src/models/misc/migrationLock')
 
 let sandbox
 let server
@@ -59,7 +61,9 @@ describe('/health', () => {
    */
   it('GET /health', async () => {
     // Arrange
+    sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(false)
     const mock = await Helper.generateMockRequest('/health', 'get')
+
     const options = {
       method: 'get',
       url: mock.request.path,

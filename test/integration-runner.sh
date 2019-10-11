@@ -36,7 +36,15 @@ function waitForDocker() {
   echo 'Waiting for docker services to be healthy'
   HEALTHY_COUNT=$(docker ps | grep "healthy" | wc -l)
   EXPECTED_HEALTHY_COUNT=5
+  EXPECTED_SERVICE_COUNT=6
   while [ $(docker ps | grep "healthy" | wc -l) -lt $EXPECTED_HEALTHY_COUNT ]; do
+    TOTAL_SERVICES=$(docker ps | grep "als_*" | wc -l)
+    # exit early if we don't have the required services
+    if [ ${TOTAL_SERVICES} -lt ${EXPECTED_SERVICE_COUNT} ]; then
+      echo 'Not all docker-compose services are running. Check the logs and try again.'
+      exit 1
+    fi
+
     echo "."
     sleep 5
   done
@@ -75,7 +83,7 @@ case ${TEST_MODE} in
     runTests
     EXIT_RESULT=$?
     copyResults
-    exit $?
+    exit ${EXIT_RESULT}
   ;;
 
   wait)
@@ -87,7 +95,7 @@ case ${TEST_MODE} in
     EXIT_RESULT=$?
     copyResults
     tearDown
-    exit $?
+    exit ${EXIT_RESULT}
   ;;
 
   *)

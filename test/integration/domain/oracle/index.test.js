@@ -31,7 +31,7 @@ const OracleModel = require('../../../../src/models/oracle')
 
 describe('Oracle', () => {
   beforeAll(async () => {
-    await Db.connect(Config.DATABASE_URI)
+    await Db.connect(Config.DATABASE)
   })
 
   afterAll(async () => {

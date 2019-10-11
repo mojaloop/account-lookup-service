@@ -37,7 +37,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 
 const connectDatabase = async () => {
-  return Db.connect(Config.DATABASE_URI)
+  return Db.connect(Config.DATABASE)
 }
 
 const openAPIOptions = {
