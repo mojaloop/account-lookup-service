@@ -63,7 +63,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
       } else {
         const callbackHeaders = createCallbackHeaders({
           requestHeaders: headers,
-          partyType: params.Type,
+          partyIdType: params.Type,
           partyIdentifier: params.ID,
           endpointTemplate: Enums.EndPoints.FspEndpointTemplates.PARTIES_PUT_ERROR
         })
