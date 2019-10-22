@@ -23,22 +23,32 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Crosslake
- - Lewis Daly <lewisd@crosslaketech.com>
+ * Steven Oderayi <steven.oderayi@modusbox.com>
 
  --------------
  ******/
-const RC = require('rc')('ALS', require('../../config/default.json'))
-const defaultConfig = require('../../src/lib/config')
+'use strict'
+
+const Mustache = require('mustache')
+const Enums = require('@mojaloop/central-services-shared').Enum
 
 /**
- * testConfig extends ./src/lib/config.js with test-specific
- * environment variable config
+ * @function createErrorCallbackHeaders
+ *
+ * @description it returns the FSPIOP headers for error callback
+ *
+ * @param {object} params - parameters to the function with the shape `{ requestHeaders, partyIdType, partyIdentifier, endpointTemplate }`
+ * @returns {object} - FSPIOP callback headers merged with the request headers passed in `params.requestHeaders`
  */
+exports.createCallbackHeaders = (params) => {
+  const callbackHeaders = { ...params.requestHeaders }
 
-module.exports = {
-  /* Test Config */
-  TEST_ALS_HOST: RC.TEST_ALS_HOST,
+  callbackHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+  callbackHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = params.requestHeaders[Enums.Http.Headers.FSPIOP.SOURCE]
+  callbackHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = Enums.Http.RestMethods.PUT
+  callbackHeaders[Enums.Http.Headers.FSPIOP.URI] = Mustache.render(params.endpointTemplate, {
+    partyIdType: params.partyIdType, partyIdentifier: params.partyIdentifier
+  })
 
-  ...defaultConfig
+  return callbackHeaders
 }

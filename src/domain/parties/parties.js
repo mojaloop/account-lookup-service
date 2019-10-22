@@ -31,6 +31,7 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 const participant = require('../../models/participantEndpoint/facade')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const oracle = require('../../models/oracle/facade')
+const createCallbackHeaders = require('../../lib/headers').createCallbackHeaders
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 
 /**
@@ -60,8 +61,14 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
         }
         await participant.sendRequest(headers, response.data.partyList[0].fspId, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.Http.RestMethods.GET, undefined, options)
       } else {
+        const callbackHeaders = createCallbackHeaders({
+          requestHeaders: headers,
+          partyIdType: params.Type,
+          partyIdentifier: params.ID,
+          endpointTemplate: Enums.EndPoints.FspEndpointTemplates.PARTIES_PUT_ERROR
+        })
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
-          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), headers, params)
+          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), callbackHeaders, params)
       }
     } else {
       Logger.error('Requester FSP not found')
