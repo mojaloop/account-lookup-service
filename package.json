@@ -96,7 +96,7 @@
     "eslint": "6.5.1",
     "get-port": "5.0.0",
     "jest": "24.9.0",
-    "jest-junit": "8.0.0",
+    "jest-junit": "9.0.0",
     "jsdoc": "3.6.3",
     "nodemon": "1.19.4",
     "npm-audit-resolver": "2.0.1",
