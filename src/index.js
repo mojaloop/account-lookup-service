@@ -28,7 +28,8 @@ const Server = require('./server')
 const PJson = require('../package.json')
 const { Command } = require('commander')
 const Config = require('./lib/config')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
+const argv = require('./lib/argv').getArgs()
 
 const Program = new Command()
 
@@ -45,14 +46,14 @@ Program.command('server') // sub-command name, coffeeType = type, required
   // function to execute when command is uses
   .action(async (args) => {
     if (args.api) {
-      Logger.debug(`CLI: Executing --api`)
+      Logger.debug('CLI: Executing --api')
       const options = {
         port: Config.API_PORT,
         isAPI: true
       }
       module.exports = Server.initialize(options.port, options.isAPI)
     } else if (args.admin) {
-      Logger.debug(`CLI: Executing --admin`)
+      Logger.debug('CLI: Executing --admin')
       const options = {
         port: Config.ADMIN_PORT,
         isAPI: false
@@ -72,9 +73,9 @@ Program.command('server') // sub-command name, coffeeType = type, required
     }
   })
 
-if (Array.isArray(process.argv) && process.argv.length > 1) {
+if (Array.isArray(argv) && argv.length > 1) {
   // parse command line vars
-  Program.parse(process.argv)
+  Program.parse(argv)
 } else {
   // display default help
   Program.help()

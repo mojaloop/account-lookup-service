@@ -1,10 +1,14 @@
 /*****
+ * @file This registers all handlers for the central-ledger API
  License
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
  The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
  Contributors
  --------------
  This is the official list of the Mojaloop project contributors for this file.
@@ -15,27 +19,26 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
+
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Crosslake
+ - Lewis Daly <lewisd@crosslaketech.com>
 
  --------------
  ******/
+const RC = require('rc')('ALS', require('../../config/default.json'))
+const defaultConfig = require('../../src/lib/config')
 
-'use strict'
+/**
+ * testConfig extends ./src/lib/config.js with test-specific
+ * environment variable config
+ */
 
-exports.ErrorObject = {
-  ADD_PARTY_ERROR: {
-    errorCode: 3003,
-    errorDescription: 'Error occurred while adding or updating information regarding a Party.'
-  },
-  PARTY_NOT_FOUND_ERROR: {
-    errorCode: 3204,
-    errorDescription: 'Party with the provided identifier, identifier type, and optional sub id or type was not found.'
-  },
-  DESTINATION_FSP_NOT_FOUND_ERROR: {
-    errorCode: 3201,
-    errorDescription: 'Destination FSP does not exist or cannot be found.'
-  }
+module.exports = {
+  /* Test Config */
+  TEST_ALS_HOST: RC.TEST_ALS_HOST,
+
+  ...defaultConfig
 }

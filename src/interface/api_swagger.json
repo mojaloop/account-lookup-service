@@ -1597,7 +1597,7 @@
             "$ref": "#/parameters/FSPIOP-Source"
           },
           {
-            "$ref": "#/parameters/FSPIOP-Destination-Optional"
+            "$ref": "#/parameters/FSPIOP-Destination-Required"
           },
           {
             "$ref": "#/parameters/FSPIOP-Encryption"
@@ -3669,8 +3669,25 @@
       "properties": {
         "status": {
           "type": "string",
-          "description": "The return status, usually 'OK'."
+          "description": "The return status, usually \"OK\""
+        },
+        "uptime": {
+          "type": "number",
+          "description": "The amount of time in seconds that the server has been up for."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The UTC time that the server started up"
+        },
+        "versionNumber": {
+          "type": "string",
+          "description": "Current version of the API"
+        },
+        "services": {
+          "type": "array",
+          "description": "An list of the statuses of services that the API requires"
         }
+
       }
     }
   },
@@ -3912,13 +3929,25 @@
       "name": "ID",
       "in": "path",
       "required": true,
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
     },
     "Type": {
       "name": "Type",
       "in": "path",
       "required": true,
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "MSISDN",
+        "EMAIL",
+        "PERSONAL_ID",
+        "BUSINESS",
+        "DEVICE",
+        "ACCOUNT_ID",
+        "IBAN",
+        "ALIAS"
+      ]
     },
     "SubId": {
       "name": "SubId",

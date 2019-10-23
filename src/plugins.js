@@ -28,14 +28,16 @@ const Config = require('./lib/config')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
+const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
 
 const registerPlugins = async (server) => {
   await server.register({
     plugin: require('hapi-swagger'),
     options: {
       info: {
-        'title': server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation':'ALS Admin Swagger Documentation',
-        'version': Package.version
+        title: server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation' : 'ALS Admin Swagger Documentation',
+        version: Package.version
       }
     }
   })
@@ -49,7 +51,28 @@ const registerPlugins = async (server) => {
     }
   })
 
-  await server.register([Inert, Vision, Blipp])
+  await server.register({
+    plugin: require('@hapi/basic')
+  })
+
+  await server.register({
+    plugin: require('@now-ims/hapi-now-auth')
+  })
+
+  await server.register({
+    plugin: require('hapi-auth-bearer-token')
+  })
+
+  await server.register([
+    Inert,
+    Vision,
+    ErrorHandling,
+    RawPayloadToDataUri
+  ])
+
+  if (Config.DISPLAY_ROUTES === true) {
+    await server.register([Blipp])
+  }
 }
 
 module.exports = {

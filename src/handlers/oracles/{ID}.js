@@ -25,7 +25,8 @@
 'use strict'
 
 const oracle = require('../../domain/oracle')
-const util = require('../../lib/util')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+
 /**
  * Operations on /oracles/{ID}
  */
@@ -39,10 +40,10 @@ module.exports = {
    */
   put: async (request, h) => {
     try {
-      await oracle.updateOracle(request)
+      await oracle.updateOracle(request.params, request.payload)
       return h.response().code(204)
-    } catch (e) {
-      return h.response(util.buildErrorObject({errorCode: 400, errorDescription: e.message}, [])).code(400)
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
   /**
@@ -54,10 +55,10 @@ module.exports = {
    */
   delete: async (request, h) => {
     try {
-      await oracle.deleteOracle(request)
+      await oracle.deleteOracle(request.params)
       return h.response().code(204)
-    } catch (e) {
-      return h.response(util.buildErrorObject({errorCode: 400, errorDescription: e.message}, [])).code(400)
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }

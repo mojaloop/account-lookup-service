@@ -68,3 +68,4 @@ typings/
 
 # VSCode directory
 .vscode
+jsconfig.json

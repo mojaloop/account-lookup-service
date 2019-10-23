@@ -25,8 +25,8 @@
 
 const endpointTypes = [
   {
-    'type': 'URL',
-    'description': 'REST URLs'
+    type: 'URL',
+    description: 'REST URLs'
   }
 ]
 

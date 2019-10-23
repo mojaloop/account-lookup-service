@@ -18,11 +18,19 @@
  * Gates Foundation
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Steven Oderayi <steven.oderayi@mousbox.com>
 
  --------------
  ******/
 
 'use strict'
+
+const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
+const { defaultHealthHandler } = require('@mojaloop/central-services-health')
+const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
+const packageJson = require('../../package.json')
+
+const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
 
 /**
  * Operations on /health
@@ -35,7 +43,5 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (request, h) {
-    return h.response({ status: 'OK' }).code(200)
-  }
+  get: defaultHealthHandler(healthCheck)
 }

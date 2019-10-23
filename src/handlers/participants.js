@@ -25,7 +25,6 @@
 'use strict'
 
 const participants = require('../domain/participants')
-const Logger = require('@mojaloop/central-services-shared').Logger
 
 /**
  * Operations on /participants
@@ -39,12 +38,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: function (req, h) {
-    try {
-      participants.postParticipantsBatch(req)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      // TODO: review this error message
-    }
+    // Here we call an async function- but as we send an immediate sync response, _all_ errors
+    // _must_ be handled by postParticipantsBatch.
+    participants.postParticipantsBatch(req.headers, req.method, req.payload)
     return h.response().code(200)
   }
 }

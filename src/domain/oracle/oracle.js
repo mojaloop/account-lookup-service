@@ -25,42 +25,42 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * @function createOracle
  *
  * @description This creates and entry in the oracleEndpoint table
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} payload The payload from the Hapi server request
  */
-exports.createOracle = async (req) => {
+exports.createOracle = async (payload) => {
   try {
     const oracleEntity = {}
-    const payload = req.payload
-    if(payload.isDefault){
+    if (payload.isDefault) {
       oracleEntity.isDefault = payload.isDefault
     } else {
       oracleEntity.isDefault = false
     }
-    if(payload.currency){
+    if (payload.currency) {
       oracleEntity.currencyId = payload.currency
     }
     oracleEntity.value = payload.endpoint.value
-    oracleEntity.createdBy =  'Admin'
+    oracleEntity.createdBy = 'Admin'
     const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
     const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
     oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
     oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
     await oracleEndpoint.createOracleEndpoint(oracleEntity)
     return true
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -69,25 +69,25 @@ exports.createOracle = async (req) => {
  *
  * @description Retrieves list of oracles may accept query parameters
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} query The query parameters from the Hapi server request
  */
-exports.getOracle = async (req) => {
+exports.getOracle = async (query) => {
   try {
     let oracleEndpointModelList
-    let isCurrency, isType = false
+    let isCurrency; let isType = false
     const oracleList = []
-    if (req.query.currency) {
+    if (query.currency) {
       isCurrency = true
     }
-    if (req.query.type) {
+    if (query.type) {
       isType = true
     }
-    if (isCurrency && isType){
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(req.query.type, req.query.currency)
-    } else if (isCurrency && !isType){
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByCurrency(req.query.currency)
+    if (isCurrency && isType) {
+      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(query.type, query.currency)
+    } else if (isCurrency && !isType) {
+      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByCurrency(query.currency)
     } else if (isType && !isCurrency) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByType(req.query.type)
+      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByType(query.type)
     } else {
       oracleEndpointModelList = await oracleEndpoint.getAllOracleEndpoint()
     }
@@ -105,9 +105,9 @@ exports.getOracle = async (req) => {
       oracleList.push(oracle)
     }
     return oracleList
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -116,12 +116,12 @@ exports.getOracle = async (req) => {
  *
  * @description This process updates properties of oracle entries
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} params The parameters from the Hapi server request
+ * @param {object} payload The payload from the Hapi server request
  */
-exports.updateOracle = async (req) => {
+exports.updateOracle = async (params, payload) => {
   try {
-    const payload = req.payload
-    const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(req.params.ID)
+    const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(params.ID)
     if (currentOracleEndpointList.length > 0) {
       const currentOracleEndpoint = currentOracleEndpointList[0]
       const newOracleEntry = {}
@@ -141,20 +141,20 @@ exports.updateOracle = async (req) => {
         if (currencyModel) {
           newOracleEntry.currencyId = payload.currency
         } else {
-          throw new Error('Invalid currency code')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code').toApiErrorObject()
         }
       }
       if (payload.isDefault && payload.isDefault !== currentOracleEndpoint.isDefault) {
         newOracleEntry.isDefault = payload.isDefault
       }
-      await oracleEndpoint.updateOracleEndpointById(req.params.ID, newOracleEntry)
+      await oracleEndpoint.updateOracleEndpointById(params.ID, newOracleEntry)
       return true
     } else {
-      throw new Error('Oracle not found')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, 'Oracle not found')
     }
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -163,14 +163,14 @@ exports.updateOracle = async (req) => {
  *
  * @description This process deletes an oracle endpoint by setting
  *
- * @param {object} req The request object from the Hapi server
+ * @param {object} params The parameters from the Hapi server request
  */
-exports.deleteOracle = async (req) => {
+exports.deleteOracle = async (params) => {
   try {
-    await oracleEndpoint.destroyOracleEndpointById(req.params.ID)
+    await oracleEndpoint.destroyOracleEndpointById(params.ID)
     return true
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

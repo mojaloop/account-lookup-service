@@ -25,7 +25,6 @@
 'use strict'
 
 const parties = require('../../../domain/parties')
-const pp = require('util').inspect
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -39,11 +38,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function (req, h) {
-    try {
-      parties.getPartiesByTypeAndID(req)
-    } catch (err) {
-      // TODO: review this error message
-    }
+    // Here we call an async function- but as we send an immediate sync response, _all_ errors
+    // _must_ be handled by getPartiesByTypeAndID.
+    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query)
     return h.response().code(202)
   },
 
@@ -55,11 +52,9 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (req, h) {
-    try {
-      parties.putPartiesByTypeAndID(req)
-    } catch (err) {
-      // TODO: review this error message
-    }
+    // Here we call an async function- but as we send an immediate sync response, _all_ errors
+    // _must_ be handled by getPartiesByTypeAndID.
+    parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
     return h.response().code(200)
   }
 }

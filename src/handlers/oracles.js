@@ -25,8 +25,6 @@
 'use strict'
 
 const oracle = require('../domain/oracle')
-const util  = require('../lib/util')
-const Boom = require('@hapi/boom')
 
 /**
  * Operations on /oracles
@@ -40,12 +38,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
-    try {
-      const response = await oracle.getOracle(request)
-      return h.response(response).code(200)
-    } catch (e) {
-      return Boom.badRequest(e.message)
-    }
+    const response = await oracle.getOracle(request.query)
+    return h.response(response).code(200)
   },
   /**
    * summary: Create Oracles
@@ -55,11 +49,7 @@ module.exports = {
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    try {
-      await oracle.createOracle(request)
-      return h.response().code(201)
-    } catch (e) {
-      return Boom.badRequest(e.message)
-    }
+    await oracle.createOracle(request.payload)
+    return h.response().code(201)
   }
 }

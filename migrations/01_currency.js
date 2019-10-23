@@ -25,7 +25,7 @@
 'use strict'
 
 exports.up = (knex) => {
-  return knex.schema.hasTable('currency').then(function(exists) {
+  return knex.schema.hasTable('currency').then(function (exists) {
     if (!exists) {
       return knex.schema.createTable('currency', (t) => {
         t.string('currencyId', 3).primary().notNullable()

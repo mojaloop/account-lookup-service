@@ -1,16 +1,7 @@
-# CircleCI v2 Config
-version: 2
-
-defaults_working_directory: &defaults_working_directory
-  working_directory: /home/circleci/project
-
-defaults_docker_node: &defaults_docker_node
-  docker:
-    - image: node:10.15.3-alpine
-
-defaults_docker_helm_kube: &defaults_docker_helm_kube
-  docker:
-    - image: hypnoglow/kubernetes-helm
+# CircleCI v2.1 Config
+version: 2.1
+orbs:
+  anchore: anchore/anchore-engine@1.6.0
 
 defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add git
@@ -145,14 +136,27 @@ defaults_slack_announcement: &defaults_slack_announcement
       $SLACK_WEBHOOK_ANNOUNCEMENT \
       -H 'Content-type: application/json' \
       -H 'cache-control: no-cache' \
-      -d "{
-      \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"
-    }"
+      -d "{ \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"}"
+
+executors:
+  default-docker:
+    working_directory: /home/circleci/project
+    docker: 
+      - image: node:10.15.3-alpine
+
+  default-machine:
+    machine:
+      image: ubuntu-1604:201903-01
+
+  helm-kube:
+    working_directory: /home/circleci/project
+    docker: 
+      - image: hypnoglow/kubernetes-helm
+
 
 jobs:
   setup:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -163,9 +167,6 @@ jobs:
       - run:
           name: Access npm folder as root
           command: cd $(npm root -g)/npm
-      #      - run:
-      #          name: Install interledgerjs/five-bells-ledger-api-tests
-      #          command: npm install github:interledgerjs/five-bells-ledger-api-tests
       - run:
           name: Update NPM install
           command: npm install
@@ -178,8 +179,7 @@ jobs:
             - node_modules
 
   test-unit:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -191,14 +191,11 @@ jobs:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: Install ava tap tap-xunit
-          command: npm install -g ava tap tap-xunit
-      - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute unit tests
-          command: ava --tap | tap-xunit > ./test/results/ava.xml
+          command: JEST_JUNIT_OUTPUT_DIR='./test/results' JEST_JUNIT_OUTPUT_NAME='junit.xml' npm run test:junit
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -206,8 +203,7 @@ jobs:
           path: ./test/results
 
   test-coverage:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - checkout
       - run:
@@ -226,7 +222,7 @@ jobs:
           command: mkdir -p ./.nyc_output
       - run:
           name: Execute code coverage check
-          command: npm -s run test:coverage
+          command: npm -s run test:coverage-check
       - store_artifacts:
           path: coverage
           prefix: test
@@ -244,20 +240,17 @@ jobs:
             fi
 
   test-integration:
-    machine: true
-    <<: *defaults_working_directory
+    executor: default-machine
     steps:
       - checkout
       - run:
           <<: *defaults_environment
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute integration tests
-          command: npm -s run test:integration
+          command: RESULTS_DIR="./test/results" npm -s run test:integration
           no_output_timeout: 25m
       - store_artifacts:
           path: ./test/results
@@ -265,84 +258,8 @@ jobs:
       - store_test_results:
           path: ./test/results
 
-  #  test-functional:
-  #    machine: true
-  #    <<: *defaults_working_directory
-  #    steps:
-  #      - run:
-  #          name: Add the Postgres 9.6 binaries to the path.
-  #          command: echo "/usr/lib/postgresql/9.6/bin/:$PATH" >> $BASH_ENV
-  #      - run:
-  #          name: Install Docker Compose
-  #          command: |
-  #            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-  #            chmod +x ~/docker-compose
-  #            mv ~/docker-compose /usr/local/bin/docker-compose
-  #      - checkout
-  #      - restore_cache:
-  #          key: dependency-cache-{{ checksum "package.json" }}
-  #      - run:
-  #          name: Create dir for test results
-  #          command: mkdir -p ./test/results
-  #      - run:
-  #          name: Execute functional tests
-  #          command: npm -s run test:functional
-  #      - store_artifacts:
-  #          path: ./test/results
-  #          prefix: test
-  #      - store_test_results:
-  #          path: ./test/results
-
-  #   test-spec:
-  #     machine: true
-  #     # <<: *defaults
-  #     steps:
-  #     #   - run:
-  #     #       name: Install general dependencies
-  #     #       command: *defaultDependencies
-  #     #   - run:
-  #     #       name: Add the Postgres 9.6 binaries to the path.
-  #     #       command: apk --no-cache add postgresql-client
-  #     #   - setup_remote_docker
-  #     #   - run:
-  #     #       name: Add docker
-  #     #       command: apk --no-cache add docker
-  #     #   - run:
-  #     #       name: Add docker compose
-  #     #       command: |
-  #     #         apk --no-cache add py-pip
-  #     #         pip install docker-compose
-  #     #   - run:
-  #     #       name: Install Docker Compose
-  #     #       command: |
-  #     #         curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose
-  #       - run:
-  #           name: Add the Postgres 9.6 binaries to the path.
-  #           command: echo "/usr/lib/postgresql/9.6/bin/:$PATH" >> $BASH_ENV
-  #       - run:
-  #           name: Install Docker Compose
-  #           command: |
-  #             curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-  #             chmod +x ~/docker-compose
-  #             mv ~/docker-compose /usr/local/bin/docker-compose
-  #       - checkout
-  #       - restore_cache:
-  #           key: dependency-cache-{{ checksum "package.json" }}
-  #       - run:
-  #           name: Create dir for test results
-  #           command: mkdir -p ./test/results
-  #       - run:
-  #           name: Execute unit tests
-  #           command: npm -s run test:spec
-  #       - store_artifacts:
-  #           path: ./test/results
-  #           prefix: test
-  #       - store_test_results:
-  #           path: ./test/results
-
   vulnerability-check:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - run:
           name: Install general dependencies
@@ -355,14 +272,13 @@ jobs:
           command: mkdir -p ./audit/results
       - run:
           name: Check for new npm vulnerabilities
-          command: npm run audit:check -- --json > ./audit/results/auditResults.json 
+          command: npm run audit:check --silent -- --json > ./audit/results/auditResults.json 
       - store_artifacts:
           path: ./audit/results
           prefix: audit
           
   audit-licenses:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_node
+    executor: default-docker
     steps:
       - run:
           name: Install general dependencies
@@ -373,6 +289,9 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
+          name: Prune non-production packages before running license-scanner
+          command: npm prune --production
+      - run:
           name: Run the license-scanner
           command: cd /tmp/license-scanner && pathToRepo=$CIRCLE_WORKING_DIRECTORY make run
       - store_artifacts:
@@ -380,8 +299,7 @@ jobs:
           prefix: licenses
 
   build-snapshot:
-    machine: true
-    <<: *defaults_working_directory
+    executor: default-machine
     steps:
       - checkout
       - run:
@@ -404,8 +322,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   build-hotfix:
-    machine: true
-    # <<: *default_env
+    executor: default-machine
     steps:
       - checkout
       - run:
@@ -424,20 +341,29 @@ jobs:
           <<: *defaults_slack_announcement
 
   build:
-    machine: true
-    # <<: *default_env
+    executor: default-machine
     steps:
       - checkout
       - run:
           <<: *defaults_environment
       - run:
-          name: setup environment vars for LATEST release
-          command: |
-            echo 'export RELEASE_TAG=$RELEASE_TAG_PROD' >> $BASH_ENV
-      - run:
-          <<: *defaults_build_docker_login
-      - run:
           <<: *defaults_build_docker_build
+      - run:
+          name: save docker image to workspace
+          command: docker save -o /tmp/docker-image.tar $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - ./docker-image.tar
+      
+  license-scan:
+    executor: default-machine
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load the pre-built docker image from workspace
+          command: docker load -i /tmp/docker-image.tar
       - run:
           <<: *defaults_license_scanner
       - run:
@@ -446,8 +372,69 @@ jobs:
       - store_artifacts:
           path: /tmp/license-scanner/results
           prefix: licenses
+
+  image-scan:
+    executor: anchore/anchore_engine
+    steps:
+      - setup_remote_docker
+      - checkout
+      - attach_workspace:
+          at: /tmp
       - run:
-          <<: *defaults_build_docker_build_release
+          name: Load the pre-built docker image from workspace
+          command: docker load -i /tmp/docker-image.tar
+      - anchore/analyze_local_image:
+          dockerfile_path: ./Dockerfile
+          image_name: ${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+          policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
+          # Anchore bug: if policy_failure is `true`, reports don't get written - we manually check for 
+          policy_failure: false
+          timeout: '500'
+      - run:
+          name: Evaluate Failures.
+          command: |
+            if [[ ! $(which jq) ]]; then
+              (set +o pipefail; apk add jq || apt-get install -y jq || yum install -y jq)
+            fi
+            if [[ $(ls anchore-reports/*content-os*.json 2> /dev/null) ]]; then
+              printf "\n%s\n" "The following OS packages are installed:"
+              jq '[.content | sort_by(.package) | .[] | {package: .package, version: .version}]' anchore-reports/*content-os*.json
+            fi
+            if [[ $(ls anchore-reports/*vuln*.json 2> /dev/null) ]]; then
+              printf "\n%s\n" "The following vulnerabilities were found:"
+              jq '[.vulnerabilities | group_by(.package) | .[] | {package: .[0].package, vuln: [.[].vuln]}]' anchore-reports/*vuln*.json
+            fi
+
+            # Check the status of the policy.json for whether or not our tests failed
+            failCount=$(cat anchore-reports/*policy*.json | grep '\"status\": \"fail\"' | wc -l)
+            if [ $failCount -gt 0 ]; then
+              echo "Failed with a policy failure count of: ${failCount}"
+              # TODO: Enable this when we want to increase the strictness of our security policies
+              # exit 1
+            fi
+
+      - store_artifacts:
+          path: anchore-reports
+
+  publish:
+    executor: default-machine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load the pre-built docker image from workspace
+          command: docker load -i /tmp/docker-image.tar
+      - run:
+          <<: *defaults_build_docker_login
+      - run:
+          name: setup environment vars for LATEST release
+          command: |
+            echo 'export RELEASE_TAG=$RELEASE_TAG_PROD' >> $BASH_ENV
+      - run:
+          name: Re-tag pre built image
+          command: |
+            docker tag $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
       - run:
           <<: *defaults_build_docker_publish
       - run:
@@ -456,8 +443,7 @@ jobs:
           <<: *defaults_slack_announcement
 
   deploy-snapshot:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_helm_kube
+    executor: helm-kube
     steps:
       - run:
           <<: *defaults_environment
@@ -492,8 +478,7 @@ jobs:
           <<: *defaults_deploy_install_or_upgrade_helm_chart
 
   deploy:
-    <<: *defaults_working_directory
-    <<: *defaults_docker_helm_kube
+    executor: helm-kube
     steps:
       - run:
           <<: *defaults_environment
@@ -535,7 +520,7 @@ workflows:
           context: org-global
           filters:
             tags:
-              only: /.*/
+              only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore:
                 - /feature*/
@@ -562,17 +547,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      #      - test-integration:
-      #          context: org-global
-      #          requires:
-      #            - setup
-      #          filters:
-      #            tags:
-      #              only: /.*/
-      #            branches:
-      #              ignore:
-      #                - /feature*/
-      #                - /bugfix*/
+      - test-integration:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
@@ -599,21 +584,11 @@ workflows:
           context: org-global
           requires:
             - setup
-          #            - test-unit
-          #            - test-coverage
-          #            - test-integration
-          #            - test-functional
-          #            - test-spec
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*\-snapshot/
-            branches:
-              ignore:
-                - /.*/
-      - deploy-snapshot:
-          context: org-global
-          requires:
-            - build-snapshot
+            - test-unit
+            - test-coverage
+            - test-integration
+            - vulnerability-check
+            - audit-licenses
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*\-snapshot/
@@ -626,9 +601,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-          #            - test-integration
-          #            - test-functional
-          #            - test-spec
+            - test-integration
             - vulnerability-check
             - audit-licenses
           filters:
@@ -643,9 +616,7 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-          #            - test-integration
-          #            - test-functional
-          #            - test-spec
+            - test-integration
             - vulnerability-check
             - audit-licenses
           filters:
@@ -654,7 +625,18 @@ workflows:
             branches:
               ignore:
                 - /.*/
-      - deploy:
+      - license-scan:
+          context: org-global
+          requires:
+            - build
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              only: /feature\/1003.*/
+              ignore:
+                - /.*/
+      - image-scan:
           context: org-global
           requires:
             - build
@@ -663,3 +645,35 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore:
+                - /.*/
+      - publish:
+          context: org-global
+          requires:
+            - license-scan
+            - image-scan
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore:
+                - /.*/
+      - deploy:
+          context: org-global
+          requires:
+            - publish
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore:
+                - /.*/
+      - deploy-snapshot:
+          context: org-global
+          requires:
+            - build-snapshot
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*\-snapshot/
+            branches:
+              ignore:
+                - /.*/

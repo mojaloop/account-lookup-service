@@ -1,3 +1,4 @@
+
 /*****
  License
  --------------
@@ -16,48 +17,46 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
-
+ * Lewis Daly <lewis@vesselstech.com>
  --------------
  ******/
 'use strict'
 
-const request = require('axios')
-const Logger = require('@mojaloop/central-services-shared').Logger
-const util = require('./util')
+const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
+const Logger = require('@mojaloop/central-services-logger')
+
+const MigrationLockModel = require('../../models/misc/migrationLock')
+
 /**
- * @function validateParticipant
+ * @function getSubServiceHealthDatastore
  *
- * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
+ * @description
+ *   Gets the health of the Datastore by ensuring the table is currently locked
+ *   in a migration state. This implicity checks the connection with the database.
  *
- * @param {string} url the endpoint for the service you require
- * @param {object} headers the http headers
- * @param {string} method http method being requested i.e. GET, POST, PUT
- * @param {object} payload the body of the request being sent
- *
- *@return {object} The response for the request being sent or error object with response included
+ * @returns Promise<SubServiceHealth> The SubService health object for the datastore
  */
-const sendRequest = async (url, headers, method = 'get', payload = undefined) => {
+const getSubServiceHealthDatastore = async () => {
+  let status = statusEnum.OK
+
   try {
-    const transformedHeaders = util.transformHeaders(headers, { httpMethod: method, sourceFsp: headers['fspiop-source'], destinationFsp: headers['fspiop-destination']})
-    const requestOptions = {
-      url,
-      method: method,
-      headers: transformedHeaders,
-      data: payload,
-      responseType: 'json'
+    const isLocked = await MigrationLockModel.getIsMigrationLocked()
+    if (isLocked) {
+      status = statusEnum.DOWN
     }
-    Logger.debug(`sendRequest::request ${JSON.stringify(requestOptions)}`)
-    const response = await request(requestOptions)
-    Logger.debug(`Success: sendRequest::response`)
-    return response
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.debug(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    status = statusEnum.DOWN
+  }
+
+  return {
+    name: serviceName.datastore,
+    status
   }
 }
 
 module.exports = {
-  sendRequest
+  getSubServiceHealthDatastore
 }
