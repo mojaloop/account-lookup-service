@@ -25,7 +25,7 @@
 'use strict'
 
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
-const Config = require('./lib/config.js')
+const Config = require('../lib/config.js')
 
 /**
  * Operations on /resetendpointcache
@@ -38,7 +38,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (request, h) => {
+  delete: async (request, h) => {
     await ParticipantEndpointCache.stopCache()
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
     return h.response().code(202)
