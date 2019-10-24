@@ -2058,9 +2058,90 @@
           }
         }
       }
+    },
+    "/resetendpointcache": {
+      "put": {
+        "description": "The HTTP request PUT /resetendpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
+        "summary": "Reset Endpoint Cache",
+        "tags": [
+          "admin"
+        ],
+        "operationId": "AdminEndpointCacheReset",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ResetEndpointCacheObject"
+            }
+          },
+          {
+            "$ref": "#/parameters/Content-Length"
+          },
+          {
+            "$ref": "#/parameters/Content-Type"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "x-examples": {
+          "application/json": {}
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/responses/Response202"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      }
     }
   },
   "definitions": {
+    "ResetEndpointCache": {
+      "title": "ResetEndpointCache",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 128,
+      "description": "Error description string."
+    },
+    "ResetEndpointCacheObject": {
+      "title": "ResetEndpointCacheObject",
+      "type": "object",
+      "description": "Data model for the complex type object that contains ResetEndpointCacheObject.",
+      "properties": {
+        "errorInformation": {
+          "$ref": "#/definitions/ResetEndpointCache"
+        }
+      }
+    },
     "Amount": {
       "title": "Amount",
       "type": "string",
