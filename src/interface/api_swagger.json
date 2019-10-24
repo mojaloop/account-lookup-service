@@ -2061,7 +2061,7 @@
     },
     "/endpointcache": {
       "delete": {
-        "description": "The HTTP request PUT /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
+        "description": "The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
         "summary": "Endpoint Cache",
         "tags": [
           "cache"

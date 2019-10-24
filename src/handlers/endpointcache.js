@@ -32,8 +32,8 @@ const Config = require('../lib/config.js')
  */
 module.exports = {
   /**
-   * summary: PUT Reset Endpoint Cache
-   * description: The HTTP request PUT /resetendpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.
+   * summary: DELETE Endpoint Cache
+   * description: The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.
    * parameters:
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
