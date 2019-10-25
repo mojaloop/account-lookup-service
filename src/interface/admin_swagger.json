@@ -760,9 +760,6 @@
     "Response201": {
       "description": "Created"
     },
-    "Response202": {
-      "description": "Accepted"
-    },
     "Response204": {
       "description": "No Content"
     },

@@ -28,7 +28,7 @@ const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Ut
 const Config = require('../lib/config.js')
 
 /**
- * Operations on /resetendpointcache
+ * Operations on /endpointcache
  */
 module.exports = {
   /**
