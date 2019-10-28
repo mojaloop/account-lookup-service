@@ -27,12 +27,12 @@
 
 'use strict'
 
-const Helper = require('../../util/helper')
-const Db = require('../../../src/lib/db')
-const initServer = require('../../../src/server').initialize
+const Helper = require('../../../util/helper')
+const Db = require('../../../../src/lib/db')
+const initServer = require('../../../../src/server').initialize
 const getPort = require('get-port')
 const Sinon = require('sinon')
-const MigrationLockModel = require('../../../src/models/misc/migrationLock')
+const MigrationLockModel = require('../../../../src/models/misc/migrationLock')
 
 let sandbox
 let server
