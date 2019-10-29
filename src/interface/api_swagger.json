@@ -3729,6 +3729,9 @@
         },
         "services": {
           "type": "array",
+          "items": {
+            "type": "string"
+          },
           "description": "An list of the statuses of services that the API requires"
         }
 
