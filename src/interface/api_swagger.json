@@ -2417,6 +2417,15 @@
       "maxLength": 32,
       "description": "FSP identifier."
     },
+    "HealthStatusType": {
+      "title": "HealthStatusType",
+      "type": "string",
+      "enum": [
+        "OK",
+        "DOWN"
+      ],
+      "description": "Below are the allowed values for the enumeration HealthStatusType - OK - DOWN"
+    },
     "IlpCondition": {
       "title": "IlpCondition",
       "type": "string",
@@ -3730,11 +3739,18 @@
         "services": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "$ref": "#/definitions/HealthStatusType"
+              }
+            }
           },
           "description": "An list of the statuses of services that the API requires"
         }
-
       }
     }
   },
