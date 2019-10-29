@@ -2943,6 +2943,19 @@
         "longitude"
       ]
     },
+    "HealthServicesType":{
+      "title": "HealthServicesType",
+      "type": "object",
+      "description": "Data model for the complex type HealthServicesType. Contains health services information.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/HealthStatusType"
+        }
+      }
+    },
     "IndividualQuote": {
       "title": "IndividualQuote",
       "type": "object",
@@ -3739,15 +3752,7 @@
         "services": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "status": {
-                "$ref": "#/definitions/HealthStatusType"
-              }
-            }
+            "$ref": "#/definitions/HealthServicesType"
           },
           "description": "An list of the statuses of services that the API requires"
         }
