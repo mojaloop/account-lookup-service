@@ -2058,6 +2058,50 @@
           }
         }
       }
+    },
+    "/endpointcache": {
+      "delete": {
+        "description": "The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
+        "summary": "Endpoint Cache",
+        "tags": [
+          "cache"
+        ],
+        "operationId": "EndpointCache",
+        "parameters": [
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/Response202"
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse400"
+          },
+          "401": {
+            "$ref": "#/responses/ErrorResponse401"
+          },
+          "403": {
+            "$ref": "#/responses/ErrorResponse403"
+          },
+          "404": {
+            "$ref": "#/responses/ErrorResponse404"
+          },
+          "405": {
+            "$ref": "#/responses/ErrorResponse405"
+          },
+          "406": {
+            "$ref": "#/responses/ErrorResponse406"
+          },
+          "501": {
+            "$ref": "#/responses/ErrorResponse501"
+          },
+          "503": {
+            "$ref": "#/responses/ErrorResponse503"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2372,6 +2416,15 @@
       "minLength": 1,
       "maxLength": 32,
       "description": "FSP identifier."
+    },
+    "HealthStatusType": {
+      "title": "HealthStatusType",
+      "type": "string",
+      "enum": [
+        "OK",
+        "DOWN"
+      ],
+      "description": "Below are the allowed values for the enumeration HealthStatusType - OK - DOWN"
     },
     "IlpCondition": {
       "title": "IlpCondition",
@@ -2889,6 +2942,19 @@
         "latitude",
         "longitude"
       ]
+    },
+    "HealthServicesType":{
+      "title": "HealthServicesType",
+      "type": "object",
+      "description": "Data model for the complex type HealthServicesType. Contains health services information.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/HealthStatusType"
+        }
+      }
     },
     "IndividualQuote": {
       "title": "IndividualQuote",
@@ -3685,9 +3751,11 @@
         },
         "services": {
           "type": "array",
+          "items": {
+            "$ref": "#/definitions/HealthServicesType"
+          },
           "description": "An list of the statuses of services that the API requires"
         }
-
       }
     }
   },
