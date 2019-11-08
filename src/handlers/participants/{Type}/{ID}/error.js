@@ -24,6 +24,9 @@
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../lib/util')
 const pp = require('util').inspect
 const participants = require('../../../../domain/participants')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -41,10 +44,17 @@ module.exports = {
    */
   put: function (req, h) {
     (async function () {
+      const span = req.span
+      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+      span.setTags(spanTags)
+      await span.audit({
+        headers: req.headers,
+        payload: req.payload
+      }, EventSdk.AuditEventAction.start)
       const metadata = `${req.method} ${req.path}`
       try {
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req)
+        await participants.putParticipantsErrorByTypeAndID(req, span)
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)

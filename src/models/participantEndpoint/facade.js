@@ -46,14 +46,15 @@ const Config = require('../../lib/config')
  * @param {string} method - the http method
  * @param {object} payload - payload of the request being sent out
  * @param {object} options - the options to be used in the template
+ * @param {object} span
  *
  * @returns {object} - Returns http response from request endpoint
  */
-exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined) => {
+exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined, span = undefined) => {
   try {
     const requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
     Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
-    return await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload)
+    return await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, span)
   } catch (err) {
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -66,13 +67,14 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
  * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
  *
  * @param {string} fsp The FSPIOP-Source fsp id
+ * @param {object} span
  * @returns the participants info in a successful case and
  */
-exports.validateParticipant = async (fsp) => {
+exports.validateParticipant = async (fsp, span = undefined) => {
   try {
     const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
     Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
-    return await Util.Request.sendRequest(requestedParticipantUrl, Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value), Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.Headers.FSPIOP.SWITCH.value)
+    return await Util.Request.sendRequest(requestedParticipantUrl, Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value), Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.Headers.FSPIOP.SWITCH.value, span)
   } catch (err) {
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -90,10 +92,11 @@ exports.validateParticipant = async (fsp) => {
  * @param {object} headers - incoming http request headers
  * @param {object} params - uri parameters of the http request
  * @param {object} payload - payload of the request being sent out
+ * @param {object} span
  *
  * @returns {object} - Returns http response from request endpoint
  */
-exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined) => {
+exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined, span = undefined) => {
   try {
     let requestIdExists = false
     if (payload && payload.requestId) {
@@ -112,7 +115,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     }
 
     Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-    await Util.Request.sendRequest(requesterErrorEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation)
+    await Util.Request.sendRequest(requesterErrorEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, span)
   } catch (err) {
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
