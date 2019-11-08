@@ -28,7 +28,7 @@
 
  --------------
  ******/
-const RC = require('rc')('ALS', require('../../config/default.json'))
+const RC = require('parse-strings-in-object')(require('rc')('ALS', require('../../config/default.json')))
 const defaultConfig = require('../../src/lib/config')
 
 /**

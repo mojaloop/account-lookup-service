@@ -27,7 +27,7 @@
 
  --------------
  ******/
-const RC = require('rc')('ALS', require('../../config/default.json'))
+const RC = require('parse-strings-in-object')(require('rc')('ALS', require('../../config/default.json')))
 
 const getOrDefault = (value, defaultValue) => {
   if (value === undefined) {
