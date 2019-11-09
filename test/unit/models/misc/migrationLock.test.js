@@ -18,51 +18,76 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Crosslake
- - Lewis Daly <lewisd@crosslaketech.com>
+ * Lewis Daly <lewis@vesselstech.com>
+ * Steven Oderayi <steven.oderayi@modusbox.com>
 
  --------------
  ******/
 
 'use strict'
 
+const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
-const Config = require('../../../../src/lib/config')
-const { getCurrencyById } = require('../../../../src/models/currency')
+const Model = require('../../../../src/models/misc/migrationLock')
 
-describe('currency model', () => {
-  beforeAll(async () => {
-    await Db.connect(Config.DATABASE)
+describe('MigrationLock model', () => {
+  let sandbox
+
+  beforeEach(() => {
+    sandbox = Sinon.createSandbox()
+    Db.migration_lock = {
+      query: sandbox.stub()
+    }
+
+    const builderStub = sandbox.stub()
+    builderStub.select = sandbox.stub()
+
+    Db.migration_lock.query.callsArgWith(0, builderStub)
+    builderStub.select.returns({
+      orderBy: sandbox.stub().returns({
+        first: sandbox.stub().returns()
+      })
+    })
   })
 
-  afterAll(async () => {
-    await Db.disconnect()
+  afterEach(() => {
+    sandbox.restore()
   })
 
-  describe('getCurrencyById', () => {
-    it('gets a currency by id', async () => {
+  describe('getIsMigrationLocked should', () => {
+    it('return false if the table is not locked', async () => {
       // Arrange
-      const expected = {
-        currencyId: 'AUD',
-        name: 'Australian dollar',
-        isActive: 1
-      }
+      Db.migration_lock.query.returns({ isLocked: false })
 
       // Act
-      const result = await getCurrencyById('AUD')
-      delete result.createdDate
+      const result = await Model.getIsMigrationLocked()
 
       // Assert
-      expect(result).toMatchObject(expected)
+      expect(result).toBe(false)
     })
 
-    it('returns null when it cannot find a currency', async () => {
+    it('return true if the table is locked', async () => {
       // Arrange
+      Db.migration_lock.query.returns({ isLocked: true })
+
       // Act
-      const currency = await getCurrencyById('XXX')
+      const result = await Model.getIsMigrationLocked()
 
       // Assert
-      expect(currency).toBe(null)
+      expect(result).toBe(true)
+    })
+
+    it('throw if an error occours', async () => {
+      // Arrange
+      Db.migration_lock.query.returns(Promise.reject(new Error('Error running query')))
+
+      // Act
+      try {
+        await Model.getIsMigrationLocked()
+      } catch (err) {
+        // Assert
+        expect(err.message).toEqual('Error running query', 'Error messages should match.')
+      }
     })
   })
 })

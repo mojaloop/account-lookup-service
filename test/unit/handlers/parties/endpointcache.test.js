@@ -18,47 +18,59 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Crosslake
- - Lewis Daly <lewisd@crosslaketech.com>
+ * ModusBox
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
 
+'use strict'
+
+const Helper = require('../../../util/helper')
 const Db = require('../../../../src/lib/db')
-const Config = require('../../../../src/lib/config')
-const Oracle = require('../../../../src/domain/oracle')
-const OracleModel = require('../../../../src/models/oracle')
+const initServer = require('../../../../src/server').initialize
+const getPort = require('get-port')
+const Sinon = require('sinon')
+const MigrationLockModel = require('../../../../src/models/misc/migrationLock')
 
-describe('Oracle', () => {
-  beforeAll(async () => {
-    await Db.connect(Config.DATABASE)
+let sandbox
+let server
+
+describe('/endpointcache', () => {
+  beforeEach(async () => {
+    sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    server = await initServer(await getPort())
   })
 
-  afterAll(async () => {
-    await Db.disconnect()
+  afterEach(async () => {
+    await server.stop()
+    sandbox.restore()
   })
 
-  it('creates an oracle', async () => {
+  /**
+   * summary: DELETE endpointcache
+   * description: The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
+   * parameters: date
+   * produces: application/json
+   * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
+   */
+  it('DELETE /endpointcache', async () => {
     // Arrange
-    const payload = {
-      isDefault: true,
-      currency: 'AUD',
-      oracleIdType: 'MSISDN',
-      endpoint: {
-        value: 'http://localhost:8444',
-        endpointType: 'URL'
-      }
+    sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(false)
+    const mock = await Helper.generateMockRequest('/endpointcache', 'delete')
+
+    const options = {
+      method: 'delete',
+      url: mock.request.path,
+      headers: Helper.defaultAdminHeaders()
     }
 
     // Act
-    const result = await Oracle.createOracle(payload)
+    const response = await server.inject(options)
 
     // Assert
-    expect(result).toBe(true)
-
-    // Cleanup
-    const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
-    const createdId = oracleEndpointResult[0].oracleEndpointId
-    await Db.oracleEndpoint.destroy({ oracleEndpointId: createdId })
+    expect(response.statusCode).toBe(202)
   })
 })

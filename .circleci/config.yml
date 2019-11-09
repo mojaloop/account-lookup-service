@@ -409,7 +409,7 @@ jobs:
             failCount=$(cat anchore-reports/*policy*.json | grep '\"status\": \"fail\"' | wc -l)
             if [ $failCount -gt 0 ]; then
               echo "Failed with a policy failure count of: ${failCount}"
-              # TODO: reenable when we are happy with testing
+              # TODO: Enable this when we want to increase the strictness of our security policies
               # exit 1
             fi
 

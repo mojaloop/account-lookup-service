@@ -17,31 +17,30 @@
  optionally within square brackets <email>.
  * Gates Foundation
 
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Steven Oderayi <steven.oderayi@mousbox.com>
+ * Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
 
 'use strict'
 
-const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
-const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
-const packageJson = require('../../package.json')
-
-const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
+const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
+const Config = require('../lib/config.js')
 
 /**
- * Operations on /health
+ * Operations on /endpointcache
  */
 module.exports = {
   /**
-   * summary: Get Oracles
-   * description: The HTTP request GET /health is used to return the current status of the API .
+   * summary: DELETE Endpoint Cache
+   * description: The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.
    * parameters:
    * produces: application/json
-   * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
+   * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: defaultHealthHandler(healthCheck)
+  delete: async (request, h) => {
+    await ParticipantEndpointCache.stopCache()
+    await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+    return h.response().code(202)
+  }
 }
