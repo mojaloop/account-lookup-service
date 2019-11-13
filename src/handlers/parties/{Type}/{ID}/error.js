@@ -26,7 +26,7 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
-const LibUtil = require('../lib/util')
+const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')

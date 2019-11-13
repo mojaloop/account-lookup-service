@@ -26,7 +26,7 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
-const LibUtil = require('../lib/util')
+const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -77,12 +77,12 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async function (request, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
     span.setTags(spanTags)
     await span.audit({
-      headers: req.headers,
-      payload: req.payload
+      headers: request.headers,
+      payload: request.payload
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
