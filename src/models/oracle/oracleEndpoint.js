@@ -108,6 +108,48 @@ const getOracleEndpointById = async (oracleEndpointId) => {
   }
 }
 
+const getOracleEndpointByTypeCurrencyAndSubId = async (type, currencyId, subId) => {
+  try {
+    return Db.oracleEndpoint.query(builder => {
+      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
+        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+        .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'oracleEndpoint.partySubIdOrType', 'pt.partyIdTypeId')
+        .where({
+          'pt.name': type,
+          'cu.currencyId': currencyId,
+          'oracleEndpoint.partySubIdOrType': subId,
+          'pt.isActive': 1,
+          'oracleEndpoint.isActive': 1,
+          'et.isActive': 1
+        })
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
+    })
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+const getOracleEndpointByTypeAndSubId = async (type, subId) => {
+  try {
+    return Db.oracleEndpoint.query(builder => {
+      return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
+        .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+        .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
+        .where({
+          'oracleEndpoint.partySubIdOrType': subId,
+          'pt.isActive': 1,
+          'oracleEndpoint.isActive': 1,
+          'et.isActive': 1
+        })
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.partySubIdOrType', 'oracleEndpoint.isDefault')
+    })
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
 const getAllOracleEndpoint = async () => {
   try {
     return Db.oracleEndpoint.query(builder => {
@@ -162,6 +204,8 @@ module.exports = {
   getOracleEndpointByType,
   getOracleEndpointByTypeAndCurrency,
   getOracleEndpointByCurrency,
+  getOracleEndpointByTypeAndSubId,
+  getOracleEndpointByTypeCurrencyAndSubId,
   getAllOracleEndpoint,
   getOracleEndpointById,
   createOracleEndpoint,

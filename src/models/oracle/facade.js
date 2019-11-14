@@ -19,6 +19,8 @@
  * Name Surname <name.surname@gatesfoundation.com>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Steven Oderayi <steven.oderayi@modusbox.com>
+
  --------------
  ******/
 
@@ -46,58 +48,23 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
  */
 exports.oracleRequest = async (headers, method, params = {}, query = {}, payload = undefined) => {
   try {
-    let oracleEndpointModel
-    const type = params.Type
     let url
-    if (((payload && payload.currency && payload.currency.length !== 0) || (query && query.currency && query.currency.length !== 0)) && method.toUpperCase() === Enums.Http.RestMethods.GET) {
-      oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(type, query.currency || payload.currency)
-      if (oracleEndpointModel.length > 0) {
-        if (oracleEndpointModel.length > 1) {
-          for (const record of oracleEndpointModel) {
-            if (record.isDefault) {
-              url = Mustache.render(record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY, {
-                partyIdType: type,
-                partyIdentifier: params.ID,
-                currency: query.currency || payload.currency
-              })
-              break
-            }
-          }
-        } else {
-          url = Mustache.render(oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY, {
-            partyIdType: type,
-            partyIdentifier: params.ID,
-            currency: query.currency || payload.currency
-          })
-        }
-      } else {
-        Logger.error(`Oracle type:${type} and currency:${query.currency || payload.currency} not found`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} and currency:${query.currency || payload.currency} not found`).toApiErrorObject()
-      }
+    const partyIdType = params.Type
+    const partyIdentifier = params.ID
+    const currency = (payload && payload.currency) ? payload.currency : (query && query.currency) ? query.currency : undefined
+    const partySubIdOrType = (payload && payload.partySubIdOrType) ? payload.partySubIdOrType : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
+    const isGetRequest = method.toUpperCase() === Enums.Http.RestMethods.GET
+
+    if (currency && partySubIdOrType && isGetRequest) {
+      url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType)
+    } else if (currency && isGetRequest) {
+      url = await _getOracleEndpointByTypeAndCurrency(partyIdType, partyIdentifier, currency)
+    } else if (partySubIdOrType && isGetRequest) {
+      url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType)
     } else {
-      oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
-      if (oracleEndpointModel.length > 0) {
-        if (oracleEndpointModel.length > 1) {
-          for (const record of oracleEndpointModel) {
-            if (record.isDefault) {
-              url = Mustache.render(record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID, {
-                partyIdType: type,
-                partyIdentifier: params.ID
-              })
-              break
-            }
-          }
-        } else {
-          url = Mustache.render(oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID, {
-            partyIdType: type,
-            partyIdentifier: params.ID
-          })
-        }
-      } else {
-        Logger.error(`Oracle type:${type} not found`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
-      }
+      url = await _getOracleEndpointByType(partyIdType)
     }
+
     Logger.debug(`Oracle endpoints: ${url}`)
     return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
   } catch (err) {
@@ -113,6 +80,150 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     }
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
+}
+
+/**
+ * @function _getOracleEndpointByTypeAndCurrency
+ *
+ * @description Retirieves and returns the URL to an oracle by partyIdType and currency
+ *
+ * @param {string} partyIdType - party ID type (e.g MSISDN)
+ * @param {string} partyIdentifier - party ID
+ * @param {string} currency - currency ID
+ *
+ * @returns {string} returns the endpoint to the oracle
+ */
+const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier, currency) => {
+  let url
+  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  if (oracleEndpointModel.length > 0) {
+    if (oracleEndpointModel.length > 1) {
+      const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
+      if (defautOracle) {
+        url = Mustache.render(
+          defautOracle.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY,
+          { partyIdType, partyIdentifier, currency }
+        )
+      }
+    } else {
+      url = Mustache.render(
+        oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY,
+        { partyIdType, partyIdentifier, currency }
+      )
+    }
+  } else {
+    Logger.error(`Oracle type:${partyIdType} and currency:${currency} not found`)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType} and currency:${currency} not found`).toApiErrorObject()
+  }
+  return url
+}
+
+/**
+ * @function _getOracleEndpointByType
+ *
+ * @description Retrieves and returns the URL to an oracle by partyIdType
+ *
+ * @param {string} partyIdType - party ID type (e.g MSISDN)
+ * @param {string} partyIdentifier - party ID
+ *
+ * @returns {string} returns the endpoint to the oracle
+ */
+const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
+  let url
+  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(partyIdType)
+  if (oracleEndpointModel.length > 0) {
+    if (oracleEndpointModel.length > 1) {
+      const defaultOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
+      if (defaultOracle) {
+        url = Mustache.render(
+          defaultOracle.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID,
+          { partyIdType, partyIdentifier }
+        )
+      }
+    } else {
+      url = Mustache.render(
+        oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID,
+        { partyIdType, partyIdentifier }
+      )
+    }
+  } else {
+    Logger.error(`Oracle type:${partyIdType} not found`)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type: ${partyIdType} not found`)
+  }
+  return url
+}
+
+/**
+ * @function _getOracleEndpointByTypeAndSubId
+ *
+ * @description Retrieves and returns the URL to an oracle by partyIdType and subId
+ *
+ * @param {string} partyIdType - party ID type (e.g MSISDN)
+ * @param {string} partyIdentifier - party ID
+ * @param {string} partySubIdOrType - party subId
+ *
+ * @returns {string} returns the endpoint to the oracle
+ */
+const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, partySubIdOrType) => {
+  let url
+  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndSubId(partyIdType, partySubIdOrType)
+  if (oracleEndpointModel.length > 0) {
+    if (oracleEndpointModel.length > 1) {
+      const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
+      if (defautOracle) {
+        url = Mustache.render(
+          defautOracle.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_SUB_ID,
+          { partyIdType, partyIdentifier, partySubIdOrType }
+        )
+      }
+    } else {
+      url = Mustache.render(
+        oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_SUB_ID,
+        { partyIdType, partyIdentifier, partySubIdOrType }
+      )
+    }
+  } else {
+    Logger.error(`Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`).toApiErrorObject()
+  }
+  return url
+}
+
+/**
+ * @function _getOracleEndpointByTypeCurrencyAndSubId
+ *
+ * @description Retirieves and returns the URL to an oracle by partyIdType and currency
+ *
+ * @param {string} partyIdType - party ID type (e.g MSISDN)
+ * @param {string} partyIdentifier - party ID
+ * @param {string} currency - currency ID
+ * @param {string} partySubIdOrType - party subId
+ *
+ * @returns {string} returns the endpoint to the oracle
+ */
+const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdentifier, currency, partySubIdOrType) => {
+  let url
+  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeCurrencyAndSubId(partyIdType, currency, partySubIdOrType)
+  if (oracleEndpointModel.length > 0) {
+    if (oracleEndpointModel.length > 1) {
+      const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
+      if (defautOracle) {
+        url = Mustache.render(
+          defautOracle.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY_SUB_ID,
+          { partyIdType, partyIdentifier, currency, partySubIdOrType }
+        )
+      }
+    } else {
+      url = Mustache.render(
+        oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_TYPE_ID_CURRENCY_SUB_ID,
+        { partyIdType, partyIdentifier, currency, partySubIdOrType }
+      )
+    }
+  } else {
+    Logger.error(`Oracle type: ${partyIdType}, currency: ${currency}, and subId: ${partySubIdOrType} not found`)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType}, currency:${currency} and subId: ${partySubIdOrType} not found`).toApiErrorObject()
+  }
+  return url
 }
 
 /**
