@@ -54,7 +54,6 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const currency = (payload && payload.currency) ? payload.currency : (query && query.currency) ? query.currency : undefined
     const partySubIdOrType = (payload && payload.partySubIdOrType) ? payload.partySubIdOrType : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
     const isGetRequest = method.toUpperCase() === Enums.Http.RestMethods.GET
-
     if (currency && partySubIdOrType && isGetRequest) {
       url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType)
     } else if (currency && isGetRequest) {
@@ -64,7 +63,6 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     } else {
       url = await _getOracleEndpointByType(partyIdType)
     }
-
     Logger.debug(`Oracle endpoints: ${url}`)
     return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
   } catch (err) {
@@ -166,7 +164,7 @@ const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
  */
 const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, partySubIdOrType) => {
   let url
-  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndSubId(partyIdType, partySubIdOrType)
+  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(partyIdType)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -203,7 +201,7 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
  */
 const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdentifier, currency, partySubIdOrType) => {
   let url
-  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeCurrencyAndSubId(partyIdType, currency, partySubIdOrType)
+  const oracleEndpointModel = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
