@@ -71,8 +71,7 @@ module.exports = {
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
     span.setTags(spanTags)
     await span.audit({
-      headers: request.headers,
-      payload: request.payload
+      headers: request.headers
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
