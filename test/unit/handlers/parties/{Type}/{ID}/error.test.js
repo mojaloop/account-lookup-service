@@ -37,6 +37,7 @@ const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/error`)
 const Helper = require('../../../../../util/helper')
+const LibUtil = require(`${src}/lib/util`)
 
 let server
 let sandbox
@@ -46,6 +47,7 @@ describe('/parties/{Type}/{ID}/error', () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     server = await initServer(await getPort())
+    sandbox.stub(LibUtil, 'getSpanTags').returns({})
   })
 
   afterAll(async () => {
@@ -63,13 +65,20 @@ describe('/parties/{Type}/{ID}/error', () => {
     }
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    const setTagsStub = sandbox.stub().returns({})
+    mock.request.span = {
+      setTags: setTagsStub,
+      audit: sandbox.stub().returns(Promise.resolve({}))
+    }
     sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
 
     // Act
-    ErrHandler.put(mock.request, handler)
+    await ErrHandler.put(mock.request, handler)
 
     // Assert
     expect(codeStub.calledWith(200)).toBe(true)
+    expect(setTagsStub.calledWith({})).toBe(true)
+    expect(setTagsStub.calledOnce).toBe(true)
     parties.putPartiesErrorByTypeAndID.restore()
   })
 
@@ -83,6 +92,11 @@ describe('/parties/{Type}/{ID}/error', () => {
     }
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    const setTagsStub = sandbox.stub().returns({})
+    mock.request.span = {
+      setTags: setTagsStub,
+      audit: sandbox.stub().returns(Promise.resolve({}))
+    }
     sandbox.stub(parties, 'putPartiesErrorByTypeAndID').throws(new Error('Error in putPartiesErrorByTypeAndId'))
 
     // Act

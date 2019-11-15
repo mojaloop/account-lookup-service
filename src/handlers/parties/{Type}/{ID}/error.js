@@ -43,14 +43,14 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async function (req, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
-    span.setTags(spanTags)
-    await span.audit({
-      headers: req.headers,
-      payload: req.payload
-    }, EventSdk.AuditEventAction.start)
     try {
+      const span = req.span
+      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+      span.setTags(spanTags)
+      await span.audit({
+        headers: req.headers,
+        payload: req.payload
+      }, EventSdk.AuditEventAction.start)
       parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
     } catch (err) {
       Logger.error(err)
