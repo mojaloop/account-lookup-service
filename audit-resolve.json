@@ -27,6 +27,18 @@
     "1300|nyc>istanbul-reports>handlebars": {
       "decision": "postpone",
       "madeAt": 1573225898636
+    },
+    "1316|hapi-swagger>handlebars": {
+      "decision": "postpone",
+      "madeAt": 1573800204926
+    },
+    "1316|jest>jest-cli>@jest/core>@jest/reporters>istanbul-reports>handlebars": {
+      "decision": "postpone",
+      "madeAt": 1573800204927
+    },
+    "1316|nyc>istanbul-reports>handlebars": {
+      "decision": "postpone",
+      "madeAt": 1573800204927
     }
   },
   "rules": {},

@@ -202,27 +202,6 @@ describe('Oracle tests', () => {
         'content-length': 164,
         connection: 'keep-alive'
       }
-      // const createSpan = {
-      //   'isFinished': false,
-      //   'spanContext': {
-      //     'startTimestamp': '2019-11-14T23:33:35.338Z',
-      //     'service': 'als_oracles_post',
-      //     'traceId': '27e489d05dd7b3f3ec77fdcb103f56f6',
-      //     'spanId': '10c68389b25c92ee',
-      //     'tags': {}
-      //   },
-      //   'recorders': {
-      //     'defaultRecorder': {
-      //       'recorder': {
-      //         'grpcClient': {
-      //           '$interceptors': [],
-      //           '$interceptor_providers': [],
-      //           '$channel': {}
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
 
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
