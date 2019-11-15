@@ -46,8 +46,7 @@ module.exports = {
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
     span.setTags(spanTags)
     await span.audit({
-      headers: request.headers,
-      payload: request.payload
+      headers: request.headers
     }, EventSdk.AuditEventAction.start)
     await ParticipantEndpointCache.stopCache()
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
