@@ -38,7 +38,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
-    const response = await oracle.getOracle(request.query)
+    const response = await oracle.getOracle(request.query, request.headers, request.span)
     return h.response(response).code(200)
   },
   /**
@@ -49,7 +49,7 @@ module.exports = {
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    await oracle.createOracle(request.payload)
+    await oracle.createOracle(request.payload, request.headers, request.span)
     return h.response().code(201)
   }
 }

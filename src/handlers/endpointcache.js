@@ -26,6 +26,9 @@
 
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const Config = require('../lib/config.js')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../lib/util')
 
 /**
  * Operations on /endpointcache
@@ -39,6 +42,13 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (request, h) => {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
     await ParticipantEndpointCache.stopCache()
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
     return h.response().code(202)

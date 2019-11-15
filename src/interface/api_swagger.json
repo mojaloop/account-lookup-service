@@ -24,7 +24,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsByIDAndError",
+        "operationId": "als_participantsByIDAndError_put",
         "produces": [
           "application/json"
         ],
@@ -130,7 +130,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsByIDPut",
+        "operationId": "als_participantsByID_put",
         "produces": [
           "application/json"
         ],
@@ -235,7 +235,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsErrorByTypeAndID",
+        "operationId": "als_participantsErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -344,7 +344,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsSubIdErrorByTypeAndID",
+        "operationId": "als_participantsSubIdErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -497,7 +497,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndID",
+        "operationId": "als_participantsSubIdByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -579,7 +579,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndID3",
+        "operationId": "als_participantsSubIdByTypeAndID3_put",
         "produces": [
           "application/json"
         ],
@@ -677,7 +677,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndIDPost",
+        "operationId": "als_participantsSubIdByTypeAndID_post",
         "produces": [
           "application/json"
         ],
@@ -776,7 +776,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndID2",
+        "operationId": "als_participantsSubIdByTypeAndID2_delete",
         "produces": [
           "application/json"
         ],
@@ -898,7 +898,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsByTypeAndID",
+        "operationId": "als_participantsByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -977,7 +977,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsByTypeAndID3",
+        "operationId": "als_participantsByTypeAndID3_put",
         "produces": [
           "application/json"
         ],
@@ -1072,7 +1072,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsByIDAndType",
+        "operationId": "als_participantsByIDAndType_post",
         "produces": [
           "application/json"
         ],
@@ -1168,7 +1168,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "ParticipantsByTypeAndID2",
+        "operationId": "als_participantsByTypeAndID2_delete",
         "produces": [
           "application/json"
         ],
@@ -1249,7 +1249,7 @@
           "participants",
           "sampled"
         ],
-        "operationId": "Participants1",
+        "operationId": "als_participants1_post",
         "produces": [
           "application/json"
         ],
@@ -1393,7 +1393,7 @@
           "parties",
           "sampled"
         ],
-        "operationId": "PartiesByTypeAndID",
+        "operationId": "als_partiesByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -1472,7 +1472,7 @@
           "parties",
           "sampled"
         ],
-        "operationId": "PartiesByTypeAndID2",
+        "operationId": "als_partiesByTypeAndID2_put",
         "produces": [
           "application/json"
         ],
@@ -1586,7 +1586,7 @@
           "parties",
           "sampled"
         ],
-        "operationId": "PartiesErrorByTypeAndID",
+        "operationId": "als_partiesErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -1736,7 +1736,7 @@
           "parties",
           "sampled"
         ],
-        "operationId": "PartiesSubIdByTypeAndID",
+        "operationId": "als_partiesSubIdByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -1818,7 +1818,7 @@
           "parties",
           "sampled"
         ],
-        "operationId": "PartiesSubIdByTypeAndIDPut",
+        "operationId": "also_partiesSubIdByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -1932,7 +1932,7 @@
           "parties",
           "sampled"
         ],
-        "operationId": "PartiesSubIdErrorByTypeAndID",
+        "operationId": "als_partiesSubIdErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -2041,9 +2041,10 @@
         "description": "The HTTP request GET /health is used to return the current status of the ALS API.",
         "summary": "Get health",
         "tags": [
-          "health"
+          "health",
+          "sampled"
         ],
-        "operationId": "ApiHealthGet",
+        "operationId": "als_ApiHealth_get",
         "produces": [
           "application/json"
         ],
@@ -2083,9 +2084,10 @@
         "description": "The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
         "summary": "Endpoint Cache",
         "tags": [
-          "cache"
+          "cache",
+          "sampled"
         ],
-        "operationId": "EndpointCache",
+        "operationId": "als_endpointCache_get",
         "parameters": [
           {
             "$ref": "#/parameters/Date"
