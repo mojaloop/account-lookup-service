@@ -19,13 +19,17 @@
  * Name Surname <name.surname@gatesfoundation.com>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Steven Oderayi <steven.oerayi@modusbox.com>
 
  --------------
  ******/
 /* istanbul ignore file */
 'use strict'
 
-const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const Logger = require('@mojaloop/central-services-logger')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const participants = require('../../../../domain/participants')
 
 /**
  * Operations on /participants/{Type}/{ID}/{SubId}
@@ -38,8 +42,15 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (request, h) {
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  get: async (request, h) => {
+    const metadata = `${request.method} ${request.path}`
+    try {
+      await participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+    return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
    * summary: ParticipantsSubIdByTypeAndID
@@ -48,8 +59,15 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  put: async (request, h) => {
+    const metadata = `${request.method} ${request.path}`
+    try {
+      await participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+    return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
   /**
    * summary: ParticipantsSubIdByTypeAndID
@@ -58,8 +76,15 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function (request, h) {
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  post: async (request, h) => {
+    const metadata = `${request.method} ${request.path}`
+    try {
+      await participants.postParticipants(request.headers, request.params, request.method, request.query)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+    return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
    * summary: ParticipantsSubIdByTypeAndID
@@ -68,7 +93,14 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function (request, h) {
-    return h.response(ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  delete: async (request, h) => {
+    const metadata = `${request.method} ${request.path}`
+    try {
+      await participants.deleteParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+    return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   }
 }

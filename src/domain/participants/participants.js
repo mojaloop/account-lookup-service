@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Steven Oderayi <steven.oderayi@modusbox.com>
 
  --------------
  ******/
@@ -45,15 +46,17 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
   try {
     Logger.info('getParticipantsByTypeAndID::begin')
     const type = params.Type
+    const partySubIdOrType = params.SubId || undefined
     const requesterName = headers[Enums.Http.Headers.FSPIOP.SOURCE]
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
       const response = await oracle.oracleRequest(headers, method, params, query)
       if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-        const options = {
+        let options = {
           partyIdType: type,
           partyIdentifier: params.ID
         }
+        options = partySubIdOrType ? { ...options, partySubIdOrType } : options
         const payload = {
           fspId: response.data.partyList[0].fspId
         }
@@ -80,6 +83,20 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
+  }
+}
+
+/**
+ * @function putParticipantsByTypeAndID
+ *
+ * @description This is a callback function
+ *
+ */
+const putParticipantsByTypeAndID = async () => {
+  try {
+    Logger.info('Not Implemented')
+  } catch (e) {
+    Logger.error(e)
   }
 }
 
@@ -262,9 +279,30 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
   }
 }
 
+/**
+ * @function deleteParticipants
+ *
+ * @description This sends request to all applicable oracles to delete participant(s)
+ *
+ * @param {object} headers - incoming http request headers
+ * @param {string} method - http request method
+ * @param {object} params - uri parameters of the http request
+ * @param {object} payload - payload of the request being sent out
+ *
+ */
+const deleteParticipants = async (headers, method, params, payload) => {
+  try {
+    Logger.info('Not Implemented')
+  } catch (e) {
+    Logger.error(e)
+  }
+}
+
 module.exports = {
   getParticipantsByTypeAndID,
+  putParticipantsByTypeAndID,
   putParticipantsErrorByTypeAndID,
   postParticipants,
-  postParticipantsBatch
+  postParticipantsBatch,
+  deleteParticipants
 }
