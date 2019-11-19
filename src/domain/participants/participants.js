@@ -27,9 +27,10 @@
 
 const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * @function getParticipantsByTypeAndID
@@ -171,14 +172,39 @@ const putParticipantsByTypeAndID = async (headers, method, params, payload) => {
 /**
  * @function putParticipantsErrorByTypeAndID
  *
- * @description This is a callback function
  *
+ * @description  If the server is unable to find, create or delete the associated FSP of the provided identity,
+ *  or another processing error occurred, the error callback PUT /participants/<Type>/<ID>/error
+ *  (or PUT /participants/<Type>/<ID>/<SubId>/error) is used.
+ *
+ * @param {object} headers - incoming http request headers
+ * @param {object} params  - uri parameters of the http request
+ * @param {object} payload - payload of the request being sent out
+ * @param {string} dataUri - encoded payload of the request being sent out
  */
-const putParticipantsErrorByTypeAndID = async () => {
+const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri) => {
   try {
-    Logger.info('Not Implemented')
-  } catch (e) {
-    Logger.error(e)
+    const partySubIdOrType = params.SubId || undefined
+    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+    const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
+    if (destinationParticipant) {
+      const decodedPayload = decodePayload(dataUri, { asParsed: false })
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, decodedPayload.body.toString(), headers, params)
+    } else {
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)
+    }
+  } catch (err) {
+    Logger.error(err)
+    try {
+      const callbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+    } catch (exc) {
+      // We can't do anything else here- we _must_ handle all errors _within_ this function because
+      // we've already sent a sync response- we cannot throw.
+      Logger.error(exc)
+    }
   }
 }
 

@@ -44,7 +44,7 @@ module.exports = {
       const metadata = `${req.method} ${req.path}`
       try {
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req)
+        await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)

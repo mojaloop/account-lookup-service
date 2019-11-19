@@ -194,18 +194,39 @@ describe('Participant Tests', () => {
       sandbox.restore()
     })
 
-    it('catches errors', async () => {
+    it('handles PUT /error', async () => {
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub().throws(new Error('I don\'t know the point of this...'))
+      Logger.info = sandbox.stub()
       Logger.error = sandbox.stub()
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': 'payerfsp',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN'
+      }
+      const payload = {
+        fspId: 'payerfsp',
+        currency: 'USD'
+      }
+      const dataUri = ''
 
       // Act
-      await participantsDomain.putParticipantsErrorByTypeAndID()
+      await participantsDomain.putParticipantsErrorByTypeAndID(headers, params, payload, dataUri)
+
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
       // Assert
-      expect(Logger.info.callCount).toBe(1)
-      expect(Logger.error.callCount).toBe(1)
+      expect(Logger.info.callCount).toBe(0)
+      expect(Logger.error.callCount).toBe(0)
     })
   })
 

@@ -28,6 +28,9 @@
     "dep:check",
     "test"
   ],
+  "jest": {
+    "testEnvironment": "node"
+  },
   "scripts": {
     "start": "node src/index.js server",
     "start:all": "run-p start:api start:admin",
