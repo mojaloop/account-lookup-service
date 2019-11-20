@@ -405,7 +405,6 @@ const deleteParticipants = async (headers, params, method, query) => {
 
         const response = await oracle.oracleRequest(headers, method, params, query)
         if (response && response.data) {
-          
           // TODO: What payload do we send back in the callback?
           const responsePayload = {
             partyList: [
