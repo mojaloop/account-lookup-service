@@ -50,6 +50,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
     const partySubIdOrType = params.SubId || undefined
     const requesterName = headers[Enums.Http.Headers.FSPIOP.SOURCE]
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
+    const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
       const response = await oracle.oracleRequest(headers, method, params, query)
@@ -67,7 +68,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
         }
         await participant.sendRequest(headers, requesterName, callbackEndpointType, Enums.Http.RestMethods.PUT, payload, options)
       } else {
-        await participant.sendErrorToParticipant(requesterName, callbackEndpointType,
+        await participant.sendErrorToParticipant(requesterName, errorCallbackEndpointType,
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), headers, params)
       }
       Logger.info('getParticipantsByTypeAndID::end')
@@ -78,9 +79,9 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
   } catch (err) {
     Logger.error(err)
     try {
+      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(
-        headers[Enums.Http.Headers.FSPIOP.SOURCE],
-        params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+        headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
