@@ -27,8 +27,6 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
-const Logger = require('@mojaloop/central-services-logger')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const participants = require('../../../../domain/participants')
 
 /**
@@ -43,13 +41,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
-    const metadata = `${request.method} ${request.path}`
-    try {
-      await participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -60,13 +52,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (request, h) => {
-    const metadata = `${request.method} ${request.path}`
-    try {
-      await participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
   /**
@@ -77,13 +63,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    const metadata = `${request.method} ${request.path}`
-    try {
-      await participants.postParticipants(request.headers, request.params, request.method, request.query)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.postParticipants(request.headers, request.method, request.params, request.query)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -94,13 +74,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (request, h) => {
-    const metadata = `${request.method} ${request.path}`
-    try {
-      await participants.deleteParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   }
 }
