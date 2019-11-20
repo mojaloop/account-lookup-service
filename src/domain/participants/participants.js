@@ -394,31 +394,15 @@ const deleteParticipants = async (headers, params, method, query) => {
     Logger.info('deleteParticipants::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
-    const currency = query.currency || undefined
-    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_DELETE : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_DELETE
-    const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_DELETE_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_DELETE_ERROR
+    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
+    const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
-        // TODO: verify that party's current fsp is the one requesting for this delete action. Nee to pull party's detail? Where's the info resident?
-
-        // TODO: Delete currency specific party info. Forwarding the query param to oracle should do that?
-
         const response = await oracle.oracleRequest(headers, method, params, query)
-        if (response && response.data) {
-          // TODO: What payload do we send back in the callback?
+        if (response) {
           const responsePayload = {
-            partyList: [
-              {
-                partyIdType: type,
-                partyIdentifier: params.ID
-                // fspId: '' // TODO: Get this from requestParticipantModel or remove it outrightly?
-              }
-            ],
-            currency
-          }
-          if (partySubIdOrType) {
-            responsePayload.partyList[0].partySubIdOrType = partySubIdOrType
+            fspId: headers[Enums.Http.Headers.FSPIOP.SOURCE]
           }
           let options = {
             partyIdType: params.Type,
@@ -444,7 +428,7 @@ const deleteParticipants = async (headers, params, method, query) => {
   } catch (err) {
     Logger.error(err)
     try {
-      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_DELETE_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_DELETE_ERROR
+      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR).toApiErrorObject(), headers, params)
     } catch (exc) {
