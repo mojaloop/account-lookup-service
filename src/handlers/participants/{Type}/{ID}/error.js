@@ -47,12 +47,12 @@ module.exports = {
       const span = req.span
       const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
       span.setTags(spanTags)
-      await span.audit({
-        headers: req.headers,
-        payload: req.payload
-      }, EventSdk.AuditEventAction.start)
       const metadata = `${req.method} ${req.path}`
       try {
+        await span.audit({
+          headers: req.headers,
+          payload: req.payload
+        }, EventSdk.AuditEventAction.start)
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
         await participants.putParticipantsErrorByTypeAndID(req, span)
         req.server.log(['info'], `success: ${metadata}.`)
