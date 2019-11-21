@@ -54,7 +54,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
       const response = await oracle.oracleRequest(headers, method, params, query)
-      if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
+      if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) { // TODO: requires validation, might be changed to response && response.code === 201
         let options = {
           partyIdType: type,
           partyIdentifier: params.ID
@@ -115,7 +115,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
-        if (response && response.data) {
+        if (response && response.data) { // TODO: requires validation, might be changed to response && response.code === 201
           const responsePayload = {
             partyList: [
               {
@@ -227,7 +227,7 @@ const postParticipants = async (headers, method, params, payload) => {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
-        if (response && response.data) {
+        if (response && response.data) { // TODO: requires validation, might be changed to response && response.code === 201
           const responsePayload = {
             partyList: [
               {
@@ -369,7 +369,7 @@ const postParticipantsBatch = async (headers, method, requestPayload) => {
     Logger.error(err)
     try {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
-        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers)
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, undefined, requestPayload)
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.

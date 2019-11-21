@@ -23,7 +23,6 @@
 
  --------------
  ******/
-/* istanbul ignore file */
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum

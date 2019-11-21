@@ -20,6 +20,7 @@
 
  * ModusBox
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Steven Oderayi <steven.oderayi@modusbox>
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>

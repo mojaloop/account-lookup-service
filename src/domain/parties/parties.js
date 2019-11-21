@@ -50,7 +50,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
     Logger.info('parties::getPartiesByTypeAndID::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
-    // const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT
+    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
     const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypesFSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
@@ -65,13 +65,13 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
           headers[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
         }
         // Shouldn't this be a PUT request?
-        await participant.sendRequest(headers, response.data.partyList[0].fspId, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET, Enums.Http.RestMethods.GET, undefined, options)
+        await participant.sendRequest(headers, response.data.partyList[0].fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options)
       } else {
         const callbackHeaders = createCallbackHeaders({
           requestHeaders: headers,
           partyIdType: params.Type,
           partyIdentifier: params.ID,
-          endpointTemplate: partySubIdOrType ? Enums.EndPoints.FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTemplates.PARTIES_PUT_ERROR
+          endpointTemplate: errorCallbackEndpointType
         })
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(), callbackHeaders, params)
