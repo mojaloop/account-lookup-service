@@ -81,6 +81,38 @@ describe('Participant Tests', () => {
       expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('payeefsp')
     })
 
+    it('gets participants by Type, ID, Currency and SubID and sends callback', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub()
+      const params = { ...Helper.getByTypeIdCurrencyRequest.params, SubId: 'subId' }
+      const query = { ...Helper.getByTypeIdCurrencyRequest.query, currency: 'USD' }
+      const args = [
+        Helper.getByTypeIdCurrencyRequest.headers,
+        params,
+        Helper.getByTypeIdCurrencyRequest.method,
+        query
+      ]
+      const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
+
+      // Act
+      await participantsDomain.getParticipantsByTypeAndID(...args)
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(1)
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('payeefsp')
+      expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
+      expect(firstCallArgs[5].partySubIdOrType).toBe('subId')
+    })
+
     it('gets participants and sends callback when `fspiop-dest` is not set', async () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})

@@ -29,7 +29,7 @@
 const Sinon = require('sinon')
 
 describe('/parties/{Type}/{ID}/{SubId}', () => {
-    it('Description', async () => {
-        expect()
-    })
+  it('Description', async () => {
+    expect()
+  })
 })
