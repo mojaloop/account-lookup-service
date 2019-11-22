@@ -28,31 +28,19 @@ const Db = require('../../../../src/lib/db')
 const Config = require('../../../../src/lib/config')
 const Oracle = require('../../../../src/domain/oracle')
 const OracleModel = require('../../../../src/models/oracle')
-const Sinon = require('sinon')
 const EventSdk = require('@mojaloop/event-sdk')
-
-let sandbox
 
 describe('Oracle', () => {
   beforeAll(async () => {
     await Db.connect(Config.DATABASE)
-    sandbox = Sinon.createSandbox()
-    sandbox.stub(LibUtil, 'getSpanTags').returns({})
   })
 
   afterAll(async () => {
     await Db.disconnect()
-    sandbox.restore()
   })
 
   it('creates an oracle', async () => {
     // Arrange
-    const codeStub = sandbox.stub()
-    const handler = {
-      response: sandbox.stub().returns({
-        code: codeStub
-      })
-    }
     const payload = {
       isDefault: true,
       currency: 'AUD',

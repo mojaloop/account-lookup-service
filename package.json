@@ -96,11 +96,12 @@
   "devDependencies": {
     "@types/jest": "24.0.23",
     "eslint": "6.6.0",
+    "eslint-plugin-jest": "23.0.4",
     "get-port": "5.0.0",
     "jest": "24.9.0",
     "jest-junit": "9.0.0",
     "jsdoc": "3.6.3",
-    "nodemon": "2.0.0",
+    "nodemon": "2.0.1",
     "npm-audit-resolver": "2.1.0",
     "npm-check-updates": "3.2.1",
     "nyc": "14.1.1",
