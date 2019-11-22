@@ -28,6 +28,8 @@
 const participants = require('./participants')
 
 exports.getParticipantsByTypeAndID = participants.getParticipantsByTypeAndID
+exports.putParticipantsByTypeAndID = participants.putParticipantsByTypeAndID
 exports.putParticipantsErrorByTypeAndID = participants.putParticipantsErrorByTypeAndID
 exports.postParticipants = participants.postParticipants
 exports.postParticipantsBatch = participants.postParticipantsBatch
+exports.deleteParticipants = participants.deleteParticipants

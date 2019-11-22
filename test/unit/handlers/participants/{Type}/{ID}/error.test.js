@@ -83,7 +83,7 @@ describe('/participants/{Type}/{ID}/error', () => {
     participants.putParticipantsErrorByTypeAndID.restore()
   })
 
-  it('handles error when putPartiesErrorByTypeAndID fails', async () => {
+  it('handles error when putParticipantsErrorByTypeAndID fails', async () => {
     // Arrange
     const codeStub = sandbox.stub()
     const handler = {

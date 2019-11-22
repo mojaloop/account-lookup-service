@@ -170,7 +170,7 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('PUT /participants', () => {
-    it('throws NOT_IMPLEMENTED error', async () => {
+    it('putParticipantsByTypeAndID returns 200', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
       const options = {
@@ -179,12 +179,73 @@ describe('/participants/{Type}/{ID}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
+      sandbox.stub(participants, 'putParticipantsByTypeAndID').returns({})
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(501)
+      expect(response.statusCode).toBe(200)
+      participants.putParticipantsByTypeAndID.restore()
+    })
+
+    it('putParticipantsByTypeAndID returns 500 on unknown error', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
+      const options = {
+        method: 'put',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+      sandbox.stub(participants, 'putParticipantsByTypeAndID').throws(new Error('Unknown Error'))
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(500)
+      participants.putParticipantsByTypeAndID.restore()
+    })
+  })
+
+  describe('PUT /error', () => {
+    it('putParticipantsErrorByTypeAndID returns 200', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
+      const options = {
+        method: 'put',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').returns({})
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(200)
+      participants.putParticipantsErrorByTypeAndID.restore()
+    })
+
+    it('putParticipantsErrorByTypeAndID returns 200 on unknown error', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
+      const options = {
+        method: 'put',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').throws(new Error('Unknown Error'))
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(200)
+      participants.putParticipantsErrorByTypeAndID.restore()
     })
   })
 })

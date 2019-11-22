@@ -51,6 +51,6 @@ module.exports = {
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()
-    return h.response().code(202)
+    return h.response().code(200)
   }
 }
