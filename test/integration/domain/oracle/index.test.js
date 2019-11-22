@@ -29,6 +29,7 @@ const Config = require('../../../../src/lib/config')
 const Oracle = require('../../../../src/domain/oracle')
 const OracleModel = require('../../../../src/models/oracle')
 const Sinon = require('sinon')
+const EventSdk = require('@mojaloop/event-sdk')
 
 let sandbox
 
@@ -66,37 +67,16 @@ describe('Oracle', () => {
       'cache-control': 'no-cache',
       date: '',
       'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
-      'user-agent': 'PostmanRuntime/7.17.1',
-      'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
       host: '127.0.0.1:4003',
       'accept-encoding': 'gzip, deflate',
       'content-length': 164,
       connection: 'keep-alive'
     }
-    const createSpan = {
-      isFinished: false,
-      spanContext: {
-        startTimestamp: '2019-11-14T23:33:35.338Z',
-        service: 'als_oracles_post',
-        traceId: '27e489d05dd7b3f3ec77fdcb103f56f6',
-        spanId: '10c68389b25c92ee',
-        tags: {}
-      },
-      recorders: {
-        defaultRecorder: {
-          recorder: {
-            grpcClient: {
-              $interceptors: [],
-              $interceptor_providers: [],
-              $channel: {}
-            }
-          }
-        }
-      }
-    }
+
+    const testSpan = EventSdk.Tracer.createSpan('createOracle service')
 
     // Act
-    const result = await Oracle.createOracle(payload, createHeaders, createSpan)
+    const result = await Oracle.createOracle(payload, createHeaders, testSpan)
 
     // Assert
     expect(result).toBe(true)
