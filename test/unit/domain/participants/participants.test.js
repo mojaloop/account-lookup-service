@@ -365,7 +365,7 @@ describe('Participant Tests', () => {
       expect(firstCallArgs[4].partyList[0].partySubIdOrType).toBe('subId')
     })
 
-    it('handles the request without fspiop-dest header', async () => {
+    it('handles put request without fspiop-dest header', async () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -1210,6 +1210,271 @@ describe('Participant Tests', () => {
       const thirdCallArgs = Logger.error.getCall(2).args
       expect(firstCallArgs[0]).toBe('Requester FSP not found')
       expect(thirdCallArgs[0].message).toBe('unknown error')
+    })
+  })
+
+  describe('deleteParticipants', () => {
+    let sandbox
+
+    beforeEach(() => {
+      sandbox = Sinon.createSandbox()
+    })
+
+    afterEach(() => {
+      sandbox.restore()
+    })
+
+    it('sends DELETE request to the participant', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(1)
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('fsp1')
+    })
+
+    it('sends DELETE request to the participant with SubId', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub()
+      const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'subId'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(1)
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('fsp1')
+      expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
+      expect(firstCallArgs[4].fspId).toBe('fsp1')
+    })
+
+    it('handles the case where `oracleRequest` returns has no response', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+    })
+
+    it('handles the case where SubId is supplied but `oracleRequest` returns has no response', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub()
+      const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'subId'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEndpointType)
+    })
+
+    it('handles the case where `validateParticipant` returns null', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves(null)
+      sandbox.stub(Logger)
+      Logger.error = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      const loggerFirstCallArgs = Logger.error.getCall(0).args
+      expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
+    })
+
+    it('handles case where type is not in `PartyAccountTypes`', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.error = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub()
+
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'UNKNOWN_TYPE'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+    })
+
+    it('handles case where type is not in `PartyAccountTypes` and `sendErrorToParticipant` fails', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.error = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
+
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'UNKNOWN_TYPE'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+    })
+
+    it('handles case where SubId is supplied but validation fails and an error is thrown while sending error callback', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.error = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
+      const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'UNKNOWN_TYPE',
+        SubId: 'subId'
+      }
+      const method = 'delete'
+      const query = {
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.deleteParticipants(headers, params, method, query)
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEndpointType)
     })
   })
 })
