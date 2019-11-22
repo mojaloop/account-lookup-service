@@ -34,6 +34,7 @@ const Sinon = require('sinon')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+let decodePayload = require('@mojaloop/central-services-shared').Util.StreamingProtocol.decodePayload
 
 const participantsDomain = require('../../../../src/domain/participants/participants')
 const participant = require('../../../../src/models/participantEndpoint/facade')
@@ -239,6 +240,40 @@ describe('Participant Tests', () => {
       expect(participant.sendRequest.callCount).toBe(1)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
     })
+
+    it('handles error when `sendRequest` and sendErrorToParticipant` fails, but sends callback with a specific endpoint type when SubId is present', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub().throws(new Error('sendRequest error'))
+      participant.sendErrorToParticipant = sandbox.stub().throws(new Error('sendErrorToParticipant error'))
+
+      const params = { ...Helper.getByTypeIdCurrencyRequest.params, SubId: 'subId' }
+      const query = { ...Helper.getByTypeIdCurrencyRequest.query, currency: 'USD' }
+      const args = [
+        Helper.getByTypeIdCurrencyRequest.headers,
+        params,
+        Helper.getByTypeIdCurrencyRequest.method,
+        query
+      ]
+      const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+
+      // Act
+      await participantsDomain.getParticipantsByTypeAndID(...args)
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEndpointType)
+
+    })
   })
 
   describe('putParticipantsErrorByTypeAndID', () => {
@@ -285,6 +320,121 @@ describe('Participant Tests', () => {
       // Assert
       expect(Logger.info.callCount).toBe(0)
       expect(Logger.error.callCount).toBe(0)
+    })
+
+    it('handles PUT /error when SubId is supplied', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub()
+      const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': 'payerfsp',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'SubId'
+      }
+      const payload = {
+        fspId: 'payerfsp',
+        currency: 'USD'
+      }
+      const dataUri = ''
+
+      // Act
+      await participantsDomain.putParticipantsErrorByTypeAndID(headers, params, payload, dataUri)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
+      expect(Logger.error.callCount).toBe(0)
+    })
+
+    it('handles PUT /error when SubId supplied but validateParticipant fails to return participant', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
+      participant.validateParticipant = sandbox.stub().resolves(null)
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub()
+      decodePayload = sandbox.stub()
+      const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': 'payerfsp',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'SubId'
+      }
+      const payload = {
+        fspId: 'payerfsp',
+        currency: 'USD'
+      }
+      const dataUri = ''
+
+      // Act
+      await participantsDomain.putParticipantsErrorByTypeAndID(headers, params, payload, dataUri)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
+      expect(decodePayload.callCount).toBe(0)
+      expect(Logger.error.callCount).toBe(0)
+    })
+
+    it('handles PUT /error when SubId supplied but validateParticipant throws error', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
+      participant.validateParticipant = sandbox.stub().throws(new Error('Validation failed'))
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub()
+      decodePayload = sandbox.stub()
+      const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': 'payerfsp',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'SubId'
+      }
+      const payload = {
+        fspId: 'payerfsp',
+        currency: 'USD'
+      }
+      const dataUri = ''
+
+      // Act
+      await participantsDomain.putParticipantsErrorByTypeAndID(headers, params, payload, dataUri)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
+      expect(decodePayload.callCount).toBe(0)
+      expect(Logger.error.callCount).toBe(1)
     })
   })
 
@@ -333,6 +483,46 @@ describe('Participant Tests', () => {
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
       expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('switch')
+    })
+
+    it('sends the request to the participant with SubId', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub()
+      const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'subId'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'get', params, payload)
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(1)
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('switch')
+      expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
+      expect(firstCallArgs[4].partyList[0].partySubIdOrType).toBe('subId')
     })
 
     it('handles the request without fspiop-dest header', async () => {
@@ -398,6 +588,39 @@ describe('Participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[0]).toBe('fsp1')
+    })
+
+    it('handles the case where SubId is supplied but `oracleRequest` returns has no response.data', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({})
+      participant.sendErrorToParticipant = sandbox.stub()
+      const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'subId'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'get', params, payload)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEndpointType)
     })
 
     it('handles the case where `validateParticipant` returns null', async () => {
@@ -488,6 +711,38 @@ describe('Participant Tests', () => {
       // Assert
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[0]).toBe('fsp1')
+    })
+
+    it('handles case where SubId is supplied but validation fails and an error is thrown while sending error callback', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      Logger.error = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
+      const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'UNKNOWN_TYPE',
+        SubId: 'subId'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'get', params, payload)
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEndpointType)
     })
   })
 
