@@ -27,9 +27,99 @@
 'use strict'
 
 const Sinon = require('sinon')
+const getPort = require('get-port')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const requestUtil = require('@mojaloop/central-services-shared').Util.Request
+const Enums = require('@mojaloop/central-services-shared').Enum
+const initServer = require('../../../../../../src/server').initialize
+const Db = require('../../../../../../src/lib/db')
+const oracleEndpoint = require('../../../../../../src/models/oracle')
+const parties = require('../../../../../../src/domain/parties')
+const participant = require('../../../../../../src/models/participantEndpoint/facade')
+const Helper = require('../../../../../util/helper')
+
+let server
+let sandbox
 
 describe('/parties/{Type}/{ID}/{SubId}', () => {
-  it('Description', async () => {
-    expect()
+  beforeAll(async () => {
+    sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    server = await initServer(await getPort())
+  })
+
+  afterAll(async () => {
+    await server.stop()
+    sandbox.restore()
+  })
+
+  it('getPartiesByTypeAndID (with SubId) success', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties')
+    }
+    sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(202)
+    parties.getPartiesByTypeAndID.restore()
+  })
+
+  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID and SubId', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties')
+    }
+
+    const badRequestError = ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR,
+      'Failed to send HTTP request to host',
+      {},
+      {},
+      [{ key: 'status', value: 400 }]
+    )
+    const stubs = [
+      sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
+      sandbox.stub(participant, 'validateParticipant').returns(true),
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
+      sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+    ]
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    const errorCallStub = stubs[0]
+    expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
+    expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR)
+    expect(response.statusCode).toBe(202)
+    stubs.forEach(s => s.restore())
+  })
+
+  it('putPartiesByTypeAndID endpoint', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'put')
+    const options = {
+      method: 'put',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties'),
+      payload: mock.request.body
+    }
+    sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(200)
   })
 })
