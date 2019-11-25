@@ -71,7 +71,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     parties.getPartiesByTypeAndID.restore()
   })
 
-  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID and SubId', async () => {
+  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
     const options = {
