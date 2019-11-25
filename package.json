@@ -94,7 +94,7 @@
   },
   "devDependencies": {
     "@types/jest": "24.0.22",
-    "eslint": "6.6.0",
+    "eslint": "6.7.1",
     "get-port": "5.0.0",
     "jest": "24.9.0",
     "jest-junit": "9.0.0",
