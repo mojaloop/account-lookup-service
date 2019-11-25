@@ -51,7 +51,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
-    const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypesFSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+    const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
       const response = await oracle.oracleRequest(headers, method, params, query)
@@ -61,10 +61,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
           partyIdentifier: params.ID
         }
         options = partySubIdOrType ? { ...options, partySubIdOrType } : options
-        if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION] || headers[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+        if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION]) {
           headers[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
         }
-        // Shouldn't this be a PUT request?
         await participant.sendRequest(headers, response.data.partyList[0].fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options)
       } else {
         const callbackHeaders = createCallbackHeaders({
@@ -83,7 +82,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query) => {
   } catch (err) {
     Logger.error(err)
     try {
-      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypesFSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
     } catch (exc) {

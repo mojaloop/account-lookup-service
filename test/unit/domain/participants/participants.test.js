@@ -272,7 +272,6 @@ describe('Participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedErrorCallbackEndpointType)
-
     })
   })
 

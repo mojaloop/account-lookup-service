@@ -20,6 +20,7 @@
 
  * ModusBox
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Steven Oderayi <steven.oderayi@modusbox.com>
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
@@ -34,9 +35,8 @@ const request = require('@mojaloop/central-services-shared').Util.Request
 const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
 const Util = require('@mojaloop/central-services-shared').Util
 const Logger = require('@mojaloop/central-services-logger')
-const {
-  encodePayload
-} = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const { encodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const Enums = require('@mojaloop/central-services-shared').Enum
 
 const Helper = require('../../../util/helper')
 const DB = require('../../../../src/lib/db')
@@ -163,6 +163,82 @@ describe('Parties Tests', () => {
       expect(secondCallArgs[0].name).toBe('Error')
       expect(loggerStub.callCount).toBe(2)
     })
+
+    it('handles error when SubId is supplied but `participant.validateParticipant()`cannot be found and `sendErrorToParticipant()` fails', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().returns({})
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub().throws(new Error('Error sending request'))
+      participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending Error'))
+      sandbox.stub(Logger)
+
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'payerfsp'
+      }
+      const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subId' }
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+
+      // Act
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
+    })
+
+    it('ensures sendRequest is called with the right endpoint type when SubId is supplied', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().returns({})
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub().resolves()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'payerfsp'
+      }
+      const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subId' }
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
+
+      // Act
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+
+      // Assert
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
+    })
+
+    it('handles error when `oracleRequest` returns no result', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.sendErrorToParticipant = sandbox.stub().resolves(null)
+      oracle.oracleRequest = sandbox.stub().resolves(null)
+      sandbox.stub(Logger)
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+
+      // Act
+      await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
+    })
   })
 
   describe('putPartiesByTypeAndID', () => {
@@ -195,6 +271,27 @@ describe('Parties Tests', () => {
       participant.sendRequest.reset()
     })
 
+    it('successfully sends the callback to the participant when SubId is supplied', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({
+        data: {
+          name: 'fsp1'
+        }
+      })
+      participant.sendRequest = sandbox.stub().resolves()
+      const payload = {}
+      const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT
+
+      // Act
+      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, null)
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(1)
+      const sendRequestCallArgs = participant.sendRequest.getCall(0).args
+      expect(sendRequestCallArgs[2]).toBe(expectedCallbackEnpointType)
+    })
+
     it('handles error when `participant.validateParticipant()` returns no participant', async () => {
       // Arrange
       const loggerStub = sandbox.stub(Logger, 'error')
@@ -212,6 +309,33 @@ describe('Parties Tests', () => {
       expect(firstLoggerCallArgs[0]).toStrictEqual('Requester FSP not found')
       loggerStub.reset()
       participant.sendErrorToParticipant.reset()
+    })
+
+    it('handles error when SubId is supplied but `participant.validateParticipant()` returns no participant', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      participant.sendErrorToParticipant = sandbox.stub().resolves()
+      participant.validateParticipant = sandbox.stub()
+      participant.validateParticipant.withArgs('payerfsp')
+        .resolves({
+          data: {
+            name: 'fsp1'
+          }
+        })
+      participant.validateParticipant.withArgs('payeefsp').resolves(null)
+
+      const payload = JSON.stringify({ testPayload: true })
+      const dataUri = encodePayload(payload, 'application/json')
+      const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+
+      // Act
+      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
     })
 
     it('handles error when `participant.validateParticipant()` is found and `sendErrorToParticipant()` fails', async () => {
@@ -237,6 +361,34 @@ describe('Parties Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(2)
       participant.validateParticipant.reset()
       participant.sendErrorToParticipant.reset()
+    })
+
+    it('handles error when SubId is supplied, `participant.validateParticipant()` is found but `sendErrorToParticipant()` fails', async () => {
+      // Arrange
+      sandbox.stub(Logger)
+      participant.validateParticipant = sandbox.stub()
+      participant.validateParticipant.withArgs('payerfsp')
+        .resolves({
+          data: {
+            name: 'fsp1'
+          }
+        })
+      participant.validateParticipant.withArgs('payeefsp').resolves(null)
+      participant.sendErrorToParticipant = sandbox.stub().throws('Error in sendErrorToParticipant')
+
+      const payload = JSON.stringify({ testPayload: true })
+      const dataUri = encodePayload(payload, 'application/json')
+      const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+
+      // Act
+      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri)
+
+      // Assert
+      expect(participant.validateParticipant.callCount).toBe(2)
+      expect(participant.sendErrorToParticipant.callCount).toBe(2)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
     })
   })
 
@@ -267,6 +419,29 @@ describe('Parties Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[0]).toStrictEqual('payeefsp')
+    })
+
+    it('succesfully sends error to the participant when SubId is supplied', async () => {
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({
+        data: {
+          name: 'fsp1'
+        }
+      })
+      participant.sendErrorToParticipant = sandbox.stub().resolves()
+      const payload = JSON.stringify({ errorPayload: true })
+      const dataUri = encodePayload(payload, 'application/json')
+      const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+
+      // Act
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(sendErrorCallArgs[0]).toStrictEqual('payeefsp')
+      expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
 
     it('sends error to the participant when there is no destination participant', async () => {
@@ -304,6 +479,43 @@ describe('Parties Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[0]).toStrictEqual('payerfsp')
+    })
+
+    it('handles error when `validateParticipant()` fails', async () => {
+      // Arrange)
+      const loggerStub = sandbox.stub(Logger, 'error')
+      participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
+      participant.sendErrorToParticipant = sandbox.stub().resolves({})
+      const payload = JSON.stringify({ errorPayload: true })
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+
+      // Act
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      expect(loggerStub.callCount).toBe(1)
+      const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
+    })
+
+    it('handles error when SubID is supplied but `validateParticipant()` fails', async () => {
+      // Arrange)
+      const loggerStub = sandbox.stub(Logger, 'error')
+      participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
+      participant.sendErrorToParticipant = sandbox.stub().resolves({})
+      const payload = JSON.stringify({ errorPayload: true })
+      const params = { ...Helper.putByTypeIdRequest.params, SubId: 'SubId' }
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+
+      // Act
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, params, payload)
+
+      // Assert
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      expect(loggerStub.callCount).toBe(1)
+      const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
   })
 })
