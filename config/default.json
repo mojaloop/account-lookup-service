@@ -23,6 +23,10 @@
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
+  "ERROR_HANDLING": {
+    "includeCauseExtension": false,
+    "truncateCause": true
+  },
   "SWITCH_ENDPOINT": "http://localhost:3001",
   "INSTRUMENTATION": {
     "METRICS": {

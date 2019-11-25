@@ -38,6 +38,7 @@ const participantsDomain = require('../../../../src/domain/participants/particip
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
 const Helper = require('../../../util/helper')
+const Config = require('../../../../src/lib/config')
 
 describe('Participant Tests', () => {
   describe('getParticipantsByTypeAndID', () => {
@@ -509,11 +510,11 @@ describe('Participant Tests', () => {
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, undefined, undefined, undefined, [{
             key: Enums.Accounts.PartyAccountTypes.MSISDN,
             value: undefined
-          }]).toApiErrorObject(),
+          }]).toApiErrorObject(Config.ERROR_HANDLING),
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, undefined, undefined, undefined, [{
             key: 'NOT_A_VALID_PARTY_ID',
             value: undefined
-          }]).toApiErrorObject(),
+          }]).toApiErrorObject(Config.ERROR_HANDLING),
           { partyId: { currency: undefined } }
         ]
       }
