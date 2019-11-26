@@ -32,6 +32,7 @@ const Mustache = require('mustache')
 const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Config = require('../../lib/config')
 
 /**
  * @function oracleRequest
@@ -111,7 +112,7 @@ const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier,
     }
   } else {
     Logger.error(`Oracle type:${partyIdType} and currency:${currency} not found`)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType} and currency:${currency} not found`).toApiErrorObject()
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType} and currency:${currency} not found`).toApiErrorObject(Config.ERROR_HANDLING)
   }
   return url
 }
@@ -182,7 +183,7 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
     }
   } else {
     Logger.error(`Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`).toApiErrorObject()
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`).toApiErrorObject(Config.ERROR_HANDLING)
   }
   return url
 }
@@ -219,7 +220,7 @@ const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdenti
     }
   } else {
     Logger.error(`Oracle type: ${partyIdType}, currency: ${currency}, and subId: ${partySubIdOrType} not found`)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType}, currency:${currency} and subId: ${partySubIdOrType} not found`).toApiErrorObject()
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType}, currency:${currency} and subId: ${partySubIdOrType} not found`).toApiErrorObject(Config.ERROR_HANDLING)
   }
   return url
 }
