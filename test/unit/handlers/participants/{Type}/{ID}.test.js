@@ -20,6 +20,7 @@
 
   * ModusBox
   - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+  - Steven Oderayi <steven.oderayi@modusbox.com>
 
   * Crosslake
   - Lewis Daly <lewisd@crosslaketech.com>
@@ -206,6 +207,46 @@ describe('/participants/{Type}/{ID}', () => {
       // Assert
       expect(response.statusCode).toBe(500)
       participants.putParticipantsByTypeAndID.restore()
+    })
+  })
+
+  describe('DELETE /participants', () => {
+    it('deleteParticipants returns 202', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
+      const options = {
+        method: 'delete',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+      sandbox.stub(participants, 'deleteParticipants').returns({})
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(202)
+      participants.deleteParticipants.restore()
+    })
+
+    it('deleteParticipants returns 500 on unknown error', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
+      const options = {
+        method: 'delete',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+      sandbox.stub(participants, 'deleteParticipants').throws(new Error('Unknown Error'))
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(500)
+      participants.deleteParticipants.restore()
     })
   })
 
