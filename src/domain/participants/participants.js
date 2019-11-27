@@ -116,7 +116,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
-        if (response && response.data) { // TODO: requires validation, might be changed to response && response.code === 201
+        if (response && response.data) {
           const responsePayload = {
             partyList: [
               {
@@ -228,7 +228,7 @@ const postParticipants = async (headers, method, params, payload) => {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
-        if (response && response.data) { // TODO: requires validation, might be changed to response && response.code === 201
+        if (response && response.status === Enums.Http.ReturnCodes.CREATED.CODE) {
           const responsePayload = {
             partyList: [
               {

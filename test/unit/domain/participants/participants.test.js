@@ -841,7 +841,8 @@ describe('Participant Tests', () => {
           partyList: [
             { fspId: 'fsp1' }
           ]
-        }
+        },
+        status: 201
       })
       participant.sendRequest = sandbox.stub()
       const headers = {
@@ -877,7 +878,8 @@ describe('Participant Tests', () => {
           partyList: [
             { fspId: 'fsp1' }
           ]
-        }
+        },
+        status: 201
       })
       participant.sendRequest = sandbox.stub()
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
@@ -917,7 +919,8 @@ describe('Participant Tests', () => {
           partyList: [
             { fspId: 'fsp2' }
           ]
-        }
+        },
+        status: 201
       })
       participant.sendRequest = sandbox.stub()
       const headers = {

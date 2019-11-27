@@ -62,7 +62,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     } else if (partySubIdOrType && isGetRequest) {
       url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType)
     } else {
-      url = await _getOracleEndpointByType(partyIdType)
+      url = await _getOracleEndpointByType(partyIdType, partyIdentifier)
     }
     Logger.debug(`Oracle endpoints: ${url}`)
     return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
