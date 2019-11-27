@@ -30,6 +30,7 @@ const Mustache = require('mustache')
 const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Config = require('../../lib/config')
 
 /**
  * @function oracleRequest
@@ -72,7 +73,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         }
       } else {
         Logger.error(`Oracle type:${type} and currency:${query.currency || payload.currency} not found`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} and currency:${query.currency || payload.currency} not found`).toApiErrorObject()
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} and currency:${query.currency || payload.currency} not found`).toApiErrorObject(Config.ERROR_HANDLING)
       }
     } else {
       oracleEndpointModel = await oracleEndpoint.getOracleEndpointByType(type)
