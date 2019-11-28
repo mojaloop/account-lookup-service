@@ -17,7 +17,7 @@
     "REAP_INTERVAL_MILLIS": 1000,
     "CREATE_RETRY_INTERVAL_MILLIS": 200
   },
-  "DISPLAY_ROUTES": true,
+  "DISPLAY_ROUTES": false,
   "RUN_MIGRATIONS": true,
   "ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
@@ -42,5 +42,6 @@
         }
       }
     }
-  }
+  },
+  "LOG_TRANSPORT": "console"
 }

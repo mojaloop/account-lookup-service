@@ -22,6 +22,12 @@ WORKDIR /opt/account-lookup-service
 COPY --from=builder /opt/account-lookup-service .
 RUN npm prune --production
 
+# Create empty log file
+RUN touch ./logs/combined.log
+
+# Link the stdout to the application log file
+RUN ln -sf /dev/stdout ./logs/combined.log
+
 EXPOSE 4002
 EXPOSE 4001
 CMD ["npm", "run", "start"]
