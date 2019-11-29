@@ -55,7 +55,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query) => {
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
     if (requesterParticipantModel) {
       const response = await oracle.oracleRequest(headers, method, params, query)
-      if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) { // TODO: requires validation, might be changed to response && response.code === 201
+      if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
         let options = {
           partyIdType: type,
           partyIdentifier: params.ID

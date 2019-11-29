@@ -53,7 +53,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const partyIdType = params.Type
     const partyIdentifier = params.ID
     const currency = (payload && payload.currency) ? payload.currency : (query && query.currency) ? query.currency : undefined
-    const partySubIdOrType = (payload && payload.partySubIdOrType) ? payload.partySubIdOrType : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
+    const partySubIdOrType = (params && params.SubId) ? params.SubId : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
     const isGetRequest = method.toUpperCase() === Enums.Http.RestMethods.GET
     if (currency && partySubIdOrType && isGetRequest) {
       url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType)
