@@ -435,7 +435,7 @@ workflows:
           context: org-global
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+              only: /.*/
             branches:
               ignore:
                 - /feature*/
@@ -446,7 +446,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+              only: /.*/
             branches:
               ignore:
                 - /feature*/
@@ -457,7 +457,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+              only: /.*/
             branches:
               ignore:
                 - /feature*/
@@ -490,7 +490,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /.*/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
             branches:
               ignore:
                 - /feature*/
