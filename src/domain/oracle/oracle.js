@@ -34,6 +34,7 @@ const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
+const Config = require('../../lib/config')
 
 /**
  * @function createOracle
@@ -160,7 +161,7 @@ exports.updateOracle = async (params, payload) => {
         if (currencyModel) {
           newOracleEntry.currencyId = payload.currency
         } else {
-          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code').toApiErrorObject()
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code').toApiErrorObject(Config.ERROR_HANDLING)
         }
       }
       if (payload.isDefault && payload.isDefault !== currentOracleEndpoint.isDefault) {

@@ -21,35 +21,32 @@
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
 
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
-const Sinon = require('sinon')
 const Migrations = require('@mojaloop/central-services-database').Migrations
-
 const Migrator = require('../../../src/lib/migrator')
-
-let sandbox
 
 describe('Migrator', () => {
   beforeEach(() => {
-    sandbox = Sinon.createSandbox()
+    const migrationsMethods = Object.getOwnPropertyNames(Migrations)
+    migrationsMethods.forEach((methodName) => {
+      jest.spyOn(Migrations, methodName).mockImplementation(() => {})
+    })
   })
 
   afterEach(() => {
-    sandbox.restore()
+    jest.clearAllMocks()
   })
 
   it('runs the migration from the knexfile', async () => {
-    // Arrange
-    const migrateSpy = sandbox.spy(Migrations, 'migrate')
-
     // Act
     Migrator.migrate()
 
     // Assert
-    expect(migrateSpy.calledOnce).toBe(true)
+    expect(Migrations.migrate).toHaveBeenCalledTimes(1)
   })
 })
