@@ -42,17 +42,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async function (req, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+  get: async function (request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
-      headers: req.headers,
-      payload: req.payload
+      headers: request.headers,
+      payload: request.payload
     }, EventSdk.AuditEventAction.start)
-    const metadata = `${req.method} ${req.path}`
+    const metadata = `${request.method} ${request.path}`
     try {
-      participants.getParticipantsByTypeAndID(req.headers, req.params, req.method, req.query, span)
+      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err}`)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -78,7 +78,7 @@ module.exports = {
    */
   post: async function (request, h) {
     const span = request.span
-    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
     await span.audit({
       headers: request.headers,

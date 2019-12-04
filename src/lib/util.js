@@ -1,19 +1,15 @@
 const Enum = require('@mojaloop/central-services-shared').Enum
 
-const getSpanTags = ({ payload, headers, params }, transactionType, transactionAction) => {
+const getSpanTags = ({ headers }, transactionType, transactionAction) => {
   const tags = {
     transactionType,
-    transactionAction,
-    transactionId: (payload && payload.transactionId) || (params && params.id),
-    quoteId: (payload && payload.quoteId) || (params && params.id),
-    source: headers[Enum.Http.Headers.FSPIOP.SOURCE],
-    destination: headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+    transactionAction
   }
-  if (payload && payload.payee && payload.payee.partyIdInfo && payload.payee.partyIdInfo.fspId) {
-    tags.payeeFsp = payload.payee.partyIdInfo.fspId
+  if (headers && headers[Enum.Http.Headers.FSPIOP.SOURCE]) {
+    tags.source = headers[Enum.Http.Headers.FSPIOP.SOURCE]
   }
-  if (payload && payload.payer && payload.payer.partyIdInfo && payload.payer.partyIdInfo.fspId) {
-    tags.payerFsp = payload.payer.partyIdInfo.fspId
+  if (headers && headers[Enum.Http.Headers.FSPIOP.DESTINATION]) {
+    tags.destination = headers[Enum.Http.Headers.FSPIOP.DESTINATION]
   }
   return tags
 }

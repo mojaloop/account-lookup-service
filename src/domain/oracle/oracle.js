@@ -25,6 +25,8 @@
  ******/
 'use strict'
 
+const LibUtil = require('../../lib/util')
+const Enum = require('@mojaloop/central-services-shared').Enum
 const Logger = require('@mojaloop/central-services-logger')
 const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
@@ -44,7 +46,7 @@ const EventSdk = require('@mojaloop/event-sdk')
  */
 exports.createOracle = async (payload, headers, span) => {
   try {
-    const spanTags = { oracleIdType: payload.oracleIdType, endpointType: payload.endpoint.endpointType, endpointValue: payload.endpoint.value, currency: payload.currency }
+    const spanTags = LibUtil.getSpanTags( {headers}, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
     await span.audit({
       headers: headers,
@@ -84,7 +86,7 @@ exports.createOracle = async (payload, headers, span) => {
  */
 exports.getOracle = async (query, headers, span) => {
   try {
-    const spanTags = { query: 'get /oracle' }
+    const spanTags = LibUtil.getSpanTags({headers}, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
       headers: headers,

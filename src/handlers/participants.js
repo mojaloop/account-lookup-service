@@ -42,7 +42,7 @@ module.exports = {
    */
   post: async function (req, h) {
     const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
     await span.audit({
       headers: req.headers,

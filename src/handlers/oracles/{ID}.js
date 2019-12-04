@@ -44,7 +44,7 @@ module.exports = {
    */
   put: async (request, h) => {
     const span = request.span
-    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
     await span.audit({
       headers: request.headers,
@@ -68,7 +68,7 @@ module.exports = {
    */
   delete: async (request, h) => {
     const span = request.span
-    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.DELETE)
     span.setTags(spanTags)
     await span.audit({
       headers: request.headers

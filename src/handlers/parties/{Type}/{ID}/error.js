@@ -45,7 +45,7 @@ module.exports = {
   put: async function (req, h) {
     try {
       const span = req.span
-      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
       span.setTags(spanTags)
       await span.audit({
         headers: req.headers,

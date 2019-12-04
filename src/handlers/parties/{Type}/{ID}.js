@@ -42,7 +42,7 @@ module.exports = {
    */
   get: async function (req, h) {
     const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
       headers: req.headers,
@@ -63,7 +63,7 @@ module.exports = {
    */
   put: async function (req, h) {
     const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
     await span.audit({
       headers: req.headers,

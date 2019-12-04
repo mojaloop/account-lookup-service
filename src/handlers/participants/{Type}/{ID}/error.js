@@ -45,7 +45,7 @@ module.exports = {
   put: function (req, h) {
     (async function () {
       const span = req.span
-      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PREPARE, Enum.Events.Event.Action.PREPARE)
+      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
       span.setTags(spanTags)
       const metadata = `${req.method} ${req.path}`
       try {
