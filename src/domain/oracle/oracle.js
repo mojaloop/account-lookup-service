@@ -46,7 +46,7 @@ const EventSdk = require('@mojaloop/event-sdk')
  */
 exports.createOracle = async (payload, headers, span) => {
   try {
-    const spanTags = LibUtil.getSpanTags( {headers}, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
+    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
     await span.audit({
       headers: headers,
@@ -86,7 +86,7 @@ exports.createOracle = async (payload, headers, span) => {
  */
 exports.getOracle = async (query, headers, span) => {
   try {
-    const spanTags = LibUtil.getSpanTags({headers}, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
+    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
       headers: headers,
