@@ -8,9 +8,6 @@ services:
   account-lookup-service:
     build:
       context: .
-      cache_from:
-        - mojaloop/account-lookup-service
-        - account-lookup-service
     container_name: als_account-lookup-service
     command:
       - "sh"
