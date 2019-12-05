@@ -51,7 +51,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (request, h) => {
-    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.query)
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
   /**
@@ -62,7 +62,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    participants.postParticipants(request.headers, request.method, request.params, request.query)
+    participants.postParticipants(request.headers, request.method, request.params, request.payload)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
