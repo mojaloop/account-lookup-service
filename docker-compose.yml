@@ -23,7 +23,7 @@ services:
       - als-mojaloop-net
     depends_on:
       - mysql-als
-      # - central-ledger
+      - central-ledger
     volumes:
       - ./src:/opt/account-lookup-service/src
       - ./docker/account-lookup-service/default.json:/opt/account-lookup-service/config/default.json
@@ -83,9 +83,9 @@ services:
 
   mysql-als:
     image: mysql/mysql-server
-    container_name: als_mysql_als
+    container_name: als_mysql_central_ledger
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
@@ -104,9 +104,9 @@ services:
 
   mysql-cl:
     image: mysql/mysql-server
-    container_name: als_mysql_cl
+    container_name: als_mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./docker/sql-init-central-ledger/:/docker-entrypoint-initdb.d/
     environment:

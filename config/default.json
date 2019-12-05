@@ -4,7 +4,7 @@
   "DATABASE": {
     "DIALECT": "mysql",
     "HOST": "localhost",
-    "PORT": 3307,
+    "PORT": 3306,
     "USER": "account_lookup",
     "PASSWORD": "password",
     "DATABASE": "account_lookup",
