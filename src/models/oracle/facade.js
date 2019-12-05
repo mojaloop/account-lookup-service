@@ -62,8 +62,6 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     } else if (partySubIdOrType && isGetRequest) {
       url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType)
     } else {
-      // Create (POST) by SubId goes through this route but subId is not in the payload.
-      // How do we transmit subId to oracle??
       url = await _getOracleEndpointByType(partyIdType, partyIdentifier)
       if (partySubIdOrType) {
         payload = { ...payload, partySubIdOrType }
