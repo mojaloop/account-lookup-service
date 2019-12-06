@@ -1,4 +1,3 @@
-
 /*****
  License
  --------------
@@ -19,8 +18,8 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Crosslake
- - Lewis Daly <lewisd@crosslaketech.com>
+ * ModusBox
+ - Steven Oderayi <steven.oderayi@modusbox.com>
 
  --------------
  ******/
@@ -29,19 +28,16 @@
 
 const Sinon = require('sinon')
 const getPort = require('get-port')
-
-const src = '../../../../../../src'
-
-const initServer = require(`${src}/server`).initialize
-const Db = require(`${src}/lib/db`)
-const participants = require(`${src}/domain/participants`)
-const ErrHandler = require(`${src}/handlers/participants/{Type}/{ID}/error`)
-const Helper = require('../../../../../util/helper')
+const initServer = require('../../../../../../../src/server').initialize
+const Db = require('../../../../../../../src/lib/db')
+const participants = require('../../../../../../../src/domain/participants')
+const ErrHandler = require('../../../../../../../src/handlers/participants/{Type}/{ID}/{SubId}/error')
+const Helper = require('../../../../../../util/helper')
 
 let server
 let sandbox
 
-describe('/participants/{Type}/{ID}/error', () => {
+describe('/participants/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
@@ -62,7 +58,7 @@ describe('/participants/{Type}/{ID}/error', () => {
       })
     }
 
-    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
+    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}/error', 'put')
     sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').returns({})
     mock.request.server = {
       log: sandbox.stub()
@@ -92,23 +88,25 @@ describe('/participants/{Type}/{ID}/error', () => {
       })
     }
 
-    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
+    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}/error', 'put')
     sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').throws(new Error('Error in putParticipantsErrorByTypeAndID'))
     mock.request.server = {
       log: sandbox.stub()
     }
 
     // Act
-    await ErrHandler.put(mock.request, handler)
+    try {
+      await ErrHandler.put(mock.request, handler)
+    } catch (err) {
+      // Assert
+      /*
+        Note - since the `put` function always returns a 202 response, we can't catch
+        the error when testing this. Instead, we test this by ensuring the `server.log` method is called with "ERROR"
+      */
 
-    // Assert
-    /*
-      Note - since the `put` function always returns a 202 response, we can't catch
-      the error when testing this. Instead, we test this by ensuring the `server.log` method is called with "ERROR"
-    */
-
-    const secondCallArgs = mock.request.server.log.getCall(1).args
-    expect(secondCallArgs[0]).toEqual(['error'])
+      const secondCallArgs = mock.request.server.log.getCall(1).args
+      expect(secondCallArgs[0]).toEqual(['error'])
+    }
     participants.putParticipantsErrorByTypeAndID.restore()
   })
 })
