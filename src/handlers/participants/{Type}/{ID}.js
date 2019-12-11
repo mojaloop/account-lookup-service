@@ -67,7 +67,14 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED, 'Not Implemented')
+    const metadata = `${request.method} ${request.path}`
+    try {
+      participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+    return h.response().code(200)
   },
   /**
    * summary: ParticipantsByIDAndType
@@ -101,7 +108,13 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: function (request, h) {
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED, 'Not Implemented')
+    const metadata = `${request.method} ${request.path}`
+    try {
+      participants.deleteParticipants(request.headers, request.params, request.method, request.query)
+    } catch (err) {
+      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+    return h.response().code(202)
   }
-
 }

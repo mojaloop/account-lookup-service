@@ -177,6 +177,29 @@ describe('Oracle tests', () => {
       // Assert
       await expect(action()).rejects.toThrowError(new RegExp('Oracle not found'))
     })
+
+    it('handles error when `getCurrencyById` returns empty result', async () => {
+      // Arrange
+      oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
+      partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
+      currency.getCurrencyById = sandbox.stub().resolves(null)
+      const params = { ID: '12345' }
+      const payload = {
+        oracleIdType: 'IBAN',
+        isDefault: true,
+        currency: 'AUD',
+        endpoint: {
+          endpointType: 'CUSTOM_TYPE',
+          value: 'http://custom_url:8444'
+        }
+      }
+
+      // Act
+      const action = async () => oracleDomain.updateOracle(params, payload)
+
+      // Assert
+      await expect(action()).rejects.toThrowError()
+    })
   })
 
   describe('createOracle', () => {

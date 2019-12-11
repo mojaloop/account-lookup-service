@@ -1,5 +1,4 @@
 /*****
- * @file This registers all handlers for the central-ledger API
  License
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
@@ -34,10 +33,9 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 
 /**
  * @function createErrorCallbackHeaders
- *
  * @description it returns the FSPIOP headers for error callback
- *
  * @param {object} params - parameters to the function with the shape `{ requestHeaders, partyIdType, partyIdentifier, endpointTemplate }`
+ *
  * @returns {object} - FSPIOP callback headers merged with the request headers passed in `params.requestHeaders`
  */
 exports.createCallbackHeaders = (params) => {

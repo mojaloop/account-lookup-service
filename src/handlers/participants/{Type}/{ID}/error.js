@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
@@ -54,13 +55,13 @@ module.exports = {
           payload: req.payload
         }, EventSdk.AuditEventAction.start)
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req, span)
+        await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()
-    return h.response().code(202)
+    return h.response().code(200)
   }
 }
