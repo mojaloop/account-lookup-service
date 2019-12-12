@@ -64,16 +64,17 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
           partyIdentifier: params.ID
         }
         options = partySubIdOrType ? { ...options, partySubIdOrType } : options
-        if (!headers[Enums.Http.Headers.FSPIOP.DESTINATION]) {
-          headers[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
+        const clonedHeaders = { ...headers }
+        if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
+          clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
         }
-        await participant.sendRequest(headers, response.data.partyList[0].fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, span)
+        await participant.sendRequest(clonedHeaders, response.data.partyList[0].fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, span)
       } else {
         const callbackHeaders = createCallbackHeaders({
           requestHeaders: headers,
           partyIdType: params.Type,
           partyIdentifier: params.ID,
-          endpointTemplate: errorCallbackEndpointType
+          endpointTemplate: partySubIdOrType ? Enums.EndPoints.FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTemplates.PARTIES_PUT_ERROR
         })
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
           ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(Config.ERROR_HANDLING), callbackHeaders, params, span)
