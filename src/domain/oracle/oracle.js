@@ -25,15 +25,12 @@
  ******/
 'use strict'
 
-const LibUtil = require('../../lib/util')
-const Enum = require('@mojaloop/central-services-shared').Enum
 const Logger = require('@mojaloop/central-services-logger')
 const oracleEndpoint = require('../../models/oracle')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const EventSdk = require('@mojaloop/event-sdk')
 const Config = require('../../lib/config')
 
 /**
@@ -42,17 +39,9 @@ const Config = require('../../lib/config')
  * @description This creates and entry in the oracleEndpoint table
  *
  * @param {object} payload The payload from the Hapi server request
- * @param headers
- * @param span
  */
-exports.createOracle = async (payload, headers, span) => {
+exports.createOracle = async (payload) => {
   try {
-    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
-    span.setTags(spanTags)
-    await span.audit({
-      headers: headers,
-      payload: payload
-    }, EventSdk.AuditEventAction.start)
     const oracleEntity = {}
     if (payload.isDefault) {
       oracleEntity.isDefault = payload.isDefault
@@ -82,17 +71,9 @@ exports.createOracle = async (payload, headers, span) => {
  * @description Retrieves list of oracles may accept query parameters
  *
  * @param {object} query The query parameters from the Hapi server request
- * @param headers
- * @param span
  */
-exports.getOracle = async (query, headers, span) => {
+exports.getOracle = async (query) => {
   try {
-    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
-    span.setTags(spanTags)
-    await span.audit({
-      headers: headers,
-      query: query
-    }, EventSdk.AuditEventAction.start)
     let oracleEndpointModelList
     let isCurrency; let isType = false
     const oracleList = []

@@ -25,6 +25,9 @@
 'use strict'
 
 const oracle = require('../domain/oracle')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../lib/util')
 
 /**
  * Operations on /oracles
@@ -38,7 +41,14 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
-    const response = await oracle.getOracle(request.query, request.headers, request.span)
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      query: request.query
+    }, EventSdk.AuditEventAction.start)
+    const response = await oracle.getOracle(request.query)
     return h.response(response).code(200)
   },
   /**
@@ -49,7 +59,14 @@ module.exports = {
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    await oracle.createOracle(request.payload, request.headers, request.span)
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
+    await oracle.createOracle(request.payload)
     return h.response().code(201)
   }
 }
