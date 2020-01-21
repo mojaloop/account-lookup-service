@@ -21,9 +21,10 @@
         "description": "If there is an error during FSP information creation in the server, the error callback PUT /participants/<ID>/error is used. The <ID> in the URI should contain the requestId that was used for the creation of the participant information.",
         "summary": "ParticipantsByIDAndError",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsByIDAndError",
+        "operationId": "als_participantsByIDAndError_put",
         "produces": [
           "application/json"
         ],
@@ -126,9 +127,10 @@
         "description": "The callback PUT /participants/<ID> is used to inform the client of the result of the creation of the provided list of identities.",
         "summary": "ParticipantsByID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsByIDPut",
+        "operationId": "als_participantsByID_put",
         "produces": [
           "application/json"
         ],
@@ -230,9 +232,10 @@
         "description": "If the server is unable to find, create or delete the associated FSP of the provided identity, or another processing error occurred, the error callback PUT /participants/<Type>/<ID>/error (or PUT /participants/<Type>/<ID>/<SubId>/error) is used.",
         "summary": "ParticipantsErrorByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsErrorByTypeAndID",
+        "operationId": "als_participantsErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -338,9 +341,10 @@
         "description": "If the server is unable to find, create or delete the associated FSP of the provided identity, or another processing error occurred, the error callback PUT /participants/<Type>/<ID>/error (or PUT /participants/<Type>/<ID>/<SubId>/error) is used.",
         "summary": "ParticipantsSubIdErrorByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsSubIdErrorByTypeAndID",
+        "operationId": "als_participantsSubIdErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -490,9 +494,10 @@
         "description": "The HTTP request GET /participants/<Type>/<ID> (or GET /participants/<Type>/<ID>/<SubId>) is used to find out in which FSP the requested Party, defined by <Type>, <ID> and optionally <SubId>, is located (for example, GET /participants/MSISDN/123456789, or GET /participants/BUSINESS/shoecompany/employee1).",
         "summary": "ParticipantsSubIdByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndID",
+        "operationId": "als_participantsSubIdByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -571,9 +576,10 @@
         "description": "The callback PUT /participants/<Type>/<ID> (or PUT /participants/<Type>/<ID>/<SubId>) is used to inform the client of a successful result of the lookup, creation, or deletion of the FSP information related to the Party. If the FSP information is deleted, the fspId element should be empty; otherwise the element should include the FSP information for the Party.",
         "summary": "ParticipantsSubIdByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndID3",
+        "operationId": "als_participantsSubIdByTypeAndID3_put",
         "produces": [
           "application/json"
         ],
@@ -668,9 +674,10 @@
         "description": "The HTTP request POST /participants/<Type>/<ID> (or POST /participants/<Type>/<ID>/<SubId>) is used to create information in the server regarding the provided identity, defined by <Type>, <ID>, and optionally <SubId> (for example, POST /participants/MSISDN/123456789 or POST /participants/BUSINESS/shoecompany/employee1).",
         "summary": "ParticipantsSubIdByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndIDPost",
+        "operationId": "als_participantsSubIdByTypeAndID_post",
         "produces": [
           "application/json"
         ],
@@ -766,9 +773,10 @@
         "description": "The HTTP request DELETE /participants/<Type>/<ID> (or DELETE /participants/<Type>/<ID>/<SubId>) is used to delete information in the server regarding the provided identity, defined by <Type> and <ID>) (for example, DELETE /participants/MSISDN/123456789), and optionally <SubId>. This HTTP request should support a query string to delete FSP information regarding a specific currency only. To delete a specific currency only, the HTTP request DELETE /participants/<Type>/<ID>?currency=XYZ should be used, where XYZ is the requested currency. Note -  The Account Lookup System should verify that it is the Party’s current FSP that is deleting the FSP information.",
         "summary": "ParticipantsSubIdByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsSubIdByTypeAndID2",
+        "operationId": "als_participantsSubIdByTypeAndID2_delete",
         "produces": [
           "application/json"
         ],
@@ -887,9 +895,10 @@
         "description": "The HTTP request GET /participants/<Type>/<ID> (or GET /participants/<Type>/<ID>/<SubId>) is used to find out in which FSP the requested Party, defined by <Type>, <ID> and optionally <SubId>, is located (for example, GET /participants/MSISDN/123456789, or GET /participants/BUSINESS/shoecompany/employee1).",
         "summary": "ParticipantsByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsByTypeAndID",
+        "operationId": "als_participantsByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -965,9 +974,10 @@
         "description": "The callback PUT /participants/<Type>/<ID> (or PUT /participants/<Type>/<ID>/<SubId>) is used to inform the client of a successful result of the lookup, creation, or deletion of the FSP information related to the Party. If the FSP information is deleted, the fspId element should be empty; otherwise the element should include the FSP information for the Party.",
         "summary": "ParticipantsByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsByTypeAndID3",
+        "operationId": "als_participantsByTypeAndID3_put",
         "produces": [
           "application/json"
         ],
@@ -1059,9 +1069,10 @@
         "description": "The HTTP request POST /participants/<Type>/<ID> (or POST /participants/<Type>/<ID>/<SubId>) is used to create information in the server regarding the provided identity, defined by <Type>, <ID>, and optionally <SubId> (for example, POST /participants/MSISDN/123456789 or POST /participants/BUSINESS/shoecompany/employee1).",
         "summary": "ParticipantsByIDAndType",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsByIDAndType",
+        "operationId": "als_participantsByIDAndType_post",
         "produces": [
           "application/json"
         ],
@@ -1154,9 +1165,10 @@
         "description": "The HTTP request DELETE /participants/<Type>/<ID> (or DELETE /participants/<Type>/<ID>/<SubId>) is used to delete information in the server regarding the provided identity, defined by <Type> and <ID>) (for example, DELETE /participants/MSISDN/123456789), and optionally <SubId>. This HTTP request should support a query string to delete FSP information regarding a specific currency only. To delete a specific currency only, the HTTP request DELETE /participants/<Type>/<ID>?currency=XYZ should be used, where XYZ is the requested currency. Note -  The Account Lookup System should verify that it is the Party’s current FSP that is deleting the FSP information.",
         "summary": "ParticipantsByTypeAndID",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "ParticipantsByTypeAndID2",
+        "operationId": "als_participantsByTypeAndID2_delete",
         "produces": [
           "application/json"
         ],
@@ -1234,9 +1246,10 @@
         "description": "The HTTP request POST /participants is used to create information in the server regarding the provided list of identities. This request should be used for bulk creation of FSP information for more than one Party. The optional currency parameter should indicate that each provided Party supports the currency",
         "summary": "Participants",
         "tags": [
-          "participants"
+          "participants",
+          "sampled"
         ],
-        "operationId": "Participants1",
+        "operationId": "als_participants1_post",
         "produces": [
           "application/json"
         ],
@@ -1377,9 +1390,10 @@
         "description": "The HTTP request GET /parties/<Type>/<ID> (or GET /parties/<Type>/<ID>/<SubId>) is used to lookup information regarding the requested Party, defined by <Type>, <ID> and optionally <SubId> (for example, GET /parties/MSISDN/123456789, or GET /parties/BUSINESS/shoecompany/employee1).",
         "summary": "PartiesByTypeAndID",
         "tags": [
-          "parties"
+          "parties",
+          "sampled"
         ],
-        "operationId": "PartiesByTypeAndID",
+        "operationId": "als_partiesByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -1455,9 +1469,10 @@
         "description": "The callback PUT /parties/<Type>/<ID> (or PUT /parties/<Type>/<ID>/<SubId>) is used to inform the client of a successful result of the Party information lookup.",
         "summary": "PartiesByTypeAndID2",
         "tags": [
-          "parties"
+          "parties",
+          "sampled"
         ],
-        "operationId": "PartiesByTypeAndID2",
+        "operationId": "als_partiesByTypeAndID2_put",
         "produces": [
           "application/json"
         ],
@@ -1568,9 +1583,10 @@
         "description": "If the server is unable to find Party information of the provided identity, or another processing error occurred, the error callback PUT /parties/<Type>/<ID>/error (or PUT /parties/<Type>/<ID>/<SubId>/error) is used.",
         "summary": "PartiesErrorByTypeAndID",
         "tags": [
-          "parties"
+          "parties",
+          "sampled"
         ],
-        "operationId": "PartiesErrorByTypeAndID",
+        "operationId": "als_partiesErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -1717,9 +1733,10 @@
         "description": "The HTTP request GET /parties/<Type>/<ID> (or GET /parties/<Type>/<ID>/<SubId>) is used to lookup information regarding the requested Party, defined by <Type>, <ID> and optionally <SubId> (for example, GET /parties/MSISDN/123456789, or GET /parties/BUSINESS/shoecompany/employee1).",
         "summary": "PartiesSubIdByTypeAndID",
         "tags": [
-          "parties"
+          "parties",
+          "sampled"
         ],
-        "operationId": "PartiesSubIdByTypeAndID",
+        "operationId": "als_partiesSubIdByTypeAndID_get",
         "produces": [
           "application/json"
         ],
@@ -1798,9 +1815,10 @@
         "description": "The callback PUT /parties/<Type>/<ID> (or PUT /parties/<Type>/<ID>/<SubId>) is used to inform the client of a successful result of the Party information lookup.",
         "summary": "PartiesSubIdByTypeAndID",
         "tags": [
-          "parties"
+          "parties",
+          "sampled"
         ],
-        "operationId": "PartiesSubIdByTypeAndIDPut",
+        "operationId": "also_partiesSubIdByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -1911,9 +1929,10 @@
         "description": "If the server is unable to find Party information of the provided identity, or another processing error occurred, the error callback PUT /parties/<Type>/<ID>/error (or PUT /parties/<Type>/<ID>/<SubId>/error) is used.",
         "summary": "PartiesSubIdErrorByTypeAndID",
         "tags": [
-          "parties"
+          "parties",
+          "sampled"
         ],
-        "operationId": "PartiesSubIdErrorByTypeAndID",
+        "operationId": "als_partiesSubIdErrorByTypeAndID_put",
         "produces": [
           "application/json"
         ],
@@ -2022,9 +2041,10 @@
         "description": "The HTTP request GET /health is used to return the current status of the ALS API.",
         "summary": "Get health",
         "tags": [
-          "health"
+          "health",
+          "sampled"
         ],
-        "operationId": "ApiHealthGet",
+        "operationId": "als_ApiHealth_get",
         "produces": [
           "application/json"
         ],
@@ -2064,9 +2084,10 @@
         "description": "The HTTP request DELETE /endpointcache is used to reset the endpoint cache by performing an stopCache and initializeCache the Admin API.",
         "summary": "Endpoint Cache",
         "tags": [
-          "cache"
+          "cache",
+          "sampled"
         ],
-        "operationId": "EndpointCache",
+        "operationId": "als_endpointCache_get",
         "parameters": [
           {
             "$ref": "#/parameters/Date"

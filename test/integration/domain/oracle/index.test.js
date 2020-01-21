@@ -28,6 +28,7 @@ const Db = require('../../../../src/lib/db')
 const Config = require('../../../../src/lib/config')
 const Oracle = require('../../../../src/domain/oracle')
 const OracleModel = require('../../../../src/models/oracle')
+const EventSdk = require('@mojaloop/event-sdk')
 
 describe('Oracle', () => {
   beforeAll(async () => {
@@ -49,9 +50,21 @@ describe('Oracle', () => {
         endpointType: 'URL'
       }
     }
+    const createHeaders = {
+      accept: 'application/vnd.interoperability.participants+json;version=1',
+      'cache-control': 'no-cache',
+      date: '',
+      'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+      host: '127.0.0.1:4003',
+      'accept-encoding': 'gzip, deflate',
+      'content-length': 164,
+      connection: 'keep-alive'
+    }
+
+    const testSpan = EventSdk.Tracer.createSpan('createOracle service')
 
     // Act
-    const result = await Oracle.createOracle(payload)
+    const result = await Oracle.createOracle(payload, createHeaders, testSpan)
 
     // Assert
     expect(result).toBe(true)

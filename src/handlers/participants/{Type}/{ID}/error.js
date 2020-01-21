@@ -19,11 +19,15 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../../../lib/util')
 const pp = require('util').inspect
 const participants = require('../../../../domain/participants')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -41,10 +45,17 @@ module.exports = {
    */
   put: function (req, h) {
     (async function () {
+      const span = req.span
+      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
+      span.setTags(spanTags)
       const metadata = `${req.method} ${req.path}`
       try {
+        await span.audit({
+          headers: req.headers,
+          payload: req.payload
+        }, EventSdk.AuditEventAction.start)
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
+        await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
         req.server.log(['info'], `success: ${metadata}.`)
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
