@@ -101,7 +101,7 @@
     "jest-junit": "10.0.0",
     "jsdoc": "3.6.3",
     "nodemon": "2.0.2",
-    "npm-audit-resolver": "2.1.0",
+    "npm-audit-resolver": "2.2.0",
     "npm-check-updates": "4.0.1",
     "nyc": "15.0.0",
     "pre-commit": "1.2.2",
