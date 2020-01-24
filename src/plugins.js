@@ -29,6 +29,7 @@ const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const CentralServices = require('@mojaloop/central-services-shared')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
 
 const registerPlugins = async (server) => {
@@ -67,7 +68,8 @@ const registerPlugins = async (server) => {
     Inert,
     Vision,
     ErrorHandling,
-    RawPayloadToDataUri
+    RawPayloadToDataUri,
+    CentralServices.Util.Hapi.HapiEventPlugin
   ])
 
   if (Config.DISPLAY_ROUTES === true) {

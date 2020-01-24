@@ -19,11 +19,15 @@
  * Name Surname <name.surname@gatesfoundation.com>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -39,10 +43,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (req, h) {
-    const metadata = `${req.method} ${req.path}`
+  get: async function (request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.LOOKUP)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
+    const metadata = `${request.method} ${request.path}`
     try {
-      participants.getParticipantsByTypeAndID(req.headers, req.params, req.method, req.query)
+      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err}`)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -73,10 +84,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function (request, h) {
+  post: async function (request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.postParticipants(request.headers, request.method, request.params, request.payload)
+      participants.postParticipants(request.headers, request.method, request.params, request.payload, span)
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
