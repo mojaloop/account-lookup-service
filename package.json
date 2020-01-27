@@ -80,7 +80,7 @@
     "@now-ims/hapi-now-auth": "2.0.0",
     "blipp": "4.0.1",
     "commander": "4.1.0",
-    "docdash": "1.1.1",
+    "docdash": "1.2.0",
     "hapi-auth-bearer-token": "6.2.1",
     "hapi-openapi": "1.2.6",
     "hapi-swagger": "10.3.0",
