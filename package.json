@@ -94,10 +94,10 @@
     "uuid4": "1.1.4"
   },
   "devDependencies": {
-    "@types/jest": "25.1.1",
+    "@types/jest": "24.9.0",
     "eslint": "6.8.0",
     "get-port": "5.0.0",
-    "jest": "25.1.0",
+    "jest": "24.9.0",
     "jest-junit": "10.0.0",
     "jsdoc": "3.6.3",
     "nodemon": "2.0.2",
