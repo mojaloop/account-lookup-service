@@ -6,6 +6,7 @@
       "hapi-swagger",
       "get-port",
       "jest",
-      "@types/jest"
+      "@types/jest",
+      "@mojaloop/central-services-metrics"
    ]
 }
