@@ -4,6 +4,8 @@
       "@hapi/vision",
       "@hapi/inert",
       "hapi-swagger",
-      "get-port"
+      "get-port",
+      "jest",
+      "@types/jest"
    ]
 }
