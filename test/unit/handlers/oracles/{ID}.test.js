@@ -37,6 +37,7 @@ const initServer = require('../../../../src/server').initialize
 const getPort = require('get-port')
 const Db = require('../../../../src/lib/db')
 const Migrator = require('../../../../src/lib/migrator')
+const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 
 let sandbox
 let server
@@ -46,7 +47,10 @@ describe('/oracles/{ID} handler', () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
+    sandbox.stub(ParticipantEndpointCache, 'initializeCache').returns(Promise.resolve({}))
+    // const st = Date.now()
     server = await initServer(await getPort(), false)
+    // console.log('initServer took: ', Date.now() - st)
   })
 
   afterAll(async () => {
@@ -114,7 +118,7 @@ describe('/oracles/{ID} handler', () => {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  it('PUT /oracles/{ID}', async () => {
+  it('DELETE /oracles/{ID}', async () => {
     // Arrange
     const requests = new Promise((resolve, reject) => {
       Mockgen(false).requests({
