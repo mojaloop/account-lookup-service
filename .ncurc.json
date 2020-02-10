@@ -2,6 +2,11 @@
    "reject": [
       "hapi-swagger",
       "@hapi/inert",
-      "get-port"
+      "get-port",
+      "@hapi/basic",
+      "@hapi/good",
+      "@hapi/hapi",
+      "@hapi/vision",
+      "json-rules-engine"
    ]
 }
