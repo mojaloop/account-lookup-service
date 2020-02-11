@@ -34,7 +34,7 @@ const helper = require('../../../util/helper')
 const Sinon = require('sinon')
 const oracle = require('../../../../src/domain/oracle')
 const initServer = require('../../../../src/server').initialize
-const getPort = require('get-port')
+// const getPort = require('get-port')
 const Db = require('../../../../src/lib/db')
 const Migrator = require('../../../../src/lib/migrator')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
@@ -48,7 +48,8 @@ describe('/oracles/{ID} handler', () => {
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
     sandbox.stub(ParticipantEndpointCache, 'initializeCache').returns(Promise.resolve({}))
-    server = await initServer(await getPort(), false)
+    // server = await initServer(await getPort(), false)
+    server = await initServer(35853, false)
   })
 
   afterAll(async () => {
