@@ -48,9 +48,7 @@ describe('/oracles/{ID} handler', () => {
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
     sandbox.stub(ParticipantEndpointCache, 'initializeCache').returns(Promise.resolve({}))
-    // const st = Date.now()
     server = await initServer(await getPort(), false)
-    // console.log('initServer took: ', Date.now() - st)
   })
 
   afterAll(async () => {
