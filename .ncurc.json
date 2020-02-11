@@ -4,9 +4,6 @@
       "@hapi/vision",
       "@hapi/inert",
       "hapi-swagger",
-      "get-port",
-      "jest",
-      "@types/jest",
-      "@mojaloop/central-services-metrics"
+      "get-port"
    ]
 }
