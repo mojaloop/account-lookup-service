@@ -188,7 +188,6 @@ jobs:
 
   test-unit:
     executor: default-docker
-    resource_class: medium+
     steps:
       - checkout
       - run:
@@ -211,7 +210,6 @@ jobs:
 
   test-coverage:
     executor: default-docker
-    resource_class: medium+
     steps:
       - checkout
       - run:
