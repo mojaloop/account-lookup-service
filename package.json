@@ -85,7 +85,7 @@
     "hapi-openapi": "1.2.6",
     "hapi-swagger": "10.3.0",
     "json-rules-engine": "5.0.3",
-    "knex": "0.20.9",
+    "knex": "0.20.10",
     "mustache": "4.0.0",
     "mysql": "2.18.1",
     "npm-run-all": "4.1.5",
