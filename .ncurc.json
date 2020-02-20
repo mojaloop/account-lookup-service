@@ -1,9 +1,8 @@
 {
    "reject": [
       "@hapi/hapi",
-      "@hapi/vision",
       "@hapi/inert",
-      "hapi-swagger",
-      "get-port"
+      "@hapi/vision",
+      "hapi-swagger"
    ]
 }
