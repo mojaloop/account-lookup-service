@@ -236,6 +236,9 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
+      - run:
+          name: Install AWS CLI dependencies
+          command: *defaults_awsCliDependencies
       - attach_workspace:
           at: /tmp
       - run:
@@ -244,8 +247,7 @@ jobs:
       - anchore/analyze_local_image:
           dockerfile_path: ./Dockerfile
           image_name: ${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
-          policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
-          # Anchore bug: if policy_failure is `true`, reports don't get written - we manually check for 
+          # Anchore bug: if policy_failure is `true`, reports don't get written - we manually check for failures below
           policy_failure: false
           timeout: '500'
       - run:
@@ -262,15 +264,20 @@ jobs:
               printf "\n%s\n" "The following vulnerabilities were found:"
               jq '[.vulnerabilities | group_by(.package) | .[] | {package: .[0].package, vuln: [.[].vuln]}]' anchore-reports/*vuln*.json
             fi
+      - run:
+          name: Upload Anchore reports to s3
+          command: |
+            aws s3 cp anchore-reports ${AWS_S3_DIR_ANCHORE_REPORTS}/${CIRCLE_PROJECT_REPONAME}/ --recursive
+            aws s3 rm ${AWS_S3_DIR_ANCHORE_REPORTS}/latest/ --recursive --exclude "*" --include "${CIRCLE_PROJECT_REPONAME}*"
+            aws s3 cp anchore-reports ${AWS_S3_DIR_ANCHORE_REPORTS}/latest/ --recursive
 
-            # Check the status of the policy.json for whether or not our tests failed
-            failCount=$(cat anchore-reports/*policy*.json | grep '\"status\": \"fail\"' | wc -l)
-            if [ $failCount -gt 0 ]; then
-              echo "Failed with a policy failure count of: ${failCount}"
-              # TODO: Enable this when we want to increase the strictness of our security policies
-              # exit 1
-            fi
-
+            # TODO: Enable this when we want to increase the strictness of our security policies
+            # failCount=$(cat anchore-reports/*policy*.json | grep 'fail' | wc -l)
+            # echo "FailCount is: ${failCount}"
+            # if [ $failCount -gt 0 ]; then
+            #   printf "Failed with a policy failure count of: ${failCount}"
+            #   exit 1
+            # fi
       - store_artifacts:
           path: anchore-reports
 
@@ -286,9 +293,6 @@ jobs:
       - run:
           name: Login to Docker Hub
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
-      - run:
-          name: setup environment vars for publish/deploy
-          command: ./.circleci/_set_up_deploy_envs.sh
       - run:
           name: Re-tag pre built image
           command: |
@@ -314,7 +318,7 @@ jobs:
     steps:
       - checkout
       - deploy-kube/setup_and_run:
-          # TODO: update
+          # TODO: update me
           helm_set_values: --set .quoting-service.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME --set .quoting-service.image.tag=$CIRCLE_TAG
 
 ##
