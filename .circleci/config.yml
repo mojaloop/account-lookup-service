@@ -318,10 +318,11 @@ jobs:
     steps:
       - checkout
       - deploy-kube/setup_and_run:
-          helm_set_values: --set .account-lookup-service.account-lookup-service.containers.api.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME \
-          --set .account-lookup-service.account-lookup-service.containers.api.image.tag=$CIRCLE_TAG \
-          --set .account-lookup-service.account-lookup-service.containers.admin.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME \
-          --set .account-lookup-service.account-lookup-service.containers.admin.image.tag=$CIRCLE_TAG
+          helm_set_values: |
+            --set .account-lookup-service.account-lookup-service.containers.api.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME \
+            --set .account-lookup-service.account-lookup-service.containers.api.image.tag=$CIRCLE_TAG \
+            --set .account-lookup-service.account-lookup-service.containers.admin.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME \
+            --set .account-lookup-service.account-lookup-service.containers.admin.image.tag=$CIRCLE_TAG
 
 ##
 # Workflows
