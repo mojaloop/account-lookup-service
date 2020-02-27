@@ -24,6 +24,7 @@
 'use strict'
 
 const Hapi = require('@hapi/hapi')
+const Boom = require('@hapi/boom')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./lib/db')
@@ -70,7 +71,7 @@ const createServer = async (port, isApi) => {
       validate: {
         options: ErrorHandler.validateRoutes(),
         failAction: async (request, h, err) => {
-          throw ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX)
+          throw Boom.boomify(err)
         }
       },
       payload: {
