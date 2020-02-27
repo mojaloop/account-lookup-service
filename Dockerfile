@@ -1,4 +1,4 @@
-FROM node:10.15.3-alpine AS builder
+FROM node:12.16.0-alpine AS builder
 
 WORKDIR /opt/account-lookup-service
 
@@ -15,7 +15,7 @@ COPY migrations /opt/account-lookup-service/migrations
 COPY seeds /opt/account-lookup-service/seeds
 COPY src /opt/account-lookup-service/src
 
-FROM node:10.15.3-alpine
+FROM node:12.16.0-alpine
 
 WORKDIR /opt/account-lookup-service
 

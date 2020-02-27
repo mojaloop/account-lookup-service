@@ -24,6 +24,9 @@
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../../lib/util')
 const parties = require('../../../domain/parties')
 
 /**
@@ -37,10 +40,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (req, h) {
+  get: async function (req, h) {
+    const span = req.span
+    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: req.headers,
+      payload: req.payload
+    }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query)
+    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query, span)
     return h.response().code(202)
   },
 
@@ -51,7 +61,14 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (req, h) {
+  put: async function (req, h) {
+    const span = req.span
+    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: req.headers,
+      payload: req.payload
+    }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
     parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
