@@ -75,7 +75,7 @@ describe('/participants', () => {
     const response = await server.inject(options)
 
     // Assert
-    expect(response.statusCode).toBe(500)
+    expect(response.statusCode).toBe(400)
     await server.stop()
   })
 })

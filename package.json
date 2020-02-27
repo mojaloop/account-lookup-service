@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups",
-  "version": "9.2.2",
+  "version": "9.2.3",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -96,6 +96,7 @@
   "devDependencies": {
     "@types/jest": "25.1.3",
     "eslint": "6.8.0",
+    "eslint-plugin-jest": "23.8.0",
     "get-port": "5.1.1",
     "jest": "25.1.0",
     "jest-junit": "10.0.0",
