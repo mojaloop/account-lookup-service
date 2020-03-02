@@ -3144,6 +3144,7 @@
       "description": "Data model for the complex type Money.",
       "properties": {
         "currency": {
+          "$ref": "#/definitions/Currency",
           "type": "string",
           "description": "Currency of the amount."
         },
@@ -3164,9 +3165,12 @@
       "properties": {
         "fspId": {
           "type": "string",
-          "description": "FSP Identifier that the Party belongs to."
+          "description": "FSP Identifier that the Party belongs to.",
+          "minLength": 1,
+          "maxLength": 32
         },
         "currency": {
+          "$ref": "#/definitions/Currency",
           "type": "string",
           "description": "Indicate that the provided Currency is supported by the Party."
         }
@@ -3182,7 +3186,9 @@
       "properties": {
         "fspId": {
           "type": "string",
-          "description": "FSP Identifier that the Party belongs to."
+          "description": "FSP Identifier that the Party belongs to.",
+          "minLength": 1,
+          "maxLength": 32
         }
       }
     },
@@ -3201,6 +3207,7 @@
           "description": "List of PartyResult elements that were either created or failed to be created."
         },
         "currency": {
+          "$ref": "#/definitions/Currency",
           "type": "string",
           "description": "Indicate that the provided Currency was set to be supported by each successfully added PartyIdInfo."
         }
@@ -3228,6 +3235,7 @@
           "description": "List of PartyIdInfo elements that the client would like to update or create FSP information about."
         },
         "currency": {
+          "$ref": "#/definitions/Currency",
           "type": "string",
           "description": "Indicate that the provided Currency is supported by each PartyIdInfo in the list."
         }
@@ -3301,7 +3309,9 @@
         },
         "fspId": {
           "type": "string",
-          "description": "FSP ID (if known)"
+          "description": "FSP ID (if known)",
+          "minLength": 1,
+          "maxLength": 32
         }
       },
       "required": [
