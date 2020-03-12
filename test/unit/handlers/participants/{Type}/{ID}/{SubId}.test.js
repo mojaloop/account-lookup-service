@@ -107,6 +107,8 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       stubs.forEach(s => s.restore())
     })
 
+    // Added error 404 to cover a special case of the Mowali implementation
+    // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
     it('getParticipantsByTypeAndID sends an async 3200 for invalid party id on response with status 404', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
