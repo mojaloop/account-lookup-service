@@ -75,7 +75,7 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       participants.getParticipantsByTypeAndID.restore()
     })
 
-    it('getParticipantsByTypeAndID sends an async 3200 for invalid party id', async () => {
+    it('getParticipantsByTypeAndID sends an async 3200 for invalid party id on response with status 400', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
       const options = {
@@ -90,6 +90,38 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         {},
         {},
         [{ key: 'status', value: 400 }]
+      )
+      const stubs = [
+        sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
+        sandbox.stub(participant, 'validateParticipant').returns(true),
+        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
+        sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+      ]
+      const response = await server.inject(options)
+      const errorCallStub = stubs[0]
+
+      // Assert
+      expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
+      expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR)
+      expect(response.statusCode).toBe(202)
+      stubs.forEach(s => s.restore())
+    })
+
+    it('getParticipantsByTypeAndID sends an async 3200 for invalid party id on response with status 404', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
+      const options = {
+        method: 'get',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders
+      }
+
+      const badRequestError = ErrorHandler.Factory.createFSPIOPError(
+        ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR,
+        'Failed to send HTTP request to host',
+        {},
+        {},
+        [{ key: 'status', value: 404 }]
       )
       const stubs = [
         sandbox.stub(participant, 'sendErrorToParticipant').returns({}),

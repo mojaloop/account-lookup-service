@@ -76,7 +76,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     if (
       err.name === 'FSPIOPError' &&
       err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code &&
-      err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))
+      err.extensions.some(ext => (ext.key === 'status' && (ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE || ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE)))
     ) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
     }
