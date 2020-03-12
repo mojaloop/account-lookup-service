@@ -71,7 +71,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     parties.getPartiesByTypeAndID.restore()
   })
 
-  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID', async () => {
+  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
     const options = {
@@ -86,6 +86,42 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       {},
       {},
       [{ key: 'status', value: 400 }]
+    )
+    const stubs = [
+      sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
+      sandbox.stub(participant, 'validateParticipant').returns(true),
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
+      sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+    ]
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    const errorCallStub = stubs[0]
+    expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
+    expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR)
+    expect(response.statusCode).toBe(202)
+    stubs.forEach(s => s.restore())
+  })
+
+  // Added error 404 to cover a special case of the Mowali implementation
+  // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
+  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID with status 404', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties')
+    }
+
+    const badRequestError = ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR,
+      'Failed to send HTTP request to host',
+      {},
+      {},
+      [{ key: 'status', value: 404 }]
     )
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
