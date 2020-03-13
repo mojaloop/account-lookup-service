@@ -71,7 +71,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     parties.getPartiesByTypeAndID.restore()
   })
 
-  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID on response with status 400', async () => {
+  it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
     const options = {
@@ -107,7 +107,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
   // Added error 404 to cover a special case of the Mowali implementation
   // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
-  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID with status 404', async () => {
+  it('getPartiesByTypeAndID endpoint sends async 3201 to /error for invalid party ID with status 404', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
     const options = {
@@ -135,7 +135,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Assert
     const errorCallStub = stubs[0]
-    expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
+    expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3201')
     expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR)
     expect(response.statusCode).toBe(202)
     stubs.forEach(s => s.restore())
