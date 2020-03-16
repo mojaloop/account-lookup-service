@@ -73,10 +73,12 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     Logger.error(err)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
+    // Added error 404 to cover a special case of the Mowali implementation
+    // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
     if (
       err.name === 'FSPIOPError' &&
       err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code &&
-      err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))
+      err.extensions.some(ext => (ext.key === 'status' && (ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE || ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE)))
     ) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
     }
