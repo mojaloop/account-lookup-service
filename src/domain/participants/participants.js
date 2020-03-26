@@ -70,8 +70,9 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
         }
         const clonedHeaders = { ...headers }
         if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
-          clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
+          clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE]
         }
+        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
         await participant.sendRequest(clonedHeaders, requesterName, callbackEndpointType, Enums.Http.RestMethods.PUT, payload, options, childSpan)
       } else {
         await participant.sendErrorToParticipant(requesterName, errorCallbackEndpointType,

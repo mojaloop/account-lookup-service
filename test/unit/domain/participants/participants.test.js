@@ -167,7 +167,7 @@ describe('Participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('fsp1')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe(headers['fspiop-source'])
     })
 
     it('fails with `Requester FSP not found` if `validateParticipant` fails', async () => {
