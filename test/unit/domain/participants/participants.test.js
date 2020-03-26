@@ -110,7 +110,7 @@ describe('Participant Tests', () => {
       const firstCallArgs = participant.sendRequest.getCall(0).args
       expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('payeefsp')
       expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
-      expect(firstCallArgs[6].partySubIdOrType).toBe('subId')
+      expect(firstCallArgs[5].partySubIdOrType).toBe('subId')
     })
 
     it('fails to get participants and sends error callback with appropriate endpoint type when SubId is specified', async () => {
