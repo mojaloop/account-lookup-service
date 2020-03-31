@@ -98,7 +98,7 @@
     "jest": "25.2.4",
     "jest-junit": "10.0.0",
     "jsdoc": "3.6.3",
-    "nodemon": "^2.0.2",
+    "nodemon": "2.0.2",
     "npm-audit-resolver": "2.2.0",
     "npm-check-updates": "4.1.0",
     "nyc": "15.0.0",
