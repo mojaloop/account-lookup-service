@@ -50,15 +50,36 @@ describe('/participants', () => {
     await server.stop()
     sandbox.restore()
   })
-
+  const mock = {
+    requestId: 'HNNnJ',
+    partyList: [{
+      partyIdType: 'LnlWooyQk',
+      partyIdentifier: 'MIYCVaNdsLD',
+      partySubIdOrType: 'GNYKQO',
+      fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
+    },
+    {
+      partyIdType: 'QGijB',
+      partyIdentifier: 'eEmRAczAyz',
+      partySubIdOrType: 'ki',
+      fspId: 'sYhkSmfUW'
+    },
+    {
+      partyIdType: 'nxRgD',
+      partyIdentifier: 'SNLwBJVZ',
+      partySubIdOrType: 'fBcEvS',
+      fspId: 'lgfJVXYOpsNfY'
+    }
+    ],
+    currency: 'EUR'
+  }
   it('postParticipantsBatch success', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultSwitchHeaders,
-      payload: mock.request.body
+      payload: mock
     }
     sandbox.stub(participants, 'postParticipantsBatch').returns({})
 
@@ -72,12 +93,11 @@ describe('/participants', () => {
 
   it('postParticipantsBatch error', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultSwitchHeaders,
-      payload: mock.request.body
+      payload: mock
     }
 
     // Act
