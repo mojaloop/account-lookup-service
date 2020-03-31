@@ -1532,7 +1532,15 @@
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
                 "“partySubIdOrType”": "“DRIVING_LICENSE”",
-                "“fspId”": "“1234”"
+                "“fspId”": "“1234”",
+                "extensionList": {
+                  "extension": [
+                    {
+                      "key": "Account Type",
+                      "value": "Wallet"
+                    }
+                  ]
+                }
               },
               "merchantClassificationCode": "4321",
               "“name”": "“Justin Trudeau”",
@@ -1878,7 +1886,15 @@
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
                 "“partySubIdOrType”": "“DRIVING_LICENSE”",
-                "“fspId”": "“1234”"
+                "“fspId”": "“1234”",
+                "extensionList": {
+                  "extension": [
+                    {
+                      "key": "Account Type",
+                      "value": "Wallet"
+                    }
+                  ]
+                }
               },
               "merchantClassificationCode": "4321",
               "“name”": "“Justin Trudeau”",
@@ -3312,6 +3328,10 @@
           "description": "FSP ID (if known)",
           "minLength": 1,
           "maxLength": 32
+        },
+        "extensionList": {
+          "$ref": "#/definitions/ExtensionList",
+          "description": "Optional extension, specific to deployment."
         }
       },
       "required": [
