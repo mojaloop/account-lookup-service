@@ -2041,8 +2041,7 @@
         "description": "The HTTP request GET /health is used to return the current status of the ALS API.",
         "summary": "Get health",
         "tags": [
-          "health",
-          "sampled"
+          "health"
         ],
         "operationId": "als_ApiHealth_get",
         "produces": [
