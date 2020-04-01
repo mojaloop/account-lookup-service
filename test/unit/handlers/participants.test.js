@@ -60,15 +60,36 @@ describe('/participants', () => {
 
   it('POST /participants', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
-
+    const mock = {
+      requestId: 'HNNnJ',
+      partyList: [{
+        partyIdType: 'LnlWooyQk',
+        partyIdentifier: 'MIYCVaNdsLD',
+        partySubIdOrType: 'GNYKQO',
+        fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
+      },
+      {
+        partyIdType: 'QGijB',
+        partyIdentifier: 'eEmRAczAyz',
+        partySubIdOrType: 'ki',
+        fspId: 'sYhkSmfUW'
+      },
+      {
+        partyIdType: 'nxRgD',
+        partyIdentifier: 'SNLwBJVZ',
+        partySubIdOrType: 'fBcEvS',
+        fspId: 'lgfJVXYOpsNfY'
+      }
+      ],
+      currency: 'EUR'
+    }
     // Get the resolved path from mock request
     // Mock request Path templates({}) are resolved using path parameters
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultAdminHeaders(),
-      payload: mock.request.body
+      payload: mock
     }
 
     // Act

@@ -53,13 +53,35 @@ describe('/parties', () => {
 
   it('postParticipantsBatch returns 200', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
+    const mock = {
+      requestId: 'HNNnJ',
+      partyList: [{
+        partyIdType: 'LnlWooyQk',
+        partyIdentifier: 'MIYCVaNdsLD',
+        partySubIdOrType: 'GNYKQO',
+        fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
+      },
+      {
+        partyIdType: 'QGijB',
+        partyIdentifier: 'eEmRAczAyz',
+        partySubIdOrType: 'ki',
+        fspId: 'sYhkSmfUW'
+      },
+      {
+        partyIdType: 'nxRgD',
+        partyIdentifier: 'SNLwBJVZ',
+        partySubIdOrType: 'fBcEvS',
+        fspId: 'lgfJVXYOpsNfY'
+      }
+      ],
+      currency: 'EUR'
+    }
 
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultSwitchHeaders,
-      payload: mock.request.body
+      payload: mock
     }
 
     sandbox.stub(participants, 'postParticipantsBatch').returns({})
