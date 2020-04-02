@@ -26,6 +26,7 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../lib/util')
 const parties = require('../../../domain/parties')
 
@@ -41,6 +42,11 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async function (req, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'partiesByTypeAndID_get',
+      'Get party by Type and Id',
+      ['success']
+    ).startTimer()
     const span = req.span
     const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
@@ -50,7 +56,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query, span)
+    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query, span, histTimerEnd)
     return h.response().code(202)
   },
 
@@ -62,6 +68,11 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async function (req, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'partiesByTypeAndID_put',
+      'Put party by Type and Id',
+      ['success']
+    ).startTimer()
     const span = req.span
     const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
@@ -71,7 +82,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
+    parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri, histTimerEnd)
     return h.response().code(200)
   }
 }

@@ -46,7 +46,7 @@ const Config = require('../../lib/config')
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
  * */
-const getParticipantsByTypeAndID = async (headers, params, method, query, span) => {
+const getParticipantsByTypeAndID = async (headers, params, method, query, span, histTimerEnd = undefined) => {
   const childSpan = span ? span.getChild('getParticipantByTypeAndID') : undefined
   const type = params.Type
   const partySubIdOrType = params.SubId || undefined
@@ -105,7 +105,9 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
       const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
       await childSpan.error(fspiopError, state)
       await childSpan.finish(fspiopError.message, state)
+      histTimerEnd && histTimerEnd({ success: false })
     }
+    histTimerEnd && histTimerEnd({ success: true })
   }
 }
 
@@ -122,7 +124,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
  * @param {object} payload - payload of the request being sent out
  *
  */
-const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
+const putParticipantsByTypeAndID = async (headers, params, method, payload, histTimerEnd = undefined) => {
   try {
     Logger.info('putParticipantsByTypeAndID::begin')
     const type = params.Type
@@ -171,6 +173,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
     }
     Logger.info('putParticipantsByTypeAndID::end')
+    histTimerEnd && histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -182,6 +185,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
+    histTimerEnd && histTimerEnd({ success: false })
   }
 }
 
@@ -235,7 +239,7 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
  * @param {object} payload - payload of the request being sent out
  * @param {object} span
  */
-const postParticipants = async (headers, method, params, payload, span) => {
+const postParticipants = async (headers, method, params, payload, span, histTimerEnd = undefined) => {
   try {
     Logger.info('postParticipants::begin')
     const type = params.Type
@@ -284,6 +288,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params, span)
     }
     Logger.info('postParticipants::end')
+    histTimerEnd && histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -295,6 +300,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
+    histTimerEnd && histTimerEnd({ success: false })
   }
 }
 
@@ -308,7 +314,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
  * @param {object} requestPayload - payload of the request being sent out
  * @param {object} span
  */
-const postParticipantsBatch = async (headers, method, requestPayload, span) => {
+const postParticipantsBatch = async (headers, method, requestPayload, span, histTimerEnd = undefined) => {
   try {
     Logger.info('postParticipantsBatch::begin')
     const typeMap = new Map()
@@ -386,6 +392,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
       Logger.error('Requester FSP not found')
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
+    histTimerEnd && histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -396,6 +403,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
+    histTimerEnd && histTimerEnd({ success: false })
   }
 }
 
@@ -410,7 +418,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
  * @param {object} query - uri query parameters of the http request
  *
  */
-const deleteParticipants = async (headers, params, method, query) => {
+const deleteParticipants = async (headers, params, method, query, histTimerEnd = undefined) => {
   try {
     Logger.info('deleteParticipants::begin')
     const type = params.Type
@@ -447,6 +455,7 @@ const deleteParticipants = async (headers, params, method, query) => {
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
     }
     Logger.info('deleteParticipants::end')
+    histTimerEnd && histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -458,6 +467,7 @@ const deleteParticipants = async (headers, params, method, query) => {
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
+    histTimerEnd && histTimerEnd({ success: false })
   }
 }
 

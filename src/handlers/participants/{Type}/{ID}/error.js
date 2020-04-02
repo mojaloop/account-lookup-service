@@ -26,11 +26,12 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../../lib/util')
 const pp = require('util').inspect
 const participants = require('../../../../domain/participants')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants/{Type}/{ID}/error
@@ -45,6 +46,11 @@ module.exports = {
    */
   put: function (req, h) {
     (async function () {
+      const histTimerEnd = Metrics.getHistogram(
+        'participantErrorByTypeAndID_put',
+        'Put participant lookup error by Type and Id',
+        ['success']
+      ).startTimer()
       const span = req.span
       const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
       span.setTags(spanTags)
@@ -57,8 +63,10 @@ module.exports = {
         req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
         await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
         req.server.log(['info'], `success: ${metadata}.`)
+        histTimerEnd({ success: true })
       } catch (err) {
         req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
+        histTimerEnd({ success: false })
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()
