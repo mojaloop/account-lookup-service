@@ -26,7 +26,6 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
-const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
 
@@ -42,11 +41,6 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async function (req, h) {
-    const histTimerEnd = Metrics.getHistogram(
-      'partiesErrorByTypeAndID_put',
-      'Put party lookup error by Type and Id',
-      ['success']
-    ).startTimer()
     const span = req.span
     const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
@@ -54,7 +48,7 @@ module.exports = {
       headers: req.headers,
       payload: req.payload
     }, EventSdk.AuditEventAction.start)
-    await parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span, histTimerEnd)
+    await parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
     return h.response().code(200)
   }
 }

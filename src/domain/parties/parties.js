@@ -30,11 +30,12 @@
 
 const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
-const participant = require('../../models/participantEndpoint/facade')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const Metrics = require('@mojaloop/central-services-metrics')
+const participant = require('../../models/participantEndpoint/facade')
 const oracle = require('../../models/oracle/facade')
 const createCallbackHeaders = require('../../lib/headers').createCallbackHeaders
-const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const Config = require('../../lib/config')
 
 /**
@@ -48,7 +49,12 @@ const Config = require('../../lib/config')
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
  */
-const getPartiesByTypeAndID = async (headers, params, method, query, span = undefined, histTimerEnd = undefined) => {
+const getPartiesByTypeAndID = async (headers, params, method, query, span = undefined) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'getPartiesByTypeAndID',
+    'Get party by Type and Id',
+    ['success']
+  ).startTimer()
   try {
     Logger.info('parties::getPartiesByTypeAndID::begin')
     const type = params.Type
@@ -83,7 +89,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
       Logger.error('Requester FSP not found')
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
-    histTimerEnd && histTimerEnd({ success: true })
+    histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -95,7 +101,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
-    histTimerEnd && histTimerEnd({ success: false })
+    histTimerEnd({ success: false })
   }
 }
 
@@ -110,7 +116,12 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
  * @param {object} payload - payload of the request being sent out
  * @param {string} dataUri - encoded payload of the request being sent out
  */
-const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, histTimerEnd = undefined) => {
+const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'putPartiesByTypeAndID',
+    'Put parties by type and id',
+    ['success']
+  ).startTimer()
   try {
     Logger.info('parties::putPartiesByTypeAndID::begin')
     const requesterParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
@@ -137,7 +148,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       Logger.error('Requester FSP not found')
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
-    histTimerEnd && histTimerEnd({ success: true })
+    histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -149,7 +160,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
-    histTimerEnd && histTimerEnd({ success: false })
+    histTimerEnd({ success: false })
   }
 }
 
@@ -164,7 +175,12 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
  * @param {string} dataUri - encoded payload of the request being sent out
  * @param {object} span
  */
-const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, histTimerEnd = undefined) => {
+const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'puttPartiesErrorByTypeAndID',
+    'Put parties error by type and id',
+    ['success']
+  ).startTimer()
   try {
     const partySubIdOrType = params.SubId || undefined
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
@@ -176,7 +192,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params, payload, span)
     }
-    histTimerEnd && histTimerEnd({ success: true })
+    histTimerEnd({ success: true })
   } catch (err) {
     Logger.error(err)
     try {
@@ -188,7 +204,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       // we've already sent a sync response- we cannot throw.
       Logger.error(exc)
     }
-    histTimerEnd && histTimerEnd({ success: false })
+    histTimerEnd({ success: false })
   }
 }
 

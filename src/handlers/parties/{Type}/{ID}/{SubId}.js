@@ -27,7 +27,6 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const parties = require('../../../../domain/parties')
-const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}
@@ -41,12 +40,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function (request, h) {
-    const histTimerEnd = Metrics.getHistogram(
-      'partiesBySubIdTypeAndID_get',
-      'Get party by SubId, Type and Id',
-      ['success']
-    ).startTimer()
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, histTimerEnd)
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -57,12 +51,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (request, h) {
-    const histTimerEnd = Metrics.getHistogram(
-      'partiesBySubIdTypeAndID_put',
-      'Put party by SubId, Type and Id',
-      ['success']
-    ).startTimer()
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri, histTimerEnd)
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri)
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }
 }

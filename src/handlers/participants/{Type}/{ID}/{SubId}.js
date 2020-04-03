@@ -26,7 +26,6 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
-const Metrics = require('@mojaloop/central-services-metrics')
 const participants = require('../../../../domain/participants')
 
 /**
@@ -41,12 +40,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (request, h) => {
-    const histTimerEnd = Metrics.getHistogram(
-      'participantsSubIdByTypeAndID_get',
-      'Get participant by Type, Id, and SubId',
-      ['success']
-    ).startTimer()
-    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span, histTimerEnd)
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -57,12 +51,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (request, h) => {
-    const histTimerEnd = Metrics.getHistogram(
-      'participantsSubIdByTypeAndID_put',
-      'Put participant by Type, Id, and SubId',
-      ['success']
-    ).startTimer()
-    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload, histTimerEnd)
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
   /**
@@ -73,12 +62,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (request, h) => {
-    const histTimerEnd = Metrics.getHistogram(
-      'participantsSubIdByTypeAndID_post',
-      'Post participant by Type, Id, and SubId',
-      ['success']
-    ).startTimer()
-    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span, histTimerEnd)
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -89,12 +73,7 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (request, h) => {
-    const histTimerEnd = Metrics.getHistogram(
-      'participantsSubIdByTypeAndID_delete',
-      'Delete participant by Type, Id, and SubId',
-      ['success']
-    ).startTimer()
-    participants.deleteParticipants(request.headers, request.params, request.method, request.query, histTimerEnd)
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   }
 }
