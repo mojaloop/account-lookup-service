@@ -22,7 +22,6 @@ defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add openssh-client
   apk --no-cache add bash
   apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
-  npm install -g npm@6.13.6
   npm config set unsafe-perm true
   npm install -g node-gyp
 
