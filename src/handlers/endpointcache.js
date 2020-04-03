@@ -58,8 +58,9 @@ module.exports = {
       await ParticipantEndpointCache.stopCache()
       await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
       histTimerEnd({ success: true })
-    } catch (_) {
+    } catch (err) {
       histTimerEnd({ success: false })
+      throw err
     }
     return h.response().code(202)
   }
