@@ -9,6 +9,7 @@ services:
     build:
       context: .
     container_name: als_account-lookup-service
+    user: root
     command:
       - "sh"
       - "-c"
