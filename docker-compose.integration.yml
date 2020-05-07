@@ -9,6 +9,7 @@ services:
         - mojaloop/account-lookup-service
         - account-lookup-service
     container_name: als_account-lookup-service-int
+    user: root
     networks:
       - als-mojaloop-net
     command:

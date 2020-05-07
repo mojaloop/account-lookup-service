@@ -29,6 +29,7 @@
 const inspect = require('util').inspect
 const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Metrics = require('@mojaloop/central-services-metrics')
 const participants = require('../../../../../domain/participants')
 
 /**
@@ -43,13 +44,20 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'participantSubIdErrorByTypeAndID_put',
+      'Put participant lookup error by Type, Id, and SubId',
+      ['success']
+    ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
       request.server.log(['info'], `received: ${metadata}. ${inspect(request.params)}`)
       await participants.putParticipantsErrorByTypeAndID(request)
       request.server.log(['info'], `success: ${metadata}.`)
+      histTimerEnd({ success: true })
     } catch (err) {
       request.server.log(['error'], `ERROR - ${metadata}: ${inspect(err)}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)

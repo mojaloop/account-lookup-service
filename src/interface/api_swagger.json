@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "1.0",
+    "version": "1.0.1",
     "title": "Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version)",
     "description": "Based on API Definition.docx updated on 2018-03-13 Version 1.0. Note - The API supports a maximum size of 65536 bytes (64 Kilobytes) in the HTTP header.",
     "license": {
@@ -1532,7 +1532,15 @@
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
                 "“partySubIdOrType”": "“DRIVING_LICENSE”",
-                "“fspId”": "“1234”"
+                "“fspId”": "“1234”",
+                "“extensionList“": {
+                  "“extension“": [
+                    {
+                      "“key“": "Account Type",
+                      "“value“": "Wallet"
+                    }
+                  ]
+                }
               },
               "merchantClassificationCode": "4321",
               "“name”": "“Justin Trudeau”",
@@ -1878,7 +1886,15 @@
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
                 "“partySubIdOrType”": "“DRIVING_LICENSE”",
-                "“fspId”": "“1234”"
+                "“fspId”": "“1234”",
+                "“extensionList“": {
+                  "“extension“": [
+                    {
+                      "“key“": "Account Type",
+                      "“value“": "Wallet"
+                    }
+                  ]
+                }
               },
               "merchantClassificationCode": "4321",
               "“name”": "“Justin Trudeau”",
@@ -2041,8 +2057,7 @@
         "description": "The HTTP request GET /health is used to return the current status of the ALS API.",
         "summary": "Get health",
         "tags": [
-          "health",
-          "sampled"
+          "health"
         ],
         "operationId": "als_ApiHealth_get",
         "produces": [
@@ -3312,6 +3327,10 @@
           "description": "FSP ID (if known)",
           "minLength": 1,
           "maxLength": 32
+        },
+        "extensionList": {
+          "$ref": "#/definitions/ExtensionList",
+          "description": "Optional extension, specific to deployment."
         }
       },
       "required": [
