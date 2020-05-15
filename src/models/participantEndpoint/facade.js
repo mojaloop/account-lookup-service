@@ -29,8 +29,10 @@ const Logger = require('@mojaloop/central-services-logger')
 const Util = require('@mojaloop/central-services-shared').Util
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const JwsSigner = require('@mojaloop/sdk-standard-components').Jws.signer
 const Mustache = require('mustache')
 const Config = require('../../lib/config')
+const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
 
 /**
  * @module src/models/participantEndpoint/facade
@@ -125,7 +127,20 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     }
 
     Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-    await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, span)
+    let jwsSigner
+    if (Config.JWS_SIGN && clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] === Config.FSPIOP_SOURCE_TO_SIGN) {
+      // We need below 2 headers for JWS
+      clonedHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = clonedHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] || Enums.Http.RestMethods.PUT
+      clonedHeaders[Enums.Http.Headers.FSPIOP.URI] = clonedHeaders[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requesterErrorEndpoint)[1]
+      const logger = Logger
+      logger.log = logger.info
+      Logger.debug('JWS is enabled, getting JwsSigner')
+      jwsSigner = new JwsSigner({
+        logger,
+        signingKey: Config.JWS_SIGNING_KEY
+      })
+    }
+    await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner)
   } catch (err) {
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
