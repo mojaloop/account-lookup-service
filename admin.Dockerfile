@@ -15,6 +15,7 @@ RUN apk del build-dependencies
 COPY config /opt/account-lookup-service/config
 COPY migrations /opt/account-lookup-service/migrations
 COPY seeds /opt/account-lookup-service/seeds
+COPY secrets /opt/account-lookup-service/secrets
 COPY src /opt/account-lookup-service/src
 
 EXPOSE 4002
