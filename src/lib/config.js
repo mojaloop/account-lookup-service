@@ -28,6 +28,15 @@
  --------------
  ******/
 const RC = require('parse-strings-in-object')(require('rc')('ALS', require('../../config/default.json')))
+const fs = require('fs')
+
+function getFileContent (path) {
+  if (!fs.existsSync(path)) {
+    console.log(`File ${path} doesn't exist, can't enable JWS signing`)
+    throw new Error('File doesn\'t exist')
+  }
+  return fs.readFileSync(path)
+}
 
 const getOrDefault = (value, defaultValue) => {
   if (value === undefined) {
@@ -37,7 +46,7 @@ const getOrDefault = (value, defaultValue) => {
   return value
 }
 
-module.exports = {
+const config = {
   API_PORT: RC.API_PORT,
   DATABASE: {
     client: RC.DATABASE.DIALECT,
@@ -86,5 +95,14 @@ module.exports = {
   SWITCH_ENDPOINT: RC.SWITCH_ENDPOINT,
   INSTRUMENTATION_METRICS_DISABLED: RC.INSTRUMENTATION.METRICS.DISABLED,
   INSTRUMENTATION_METRICS_LABELS: RC.INSTRUMENTATION.METRICS.labels,
-  INSTRUMENTATION_METRICS_CONFIG: RC.INSTRUMENTATION.METRICS.config
+  INSTRUMENTATION_METRICS_CONFIG: RC.INSTRUMENTATION.METRICS.config,
+  JWS_SIGN: RC.ENDPOINT_SECURITY.JWS.JWS_SIGN,
+  FSPIOP_SOURCE_TO_SIGN: RC.ENDPOINT_SECURITY.JWS.FSPIOP_SOURCE_TO_SIGN,
+  JWS_SIGNING_KEY_PATH: RC.ENDPOINT_SECURITY.JWS.JWS_SIGNING_KEY_PATH
 }
+
+if (config.JWS_SIGN) {
+  config.JWS_SIGNING_KEY = getFileContent(config.JWS_SIGNING_KEY_PATH)
+}
+
+module.exports = config

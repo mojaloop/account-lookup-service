@@ -23,6 +23,7 @@ services:
       - mysql-als
       - central-ledger
     volumes:
+      - ./secrets:/opt/account-lookup-service/secrets
       - ./src:/opt/account-lookup-service/src
       - ./docker/account-lookup-service/default.json:/opt/account-lookup-service/config/default.json
       - ./docker/wait-for:/opt/wait-for
