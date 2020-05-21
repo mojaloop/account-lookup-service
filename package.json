@@ -76,7 +76,7 @@
     "@mojaloop/central-services-health": "10.1.0",
     "@mojaloop/central-services-logger": "9.5.1",
     "@mojaloop/central-services-metrics": "9.5.0",
-    "@mojaloop/central-services-shared": "10.1.2",
+    "@mojaloop/central-services-shared": "10.2.0",
     "@mojaloop/sdk-standard-components": "10.2.2",
     "@mojaloop/event-sdk": "9.5.2",
     "@now-ims/hapi-now-auth": "2.0.1",
