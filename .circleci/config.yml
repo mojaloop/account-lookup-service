@@ -283,8 +283,8 @@ jobs:
           command: /tmp/ci-config/container-scanning/anchore-result-diff.js anchore-reports/node_12.16.1-alpine-policy.json anchore-reports/${CIRCLE_PROJECT_REPONAME}*-policy.json
       - slack/status:
           fail_only: true
-          webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
-          failure_message: 'Anchore Image Scan failed  for: \`"${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"\`'
+          webhook: "$SLACK_WEBHOOK_ANNOUNCMENT_CI_CD"
+          failure_message: 'Anchore Image Scan failed for: \`"${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"\`'
       - store_artifacts:
           path: anchore-reports
 
@@ -327,7 +327,7 @@ jobs:
             --set .account-lookup-service.account-lookup-service.containers.admin.image.tag=$CIRCLE_TAG
       - slack/status:
           fail_only: true
-          webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
+          webhook: "$SLACK_WEBHOOK_ANNOUNCMENT_CI_CD"
           failure_message: 'Deployment failed for: \`"${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"\`'
 
 ##

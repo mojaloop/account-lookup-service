@@ -21,6 +21,7 @@ services:
       - central-ledger
     volumes:
       - ./src:/opt/account-lookup-service/src
+      - ./secrets:/opt/account-lookup-service/secrets
       - ./test:/opt/account-lookup-service/test
       - ./package.json:/opt/account-lookup-service/package.json
       - ./test/integration-config.json:/opt/account-lookup-service/config/default.json
