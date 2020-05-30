@@ -2961,6 +2961,49 @@
         "extension"
       ]
     },
+    "Account": {
+      "title": "Account",
+      "type": "object",
+      "description": "Data model for the complex type Account",
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Unique routable address which is DFSP specific."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency of the account"
+        },
+        "description": {
+          "type": "string",
+          "description": "The name of the account."
+        }
+      },
+      "required": [
+        "address",
+        "currency",
+        "description"
+      ]
+    },
+    "AccountList": {
+      "title": "AccountList",
+      "type": "object",
+      "description": "Data model for the complex type AccountList",
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "description": "Number of Account elements"
+        }
+      },
+      "required": [
+        "accounts"
+      ]
+    },
     "GeoCode": {
       "title": "GeoCode",
       "type": "object",
@@ -3280,6 +3323,10 @@
         "personalInfo": {
           "$ref": "#/definitions/PartyPersonalInfo",
           "description": "Personal information used to verify identity of Party such as first, middle, last name and date of birth."
+        },
+        "accounts": {
+          "$ref": "#/definitions/AccountList",
+          "description": "List of accounts associated with the party containing and DFSP routable address, currency identifier and description."
         }
       },
       "required": [
@@ -3331,6 +3378,10 @@
         "extensionList": {
           "$ref": "#/definitions/ExtensionList",
           "description": "Optional extension, specific to deployment."
+        },
+        "accounts": {
+          "$ref": "#/definitions/AccountList",
+          "description": "List of the accounts for the Party containing account information."
         }
       },
       "required": [
