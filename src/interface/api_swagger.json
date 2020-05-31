@@ -2967,11 +2967,9 @@
       "description": "Data model for the complex type Account",
       "properties": {
         "address": {
+          "$ref": "#/definitions/AccountAddress",
           "type": "string",
-          "description": "Unique routable address which is DFSP specific.",
-          "pattern": "^([0-9A-Za-z_~\\-\\.]+[0-9A-Za-z_~\\-])$",
-          "minLength": 1,
-          "maxLength": 1023
+          "description": "Unique routable address which is DFSP specific."
         },
         "currency": {
           "$ref": "#/definitions/Currency",
@@ -2979,6 +2977,7 @@
           "description": "Currency of the amount."
         },
         "description": {
+          "$ref": "#/definitions/Name",
           "type": "string",
           "description": "The name of the account."
         }
@@ -2988,6 +2987,14 @@
         "currency",
         "description"
       ]
+    },
+    "AccountAddress": {
+      "title": "AccountAddress",
+      "type": "string",
+      "description": "Unique routable address which is DFSP specific.",
+      "pattern": "^([0-9A-Za-z_~\\-\\.]+[0-9A-Za-z_~\\-])$",
+      "minLength": 1,
+      "maxLength": 1023
     },
     "AccountList": {
       "title": "AccountList",
