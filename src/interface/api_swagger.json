@@ -1528,6 +1528,20 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "“accounts“": {
+                "“account“": [
+                  {
+                    "”currency“": "“USD“",
+                    "”description“": "“savings“",
+                    "“address“": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136“"
+                  },
+                  {
+                    "“currency“": "“USD“",
+                    "“description“": "“checkings“",
+                    "“address“": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137“"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -1882,6 +1896,20 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "“accounts“": {
+                "“account“": [
+                  {
+                    "”currency“": "“USD“",
+                    "”description“": "“savings“",
+                    "“address“": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136“"
+                  },
+                  {
+                    "“currency“": "“USD“",
+                    "“description“": "“checkings“",
+                    "“address“": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137“"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -2961,6 +2989,60 @@
         "extension"
       ]
     },
+    "Account": {
+      "title": "Account",
+      "type": "object",
+      "description": "Data model for the complex type Account",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/AccountAddress",
+          "type": "string",
+          "description": "Unique routable address which is DFSP specific."
+        },
+        "currency": {
+          "$ref": "#/definitions/Currency",
+          "type": "string",
+          "description": "Currency of the amount."
+        },
+        "description": {
+          "$ref": "#/definitions/Name",
+          "type": "string",
+          "description": "The name of the account."
+        }
+      },
+      "required": [
+        "address",
+        "currency",
+        "description"
+      ]
+    },
+    "AccountAddress": {
+      "title": "AccountAddress",
+      "type": "string",
+      "description": "Unique routable address which is DFSP specific.",
+      "pattern": "^([0-9A-Za-z_~\\-\\.]+[0-9A-Za-z_~\\-])$",
+      "minLength": 1,
+      "maxLength": 1023
+    },
+    "AccountList": {
+      "title": "AccountList",
+      "type": "object",
+      "description": "Data model for the complex type AccountList",
+      "properties": {
+        "account": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "description": "Accounts associated with the Party"
+        }
+      },
+      "required": [
+        "account"
+      ]
+    },
     "GeoCode": {
       "title": "GeoCode",
       "type": "object",
@@ -3265,6 +3347,10 @@
       "type": "object",
       "description": "Data model for the complex type Party.",
       "properties": {
+        "accounts": {
+          "$ref": "#/definitions/AccountList",
+          "description": "List of accounts associated with the party containing and DFSP routable address, currency identifier and description."
+        },
         "partyIdInfo": {
           "$ref": "#/definitions/PartyIdInfo",
           "description": "Party Id type, id, sub ID or type, and FSP Id."

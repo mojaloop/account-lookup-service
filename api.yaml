@@ -45,22 +45,22 @@ paths:
       - $ref: '#/parameters/FSPIOP-HTTP-Method'
       x-examples:
         "application/json":
-          { 
-            “errorInformation”: 
+          {
+            “errorInformation”:
             {
-                “errorCode”: “5100”, 
-                “errorDescription”: “This is an error description”, 
+                “errorCode”: “5100”,
+                “errorDescription”: “This is an error description”,
                 extensionList:
                 {
                   extension:
-                  [ 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
-                      }, 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
+                  [
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
+                      },
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
                       }
                   ]
                 }
@@ -114,16 +114,16 @@ paths:
       - $ref: '#/parameters/FSPIOP-HTTP-Method'
       x-examples:
         "application/json":
-          { 
-            “partyList”: 
-            [ 
-                { 
+          {
+            “partyList”:
+            [
+                {
                     partyId: {
                       partyIdType: "PERSONAL_ID",
                       partyIdentifier: "personal_id"
                     }
-                }, 
-                { 
+                },
+                {
                     partyId: {
                       partyIdType: "PERSONAL_ID",
                       partyIdentifier: "personal_id"
@@ -181,22 +181,22 @@ paths:
       - $ref: '#/parameters/FSPIOP-HTTP-Method'
       x-examples:
         "application/json":
-          { 
-            “errorInformation”: 
+          {
+            “errorInformation”:
             {
-                “errorCode”: “5100”, 
-                “errorDescription”: “This is an error description”, 
+                “errorCode”: “5100”,
+                “errorDescription”: “This is an error description”,
                 extensionList:
                 {
                   extension:
-                  [ 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
-                      }, 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
+                  [
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
+                      },
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
                       }
                   ]
                 }
@@ -252,22 +252,22 @@ paths:
       - $ref: '#/parameters/FSPIOP-HTTP-Method'
       x-examples:
         "application/json":
-          { 
-            “errorInformation”: 
+          {
+            “errorInformation”:
             {
-                “errorCode”: “5100”, 
-                “errorDescription”: “This is an error description”, 
+                “errorCode”: “5100”,
+                “errorDescription”: “This is an error description”,
                 extensionList:
                 {
                   extension:
-                  [ 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
-                      }, 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
+                  [
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
+                      },
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
                       }
                   ]
                 }
@@ -355,8 +355,8 @@ paths:
       - $ref: '#/parameters/Content-Length'
       x-examples:
         "application/json":
-          { 
-            “fspId”: “1234” 
+          {
+            “fspId”: “1234”
           }
       responses:
         200:
@@ -512,8 +512,8 @@ paths:
       - $ref: '#/parameters/Content-Length'
       x-examples:
         "application/json":
-          { 
-            “fspId”: “1234” 
+          {
+            “fspId”: “1234”
           }
       responses:
         200:
@@ -728,7 +728,7 @@ paths:
       - name: body
         in: body
         required: true
-        schema: 
+        schema:
           $ref: '#/definitions/PartiesTypeIDPutResponse'
       #Headers
       - $ref: '#/parameters/Content-Length'
@@ -737,24 +737,40 @@ paths:
           {
             "party":
             {
+                “accounts”:
+                {
+                  ”account”:
+                  [
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”savings”,
+                      ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
+                    },
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”checkings”,
+                      ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
+                    }
+                  ]
+                },
                 "partyIdInfo":
                 {
-                  “partyIdType”: “PERSONAL_ID”, 
+                  “partyIdType”: “PERSONAL_ID”,
                   “partyIdentifier”: “16135551212”,
                   “partySubIdOrType”: “DRIVING_LICENSE”,
                   “fspId”: “1234”
                 },
                 "merchantClassificationCode": "4321",
-                “name”: “Justin Trudeau”, 
-                “personalInfo”: 
-                { 
-                  “complexName”: 
-                    { 
-                      “firstName”: “Justin”, 
-                      “middleName”: “Pierre”, 
+                “name”: “Justin Trudeau”,
+                “personalInfo”:
+                {
+                  “complexName”:
+                    {
+                      “firstName”: “Justin”,
+                      “middleName”: “Pierre”,
                       “lastName”: “Trudeau”
                     },
-                    “dateOfBirth”: “1971-12-25” 
+                    “dateOfBirth”: “1971-12-25”
                 }
              }
           }
@@ -807,22 +823,22 @@ paths:
       - $ref: '#/parameters/FSPIOP-HTTP-Method'
       x-examples:
         "application/json":
-          { 
-            “errorInformation”: 
+          {
+            “errorInformation”:
             {
-                “errorCode”: “5100”, 
-                “errorDescription”: “This is an error description”, 
+                “errorCode”: “5100”,
+                “errorDescription”: “This is an error description”,
                 extensionList:
                 {
                   extension:
-                  [ 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
-                      }, 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
+                  [
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
+                      },
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
                       }
                   ]
                 }
@@ -904,33 +920,49 @@ paths:
       - name: body
         in: body
         required: true
-        schema: 
+        schema:
           $ref: '#/definitions/PartiesTypeIDPutResponse'
       #Headers
       - $ref: '#/parameters/Content-Length'
       x-examples:
         "application/json":
-          { 
+          {
             "party":
             {
+                “accounts”:
+                {
+                  ”account”:
+                  [
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”savings”,
+                      ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
+                    },
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”checkings”,
+                      ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
+                    }
+                  ]
+                },
                 "partyIdInfo":
                 {
-                  “partyIdType”: “PERSONAL_ID”, 
+                  “partyIdType”: “PERSONAL_ID”,
                   “partyIdentifier”: “16135551212”,
                   “partySubIdOrType”: “DRIVING_LICENSE”,
                   “fspId”: “1234”
                 },
                 "merchantClassificationCode": "4321",
-                “name”: “Justin Trudeau”, 
-                “personalInfo”: 
-                { 
-                  “complexName”: 
-                    { 
-                      “firstName”: “Justin”, 
-                      “middleName”: “Pierre”, 
+                “name”: “Justin Trudeau”,
+                “personalInfo”:
+                {
+                  “complexName”:
+                    {
+                      “firstName”: “Justin”,
+                      “middleName”: “Pierre”,
                       “lastName”: “Trudeau”
                     },
-                    “dateOfBirth”: “1971-12-25” 
+                    “dateOfBirth”: “1971-12-25”
                 }
              }
           }
@@ -984,22 +1016,22 @@ paths:
       - $ref: '#/parameters/FSPIOP-HTTP-Method'
       x-examples:
         "application/json":
-          { 
-            “errorInformation”: 
+          {
+            “errorInformation”:
             {
-                “errorCode”: “5100”, 
-                “errorDescription”: “This is an error description”, 
+                “errorCode”: “5100”,
+                “errorDescription”: “This is an error description”,
                 extensionList:
                 {
                   extension:
-                  [ 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
-                      }, 
-                      { 
-                          “key”: “errorDescription”, 
-                          “value”: “This is a more detailed error description” 
+                  [
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
+                      },
+                      {
+                          “key”: “errorDescription”,
+                          “value”: “This is a more detailed error description”
                       }
                   ]
                 }
@@ -1037,7 +1069,7 @@ definitions:
     enum:
     - SEND
     - RECEIVE
-    description: Below are the allowed values for the enumeration AmountType 
+    description: Below are the allowed values for the enumeration AmountType
       - SEND Amount the Payer would like to send, that is, the amount that should be withdrawn from the Payer account including any fees.
       - RECEIVE Amount the Payer would like the Payee to receive, that is, the amount that should be sent to the receiver exclusive fees.
   AuthenticationType:
@@ -1451,7 +1483,7 @@ definitions:
     - EMPLOYER_ID
     - TAX_ID_NUMBER
     - SENIOR_CITIZENS_CARD
-    - MARRIAGE_CERTIFICATE 
+    - MARRIAGE_CERTIFICATE
     - HEALTH_CARD
     - VOTERS_ID
     - UNITED_NATIONS
@@ -1536,7 +1568,7 @@ definitions:
       - WITHDRAWAL Used for performing a Cash-Out (withdrawal) transaction. In a normal scenario, electronic funds are transferred from a Consumer’s account to a Business account, and physical cash is given from the Business User to the Consumer.
       - TRANSFER Used for performing a P2P (Peer to Peer, or Consumer to Consumer) transaction.
       - PAYMENT Usually used for performing a transaction from a Consumer to a Merchant or Organization, but could also be for a B2B (Business to Business) payment. The transaction could be online for a purchase in an Internet store, in a physical store where both the Consumer and Business User are present, a bill payment, a donation, and so on.
-      - REFUND Used for performing a refund of transaction. 
+      - REFUND Used for performing a refund of transaction.
   TransactionState:
     title: TransactionStateEnum
     type: string
