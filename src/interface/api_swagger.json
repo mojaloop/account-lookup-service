@@ -1528,6 +1528,20 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "“accounts“": {
+                "“account“": [
+                  {
+                    "”currency“": "“USD“",
+                    "”description“": "“savings“",
+                    "“address“": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136“"
+                  },
+                  {
+                    "“currency“": "“USD“",
+                    "“description“": "“checkings“",
+                    "“address“": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137“"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -1882,6 +1896,20 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "“accounts“": {
+                "“account“": [
+                  {
+                    "”currency“": "“USD“",
+                    "”description“": "“savings“",
+                    "“address“": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136“"
+                  },
+                  {
+                    "“currency“": "“USD“",
+                    "“description“": "“checkings“",
+                    "“address“": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137“"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -3319,6 +3347,10 @@
       "type": "object",
       "description": "Data model for the complex type Party.",
       "properties": {
+        "accounts": {
+          "$ref": "#/definitions/AccountList",
+          "description": "List of accounts associated with the party containing and DFSP routable address, currency identifier and description."
+        },
         "partyIdInfo": {
           "$ref": "#/definitions/PartyIdInfo",
           "description": "Party Id type, id, sub ID or type, and FSP Id."
@@ -3334,10 +3366,6 @@
         "personalInfo": {
           "$ref": "#/definitions/PartyPersonalInfo",
           "description": "Personal information used to verify identity of Party such as first, middle, last name and date of birth."
-        },
-        "accounts": {
-          "$ref": "#/definitions/AccountList",
-          "description": "List of accounts associated with the party containing and DFSP routable address, currency identifier and description."
         }
       },
       "required": [
@@ -3389,10 +3417,6 @@
         "extensionList": {
           "$ref": "#/definitions/ExtensionList",
           "description": "Optional extension, specific to deployment."
-        },
-        "accounts": {
-          "$ref": "#/definitions/AccountList",
-          "description": "List of the accounts for the Party containing account information."
         }
       },
       "required": [

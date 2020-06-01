@@ -737,6 +737,22 @@ paths:
           {
             "party":
             {
+                “accounts”:
+                {
+                  ”account”:
+                  [
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”savings”,
+                      ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
+                    },
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”checkings”,
+                      ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
+                    }
+                  ]
+                },
                 "partyIdInfo":
                 {
                   “partyIdType”: “PERSONAL_ID”,
@@ -913,6 +929,22 @@ paths:
           {
             "party":
             {
+                “accounts”:
+                {
+                  ”account”:
+                  [
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”savings”,
+                      ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
+                    },
+                    {
+                      ”currency”: ”USD”,
+                      ”description”: ”checkings”,
+                      ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
+                    }
+                  ]
+                },
                 "partyIdInfo":
                 {
                   “partyIdType”: “PERSONAL_ID”,
@@ -931,22 +963,6 @@ paths:
                       “lastName”: “Trudeau”
                     },
                     “dateOfBirth”: “1971-12-25”
-                },
-                “accounts”:
-                {
-                  ”account”:
-                    {
-                      {
-                        ”currency”: ”USD”,
-                        ”description”: ”savings”,
-                        ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
-                      },
-                      {
-                        ”currency”: ”USD”,
-                        ”description”: ”checkings”,
-                        ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
-                      }
-                    }
                 }
              }
           }
