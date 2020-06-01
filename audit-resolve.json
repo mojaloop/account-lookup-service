@@ -111,8 +111,8 @@
     },
     "1500|hapi-swagger>handlebars>yargs>yargs-parser": {
       "decision": "ignore",
-      "madeAt": 1589549338617,
-      "expiresAt": 1592141313580
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
     },
     "1500|jest>@jest/core>jest-config>@jest/test-sequencer>jest-runner>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
       "decision": "ignore",
@@ -243,6 +243,121 @@
       "decision": "ignore",
       "madeAt": 1589557389000,
       "expiresAt": 1592141313580
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-config>@jest/test-sequencer>jest-runner>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-config>@jest/test-sequencer>jest-runner>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>jest-config>@jest/test-sequencer>jest-runner>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-runner>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-runner>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-config>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-config>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-runner>jest-config>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-runner>jest-config>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>jest-config>jest-jasmine2>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-config>@jest/test-sequencer>jest-runner>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-config>@jest/test-sequencer>jest-runner>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>jest-config>@jest/test-sequencer>jest-runner>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-runner>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-runner>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-config>@jest/test-sequencer>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-config>@jest/test-sequencer>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-runner>jest-config>@jest/test-sequencer>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-runner>jest-config>@jest/test-sequencer>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>jest-config>@jest/test-sequencer>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>@jest/core>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>@jest/core>jest-runtime>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
+    },
+    "1500|@mojaloop/central-services-error-handling>jest>jest-cli>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1590508998679,
+      "expiresAt": 1591113787066
     }
   },
   "rules": {},
