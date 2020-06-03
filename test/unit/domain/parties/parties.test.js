@@ -72,6 +72,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error case where destination header is missing', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().returns({})
       sandbox.stub(oracle, 'oracleRequest').returns({
@@ -95,7 +96,7 @@ describe('Parties Tests', () => {
       }
 
       // Act
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
 
       // Assert
       const lastCallHeaderArgs = participant.sendRequest.getCall(0).args
@@ -105,6 +106,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `participant.validateParticipant()`cannot be found', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub().resolves(null)
@@ -126,6 +128,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `participant.validateParticipant()`cannot be found and `sendErrorToParticipant()` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().returns({})
       sandbox.stub(oracle, 'oracleRequest').returns({
@@ -165,6 +168,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when SubId is supplied but `participant.validateParticipant()`cannot be found and `sendErrorToParticipant()` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().returns({})
       sandbox.stub(oracle, 'oracleRequest').returns({
@@ -188,7 +192,7 @@ describe('Parties Tests', () => {
       const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
-      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
 
       // Assert
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
@@ -196,6 +200,7 @@ describe('Parties Tests', () => {
     })
 
     it('ensures sendRequest is called with the right endpoint type when SubId is supplied', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().returns({})
       sandbox.stub(oracle, 'oracleRequest').returns({
@@ -225,6 +230,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `oracleRequest` returns no result', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().resolves(null)
@@ -233,7 +239,7 @@ describe('Parties Tests', () => {
       const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
 
       // Act
-      await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+      await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
 
       // Assert
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
@@ -251,6 +257,7 @@ describe('Parties Tests', () => {
     })
 
     it('successfully sends the callback to the participant', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({
         data: {
@@ -272,6 +279,7 @@ describe('Parties Tests', () => {
     })
 
     it('successfully sends the callback to the participant when SubId is supplied', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({
         data: {
@@ -293,6 +301,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `participant.validateParticipant()` returns no participant', async () => {
+      expect.hasAssertions()
       // Arrange
       const loggerStub = sandbox.stub(Logger, 'error')
       participant.sendErrorToParticipant = sandbox.stub().resolves()
@@ -312,6 +321,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when SubId is supplied but `participant.validateParticipant()` returns no participant', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       participant.sendErrorToParticipant = sandbox.stub().resolves()
@@ -339,6 +349,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `participant.validateParticipant()` is found and `sendErrorToParticipant()` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub()
       participant.validateParticipant.withArgs('payerfsp')
@@ -364,6 +375,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when SubId is supplied, `participant.validateParticipant()` is found but `sendErrorToParticipant()` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       participant.validateParticipant = sandbox.stub()
@@ -401,7 +413,8 @@ describe('Parties Tests', () => {
       sandbox.restore()
     })
 
-    it('succesfully sends error to the participant', async () => {
+    it('successfully sends error to the participant', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({
         data: {
@@ -413,7 +426,7 @@ describe('Parties Tests', () => {
       const dataUri = encodePayload(payload, 'application/json')
 
       // Act
-      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri)
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, dataUri, Helper.mockSpan())
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -422,6 +435,7 @@ describe('Parties Tests', () => {
     })
 
     it('succesfully sends error to the participant when SubId is supplied', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({
         data: {
@@ -435,7 +449,7 @@ describe('Parties Tests', () => {
       const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
-      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri)
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, params, payload, dataUri)
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -445,6 +459,7 @@ describe('Parties Tests', () => {
     })
 
     it('sends error to the participant when there is no destination participant', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Unknown error'))
@@ -452,7 +467,7 @@ describe('Parties Tests', () => {
       const dataUri = encodePayload(payload, 'application/json')
 
       // Act
-      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri)
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, dataUri)
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(2)
@@ -461,6 +476,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `decodePayload()` fails', async () => {
+      expect.hasAssertions()
       // Arrange)
       participant.validateParticipant = sandbox.stub().resolves({
         data: {
@@ -473,7 +489,7 @@ describe('Parties Tests', () => {
       const invalidDataUri = () => 'invalid uri'
 
       // Act
-      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, invalidDataUri)
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, invalidDataUri, Helper.mockSpan())
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -482,6 +498,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when `validateParticipant()` fails', async () => {
+      expect.hasAssertions()
       // Arrange)
       const loggerStub = sandbox.stub(Logger, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
@@ -500,6 +517,7 @@ describe('Parties Tests', () => {
     })
 
     it('handles error when SubID is supplied but `validateParticipant()` fails', async () => {
+      expect.hasAssertions()
       // Arrange)
       const loggerStub = sandbox.stub(Logger, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
