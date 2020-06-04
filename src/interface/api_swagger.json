@@ -2141,6 +2141,12 @@
     }
   },
   "definitions": {
+    "CorrelationId": {
+      "title": "CorrelationId",
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "Identifier that correlates all messages of the same sequence. The API data type UUID (Universally Unique Identifier) is a JSON String in canonical format, conforming to RFC 4122, that is restricted by a regular expression for interoperability reasons. An UUID is always 36 characters long, 32 hexadecimal symbols and 4 dashes (‘-‘)."
+    },
     "Currency": {
       "title": "CurrencyEnum",
       "description": "The currency codes defined in ISO 4217 as three-letter alphabetic codes are used as the standard naming representation for currencies.",
@@ -2318,6 +2324,12 @@
       "pattern": "^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)$",
       "description": "The API data type Date is a JSON String in a lexical format that is restricted by a regular expression for interoperability reasons. This format, as specified in ISO 8601, contains a date only. A more readable version of the format is yyyy-MM-dd. Examples - \"1982-05-23\", \"1987-08-05”"
     },
+    "DateOfBirth": {
+      "title": "DateofBirth (type Date)",
+      "type": "string",
+      "pattern": "^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)$",
+      "description": "Date of Birth of the Party."
+    },
     "ErrorCode": {
       "title": "ErrorCode",
       "type": "string",
@@ -2345,6 +2357,13 @@
       "maxLength": 128,
       "description": "Extension value."
     },
+    "FspId": {
+      "title": "FspId",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "FSP identifier."
+    },
     "HealthStatusType": {
       "title": "HealthStatusType",
       "type": "string",
@@ -2353,6 +2372,12 @@
         "DOWN"
       ],
       "description": "Below are the allowed values for the enumeration HealthStatusType - OK - DOWN"
+    },
+    "MerchantClassificationCode": {
+      "title": "MerchantClassificationCode",
+      "type": "string",
+      "pattern": "^[\\d]{1,4}$",
+      "description": "A limited set of pre-defined numbers. This list would be a limited set of numbers identifying a set of popular merchant types like School Fees, Pubs and Restaurants, Groceries, etc."
     },
     "PartyIdType": {
       "title": "PartyIdTypeEnum",
@@ -2375,12 +2400,11 @@
       "description": "Data model for the complex type ErrorInformation.",
       "properties": {
         "errorCode": {
-          "type": "string",
-          "description": "Specific error number.",
-          "pattern": "^(10|20|3[0-4]|4[0-4]|5[0-4])[0-9]{2}$"
+          "$ref": "#/definitions/ErrorCode",
+          "description": "Specific error number."
         },
         "errorDescription": {
-          "type": "string",
+          "$ref": "#/definitions/ErrorDescription",
           "description": "Error description string."
         },
         "extensionList": {
@@ -2422,11 +2446,11 @@
       "description": "Data model for the complex type Extension",
       "properties": {
         "key": {
-          "type": "string",
+          "$ref": "#/definitions/ExtensionKey",
           "description": "Extension key."
         },
         "value": {
-          "type": "string",
+          "$ref": "#/definitions/ExtensionValue",
           "description": "Extension value."
         }
       },
@@ -2454,6 +2478,14 @@
         "extension"
       ]
     },
+    "FirstName": {
+      "title": "FirstName",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?!\\s*$)[\\w .,'-]{1,128}$",
+      "description": "First name of the Party (Name Type)."
+    },
     "HealthServicesType":{
       "title": "HealthServicesType",
       "type": "object",
@@ -2467,20 +2499,33 @@
         }
       }
     },
+    "LastName": {
+      "title": "LastName",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?!\\s*$)[\\w .,'-]{1,128}$",
+      "description": "Last name of the Party (Name Type)."
+    },
+    "MiddleName": {
+      "title": "MiddleName",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?!\\s*$)[\\w .,'-]{1,128}$",
+      "description": "Middle name of the Party (Name Type)."
+    },
     "ParticipantsTypeIDSubIDPostRequest": {
       "title": "ParticipantsTypeIDSubIDPostRequest",
       "type": "object",
       "description": "POST /participants/{Type}/{ID}/{SubId}, /participants/{Type}/{ID} object",
       "properties": {
         "fspId": {
-          "type": "string",
-          "description": "FSP Identifier that the Party belongs to.",
-          "minLength": 1,
-          "maxLength": 32
+          "$ref": "#/definitions/FspId",
+          "description": "FSP Identifier that the Party belongs to."
         },
         "currency": {
           "$ref": "#/definitions/Currency",
-          "type": "string",
           "description": "Indicate that the provided Currency is supported by the Party."
         },
         "extensionList": {
@@ -2498,10 +2543,8 @@
       "description": "PUT /participants/{Type}/{ID}/{SubId}, /participants/{Type}/{ID} object",
       "properties": {
         "fspId": {
-          "type": "string",
-          "description": "FSP Identifier that the Party belongs to.",
-          "minLength": 1,
-          "maxLength": 32
+          "$ref": "#/definitions/FspId",
+          "description": "FSP Identifier that the Party belongs to."
         }
       }
     },
@@ -2535,7 +2578,7 @@
       "description": "POST /participants object",
       "properties": {
         "requestId": {
-          "type": "string",
+          "$ref": "#/definitions/CorrelationId",
           "description": "The ID of the request, decided by the client. Used for identification of the callback from the server."
         },
         "partyList": {
@@ -2549,7 +2592,6 @@
         },
         "currency": {
           "$ref": "#/definitions/Currency",
-          "type": "string",
           "description": "Indicate that the provided Currency is supported by each PartyIdInfo in the list."
         }
       },
@@ -2568,11 +2610,11 @@
           "description": "Party Id type, id, sub ID or type, and FSP Id."
         },
         "merchantClassificationCode": {
-          "type": "string",
+          "$ref": "#/definitions/MerchantClassificationCode",
           "description": "Used in the context of Payee Information, where the Payee happens to be a merchant accepting merchant payments."
         },
         "name": {
-          "type": "string",
+          "$ref": "#/definitions/PartyName",
           "description": "Display name of the Party, could be a real name or a nick name."
         },
         "personalInfo": {
@@ -2591,14 +2633,15 @@
       "properties": {
         "firstName": {
           "type": "string",
+          "$ref": "#/definitions/FirstName",
           "description": "Party’s first name."
         },
         "middleName": {
-          "type": "string",
+          "$ref": "#/definitions/MiddleName",
           "description": "Party’s middle name."
         },
         "lastName": {
-          "type": "string",
+          "$ref": "#/definitions/LastName",
           "description": "Party’s last name."
         }
       }
@@ -2609,22 +2652,20 @@
       "description": "Data model for the complex type PartyIdInfo.",
       "properties": {
         "partyIdType": {
-          "type": "string",
+          "$ref": "#/definitions/PartyIdType",
           "description": "Type of the identifier."
         },
         "partyIdentifier": {
-          "type": "string",
+          "$ref": "#/definitions/PartyIdentifier",
           "description": "An identifier for the Party."
         },
         "partySubIdOrType": {
-          "type": "string",
+          "$ref": "#/definitions/PartySubIdOrType",
           "description": "A sub-identifier or sub-type for the Party."
         },
         "fspId": {
-          "type": "string",
-          "description": "FSP ID (if known)",
-          "minLength": 1,
-          "maxLength": 32
+          "$ref": "#/definitions/FspId",
+          "description": "FSP ID (if known)"
         },
         "extensionList": {
           "$ref": "#/definitions/ExtensionList",
@@ -2635,6 +2676,27 @@
         "partyIdType",
         "partyIdentifier"
       ]
+    },
+    "PartyIdentifier": {
+      "title": "PartyIdentifier",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Identifier of the Party."
+    },
+    "PartyName": {
+      "title": "PartyName",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Name of the Party. Could be a real name or a nickname."
+    },
+    "PartySubIdOrType": {
+      "title": "PartySubIdOrType",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Either a sub-identifier of a PartyIdentifier, or a sub-type of the PartyIdType, normally a PersonalIdentifierType."
     },
     "PartiesTypeIDPutResponse": {
       "title": "PartiesTypeIDPutResponse",
@@ -2660,7 +2722,7 @@
           "description": "First, middle and last name for the Party."
         },
         "dateOfBirth": {
-          "type": "string",
+          "$ref": "#/definitions/DateOfBirth",
           "description": "Date of birth for the Party."
         }
       }
