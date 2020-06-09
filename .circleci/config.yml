@@ -15,7 +15,7 @@ orbs:
 # defaults
 #
 # YAML defaults templates, in alphabetical order
-##  
+##
 defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add git
   apk --no-cache add ca-certificates
@@ -27,14 +27,14 @@ defaults_Dependencies: &defaults_Dependencies |
   npm install -g node-gyp
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
-  apk --no-cache add \
-          python \
-          py-pip \
-          groff \
-          less \
-          mailcap
-  pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
-  apk -v --purge del py-pip
+    apk upgrade --no-cache
+    apk --no-cache add \
+            python3 \
+            py3-pip \
+            groff \
+            less \
+            mailcap
+    pip3 install --upgrade pip awscli==1.14.5 s3cmd==2.0.1 python-magic
 
 defaults_license_scanner: &defaults_license_scanner
   name: Install and set up license-scanner
@@ -50,7 +50,7 @@ defaults_license_scanner: &defaults_license_scanner
 executors:
   default-docker:
     working_directory: /home/circleci/project
-    docker: 
+    docker:
       - image: node:12.16.1-alpine
 
   default-machine:
@@ -172,11 +172,11 @@ jobs:
           command: mkdir -p ./audit/results
       - run:
           name: Check for new npm vulnerabilities
-          command: npm run audit:check --silent -- --json > ./audit/results/auditResults.json 
+          command: npm run audit:check --silent -- --json > ./audit/results/auditResults.json
       - store_artifacts:
           path: ./audit/results
           prefix: audit
-          
+
   audit-licenses:
     executor: default-docker
     steps:
@@ -214,7 +214,7 @@ jobs:
           root: /tmp
           paths:
             - ./docker-image.tar
-      
+
   license-scan:
     executor: default-machine
     steps:
@@ -310,7 +310,7 @@ jobs:
             echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
             docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
 
-            case "$CIRCLE_TAG" in 
+            case "$CIRCLE_TAG" in
               *-pisp*)
                 # Don't update `late5t` for an image that has a `-pisp`
                 echo 'skipping late5t tag'
@@ -409,7 +409,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
             branches:
               ignore:
                 - /feature*/
@@ -425,7 +425,7 @@ workflows:
             - audit-licenses
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
             branches:
               ignore:
                 - /.*/
@@ -435,7 +435,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
             branches:
               ignore:
                 - /.*/
@@ -445,7 +445,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
             branches:
               ignore:
                 - /.*/
@@ -456,7 +456,7 @@ workflows:
             - image-scan
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
             branches:
               ignore:
                 - /.*/
