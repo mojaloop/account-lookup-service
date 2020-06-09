@@ -54,21 +54,21 @@ describe('/parties', () => {
   it('postParticipantsBatch returns 200', async () => {
     // Arrange
     const mock = {
-      requestId: 'HNNnJ',
+      requestId: 'f3c6a35e-dd36-4186-9363-ec5accf3338a',
       partyList: [{
-        partyIdType: 'LnlWooyQk',
+        partyIdType: 'MSISDN',
         partyIdentifier: 'MIYCVaNdsLD',
         partySubIdOrType: 'GNYKQO',
         fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
       },
       {
-        partyIdType: 'QGijB',
+        partyIdType: 'MSISDN',
         partyIdentifier: 'eEmRAczAyz',
         partySubIdOrType: 'ki',
         fspId: 'sYhkSmfUW'
       },
       {
-        partyIdType: 'nxRgD',
+        partyIdType: 'MSISDN',
         partyIdentifier: 'SNLwBJVZ',
         partySubIdOrType: 'fBcEvS',
         fspId: 'lgfJVXYOpsNfY'

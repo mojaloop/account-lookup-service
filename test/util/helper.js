@@ -256,6 +256,43 @@ function defaultAdminHeaders () {
   }
 }
 
+/**
+ * Mock Span
+ */
+class Span {
+  constructor () {
+    this.isFinished = false
+  }
+
+  audit () {
+    return jest.fn()
+  }
+
+  error () {
+    return jest.fn()
+  }
+
+  finish () {
+    return jest.fn()
+  }
+
+  debug () {
+    return jest.fn()
+  }
+
+  info () {
+    return jest.fn()
+  }
+
+  getChild () {
+    return new Span()
+  }
+}
+
+const mockSpan = () => {
+  return new Span()
+}
+
 module.exports = {
   defaultAdminHeaders,
   validatePayerFspUri,
@@ -277,5 +314,6 @@ module.exports = {
   getEndPointsResponse,
   fspIdPayload,
   participantPutEndpointOptions,
-  postByTypeIdCurrencyRequest
+  postByTypeIdCurrencyRequest,
+  mockSpan
 }
