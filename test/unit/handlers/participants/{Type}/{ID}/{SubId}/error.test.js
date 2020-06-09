@@ -36,6 +36,7 @@ const Helper = require('../../../../../../util/helper')
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/participants/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
@@ -65,7 +66,7 @@ describe('/participants/{Type}/{ID}/{SubId}/error', () => {
     }
 
     // Act
-    await ErrHandler.put(mock.request, handler)
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     /*
@@ -96,7 +97,7 @@ describe('/participants/{Type}/{ID}/{SubId}/error', () => {
 
     // Act
     try {
-      await ErrHandler.put(mock.request, handler)
+      await ErrHandler.put(mockContext, mock.request, handler)
     } catch (err) {
       // Assert
       /*

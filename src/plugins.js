@@ -31,8 +31,9 @@ const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const CentralServices = require('@mojaloop/central-services-shared')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
+const OpenapiBackendValidator = require('@mojaloop/central-services-shared').Util.Hapi.OpenapiBackendValidator
 
-const registerPlugins = async (server) => {
+const registerPlugins = async (server, openAPIBackend) => {
   await server.register({
     plugin: require('hapi-swagger'),
     options: {
@@ -40,6 +41,21 @@ const registerPlugins = async (server) => {
         title: server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation' : 'ALS Admin Swagger Documentation',
         version: Package.version
       }
+    }
+  })
+  await server.register(OpenapiBackendValidator)
+
+  await server.register({
+    plugin: {
+      name: 'openapi',
+      version: '1.0.0',
+      multiple: true,
+      register: function (server, options) {
+        server.expose('openapi', options.openapi)
+      }
+    },
+    options: {
+      openapi: openAPIBackend
     }
   })
 

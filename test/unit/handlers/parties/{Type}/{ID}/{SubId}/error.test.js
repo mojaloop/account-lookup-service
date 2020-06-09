@@ -38,6 +38,7 @@ const Helper = require('../../../../../../util/helper')
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/parties/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
@@ -61,7 +62,7 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
 
     // Act
-    ErrHandler.put(mock.request, handler)
+    ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     expect(handler.response.calledOnce).toBe(true)

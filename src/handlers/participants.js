@@ -40,17 +40,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async function (req, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
+  post: async function (context, request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
     await span.audit({
-      headers: req.headers,
-      payload: req.payload
+      headers: request.headers,
+      payload: request.payload
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by postParticipantsBatch.
-    participants.postParticipantsBatch(req.headers, req.method, req.payload, span)
+    participants.postParticipantsBatch(request.headers, request.method, request.payload, span)
     return h.response().code(200)
   }
 }

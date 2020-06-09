@@ -25,30 +25,21 @@
 
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
-const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./lib/db')
 const Config = require('./lib/config.js')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
+const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
 const Migrator = require('./lib/migrator')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
+const Handlers = require('./handlers')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
-}
-
-const openAPIOptions = {
-  api: Path.resolve(__dirname, './interface/api_swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
-}
-
-const openAdminAPIOptions = {
-  api: Path.resolve(__dirname, './interface/admin_swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
 }
 
 const migrate = async (isApi) => {
@@ -65,6 +56,7 @@ const migrate = async (isApi) => {
  * @returns {Promise<Server>} Returns the Server object
  */
 const createServer = async (port, isApi) => {
+  let api
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -80,12 +72,13 @@ const createServer = async (port, isApi) => {
       }
     }
   })
-  await Plugins.registerPlugins(server)
+  if (isApi === true) {
+    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/api-swagger.yaml'), Handlers.ApiHandlers)
+  } else {
+    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/admin-swagger.yaml'), Handlers.AdminHandlers)
+  }
+  await Plugins.registerPlugins(server, api)
   await server.register([
-    {
-      plugin: HapiOpenAPI,
-      options: isApi ? openAPIOptions : openAdminAPIOptions
-    },
     {
       plugin: HeaderValidator
     }
@@ -106,6 +99,27 @@ const createServer = async (port, isApi) => {
       }
     }
   ])
+
+  // use as a catch-all handler
+  server.route({
+    method: ['GET', 'POST', 'PUT', 'DELETE'],
+    path: '/{path*}',
+    handler: (req, h) => {
+      return api.handleRequest(
+        {
+          method: req.method,
+          path: req.path,
+          body: req.payload,
+          query: req.query,
+          headers: req.headers
+        },
+        req,
+        h
+      )
+      // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
+    }
+  })
+
   await server.start()
   return server
 }
@@ -114,7 +128,6 @@ const initialize = async (port = Config.API_PORT, isApi = true) => {
   await connectDatabase()
   await migrate(isApi)
   const server = await createServer(port, isApi)
-  server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   if (isApi) {
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)

@@ -44,7 +44,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async function (request, h) {
+  get: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_get',
       'Get participant by Type and Id',
@@ -75,7 +75,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async function (request, h) {
+  put: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_put',
       'Put participant by Type and Id',
@@ -99,7 +99,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async function (request, h) {
+  post: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_post',
       'Post participant by Type and Id',
@@ -130,7 +130,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async function (request, h) {
+  delete: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_delete',
       'Delete participant by Type and Id',

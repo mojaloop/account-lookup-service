@@ -153,6 +153,9 @@ describe('/parties', () => {
       headers: Helper.defaultStandardHeaders('parties'),
       payload: mock.request.body
     }
+    options.payload.party.personalInfo.complexName.firstName = 'Justin'
+    options.payload.party.personalInfo.complexName.middleName = 'middle'
+    options.payload.party.personalInfo.complexName.lastName = 'résumé'
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
 
     // Act
