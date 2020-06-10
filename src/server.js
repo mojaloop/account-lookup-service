@@ -42,8 +42,8 @@ const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
 }
 
-const migrate = async (isApi) => {
-  return Config.RUN_MIGRATIONS && !isApi ? Migrator.migrate() : {}
+const migrate = async () => {
+  return Config.RUN_MIGRATIONS ? Migrator.migrate() : {}
 }
 
 /**
@@ -52,11 +52,10 @@ const migrate = async (isApi) => {
  * @description Create HTTP Server
  *
  * @param {number} port Port to register the Server against
- * @param {boolean} isApi to check if admin or api server
+ * @param {object} api to check if admin or api server
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, isApi) => {
-  let api
+const createServer = async (port, api) => {
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -72,11 +71,6 @@ const createServer = async (port, isApi) => {
       }
     }
   })
-  if (isApi === true) {
-    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/api-swagger.yaml'), Handlers.ApiHandlers)
-  } else {
-    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/admin-swagger.yaml'), Handlers.AdminHandlers)
-  }
   await Plugins.registerPlugins(server, api)
   await server.register([
     {
@@ -125,9 +119,15 @@ const createServer = async (port, isApi) => {
 }
 
 const initialize = async (port = Config.API_PORT, isApi = true) => {
+  let api
   await connectDatabase()
-  await migrate(isApi)
-  const server = await createServer(port, isApi)
+  if (isApi === true) {
+    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/api-swagger.yaml'), Handlers.ApiHandlers)
+  } else {
+    await migrate()
+    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/admin-swagger.yaml'), Handlers.AdminHandlers)
+  }
+  const server = await createServer(port, api)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   if (isApi) {
     await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
