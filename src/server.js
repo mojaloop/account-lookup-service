@@ -118,23 +118,25 @@ const createServer = async (port, api) => {
   return server
 }
 
-const initialize = async (port = Config.API_PORT, isApi = true) => {
-  let api
+const initializeApi = async (port = Config.API_PORT) => {
   await connectDatabase()
-  if (isApi === true) {
-    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/api-swagger.yaml'), Handlers.ApiHandlers)
-  } else {
-    await migrate()
-    api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/admin-swagger.yaml'), Handlers.AdminHandlers)
-  }
+  const api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/api-swagger.yaml'), Handlers.ApiHandlers)
   const server = await createServer(port, api)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  if (isApi) {
-    await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
-  }
+  await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+  return server
+}
+
+const initializeAdmin = async (port = Config.ADMIN_PORT) => {
+  await connectDatabase()
+  await migrate()
+  const api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/admin-swagger.yaml'), Handlers.AdminHandlers)
+  const server = await createServer(port, api)
+  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }
 
 module.exports = {
-  initialize
+  initializeApi,
+  initializeAdmin
 }

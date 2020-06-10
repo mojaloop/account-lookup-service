@@ -32,7 +32,7 @@ const getPort = require('get-port')
 
 const src = '../../../../../../src'
 
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const participants = require(`${src}/domain/participants`)
 const ErrHandler = require(`${src}/handlers/participants/{Type}/{ID}/error`)

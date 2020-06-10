@@ -33,7 +33,7 @@ const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
-const initServer = require('../../../../src/server').initialize
+const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
 
 let server

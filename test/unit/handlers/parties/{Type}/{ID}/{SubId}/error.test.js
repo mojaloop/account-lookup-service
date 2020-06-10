@@ -30,7 +30,7 @@ const Sinon = require('sinon')
 const getPort = require('get-port')
 
 const src = '../../../../../../../src'
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)

@@ -30,7 +30,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const initServer = require('../../../../../src/server').initialize
+const initServer = require('../../../../../src/server').initializeApi
 const Db = require('../../../../../src/lib/db')
 const oracleEndpoint = require('../../../../../src/models/oracle')
 const parties = require('../../../../../src/domain/parties')
