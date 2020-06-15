@@ -41,7 +41,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (request, h) => {
+  get: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
       'oracles_get',
       'Get oracles',
@@ -71,7 +71,7 @@ module.exports = {
    * produces: application/json
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async (request, h) => {
+  post: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
       'oracles_put',
       'Put oracles',

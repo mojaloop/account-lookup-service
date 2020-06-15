@@ -30,7 +30,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const initServer = require('../../../../../src/server').initialize
+const initServer = require('../../../../../src/server').initializeApi
 const Db = require('../../../../../src/lib/db')
 const oracleEndpoint = require('../../../../../src/models/oracle')
 const parties = require('../../../../../src/domain/parties')
@@ -153,6 +153,9 @@ describe('/parties', () => {
       headers: Helper.defaultStandardHeaders('parties'),
       payload: mock.request.body
     }
+    options.payload.party.personalInfo.complexName.firstName = 'Justin'
+    options.payload.party.personalInfo.complexName.middleName = 'middle'
+    options.payload.party.personalInfo.complexName.lastName = 'résumé'
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
 
     // Act

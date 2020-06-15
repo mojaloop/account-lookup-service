@@ -55,7 +55,7 @@ describe('Base Tests', () => {
     const mockInitStub = sandbox.stub()
     const helpStub = sandbox.stub(Command.prototype, 'help').returns(true)
 
-    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/server.js', () => ({ initializeApi: mockInitStub, initializeAdmin: mockInitStub }))
     jest.mock('../../src/lib/argv.js', () => ({
       getArgs: () => []
     }))
@@ -75,7 +75,7 @@ describe('Base Tests', () => {
       'src/index.js',
       'server'
     ]
-    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/server.js', () => ({ initializeApi: mockInitStub, initializeAdmin: mockInitStub }))
     jest.mock('../../src/lib/argv.js', () => ({
       getArgs: () => mockArgs
     }))
@@ -97,7 +97,7 @@ describe('Base Tests', () => {
       'server',
       '--api'
     ]
-    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/server.js', () => ({ initializeApi: mockInitStub }))
     jest.mock('../../src/lib/argv.js', () => ({
       getArgs: () => mockArgs
     }))
@@ -109,10 +109,10 @@ describe('Base Tests', () => {
     // When starting with default args, both the admin and api servers get startec
     expect(mockInitStub.callCount).toBe(1)
     const initStubArgs = mockInitStub.getCall(0).args
-    expect(initStubArgs[1]).toBe(true) // true is API
+    expect(initStubArgs[0]).toBe(4002) // true is API
   })
 
-  it('should start the server with the --api config', () => {
+  it('should start the server with the --admin config', () => {
     // Arrange
     const mockInitStub = sandbox.stub()
     const mockArgs = [
@@ -121,7 +121,7 @@ describe('Base Tests', () => {
       'server',
       '--admin'
     ]
-    jest.mock('../../src/server.js', () => ({ initialize: mockInitStub }))
+    jest.mock('../../src/server.js', () => ({ initializeAdmin: mockInitStub }))
     jest.mock('../../src/lib/argv.js', () => ({
       getArgs: () => mockArgs
     }))
@@ -133,6 +133,6 @@ describe('Base Tests', () => {
     // When starting with default args, both the admin and api servers get startec
     expect(mockInitStub.callCount).toBe(1)
     const initStubArgs = mockInitStub.getCall(0).args
-    expect(initStubArgs[1]).toBe(false) // false is admin
+    expect(initStubArgs[0]).toBe(4001) // false is admin
   })
 })

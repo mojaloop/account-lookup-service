@@ -28,7 +28,7 @@
 
 const Sinon = require('sinon')
 const getPort = require('get-port')
-const initServer = require('../../../../../../../src/server').initialize
+const initServer = require('../../../../../../../src/server').initializeApi
 const Db = require('../../../../../../../src/lib/db')
 const participants = require('../../../../../../../src/domain/participants')
 const ErrHandler = require('../../../../../../../src/handlers/participants/{Type}/{ID}/{SubId}/error')
@@ -36,6 +36,7 @@ const Helper = require('../../../../../../util/helper')
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/participants/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
@@ -65,7 +66,7 @@ describe('/participants/{Type}/{ID}/{SubId}/error', () => {
     }
 
     // Act
-    await ErrHandler.put(mock.request, handler)
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     /*
@@ -96,7 +97,7 @@ describe('/participants/{Type}/{ID}/{SubId}/error', () => {
 
     // Act
     try {
-      await ErrHandler.put(mock.request, handler)
+      await ErrHandler.put(mockContext, mock.request, handler)
     } catch (err) {
       // Assert
       /*

@@ -42,7 +42,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async (request, h) => {
+  delete: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
       'enpointCache_delete',
       'Reset endpoint cache',
