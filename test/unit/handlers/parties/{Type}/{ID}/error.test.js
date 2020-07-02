@@ -32,7 +32,7 @@ const getPort = require('get-port')
 
 const src = '../../../../../../src'
 
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/error`)
@@ -41,6 +41,7 @@ const LibUtil = require(`${src}/lib/util`)
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/parties/{Type}/{ID}/error', () => {
   beforeAll(async () => {
@@ -73,7 +74,7 @@ describe('/parties/{Type}/{ID}/error', () => {
     sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
 
     // Act
-    await ErrHandler.put(mock.request, handler)
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     expect(codeStub.calledWith(200)).toBe(true)
@@ -100,7 +101,7 @@ describe('/parties/{Type}/{ID}/error', () => {
     sandbox.stub(parties, 'putPartiesErrorByTypeAndID').throws(new Error('Error in putPartiesErrorByTypeAndId'))
 
     // Act
-    const action = async () => ErrHandler.put(mock.request, handler)
+    const action = async () => ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     await expect(action()).rejects.toThrowError('Error in putPartiesErrorByTypeAndId')

@@ -37,7 +37,7 @@ const participant = require('../../../../../../src/models/participantEndpoint/fa
 const participants = require('../../../../../../src/domain/participants')
 const requestLogger = require('../../../../../../src/lib/requestLogger')
 const Helper = require('../../../../../util/helper')
-const initServer = require('../../../../../../src/server').initialize
+const initServer = require('../../../../../../src/server').initializeApi
 
 let server
 let sandbox

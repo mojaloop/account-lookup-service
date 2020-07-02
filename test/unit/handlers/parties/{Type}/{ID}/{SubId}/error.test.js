@@ -30,7 +30,7 @@ const Sinon = require('sinon')
 const getPort = require('get-port')
 
 const src = '../../../../../../../src'
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)
@@ -38,6 +38,7 @@ const Helper = require('../../../../../../util/helper')
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/parties/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
@@ -61,7 +62,7 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
 
     // Act
-    ErrHandler.put(mock.request, handler)
+    ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     expect(handler.response.calledOnce).toBe(true)

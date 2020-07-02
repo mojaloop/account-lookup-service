@@ -43,7 +43,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (request, h) => {
+  put: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
       'participantSubIdErrorByTypeAndID_put',
       'Put participant lookup error by Type, Id, and SubId',
@@ -52,7 +52,7 @@ module.exports = {
     const metadata = `${request.method} ${request.path}`
     try {
       request.server.log(['info'], `received: ${metadata}. ${inspect(request.params)}`)
-      await participants.putParticipantsErrorByTypeAndID(request)
+      await participants.putParticipantsErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri)
       request.server.log(['info'], `success: ${metadata}.`)
       histTimerEnd({ success: true })
     } catch (err) {
