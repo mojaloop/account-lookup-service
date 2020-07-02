@@ -93,12 +93,12 @@
     "rc": "1.2.8"
   },
   "devDependencies": {
-    "@types/jest": "26.0.0",
-    "eslint": "7.2.0",
-    "eslint-plugin-jest": "23.13.2",
+    "@types/jest": "26.0.3",
+    "eslint": "7.3.1",
+    "eslint-plugin-jest": "23.17.1",
     "get-port": "5.1.1",
-    "jest": "26.0.1",
-    "jest-junit": "10.0.0",
+    "jest": "26.1.0",
+    "jest-junit": "11.0.1",
     "jsdoc": "3.6.4",
     "nodemon": "2.0.4",
     "npm-audit-resolver": "2.2.0",
