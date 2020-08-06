@@ -1,0 +1,22 @@
+{
+  "decisions": {
+    "1523|@mojaloop/central-services-health>@mojaloop/central-services-shared>openapi-backend>lodash": {
+      "decision": "fix",
+      "madeAt": 1596454766506
+    },
+    "1523|@mojaloop/central-services-shared>openapi-backend>lodash": {
+      "decision": "fix",
+      "madeAt": 1596454766506
+    },
+    "1523|@mojaloop/central-services-health>@mojaloop/central-services-shared>openapi-backend>mock-json-schema>lodash": {
+      "decision": "fix",
+      "madeAt": 1596454766506
+    },
+    "1523|@mojaloop/central-services-shared>openapi-backend>mock-json-schema>lodash": {
+      "decision": "fix",
+      "madeAt": 1596454766506
+    }
+  },
+  "rules": {},
+  "version": 1
+}
