@@ -83,7 +83,7 @@
     "blipp": "4.0.1",
     "commander": "6.1.0",
     "docdash": "1.2.0",
-    "hapi-auth-bearer-token": "6.2.1",
+    "hapi-auth-bearer-token": "8.0.0",
     "hapi-swagger": "13.0.2",
     "knex": "0.21.5",
     "mustache": "4.0.1",
