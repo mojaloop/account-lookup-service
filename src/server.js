@@ -98,19 +98,22 @@ const createServer = async (port, api) => {
   server.route({
     method: ['GET', 'POST', 'PUT', 'DELETE'],
     path: '/{path*}',
-    handler: (req, h) => {
-      return api.handleRequest(
-        {
-          method: req.method,
-          path: req.path,
-          body: req.payload,
-          query: req.query,
-          headers: req.headers
-        },
-        req,
-        h
-      )
-      // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
+    config: {
+      tags: ['api'],
+      handler: (req, h) => {
+        return api.handleRequest(
+          {
+            method: req.method,
+            path: req.path,
+            body: req.payload,
+            query: req.query,
+            headers: req.headers
+          },
+          req,
+          h
+        )
+        // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
+      }
     }
   })
 

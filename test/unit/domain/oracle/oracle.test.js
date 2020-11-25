@@ -123,7 +123,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.deleteOracle(undefined)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('Cannot read property \'ID\' of undefined'))
+      await expect(action()).rejects.toThrowError(/Cannot read property 'ID' of undefined/)
     })
   })
 
@@ -175,7 +175,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.updateOracle(params, payload)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('Oracle not found'))
+      await expect(action()).rejects.toThrowError(/Oracle not found/)
     })
 
     it('handles error when `getCurrencyById` returns empty result', async () => {
