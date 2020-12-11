@@ -35,7 +35,7 @@ const {
 } = require('../util/testConfig')
 
 describe('plugins', () => {
-  describe('hapi-swagger', () => {
+  describe('API documentation - /swagger.json', () => {
     it('loads the swagger file for the admin api', async () => {
       // Arrange
       const options = {

@@ -23,7 +23,6 @@
  ******/
 'use strict'
 
-const Package = require('../package')
 const Config = require('./lib/config')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
@@ -32,18 +31,19 @@ const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const CentralServices = require('@mojaloop/central-services-shared')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
 const OpenapiBackendValidator = require('@mojaloop/central-services-shared').Util.Hapi.OpenapiBackendValidator
+const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
 
 const registerPlugins = async (server, openAPIBackend) => {
-  await server.register({
-    plugin: require('hapi-swagger'),
-    options: {
-      info: {
-        title: server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation' : 'ALS Admin Swagger Documentation',
-        version: Package.version
-      }
-    }
-  })
   await server.register(OpenapiBackendValidator)
+  
+  if (Config.API_DOC_ENDPOINTS_ENABLED) {
+    await server.register({
+      plugin: APIDocumentation,
+      options: {
+        document: openAPIBackend.document
+      }
+    })
+  }
 
   await server.register({
     plugin: {
