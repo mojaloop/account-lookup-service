@@ -35,7 +35,7 @@ const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.
 
 const registerPlugins = async (server, openAPIBackend) => {
   await server.register(OpenapiBackendValidator)
-  
+
   if (Config.API_DOC_ENDPOINTS_ENABLED) {
     await server.register({
       plugin: APIDocumentation,
