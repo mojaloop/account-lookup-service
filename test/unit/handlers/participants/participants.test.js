@@ -33,7 +33,7 @@ const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
-const initServer = require('../../../../src/server').initialize
+const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
 
 let server
@@ -51,21 +51,21 @@ describe('/participants', () => {
     sandbox.restore()
   })
   const mock = {
-    requestId: 'HNNnJ',
+    requestId: '3ede3c17-36aa-42f4-b6db-b0df2e42f31e',
     partyList: [{
-      partyIdType: 'LnlWooyQk',
+      partyIdType: 'MSISDN',
       partyIdentifier: 'MIYCVaNdsLD',
       partySubIdOrType: 'GNYKQO',
       fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
     },
     {
-      partyIdType: 'QGijB',
+      partyIdType: 'MSISDN',
       partyIdentifier: 'eEmRAczAyz',
       partySubIdOrType: 'ki',
       fspId: 'sYhkSmfUW'
     },
     {
-      partyIdType: 'nxRgD',
+      partyIdType: 'MSISDN',
       partyIdentifier: 'SNLwBJVZ',
       partySubIdOrType: 'fBcEvS',
       fspId: 'lgfJVXYOpsNfY'

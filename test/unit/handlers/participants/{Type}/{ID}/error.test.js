@@ -32,7 +32,7 @@ const getPort = require('get-port')
 
 const src = '../../../../../../src'
 
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const participants = require(`${src}/domain/participants`)
 const ErrHandler = require(`${src}/handlers/participants/{Type}/{ID}/error`)
@@ -41,6 +41,7 @@ const LibUtil = require(`${src}/lib/util`)
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/participants/{Type}/{ID}/error', () => {
   beforeAll(async () => {
@@ -83,7 +84,7 @@ describe('/participants/{Type}/{ID}/error', () => {
     }
 
     // Act
-    await Promise.resolve(await ErrHandler.put(mock.request, handler))
+    await Promise.resolve(await ErrHandler.put(mockContext, mock.request, handler))
 
     // Assert
     /*
@@ -125,7 +126,7 @@ describe('/participants/{Type}/{ID}/error', () => {
     }
 
     // Act
-    await Promise.resolve(await ErrHandler.put(mock.request, handler))
+    await Promise.resolve(await ErrHandler.put(mockContext, mock.request, handler))
 
     // Assert
     /*

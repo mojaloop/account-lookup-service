@@ -33,7 +33,7 @@ const Mockgen = require('../../../util/mockgen.js')
 const helper = require('../../../util/helper')
 const Sinon = require('sinon')
 const oracle = require('../../../../src/domain/oracle')
-const initServer = require('../../../../src/server').initialize
+const initServer = require('../../../../src/server').initializeAdmin
 const getPort = require('get-port')
 const Db = require('../../../../src/lib/db')
 const Migrator = require('../../../../src/lib/migrator')
@@ -62,6 +62,7 @@ describe('/oracles/{ID} handler', () => {
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
   it('PUT /oracles/{ID}', async () => {
+    expect.hasAssertions()
     // Arrange
     const requests = new Promise((resolve, reject) => {
       Mockgen(false).requests({
@@ -107,6 +108,53 @@ describe('/oracles/{ID} handler', () => {
     oracle.updateOracle.restore()
   })
 
+  it('PUT /oracles/{ID} error', async () => {
+    expect.hasAssertions()
+    // Arrange
+    const requests = new Promise((resolve, reject) => {
+      Mockgen(false).requests({
+        path: '/oracles/{ID}',
+        operation: 'put'
+      }, function (error, mock) {
+        return error ? reject(error) : resolve(mock)
+      })
+    })
+
+    const mock = await requests
+
+    /*
+      Get the resolved path from mock request
+      Mock request Path templates({}) are resolved using path parameters
+    */
+    const options = {
+      method: 'put',
+      url: mock.request.path,
+      headers: helper.defaultAdminHeaders()
+    }
+    if (mock.request.body) {
+      // Send the request body
+      options.payload = mock.request.body
+    } else if (mock.request.formData) {
+      // Send the request form data
+      options.payload = mock.request.formData
+      // Set the Content-Type as application/x-www-form-urlencoded
+      options.headers = options.headers || {}
+      options.headers = helper.defaultAdminHeaders()
+    }
+    // If headers are present, set the headers.
+    if (mock.request.headers && mock.request.headers.length > 0) {
+      options.headers = mock.request.headers
+    }
+    sandbox.stub(oracle, 'updateOracle').throws()
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(500)
+    oracle.updateOracle.restore()
+  })
+
   /**
    * summary: Delete Oracle
    * description: The HTTP request DELETE /oracles/{ID} is used to delete information in the server regarding the provided oracle.
@@ -114,7 +162,8 @@ describe('/oracles/{ID} handler', () => {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  it('PUT /oracles/{ID}', async () => {
+  it('delete /oracles/{ID}', async () => {
+    expect.hasAssertions()
     // Arrange
     const requests = new Promise((resolve, reject) => {
       Mockgen(false).requests({
@@ -157,6 +206,53 @@ describe('/oracles/{ID} handler', () => {
 
     // Assert
     expect(response.statusCode).toBe(204)
+    oracle.deleteOracle.restore()
+  })
+
+  it('delete /oracles/{ID} error', async () => {
+    expect.hasAssertions()
+    // Arrange
+    const requests = new Promise((resolve, reject) => {
+      Mockgen(false).requests({
+        path: '/oracles/{ID}',
+        operation: 'delete'
+      }, function (error, mock) {
+        return error ? reject(error) : resolve(mock)
+      })
+    })
+
+    const mock = await requests
+
+    /*
+      Get the resolved path from mock request
+      Mock request Path templates({}) are resolved using path parameters
+    */
+    const options = {
+      method: 'delete',
+      url: '' + mock.request.path,
+      headers: helper.defaultAdminHeaders()
+    }
+    if (mock.request.body) {
+      // Send the request body
+      options.payload = mock.request.body
+    } else if (mock.request.formData) {
+      // Send the request form data
+      options.payload = mock.request.formData
+      // Set the Content-Type as application/x-www-form-urlencoded
+      options.headers = options.headers || {}
+      options.headers = helper.defaultAdminHeaders()
+    }
+    // If headers are present, set the headers.
+    if (mock.request.headers && mock.request.headers.length > 0) {
+      options.headers = mock.request.headers
+    }
+    sandbox.stub(oracle, 'deleteOracle').throws()
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(500)
     oracle.deleteOracle.restore()
   })
 })

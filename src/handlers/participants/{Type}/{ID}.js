@@ -44,7 +44,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async function (request, h) {
+  get: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_get',
       'Get participant by Type and Id',
@@ -59,7 +59,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
-      await participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
+      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err}`)
@@ -75,7 +75,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async function (request, h) {
+  put: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_put',
       'Put participant by Type and Id',
@@ -83,7 +83,7 @@ module.exports = {
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
-      await participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
+      participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
@@ -99,7 +99,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async function (request, h) {
+  post: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_post',
       'Post participant by Type and Id',
@@ -114,7 +114,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
-      await participants.postParticipants(request.headers, request.method, request.params, request.payload, span)
+      participants.postParticipants(request.headers, request.method, request.params, request.payload, span)
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
@@ -130,7 +130,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async function (request, h) {
+  delete: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'participantsByTypeAndID_delete',
       'Delete participant by Type and Id',
@@ -138,7 +138,7 @@ module.exports = {
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
-      await participants.deleteParticipants(request.headers, request.params, request.method, request.query)
+      participants.deleteParticipants(request.headers, request.params, request.method, request.query)
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)

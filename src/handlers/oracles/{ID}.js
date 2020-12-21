@@ -43,7 +43,7 @@ module.exports = {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (request, h) => {
+  put: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
       'oracle_put',
       'Update oracle details by Id',
@@ -74,7 +74,7 @@ module.exports = {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async (request, h) => {
+  delete: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
       'authorization_get',
       'Get authorization by Id',

@@ -30,7 +30,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const initServer = require('../../../src/server').initialize
+const initServer = require('../../../src/server').initializeApi
 const Helper = require('../../util/helper')
 const Db = require('../../../src/lib/db')
 const getPort = require('get-port')

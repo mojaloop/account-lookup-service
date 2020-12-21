@@ -39,7 +39,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (request, h) => {
+  get: async (context, request, h) => {
     participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
@@ -50,7 +50,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (request, h) => {
+  put: async (context, request, h) => {
     participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
@@ -61,7 +61,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async (request, h) => {
+  post: async (context, request, h) => {
     participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
@@ -72,7 +72,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async (request, h) => {
+  delete: async (context, request, h) => {
     participants.deleteParticipants(request.headers, request.params, request.method, request.query)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   }
