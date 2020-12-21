@@ -1528,6 +1528,22 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "accounts":
+              {
+                "account":
+                [
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“savings”",
+                    "“address”": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”"
+                  },
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“checkings”",
+                    "“address”": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -1882,6 +1898,22 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "accounts":
+              {
+                "account":
+                [
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“savings”",
+                    "“address”": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”"
+                  },
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“checkings”",
+                    "“address”": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -2478,6 +2510,66 @@
         "extension"
       ]
     },
+    "Account": {
+      "title": "Account",
+      "type": "object",
+      "description": "Data model for the complex type Account",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/AccountAddress",
+          "type": "string",
+          "description": "Unique routable address which is DFSP specific."
+        },
+        "currency": {
+          "$ref": "#/definitions/Currency",
+          "type": "string",
+          "description": "Currency of the amount."
+        },
+        "description": {
+          "$ref": "#/definitions/Name",
+          "type": "string",
+          "description": "The name of the account."
+        }
+      },
+      "required": [
+        "address",
+        "currency",
+        "description"
+      ]
+    },
+    "AccountAddress": {
+      "title": "AccountAddress",
+      "type": "string",
+      "description": "Unique routable address which is DFSP specific.",
+      "pattern": "^([0-9A-Za-z_~\\-\\.]+[0-9A-Za-z_~\\-])$",
+      "minLength": 1,
+      "maxLength": 1023
+    },
+    "AccountList": {
+      "title": "AccountList",
+      "type": "object",
+      "description": "Data model for the complex type AccountList",
+      "properties": {
+        "account": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "description": "Accounts associated with the Party"
+        }
+      },
+      "required": [
+        "account"
+      ]
+    },
+    "Name": {
+      "title": "Name",
+      "type": "string",
+      "pattern": "^(?!\\s*$)[\\w .,'-]{1,128}$",
+      "description": "The API data type Name is a JSON String, restricted by a regular expression to avoid characters which are generally not used in a name. Regular Expression - The regular expression for restricting the Name type is \"^(?!\\s*$)[\\w .,'-]{1,128}$\". The restriction does not allow a string consisting of whitespace only, all Unicode characters are allowed, as well as the period (.) (apostrophe (‘), dash (-), comma (,) and space characters ( ). Note -  In some programming languages, Unicode support must be specifically enabled. For example, if Java is used the flag UNICODE_CHARACTER_CLASS must be enabled to allow Unicode characters."
+    },
     "FirstName": {
       "title": "FirstName",
       "type": "string",
@@ -2605,6 +2697,10 @@
       "type": "object",
       "description": "Data model for the complex type Party.",
       "properties": {
+        "accounts": {
+          "$ref": "#/definitions/AccountList",
+          "description": "List of accounts associated with the party containing and DFSP routable address, currency identifier and description."
+        },
         "partyIdInfo": {
           "$ref": "#/definitions/PartyIdInfo",
           "description": "Party Id type, id, sub ID or type, and FSP Id."
