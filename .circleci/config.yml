@@ -27,14 +27,14 @@ defaults_Dependencies: &defaults_Dependencies |
   npm install -g node-gyp
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
-    apk upgrade --no-cache
-    apk --no-cache add \
-            python3 \
-            py3-pip \
-            groff \
-            less \
-            mailcap
-    pip3 install --upgrade pip awscli==1.14.5 s3cmd==2.0.1 python-magic
+  apk upgrade --no-cache
+  apk --no-cache add \
+          python3 \
+          py3-pip \
+          groff \
+          less \
+          mailcap
+  pip3 install --upgrade pip awscli==1.14.5 s3cmd==2.0.1 python-magic
 
 defaults_license_scanner: &defaults_license_scanner
   name: Install and set up license-scanner
@@ -66,10 +66,10 @@ jobs:
   setup:
     executor: default-docker
     steps:
-      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
+      - checkout
       - run:
           name: Access npm folder as root
           command: cd $(npm root -g)/npm
@@ -87,10 +87,10 @@ jobs:
   test-unit:
     executor: default-docker
     steps:
-      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
+      - checkout
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -109,13 +109,13 @@ jobs:
   test-coverage:
     executor: default-docker
     steps:
-      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
+      - checkout
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -236,14 +236,17 @@ jobs:
     executor: anchore/anchore_engine
     steps:
       - setup_remote_docker
-      - checkout
       - run:
           name: Install docker dependencies for anchore
           command: |
-            apk add --update python3 py3-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
+            apk add --update py-pip docker python-dev libffi-dev openssl-dev gcc libc-dev make jq npm
+      - run:
+          name: Install general dependencies
+          command: *defaults_Dependencies
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
+      - checkout
       - attach_workspace:
           at: /tmp
       - run:

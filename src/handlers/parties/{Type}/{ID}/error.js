@@ -40,15 +40,15 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async function (req, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+  put: async function (context, request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
     await span.audit({
-      headers: req.headers,
-      payload: req.payload
+      headers: request.headers,
+      payload: request.payload
     }, EventSdk.AuditEventAction.start)
-    await parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
+    await parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span)
     return h.response().code(200)
   }
 }

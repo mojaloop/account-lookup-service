@@ -31,7 +31,7 @@ const getPort = require('get-port')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const requestUtil = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
-const initServer = require('../../../../../../src/server').initialize
+const initServer = require('../../../../../../src/server').initializeApi
 const Db = require('../../../../../../src/lib/db')
 const oracleEndpoint = require('../../../../../../src/models/oracle')
 const parties = require('../../../../../../src/domain/parties')
@@ -150,6 +150,9 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       headers: Helper.defaultStandardHeaders('parties'),
       payload: mock.request.body
     }
+    options.payload.party.personalInfo.complexName.firstName = 'Justin'
+    options.payload.party.personalInfo.complexName.middleName = 'middle'
+    options.payload.party.personalInfo.complexName.lastName = 'résumé'
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
 
     // Act

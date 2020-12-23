@@ -26,7 +26,6 @@
 'use strict'
 
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
 const packageJson = require('../../package.json')
 
@@ -43,5 +42,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: defaultHealthHandler(healthCheck)
+  get: async (context, request, h) => {
+    return h.response(await healthCheck.getHealth()).code(200)
+  }
 }
