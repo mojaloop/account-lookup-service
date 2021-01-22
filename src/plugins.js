@@ -23,22 +23,39 @@
  ******/
 'use strict'
 
-const Package = require('../package')
 const Config = require('./lib/config')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const CentralServices = require('@mojaloop/central-services-shared')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
+const OpenapiBackendValidator = require('@mojaloop/central-services-shared').Util.Hapi.OpenapiBackendValidator
+const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
 
-const registerPlugins = async (server) => {
-  await server.register({
-    plugin: require('hapi-swagger'),
-    options: {
-      info: {
-        title: server.info.port === Config.API_PORT ? 'ALS API Swagger Documentation' : 'ALS Admin Swagger Documentation',
-        version: Package.version
+const registerPlugins = async (server, openAPIBackend) => {
+  await server.register(OpenapiBackendValidator)
+
+  if (Config.API_DOC_ENDPOINTS_ENABLED) {
+    await server.register({
+      plugin: APIDocumentation,
+      options: {
+        document: openAPIBackend.document
       }
+    })
+  }
+
+  await server.register({
+    plugin: {
+      name: 'openapi',
+      version: '1.0.0',
+      multiple: true,
+      register: function (server, options) {
+        server.expose('openapi', options.openapi)
+      }
+    },
+    options: {
+      openapi: openAPIBackend
     }
   })
 
@@ -67,7 +84,8 @@ const registerPlugins = async (server) => {
     Inert,
     Vision,
     ErrorHandling,
-    RawPayloadToDataUri
+    RawPayloadToDataUri,
+    CentralServices.Util.Hapi.HapiEventPlugin
   ])
 
   if (Config.DISPLAY_ROUTES === true) {

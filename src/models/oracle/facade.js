@@ -75,10 +75,16 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     // initiator of the request.
     if (
       err.name === 'FSPIOPError' &&
-      err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code &&
-      err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))
+      err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code
     ) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+      if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))) {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        // Added error 404 to cover a special case of the Mowali implementation
+        // which uses mojaloop/als-oracle-pathfinder and currently returns 404
+        // and in which case the Mowali implementation expects back `DESTINATION_FSP_ERROR`.
+      } else if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE))) {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
+      }
     }
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }

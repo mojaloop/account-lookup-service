@@ -19,14 +19,19 @@
  * Name Surname <name.surname@gatesfoundation.com>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
 'use strict'
 
-const participants = require('../../../domain/participants')
-const Logger = require('@mojaloop/central-services-logger')
+const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventSdk = require('@mojaloop/event-sdk')
+const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
+const LibUtil = require('../../../lib/util')
+const participants = require('../../../domain/participants')
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -39,12 +44,26 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (req, h) {
-    const metadata = `${req.method} ${req.path}`
+  get: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'participantsByTypeAndID_get',
+      'Get participant by Type and Id',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.LOOKUP)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
+    const metadata = `${request.method} ${request.path}`
     try {
-      participants.getParticipantsByTypeAndID(req.headers, req.params, req.method, req.query)
+      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
+      histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)
@@ -56,12 +75,19 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
+  put: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'participantsByTypeAndID_put',
+      'Put participant by Type and Id',
+      ['success']
+    ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
       participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
+      histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(200)
@@ -73,12 +99,26 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: function (request, h) {
+  post: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'participantsByTypeAndID_post',
+      'Post participant by Type and Id',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.postParticipants(request.headers, request.method, request.params, request.payload)
+      participants.postParticipants(request.headers, request.method, request.params, request.payload, span)
+      histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)
@@ -90,12 +130,19 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function (request, h) {
+  delete: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'participantsByTypeAndID_delete',
+      'Delete participant by Type and Id',
+      ['success']
+    ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
       participants.deleteParticipants(request.headers, request.params, request.method, request.query)
+      histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
     return h.response().code(202)

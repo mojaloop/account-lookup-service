@@ -35,7 +35,7 @@ const {
 } = require('../util/testConfig')
 
 describe('plugins', () => {
-  describe('hapi-swagger', () => {
+  describe('API documentation - /swagger.json', () => {
     it('loads the swagger file for the admin api', async () => {
       // Arrange
       const options = {
@@ -48,7 +48,7 @@ describe('plugins', () => {
       const result = await request(options)
 
       // Assert
-      expect(result.info.title).toBe('ALS Admin Swagger Documentation')
+      expect(result.info.title).toBe('Open API for ALS Admin API')
     })
 
     it('loads the swagger file for the default api', async () => {
@@ -63,7 +63,7 @@ describe('plugins', () => {
       const result = await request(options)
 
       // Assert
-      expect(result.info.title).toBe('ALS API Swagger Documentation')
+      expect(result.info.title).toBe('Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version)')
     })
   })
 })

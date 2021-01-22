@@ -39,5 +39,13 @@
         }
       }
     }
-  }
+  },
+  "ENDPOINT_SECURITY":{
+    "JWS": {
+      "JWS_SIGN": false,
+      "FSPIOP_SOURCE_TO_SIGN": "switch",
+      "JWS_SIGNING_KEY_PATH": "secrets/jwsSigningKey.key"
+    }
+  },
+  "API_DOC_ENDPOINTS_ENABLED": true
 }

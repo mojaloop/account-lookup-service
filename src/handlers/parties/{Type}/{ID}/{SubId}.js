@@ -39,8 +39,8 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (request, h) {
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query)
+  get: function (context, request, h) {
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span)
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -50,7 +50,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
+  put: function (context, request, h) {
     parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri)
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }

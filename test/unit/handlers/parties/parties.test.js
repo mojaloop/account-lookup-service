@@ -33,7 +33,7 @@ const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
-const initServer = require('../../../../src/server').initialize
+const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
 
 let server
@@ -53,13 +53,35 @@ describe('/parties', () => {
 
   it('postParticipantsBatch returns 200', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
+    const mock = {
+      requestId: 'f3c6a35e-dd36-4186-9363-ec5accf3338a',
+      partyList: [{
+        partyIdType: 'MSISDN',
+        partyIdentifier: 'MIYCVaNdsLD',
+        partySubIdOrType: 'GNYKQO',
+        fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
+      },
+      {
+        partyIdType: 'MSISDN',
+        partyIdentifier: 'eEmRAczAyz',
+        partySubIdOrType: 'ki',
+        fspId: 'sYhkSmfUW'
+      },
+      {
+        partyIdType: 'MSISDN',
+        partyIdentifier: 'SNLwBJVZ',
+        partySubIdOrType: 'fBcEvS',
+        fspId: 'lgfJVXYOpsNfY'
+      }
+      ],
+      currency: 'EUR'
+    }
 
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultSwitchHeaders,
-      payload: mock.request.body
+      payload: mock
     }
 
     sandbox.stub(participants, 'postParticipantsBatch').returns({})

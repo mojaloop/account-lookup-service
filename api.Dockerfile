@@ -1,4 +1,4 @@
-FROM node:10.15.3-alpine
+FROM node:12.16.0-alpine
 
 WORKDIR /opt/account-lookup-service
 
@@ -15,6 +15,7 @@ RUN apk del build-dependencies
 COPY config /opt/account-lookup-service/config
 COPY migrations /opt/account-lookup-service/migrations
 COPY seeds /opt/account-lookup-service/seeds
+COPY secrets /opt/account-lookup-service/secrets
 COPY src /opt/account-lookup-service/src
 
 EXPOSE 4001

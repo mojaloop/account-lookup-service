@@ -2,14 +2,13 @@
 [![Git Commit](https://img.shields.io/github/last-commit/mojaloop/account-lookup-service.svg?style=flat)](https://github.com/mojaloop/account-lookup-service/commits/master)
 [![Git Releases](https://img.shields.io/github/release/mojaloop/account-lookup-service.svg?style=flat)](https://github.com/mojaloop/account-lookup-service/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/mojaloop/account-lookup-service.svg?style=flat)](https://hub.docker.com/r/mojaloop/account-lookup-service)
-[![CircleCI](https://circleci.com/gh/mojaloop/account-lookup-service.svg?style=svg)](https://circleci.com/gh/mojaloop/account-lookup-service)
+[![CircleCI](https://circleci.com/gh/mojaloop/account-lookup-service.svg?style=svg)](https://app.circleci.com/pipelines/github/mojaloop/account-lookup-service)
 
 
 ## Documentation
-[Documentation](http://mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/) \
-[API Swagger](http://mojaloop.io/documentation/api/#als-oracle-api) \
-[Admin Swagger](http://mojaloop.io/documentation/api/#als-oracle-api) <!--This currently points to API but will be updated when Admin documentation is created-->
-
+- [Documentation](http://docs.mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/)
+- [API Swagger Reference](/src/interface/api-swagger.yaml)
+- [Admin Swagger Referemce](/src/interface/admin-swagger.yaml)
 
 ## Database initialisation
 
@@ -121,7 +120,7 @@ docker-compose -f docker-compose.yml -f docker-compose.integration.yml rm -f
 
 ## Auditing Dependencies
 
-We use `npm-audit-resolver` along with `npm audit` to check dependencies for vulnerabilities, and keep track of resolved dependencies with an `audit-resolv.json` file.
+We use `npm-audit-resolver` along with `npm audit` to check dependencies for vulnerabilities, and keep track of resolved dependencies with an `audit-resolve.json` file.
 
 To start a new resolution process, run:
 ```bash
@@ -134,6 +133,18 @@ npm run audit:check
 ```
 
 And commit the changed `audit-resolve.json` to ensure that CircleCI will build correctly.
+
+## Container Scans
+
+As part of our CI/CD process, we use anchore-cli to scan our built docker container for vulnerabilities upon release.
+
+If you find your release builds are failing, refer to the [container scanning](https://github.com/mojaloop/ci-config#container-scanning) in our shared Mojaloop CI config repo. There is a good chance you simply need to update the `mojaloop-policy-generator.js` file and re-run the circleci workflow.
+
+For more information on anchore and anchore-cli, refer to:
+- [Anchore CLI](https://github.com/anchore/anchore-cli)
+- [Circle Orb Registry](https://circleci.com/orbs/registry/orb/anchore/anchore-engine)
+
+
 
 ## Additional Notes: 
 

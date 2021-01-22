@@ -70,6 +70,7 @@ const getOracleDatabaseResponse = [{
 }]
 
 let sandbox
+let SpanStub
 
 describe('Oracle tests', () => {
   beforeEach(() => {
@@ -90,6 +91,16 @@ describe('Oracle tests', () => {
     Db.oracleEndpoint.insert.returns(true)
     Db.oracleEndpoint.query.returns(getOracleDatabaseResponse)
     Db.oracleEndpoint.update.returns(true)
+
+    SpanStub = {
+      audit: sandbox.stub().callsFake(),
+      error: sandbox.stub().callsFake(),
+      finish: sandbox.stub().callsFake(),
+      debug: sandbox.stub().callsFake(),
+      info: sandbox.stub().callsFake(),
+      getChild: sandbox.stub().returns(SpanStub),
+      setTags: sandbox.stub().callsFake()
+    }
   })
 
   afterEach(() => {
@@ -112,7 +123,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.deleteOracle(undefined)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('Cannot read property \'ID\' of undefined'))
+      await expect(action()).rejects.toThrowError(/Cannot read property 'ID' of undefined/)
     })
   })
 
@@ -164,7 +175,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.updateOracle(params, payload)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('Oracle not found'))
+      await expect(action()).rejects.toThrowError(/Oracle not found/)
     })
 
     it('handles error when `getCurrencyById` returns empty result', async () => {
@@ -202,9 +213,21 @@ describe('Oracle tests', () => {
         },
         isDefault: true
       }
+      const createHeaders = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'cache-control': 'no-cache',
+        date: '',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'user-agent': 'PostmanRuntime/7.17.1',
+        'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
+        host: '127.0.0.1:4003',
+        'accept-encoding': 'gzip, deflate',
+        'content-length': 164,
+        connection: 'keep-alive'
+      }
 
       // Act
-      const response = await oracleDomain.createOracle(createPayload)
+      const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
 
       // Assert
       expect(response).toBe(true)
@@ -219,9 +242,21 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         }
       }
+      const createHeaders = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'cache-control': 'no-cache',
+        date: '',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'user-agent': 'PostmanRuntime/7.17.1',
+        'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
+        host: '127.0.0.1:4003',
+        'accept-encoding': 'gzip, deflate',
+        'content-length': 164,
+        connection: 'keep-alive'
+      }
 
       // Act
-      const response = await oracleDomain.createOracle(createPayload)
+      const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
 
       // Assert
       expect(response).toBe(true)
@@ -251,6 +286,17 @@ describe('Oracle tests', () => {
     it('should get the details of the requested oracle without currency and type', async () => {
       // Arrange
       const query = {}
+      const createHeaders = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'cache-control': 'no-cache',
+        date: '',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'user-agent': 'PostmanRuntime/7.17.1',
+        'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
+        host: '127.0.0.1:4003',
+        'accept-encoding': 'gzip, deflate',
+        connection: 'keep-alive'
+      }
       const expected = [{
         oracleId: 1,
         oracleIdType: 'MSISDN',
@@ -263,7 +309,7 @@ describe('Oracle tests', () => {
       }]
 
       // Act
-      const response = await oracleDomain.getOracle(query)
+      const response = await oracleDomain.getOracle(query, createHeaders, SpanStub)
 
       // Assert
       expect(response).toEqual(expected)
@@ -274,28 +320,16 @@ describe('Oracle tests', () => {
       const query = {
         currency: 'USD'
       }
-      const expected = [{
-        oracleId: 1,
-        oracleIdType: 'MSISDN',
-        endpoint: {
-          value: 'http://localhost:8444',
-          endpointType: 'URL'
-        },
-        currency: 'USD',
-        isDefault: true
-      }]
-
-      // Act
-      const response = await oracleDomain.getOracle(query)
-
-      // Assert
-      expect(response).toEqual(expected)
-    })
-
-    it('should get the details of the requested oracle with type', async () => {
-      // Arrange
-      const query = {
-        type: 'MSISDN'
+      const createHeaders = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'cache-control': 'no-cache',
+        date: '',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'user-agent': 'PostmanRuntime/7.17.1',
+        'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
+        host: '127.0.0.1:4003',
+        'accept-encoding': 'gzip, deflate',
+        connection: 'keep-alive'
       }
       const expected = [{
         oracleId: 1,
@@ -309,7 +343,41 @@ describe('Oracle tests', () => {
       }]
 
       // Act
-      const response = await oracleDomain.getOracle(query)
+      const response = await oracleDomain.getOracle(query, createHeaders, SpanStub)
+
+      // Assert
+      expect(response).toEqual(expected)
+    })
+
+    it('should get the details of the requested oracle with type', async () => {
+      // Arrange
+      const query = {
+        type: 'MSISDN'
+      }
+      const createHeaders = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'cache-control': 'no-cache',
+        date: '',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'user-agent': 'PostmanRuntime/7.17.1',
+        'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
+        host: '127.0.0.1:4003',
+        'accept-encoding': 'gzip, deflate',
+        connection: 'keep-alive'
+      }
+      const expected = [{
+        oracleId: 1,
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8444',
+          endpointType: 'URL'
+        },
+        currency: 'USD',
+        isDefault: true
+      }]
+
+      // Act
+      const response = await oracleDomain.getOracle(query, createHeaders, SpanStub)
 
       // Assert
       expect(response).toEqual(expected)
@@ -321,6 +389,17 @@ describe('Oracle tests', () => {
         currency: 'USD',
         type: 'MSISDN'
       }
+      const createHeaders = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'cache-control': 'no-cache',
+        date: '',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'user-agent': 'PostmanRuntime/7.17.1',
+        'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
+        host: '127.0.0.1:4003',
+        'accept-encoding': 'gzip, deflate',
+        connection: 'keep-alive'
+      }
       const expected = [{
         oracleId: 1,
         oracleIdType: 'MSISDN',
@@ -333,7 +412,7 @@ describe('Oracle tests', () => {
       }]
 
       // Act
-      const response = await oracleDomain.getOracle(query)
+      const response = await oracleDomain.getOracle(query, createHeaders, SpanStub)
 
       // Assert
       expect(response).toEqual(expected)

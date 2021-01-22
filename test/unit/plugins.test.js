@@ -27,10 +27,13 @@
  --------------
  ******/
 
+const Path = require('path')
 const Sinon = require('sinon')
+const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 
 const { registerPlugins } = require('../../src/plugins')
 const Config = require('../../src/lib/config')
+const Handlers = require('../../src/handlers')
 
 let sandbox
 
@@ -51,16 +54,18 @@ describe('Plugin Tests', () => {
         port: '8000'
       }
     }
+    const api = await OpenapiBackend.initialise(Path.resolve(__dirname, '../../src/interface/api-swagger.yaml'), Handlers.ApiHandlers)
+
     sandbox.mock(Config)
     Config.API_PORT = '8000'
 
     // Act
-    await registerPlugins(server)
+    await registerPlugins(server, api)
 
     // Assert
-    expect(server.register.callCount).toBe(7)
-    const firstCallArgs = server.register.getCall(0).args
-    expect(firstCallArgs[0].options.info.title).toBe('ALS API Swagger Documentation')
+    expect(server.register.callCount).toBe(9)
+    const firstCallArgs = server.register.getCall(1).args
+    expect(firstCallArgs[0].options.document.info.title.includes('Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version)')).toBe(true)
   })
 
   it('should not register Blipp if DISPLAY_ROUTES is false', async () => {
@@ -71,13 +76,14 @@ describe('Plugin Tests', () => {
         port: '8000'
       }
     }
+    const api = await OpenapiBackend.initialise(Path.resolve(__dirname, '../../src/interface/api-swagger.yaml'), Handlers.ApiHandlers)
     sandbox.mock(Config)
     Config.DISPLAY_ROUTES = false
 
     // Act
-    await registerPlugins(server)
+    await registerPlugins(server, api)
 
     // Assert
-    expect(server.register.callCount).toBe(6)
+    expect(server.register.callCount).toBe(8)
   })
 })

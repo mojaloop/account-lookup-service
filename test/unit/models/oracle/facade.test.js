@@ -123,6 +123,206 @@ describe('Oracle Facade', () => {
       expect(requestStub.calledOnce).toBe(true)
     })
 
+    it('sends requests based on a payload currency and SubId param', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.resolves(true)
+
+      const getOracleResponse = [{
+        oracleId: '1',
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8444',
+          endpointType: 'URL'
+        },
+        isDefault: true
+      }]
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
+      const method = Enums.Http.RestMethods.GET
+      const params = {
+        Type: 'request_type',
+        ID: '12345',
+        SubId: '6789'
+      }
+      const payload = { currency: 'AUD' }
+
+      // Act
+      await OracleFacade.oracleRequest(headers, method, params, {}, payload)
+
+      // Assert
+      expect(requestStub.calledOnce).toBe(true)
+    })
+
+    it('sends requests based on SubId param', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.resolves(true)
+
+      const getOracleResponse = [{
+        oracleId: '1',
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8444',
+          endpointType: 'URL'
+        },
+        isDefault: true
+      }]
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
+      const method = Enums.Http.RestMethods.POST
+      const params = {
+        Type: 'request_type',
+        ID: '12345',
+        SubId: '6789'
+      }
+      const payload = { currency: 'AUG' }
+
+      // Act
+      await OracleFacade.oracleRequest(headers, method, params, {}, payload)
+
+      // Assert
+      expect(requestStub.calledOnce).toBe(true)
+    })
+
+    it('sends request to default oracle when multiple oracles are found (SubId branch)', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.resolves(true)
+
+      const getOracleResponse = [{
+        oracleId: '1',
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8444',
+          endpointType: 'URL'
+        },
+        isDefault: true
+      },
+      {
+        oracleId: '2',
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8445',
+          endpointType: 'URL'
+        },
+        isDefault: false
+      }]
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
+      const method = Enums.Http.RestMethods.GET
+      const params = {
+        Type: 'request_type',
+        ID: '12345',
+        SubId: '6789'
+      }
+      const payload = { currency: '' }
+
+      // Act
+      await OracleFacade.oracleRequest(headers, method, params, {}, payload)
+
+      // Assert
+      expect(requestStub.calledOnce).toBe(true)
+    })
+
+    it('throws error if no oracle is found (SubId branch)', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.resolves(true)
+
+      const getOracleResponse = []
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
+      const method = Enums.Http.RestMethods.GET
+      const params = {
+        Type: 'request_type',
+        ID: '12345',
+        SubId: '6789'
+      }
+      const payload = { currency: '' }
+
+      // Act / Assert
+      await expect(OracleFacade.oracleRequest(headers, method, params, {}, payload)).rejects.toThrow()
+    })
+
+    it('sends request to default oracle when multiple oracles are found (Type, Currency, and SubId branch)', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.resolves(true)
+
+      const getOracleResponse = [{
+        oracleId: '1',
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8444',
+          endpointType: 'URL'
+        },
+        isDefault: true
+      },
+      {
+        oracleId: '2',
+        oracleIdType: 'MSISDN',
+        endpoint: {
+          value: 'http://localhost:8445',
+          endpointType: 'URL'
+        },
+        isDefault: false
+      }]
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
+      const method = Enums.Http.RestMethods.GET
+      const params = {
+        Type: 'request_type',
+        ID: '12345',
+        SubId: '6789'
+      }
+      const payload = { currency: 'AUD' }
+
+      // Act
+      await OracleFacade.oracleRequest(headers, method, params, {}, payload)
+
+      // Assert
+      expect(requestStub.calledOnce).toBe(true)
+    })
+
+    it('throws error if no oracle is found (Type, Currency and SubId branch)', async () => {
+      // Arrange
+      const requestStub = sandbox.stub()
+      request.sendRequest = requestStub
+      requestStub.resolves(true)
+
+      const getOracleResponse = []
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
+      const method = Enums.Http.RestMethods.GET
+      const params = {
+        Type: 'request_type',
+        ID: '12345',
+        SubId: '6789'
+      }
+      const payload = { currency: 'AUD' }
+
+      // Act / Assert
+      await expect(OracleFacade.oracleRequest(headers, method, params, {}, payload)).rejects.toThrow()
+    })
+
     it('fails to send request when type + currency cannot be found', async () => {
       // Arrange
       const requestStub = sandbox.stub()
@@ -236,7 +436,7 @@ describe('Oracle Facade', () => {
       const action = async () => OracleFacade.oracleRequest(headers, method, params, {}, payload)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('(Oracle type:.*not found)'))
+      await expect(action()).rejects.toThrowError(/(Oracle type:.*not found)/)
     })
   })
 
@@ -335,7 +535,7 @@ describe('Oracle Facade', () => {
       const action = async () => OracleFacade.oracleBatchRequest(headers, method, requestPayload, 'URL', payload)
 
       // Assert
-      await expect(action()).rejects.toThrow(new RegExp('Oracle type:.* not found'))
+      await expect(action()).rejects.toThrow(/Oracle type:.* not found/)
     })
   })
 })

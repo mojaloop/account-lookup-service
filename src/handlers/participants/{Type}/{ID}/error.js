@@ -19,14 +19,19 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
+const LibUtil = require('../../../../lib/util')
 const pp = require('util').inspect
 const participants = require('../../../../domain/participants')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants/{Type}/{ID}/error
@@ -39,15 +44,29 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (req, h) {
+  put: function (context, request, h) {
     (async function () {
-      const metadata = `${req.method} ${req.path}`
+      const histTimerEnd = Metrics.getHistogram(
+        'participantErrorByTypeAndID_put',
+        'Put participant lookup error by Type and Id',
+        ['success']
+      ).startTimer()
+      const span = request.span
+      const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
+      span.setTags(spanTags)
+      const metadata = `${request.method} ${request.path}`
       try {
-        req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
-        req.server.log(['info'], `success: ${metadata}.`)
+        await span.audit({
+          headers: request.headers,
+          payload: request.payload
+        }, EventSdk.AuditEventAction.start)
+        request.server.log(['info'], `received: ${metadata}. ${pp(request.params)}`)
+        await participants.putParticipantsErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span)
+        request.server.log(['info'], `success: ${metadata}.`)
+        histTimerEnd({ success: true })
       } catch (err) {
-        req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
+        request.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
+        histTimerEnd({ success: false })
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })()

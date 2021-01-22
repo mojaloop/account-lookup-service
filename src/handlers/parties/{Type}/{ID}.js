@@ -24,6 +24,9 @@
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../../lib/util')
 const parties = require('../../../domain/parties')
 
 /**
@@ -37,10 +40,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (req, h) {
+  get: async function (context, request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query)
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span)
     return h.response().code(202)
   },
 
@@ -51,10 +61,17 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (req, h) {
+  put: async function (context, request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri)
     return h.response().code(200)
   }
 }

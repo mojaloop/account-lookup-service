@@ -75,6 +75,6 @@ describe('partyIdType Model', () => {
     const action = async () => getPartyIdTypeByName('MSISDN')
 
     // Assert
-    await expect(action()).rejects.toThrowError(new RegExp('Error finding partyIdType'))
+    await expect(action()).rejects.toThrowError(/Error finding partyIdType/)
   })
 })

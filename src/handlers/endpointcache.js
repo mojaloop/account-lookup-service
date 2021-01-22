@@ -25,7 +25,11 @@
 'use strict'
 
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../lib/config.js')
+const LibUtil = require('../lib/util')
 
 /**
  * Operations on /endpointcache
@@ -38,9 +42,26 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async (request, h) => {
-    await ParticipantEndpointCache.stopCache()
-    await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+  delete: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'enpointCache_delete',
+      'Reset endpoint cache',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ENDPOINTCACHE, Enum.Events.Event.Action.DELETE)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers
+    }, EventSdk.AuditEventAction.start)
+    try {
+      await ParticipantEndpointCache.stopCache()
+      await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+      histTimerEnd({ success: true })
+    } catch (err) {
+      histTimerEnd({ success: false })
+      throw err
+    }
     return h.response().code(202)
   }
 }

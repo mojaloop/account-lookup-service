@@ -24,9 +24,10 @@
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
-const Logger = require('@mojaloop/central-services-logger')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /parties/{Type}/{ID}/error
@@ -39,13 +40,15 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (req, h) {
-    try {
-      parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri)
-    } catch (err) {
-      Logger.error(err)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+  put: async function (context, request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
+    await parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span)
     return h.response().code(200)
   }
 }

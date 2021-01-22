@@ -30,7 +30,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const initServer = require('../../../../../src/server').initialize
+const initServer = require('../../../../../src/server').initializeApi
 const Db = require('../../../../../src/lib/db')
 const oracleEndpoint = require('../../../../../src/models/oracle')
 const parties = require('../../../../../src/domain/parties')
@@ -74,7 +74,7 @@ describe('/parties', () => {
     parties.getPartiesByTypeAndID.restore()
   })
 
-  it('getPartiesByTypeAndID endpoint sends async 3200 to /error for invalid party ID', async () => {
+  it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
     const options = {
@@ -108,6 +108,42 @@ describe('/parties', () => {
     stubs.forEach(s => s.restore())
   })
 
+  // Added error 404 to cover a special case of the Mowali implementation
+  // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
+  it('getPartiesByTypeAndID endpoint sends async 3201 to /error for invalid party ID on response with status 404', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties')
+    }
+
+    const badRequestError = ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR,
+      'Failed to send HTTP request to host',
+      {},
+      {},
+      [{ key: 'status', value: 404 }]
+    )
+    const stubs = [
+      sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
+      sandbox.stub(participant, 'validateParticipant').returns(true),
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
+      sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+    ]
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    const errorCallStub = stubs[0]
+    expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3201')
+    expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
+    expect(response.statusCode).toBe(202)
+    stubs.forEach(s => s.restore())
+  })
+
   it('putPartiesByTypeAndID endpoint', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'put')
@@ -117,6 +153,9 @@ describe('/parties', () => {
       headers: Helper.defaultStandardHeaders('parties'),
       payload: mock.request.body
     }
+    options.payload.party.personalInfo.complexName.firstName = 'Justin'
+    options.payload.party.personalInfo.complexName.middleName = 'middle'
+    options.payload.party.personalInfo.complexName.lastName = 'résumé'
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
 
     // Act

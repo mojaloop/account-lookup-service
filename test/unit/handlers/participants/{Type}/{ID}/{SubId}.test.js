@@ -37,7 +37,7 @@ const participant = require('../../../../../../src/models/participantEndpoint/fa
 const participants = require('../../../../../../src/domain/participants')
 const requestLogger = require('../../../../../../src/lib/requestLogger')
 const Helper = require('../../../../../util/helper')
-const initServer = require('../../../../../../src/server').initialize
+const initServer = require('../../../../../../src/server').initializeApi
 
 let server
 let sandbox
@@ -75,7 +75,7 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       participants.getParticipantsByTypeAndID.restore()
     })
 
-    it('getParticipantsByTypeAndID sends an async 3200 for invalid party id', async () => {
+    it('getParticipantsByTypeAndID sends an async 3204 for invalid party id on response with status 400', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
       const options = {
@@ -102,6 +102,40 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
 
       // Assert
       expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
+      expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR)
+      expect(response.statusCode).toBe(202)
+      stubs.forEach(s => s.restore())
+    })
+
+    // Added error 404 to cover a special case of the Mowali implementation
+    // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
+    it('getParticipantsByTypeAndID sends an async 3201 for invalid party id on response with status 404', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
+      const options = {
+        method: 'get',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders
+      }
+
+      const badRequestError = ErrorHandler.Factory.createFSPIOPError(
+        ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR,
+        'Failed to send HTTP request to host',
+        {},
+        {},
+        [{ key: 'status', value: 404 }]
+      )
+      const stubs = [
+        sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
+        sandbox.stub(participant, 'validateParticipant').returns(true),
+        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
+        sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+      ]
+      const response = await server.inject(options)
+      const errorCallStub = stubs[0]
+
+      // Assert
+      expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3201')
       expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR)
       expect(response.statusCode).toBe(202)
       stubs.forEach(s => s.restore())
