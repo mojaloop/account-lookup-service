@@ -55,6 +55,14 @@ const partyIdTypes = [
   {
     name: 'ALIAS',
     description: 'An alias is used as reference to a participant. The alias should be created in the FSP as an alternative reference to an account owner. Another example of an alias is a username in the FSP system. The ALIAS identifier can be in any format. It is also possible to use the PartySubIdOrType element for identifying an account under an Alias defined by the PartyIdentifier.'
+  },
+  {
+    name: 'CONSENT',
+    description: 'An alias is used as reference to a participant. The alias should be created in the FSP as an alternative reference to an account owner. Another example of an alias is a username in the FSP system. The ALIAS identifier can be in any format. It is also possible to use the PartySubIdOrType element for identifying an account under an Alias defined by the PartyIdentifier.'
+  },
+  {
+    name: 'THIRD_PARTY_LINK',
+    description: 'TBD'
   }
 ]
 
