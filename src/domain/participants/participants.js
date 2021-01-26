@@ -304,6 +304,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
             childSpan.finish()
           }
         } else {
+          Logger.info(response )
           fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
             fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
@@ -314,6 +315,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
         throw fspiopError
       }
     } else {
+      Logger.info(Object.values(Enums.Accounts.PartyAccountTypes).includes(type))
       fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
