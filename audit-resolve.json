@@ -9,6 +9,11 @@
       "decision": "ignore",
       "madeAt": 1611591505344,
       "expiresAt": 1614183500617
+    },
+    "1500|@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1611669398757,
+      "expiresAt": 1614261394229
     }
   },
   "rules": {},
