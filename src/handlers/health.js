@@ -19,6 +19,7 @@
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  * Steven Oderayi <steven.oderayi@mousbox.com>
+ * Shashikant Hirugade <shashikant.hirugade@mousbox.com>
 
  --------------
  ******/
@@ -43,6 +44,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (context, request, h) => {
-    return h.response(await healthCheck.getHealth()).code(200)
+    const health = await healthCheck.getHealth()
+    const statusCode = health.status !== 'OK' ? 503 : 200
+    return h.response(health).code(statusCode)
   }
 }
