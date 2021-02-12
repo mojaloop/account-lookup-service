@@ -56,6 +56,9 @@ describe('Parties Tests', () => {
     DB.oracleEndpoint = {
       query: sandbox.stub()
     }
+    DB.from = (table) => { 
+      return Db[table]
+    }
   })
 
   afterEach(() => {

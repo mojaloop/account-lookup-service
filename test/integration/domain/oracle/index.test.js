@@ -72,6 +72,6 @@ describe('Oracle', () => {
     // Cleanup
     const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
     const createdId = oracleEndpointResult[0].oracleEndpointId
-    await Db.oracleEndpoint.destroy({ oracleEndpointId: createdId })
+    await Db.from('oracleEndpoint').destroy({ oracleEndpointId: createdId })
   })
 })

@@ -39,6 +39,9 @@ describe('partyIdType Model', () => {
 
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => { 
+      return Db[table]
+    }
   })
 
   afterEach(() => {
@@ -57,6 +60,7 @@ describe('partyIdType Model', () => {
     Db.partyIdType = {
       findOne: sandbox.stub().resolves(partyIdType)
     }
+
 
     // Act
     const response = await getPartyIdTypeByName('MSISDN')

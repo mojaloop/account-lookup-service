@@ -30,7 +30,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const getOracleEndpointByType = async (type) => {
   try {
-    return Db.oracleEndpoint.query(builder => {
+    return Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
@@ -49,7 +49,7 @@ const getOracleEndpointByType = async (type) => {
 
 const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
   try {
-    return Db.oracleEndpoint.query(builder => {
+    return Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
@@ -70,7 +70,7 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
 
 const getOracleEndpointByCurrency = async (currencyId) => {
   try {
-    return Db.oracleEndpoint.query(builder => {
+    return Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
@@ -90,7 +90,7 @@ const getOracleEndpointByCurrency = async (currencyId) => {
 
 const getOracleEndpointById = async (oracleEndpointId) => {
   try {
-    return Db.oracleEndpoint.query(builder => {
+    return Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
@@ -110,7 +110,7 @@ const getOracleEndpointById = async (oracleEndpointId) => {
 
 const getAllOracleEndpoint = async () => {
   try {
-    return Db.oracleEndpoint.query(builder => {
+    return Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
@@ -128,7 +128,7 @@ const getAllOracleEndpoint = async () => {
 
 const createOracleEndpoint = async (oracleEndpointModel) => {
   try {
-    return await Db.oracleEndpoint.insert(oracleEndpointModel)
+    return await Db.from('oracleEndpoint').insert(oracleEndpointModel)
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -136,7 +136,7 @@ const createOracleEndpoint = async (oracleEndpointModel) => {
 
 const updateOracleEndpointById = async (id, oracleEndpointModel) => {
   try {
-    return await Db.oracleEndpoint.update({ oracleEndpointId: id }, oracleEndpointModel)
+    return await Db.from('oracleEndpoint').update({ oracleEndpointId: id }, oracleEndpointModel)
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -144,7 +144,7 @@ const updateOracleEndpointById = async (id, oracleEndpointModel) => {
 
 const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   try {
-    return await Db.oracleEndpoint.update({ oracleType }, { isActive })
+    return await Db.from('oracleEndpoint').update({ oracleType }, { isActive })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -152,7 +152,7 @@ const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
 
 const destroyOracleEndpointById = async (oracleEndpointId) => {
   try {
-    return await Db.oracleEndpoint.update({ oracleEndpointId }, { isActive: false })
+    return await Db.from('oracleEndpoint').update({ oracleEndpointId }, { isActive: false })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
