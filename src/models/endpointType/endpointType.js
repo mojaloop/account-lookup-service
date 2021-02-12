@@ -37,7 +37,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
  */
 const getEndpointTypeByType = async (type) => {
   try {
-    return Db.endpointType.findOne({ type, isActive: true })
+    return Db.from('endpointType').findOne({ type, isActive: true })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }

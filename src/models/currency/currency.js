@@ -37,7 +37,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
  */
 const getCurrencyById = async (currencyId) => {
   try {
-    return Db.currency.findOne({ currencyId, isActive: true })
+    return Db.from('currency').findOne({ currencyId, isActive: true })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }

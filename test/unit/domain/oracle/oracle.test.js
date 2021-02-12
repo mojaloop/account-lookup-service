@@ -86,6 +86,9 @@ describe('Oracle tests', () => {
       insert: sandbox.stub(),
       query: sandbox.stub()
     }
+    Db.from = (table) => { 
+      return Db[table]
+    }
     Db.partyIdType.findOne.returns(partyIdTypeResponse)
     Db.endpointType.findOne.returns(endpointTypeResponse)
     Db.oracleEndpoint.insert.returns(true)
