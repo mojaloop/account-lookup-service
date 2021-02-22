@@ -1528,6 +1528,20 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "accounts": {
+                "account": [
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“savings”",
+                    "“address”": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”"
+                  },
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“checkings”",
+                    "“address”": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -1882,6 +1896,20 @@
         "x-examples": {
           "application/json": {
             "party": {
+              "accounts": {
+                "account": [
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“savings”",
+                    "“address”": "“moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”"
+                  },
+                  {
+                    "“currency”": "“USD”",
+                    "“description”": "“checkings”",
+                    "“address”": "“moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”"
+                  }
+                ]
+              },
               "partyIdInfo": {
                 "“partyIdType”": "“PERSONAL_ID”",
                 "“partyIdentifier”": "“16135551212”",
@@ -2390,7 +2418,9 @@
         "DEVICE",
         "ACCOUNT_ID",
         "IBAN",
-        "ALIAS"
+        "ALIAS",
+        "CONSENT",
+        "THIRD_PARTY_LINK"
       ],
       "description": "Below are the allowed values for the enumeration - MSISDN An MSISDN (Mobile Station International Subscriber Directory Number, that is, the phone number) is used as reference to a participant. The MSISDN identifier should be in international format according to the ITU-T E.164 standard. Optionally, the MSISDN may be prefixed by a single plus sign, indicating the international prefix. - EMAIL An email is used as reference to a participant. The format of the email should be according to the informational RFC 3696. - PERSONAL_ID A personal identifier is used as reference to a participant. Examples of personal identification are passport number, birth certificate number, and national registration number. The identifier number is added in the PartyIdentifier element. The personal identifier type is added in the PartySubIdOrType element. - BUSINESS A specific Business (for example, an organization or a company) is used as reference to a participant. The BUSINESS identifier can be in any format. To make a transaction connected to a specific username or bill number in a Business, the PartySubIdOrType element should be used. - DEVICE A specific device (for example, a POS or ATM) ID connected to a specific business or organization is used as reference to a Party. For referencing a specific device under a specific business or organization, use the PartySubIdOrType element. - ACCOUNT_ID A bank account number or FSP account ID should be used as reference to a participant. The ACCOUNT_ID identifier can be in any format, as formats can greatly differ depending on country and FSP. - IBAN A bank account number or FSP account ID is used as reference to a participant. The IBAN identifier can consist of up to 34 alphanumeric characters and should be entered without whitespace. - ALIAS An alias is used as reference to a participant. The alias should be created in the FSP as an alternative reference to an account owner. Another example of an alias is a username in the FSP system. The ALIAS identifier can be in any format. It is also possible to use the PartySubIdOrType element for identifying an account under an Alias defined by the PartyIdentifier."
     },
@@ -2477,6 +2507,66 @@
       "required": [
         "extension"
       ]
+    },
+    "Account": {
+      "title": "Account",
+      "type": "object",
+      "description": "Data model for the complex type Account",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/AccountAddress",
+          "type": "string",
+          "description": "Unique routable address which is DFSP specific."
+        },
+        "currency": {
+          "$ref": "#/definitions/Currency",
+          "type": "string",
+          "description": "Currency of the amount."
+        },
+        "description": {
+          "$ref": "#/definitions/Name",
+          "type": "string",
+          "description": "The name of the account."
+        }
+      },
+      "required": [
+        "address",
+        "currency",
+        "description"
+      ]
+    },
+    "AccountAddress": {
+      "title": "AccountAddress",
+      "type": "string",
+      "description": "Unique routable address which is DFSP specific.",
+      "pattern": "^([0-9A-Za-z_~\\-\\.]+[0-9A-Za-z_~\\-])$",
+      "minLength": 1,
+      "maxLength": 1023
+    },
+    "AccountList": {
+      "title": "AccountList",
+      "type": "object",
+      "description": "Data model for the complex type AccountList",
+      "properties": {
+        "account": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "description": "Accounts associated with the Party"
+        }
+      },
+      "required": [
+        "account"
+      ]
+    },
+    "Name": {
+      "title": "Name",
+      "type": "string",
+      "pattern": "^(?!\\s*$)[\\w .,'-]{1,128}$",
+      "description": "The API data type Name is a JSON String, restricted by a regular expression to avoid characters which are generally not used in a name. Regular Expression - The regular expression for restricting the Name type is \"^(?!\\s*$)[\\w .,'-]{1,128}$\". The restriction does not allow a string consisting of whitespace only, all Unicode characters are allowed, as well as the period (.) (apostrophe (‘), dash (-), comma (,) and space characters ( ). Note -  In some programming languages, Unicode support must be specifically enabled. For example, if Java is used the flag UNICODE_CHARACTER_CLASS must be enabled to allow Unicode characters."
     },
     "FirstName": {
       "title": "FirstName",
@@ -2605,6 +2695,10 @@
       "type": "object",
       "description": "Data model for the complex type Party.",
       "properties": {
+        "accounts": {
+          "$ref": "#/definitions/AccountList",
+          "description": "List of accounts associated with the party containing and DFSP routable address, currency identifier and description."
+        },
         "partyIdInfo": {
           "$ref": "#/definitions/PartyIdInfo",
           "description": "Party Id type, id, sub ID or type, and FSP Id."
@@ -3031,7 +3125,9 @@
         "DEVICE",
         "ACCOUNT_ID",
         "IBAN",
-        "ALIAS"
+        "ALIAS",
+        "CONSENT",
+        "THIRD_PARTY_LINK"
       ]
     },
     "SubId": {

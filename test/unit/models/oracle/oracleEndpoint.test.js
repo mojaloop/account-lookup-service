@@ -68,7 +68,7 @@ describe('oracleEndpoint', () => {
       Db.oracleEndpoint = {
         query: queryStub
       }
-      Db.from = (table) => { 
+      Db.from = (table) => {
         return Db[table]
       }
     })
