@@ -67,10 +67,10 @@ jobs:
   setup:
     executor: default-docker
     steps:
-      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
+      - checkout
       - run:
           name: Access npm folder as root
           command: cd $(npm root -g)/npm
@@ -88,10 +88,10 @@ jobs:
   test-unit:
     executor: default-docker
     steps:
-      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
+      - checkout
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -110,13 +110,13 @@ jobs:
   test-coverage:
     executor: default-docker
     steps:
-      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
+      - checkout
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -237,7 +237,6 @@ jobs:
     executor: anchore/anchore_engine
     steps:
       - setup_remote_docker
-      - checkout
       - run:
           name: Install docker dependencies for anchore
           command: |
@@ -255,6 +254,7 @@ jobs:
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
+      - checkout
       - attach_workspace:
           at: /tmp
       - run:
