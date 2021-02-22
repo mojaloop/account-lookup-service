@@ -27,9 +27,9 @@
  --------------
  ******/
 
+const Path = require('path')
 const Sinon = require('sinon')
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
-const Path = require('path')
 
 const { registerPlugins } = require('../../src/plugins')
 const Config = require('../../src/lib/config')
@@ -64,8 +64,8 @@ describe('Plugin Tests', () => {
 
     // Assert
     expect(server.register.callCount).toBe(9)
-    const firstCallArgs = server.register.getCall(0).args
-    expect(firstCallArgs[0].options.info.title).toBe('ALS API Swagger Documentation')
+    const firstCallArgs = server.register.getCall(1).args
+    expect(firstCallArgs[0].options.document.info.title.includes('Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version)')).toBe(true)
   })
 
   it('should not register Blipp if DISPLAY_ROUTES is false', async () => {

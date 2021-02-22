@@ -436,7 +436,7 @@ describe('Oracle Facade', () => {
       const action = async () => OracleFacade.oracleRequest(headers, method, params, {}, payload)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('(Oracle type:.*not found)'))
+      await expect(action()).rejects.toThrowError(/(Oracle type:.*not found)/)
     })
   })
 
@@ -535,7 +535,7 @@ describe('Oracle Facade', () => {
       const action = async () => OracleFacade.oracleBatchRequest(headers, method, requestPayload, 'URL', payload)
 
       // Assert
-      await expect(action()).rejects.toThrow(new RegExp('Oracle type:.* not found'))
+      await expect(action()).rejects.toThrow(/Oracle type:.* not found/)
     })
   })
 })

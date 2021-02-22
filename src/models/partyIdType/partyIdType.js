@@ -30,7 +30,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const getPartyIdTypeByName = async (name) => {
   try {
-    return Db.partyIdType.findOne({ name, isActive: true })
+    return Db.from('partyIdType').findOne({ name, isActive: true })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }

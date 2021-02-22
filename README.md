@@ -6,10 +6,9 @@
 
 
 ## Documentation
-[Documentation](http://mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/) \
-[API Swagger](http://mojaloop.io/documentation/api/#als-oracle-api) \
-[Admin Swagger](http://mojaloop.io/documentation/api/#als-oracle-api) <!--This currently points to API but will be updated when Admin documentation is created-->
-
+- [Documentation](http://docs.mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/)
+- [API Swagger Reference](/src/interface/api-swagger.yaml)
+- [Admin Swagger Referemce](/src/interface/admin-swagger.yaml)
 
 ## Database initialisation
 

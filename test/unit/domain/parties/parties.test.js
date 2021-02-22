@@ -39,7 +39,7 @@ const { encodePayload } = require('@mojaloop/central-services-shared').Util.Stre
 const Enums = require('@mojaloop/central-services-shared').Enum
 
 const Helper = require('../../../util/helper')
-const DB = require('../../../../src/lib/db')
+const Db = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
 const Config = require('../../../../src/lib/config')
 const participant = require('../../../../src/models/participantEndpoint/facade')
@@ -53,8 +53,11 @@ describe('Parties Tests', () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(request)
     sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)
-    DB.oracleEndpoint = {
+    Db.oracleEndpoint = {
       query: sandbox.stub()
+    }
+    Db.from = (table) => {
+      return Db[table]
     }
   })
 

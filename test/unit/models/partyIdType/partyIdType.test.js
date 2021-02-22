@@ -39,6 +39,9 @@ describe('partyIdType Model', () => {
 
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => {
+      return Db[table]
+    }
   })
 
   afterEach(() => {
@@ -75,6 +78,6 @@ describe('partyIdType Model', () => {
     const action = async () => getPartyIdTypeByName('MSISDN')
 
     // Assert
-    await expect(action()).rejects.toThrowError(new RegExp('Error finding partyIdType'))
+    await expect(action()).rejects.toThrowError(/Error finding partyIdType/)
   })
 })
