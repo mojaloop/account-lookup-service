@@ -10,6 +10,7 @@ orbs:
   anchore: anchore/anchore-engine@1.6.0
   deploy-kube: mojaloop/deployment@0.1.6
   slack: circleci/slack@3.4.2
+  pr-tools: mojaloop/pr-tools@0.1.8
 
 ##
 # defaults
@@ -66,10 +67,10 @@ jobs:
   setup:
     executor: default-docker
     steps:
+      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
-      - checkout
       - run:
           name: Access npm folder as root
           command: cd $(npm root -g)/npm
@@ -87,10 +88,10 @@ jobs:
   test-unit:
     executor: default-docker
     steps:
+      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
-      - checkout
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -109,13 +110,13 @@ jobs:
   test-coverage:
     executor: default-docker
     steps:
+      - checkout
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
-      - checkout
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -236,10 +237,11 @@ jobs:
     executor: anchore/anchore_engine
     steps:
       - setup_remote_docker
+      - checkout
       - run:
           name: Install docker dependencies for anchore
           command: |
-            apk add --update py-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
+            apk add --update python3 py3-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
       - run:
           name: Install general dependencies
           command: |
@@ -253,7 +255,6 @@ jobs:
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
-      - checkout
       - attach_workspace:
           at: /tmp
       - run:
@@ -316,19 +317,8 @@ jobs:
           command: |
             echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
             docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
-
-            case "$CIRCLE_TAG" in
-              *-pisp*)
-                # Don't update `late5t` for an image that has a `-pisp`
-                echo 'skipping late5t tag'
-                exit 0
-                ;;
-              *)
-                echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
-                docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
-                ;;
-            esac
-
+            echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
+            docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
       - slack/status:
           webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
           success_message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/mojaloop/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
@@ -357,6 +347,8 @@ workflows:
   version: 2
   build_and_test:
     jobs:
+      - pr-tools/pr-title-check:
+          context: org-global
       - setup:
           context: org-global
           filters:
@@ -416,7 +408,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
             branches:
               ignore:
                 - /feature*/
@@ -432,7 +424,7 @@ workflows:
             - audit-licenses
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
             branches:
               ignore:
                 - /.*/
@@ -442,7 +434,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
             branches:
               ignore:
                 - /.*/
@@ -452,7 +444,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
             branches:
               ignore:
                 - /.*/
@@ -463,7 +455,7 @@ workflows:
             - image-scan
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?(\-pisp)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
             branches:
               ignore:
                 - /.*/

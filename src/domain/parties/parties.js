@@ -78,7 +78,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
           clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
         }
-        await participant.sendRequest(clonedHeaders, response.data.partyList[0].fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
+        for (const party of response.data.partyList) {
+          await participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
+        }
         if (childSpan && !childSpan.isFinished) {
           childSpan.finish()
         }

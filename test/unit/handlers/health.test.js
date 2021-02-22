@@ -76,4 +76,22 @@ describe('/health', () => {
     // Assert
     expect(response.statusCode).toBe(200)
   })
+
+  it('GET /health service unavailable', async () => {
+    // Arrange
+    sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(true)
+    const mock = await Helper.generateMockRequest('/health', 'get')
+
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultAdminHeaders()
+    }
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(503)
+  })
 })

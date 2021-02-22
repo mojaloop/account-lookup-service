@@ -23,20 +23,21 @@
  ******/
 'use strict'
 
+const Path = require('path')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
-const Path = require('path')
+const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
+const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
+const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
 const Db = require('./lib/db')
 const Config = require('./lib/config.js')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
-const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
-const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
-const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
 const Migrator = require('./lib/migrator')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
 const Handlers = require('./handlers')
+const Routes = require('./handlers/routes')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -53,9 +54,10 @@ const migrate = async () => {
  *
  * @param {number} port Port to register the Server against
  * @param {object} api to check if admin or api server
+ * @param {array} routes array of API routes
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, api) => {
+const createServer = async (port, api, routes, isAdmin) => {
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -71,7 +73,7 @@ const createServer = async (port, api) => {
       }
     }
   })
-  await Plugins.registerPlugins(server, api)
+  await Plugins.registerPlugins(server, api, isAdmin)
   await server.register([
     {
       plugin: HeaderValidator
@@ -94,34 +96,17 @@ const createServer = async (port, api) => {
     }
   ])
 
-  // use as a catch-all handler
-  server.route({
-    method: ['GET', 'POST', 'PUT', 'DELETE'],
-    path: '/{path*}',
-    handler: (req, h) => {
-      return api.handleRequest(
-        {
-          method: req.method,
-          path: req.path,
-          body: req.payload,
-          query: req.query,
-          headers: req.headers
-        },
-        req,
-        h
-      )
-      // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
-    }
-  })
-
+  server.route(routes)
+  // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
   await server.start()
   return server
 }
 
 const initializeApi = async (port = Config.API_PORT) => {
   await connectDatabase()
-  const api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/api-swagger.yaml'), Handlers.ApiHandlers)
-  const server = await createServer(port, api)
+  const OpenAPISpecPath = Path.resolve(__dirname, './interface/api-swagger.yaml')
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
+  const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   return server
@@ -130,8 +115,9 @@ const initializeApi = async (port = Config.API_PORT) => {
 const initializeAdmin = async (port = Config.ADMIN_PORT) => {
   await connectDatabase()
   await migrate()
-  const api = await OpenapiBackend.initialise(Path.resolve(__dirname, './interface/admin-swagger.yaml'), Handlers.AdminHandlers)
-  const server = await createServer(port, api)
+  const OpenAPISpecPath = Path.resolve(__dirname, './interface/admin-swagger.yaml')
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
+  const server = await createServer(port, api, Routes.AdminRoutes(api), true)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }

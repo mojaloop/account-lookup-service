@@ -37,6 +37,9 @@ describe('currency model', () => {
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    Db.from = (table) => {
+      return Db[table]
+    }
   })
 
   afterEach(() => {
