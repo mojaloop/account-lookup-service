@@ -29,19 +29,10 @@
 
 'use strict'
 const SwagMock = require('swagmock')
-const Path = require('path')
-const Config = require('../../src/lib/config')
+const { pathForInterface } = require('../../src/lib/util')
+const apiPath = pathForInterface({isAdmin: false, isMockInterface: true})
+const adminPath = pathForInterface({isAdmin: true, isMockInterface: true})
 let mockGen
-let apiPath
-let adminPath
-
-if (Config.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE) {
-  apiPath = Path.resolve(__dirname, '../../src/interface/thirdparty/api_swagger.json')
-  adminPath = Path.resolve(__dirname, '../../src/interface/thirdparty/admin_swagger.json')
-} else {
-  apiPath = Path.resolve(__dirname, '../../src/interface/api_swagger.json')
-  adminPath = Path.resolve(__dirname, '../../src/interface/admin_swagger.json')
-}
 
 module.exports = function (isApi = true) {
   /**
