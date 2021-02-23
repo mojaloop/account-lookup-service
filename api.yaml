@@ -737,22 +737,6 @@ paths:
           {
             "party":
             {
-              “accounts”:
-                {
-                  ”account”:
-                  [
-                    {
-                      ”currency”: ”USD”,
-                      ”description”: ”savings”,
-                      ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
-                    },
-                    {
-                      ”currency”: ”USD”,
-                      ”description”: ”checkings”,
-                      ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
-                    }
-                  ]
-                },
                 "partyIdInfo":
                 {
                   “partyIdType”: “PERSONAL_ID”,
@@ -929,22 +913,6 @@ paths:
           {
             "party":
             {
-              “accounts”:
-                {
-                  ”account”:
-                  [
-                    {
-                      ”currency”: ”USD”,
-                      ”description”: ”savings”,
-                      ”address”: ”moja.blue.8f027046-b82a5456-4fa9-838b-70210fcf8136”
-                    },
-                    {
-                      ”currency”: ”USD”,
-                      ”description”: ”checkings”,
-                      ”address”: ”moja.blue.8f027046-b8236345a-4fa9-838b-70210fcf8137”
-                    }
-                  ]
-                },
                 "partyIdInfo":
                 {
                   “partyIdType”: “PERSONAL_ID”,
@@ -1450,8 +1418,6 @@ definitions:
     - ACCOUNT_ID
     - IBAN
     - ALIAS
-    - CONSENT
-    - THIRD_PARTY_LINK
     description: Below are the allowed values for the enumeration
       - MSISDN An MSISDN (Mobile Station International Subscriber Directory Number, that is, the phone number) is used as reference to a participant. The MSISDN identifier should be in international format according to the ITU-T E.164 standard. Optionally, the MSISDN may be prefixed by a single plus sign, indicating the international prefix.
       - EMAIL An email is used as reference to a participant. The format of the email should be according to the informational RFC 3696.
@@ -1461,8 +1427,6 @@ definitions:
       - ACCOUNT_ID A bank account number or FSP account ID should be used as reference to a participant. The ACCOUNT_ID identifier can be in any format, as formats can greatly differ depending on country and FSP.
       - IBAN A bank account number or FSP account ID is used as reference to a participant. The IBAN identifier can consist of up to 34 alphanumeric characters and should be entered without whitespace.
       - ALIAS An alias is used as reference to a participant. The alias should be created in the FSP as an alternative reference to an account owner. Another example of an alias is a username in the FSP system. The ALIAS identifier can be in any format. It is also possible to use the PartySubIdOrType element for identifying an account under an Alias defined by the PartyIdentifier.
-      - CONSENT - TBD
-      - THIRD_PARTY_LINK - TBD
   PartyName:
     title: PartyName
     type: string
