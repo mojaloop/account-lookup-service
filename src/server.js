@@ -104,7 +104,13 @@ const createServer = async (port, api, routes, isAdmin) => {
 
 const initializeApi = async (port = Config.API_PORT) => {
   await connectDatabase()
-  const OpenAPISpecPath = Path.resolve(__dirname, './interface/api-swagger.yaml')
+  let apiPath
+  if (Config.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE) {
+    apiPath = './interface/thirdparty/api-swagger.yaml'
+  } else {
+    apiPath = './interface/api-swagger.yaml'
+  }
+  const OpenAPISpecPath = Path.resolve(__dirname, apiPath)
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
@@ -115,7 +121,13 @@ const initializeApi = async (port = Config.API_PORT) => {
 const initializeAdmin = async (port = Config.ADMIN_PORT) => {
   await connectDatabase()
   await migrate()
-  const OpenAPISpecPath = Path.resolve(__dirname, './interface/admin-swagger.yaml')
+  let apiPath
+  if (Config.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE) {
+    apiPath = './interface/thirdparty/admin-swagger.yaml'
+  } else {
+    apiPath = './interface/admin-swagger.yaml'
+  }
+  const OpenAPISpecPath = Path.resolve(__dirname, apiPath)
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
   const server = await createServer(port, api, Routes.AdminRoutes(api), true)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)

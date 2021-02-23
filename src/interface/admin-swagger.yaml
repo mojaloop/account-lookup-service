@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: Open API for ALS Admin API Extended
+  title: Open API for ALS Admin API
   description: Open API for ALS Admin API
   license:
     name: Apache 2.0
@@ -537,8 +537,6 @@ components:
         Another example of an alias is a username in the FSP system. The ALIAS identifier
         can be in any format. It is also possible to use the PartySubIdOrType element
         for identifying an account under an Alias defined by the PartyIdentifier.
-        - CONSENT - TBD
-        - THIRD_PARTY_LINK - TBD
       enum:
         - MSISDN
         - EMAIL
@@ -548,8 +546,6 @@ components:
         - ACCOUNT_ID
         - IBAN
         - ALIAS
-        - CONSENT
-        - THIRD_PARTY_LINK
     Status:
       title: Status
       type: object
