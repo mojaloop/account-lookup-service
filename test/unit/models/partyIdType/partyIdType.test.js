@@ -39,7 +39,7 @@ describe('partyIdType Model', () => {
 
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    Db.from = (table) => { 
+    Db.from = (table) => {
       return Db[table]
     }
   })

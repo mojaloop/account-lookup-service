@@ -23,7 +23,6 @@
  ******/
 'use strict'
 
-const Path = require('path')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
@@ -33,6 +32,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Db = require('./lib/db')
 const Config = require('./lib/config.js')
+const Util = require('./lib/util')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
@@ -104,7 +104,7 @@ const createServer = async (port, api, routes, isAdmin) => {
 
 const initializeApi = async (port = Config.API_PORT) => {
   await connectDatabase()
-  const OpenAPISpecPath = Path.resolve(__dirname, './interface/api-swagger.yaml')
+  const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
@@ -115,7 +115,7 @@ const initializeApi = async (port = Config.API_PORT) => {
 const initializeAdmin = async (port = Config.ADMIN_PORT) => {
   await connectDatabase()
   await migrate()
-  const OpenAPISpecPath = Path.resolve(__dirname, './interface/admin-swagger.yaml')
+  const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
   const server = await createServer(port, api, Routes.AdminRoutes(api), true)
   Logger.info(`Server running on ${server.info.host}:${server.info.port}`)

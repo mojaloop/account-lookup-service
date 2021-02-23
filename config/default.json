@@ -50,5 +50,6 @@
       "JWS_SIGNING_KEY_PATH": "secrets/jwsSigningKey.key"
     }
   },
-  "API_DOC_ENDPOINTS_ENABLED": true
+  "API_DOC_ENDPOINTS_ENABLED": true,
+  "FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE": false
 }
