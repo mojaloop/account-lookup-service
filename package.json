@@ -104,7 +104,7 @@
     "jsdoc": "3.6.6",
     "nodemon": "2.0.7",
     "npm-audit-resolver": "2.2.1",
-    "npm-check-updates": "11.1.8",
+    "npm-check-updates": "11.1.9",
     "nyc": "15.1.0",
     "pre-commit": "1.2.2",
     "proxyquire": "2.1.3",
