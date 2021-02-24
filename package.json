@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "11.3.0",
+  "version": "11.3.1",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -63,7 +63,8 @@
     "audit:resolve": "SHELL=sh resolve-audit --production",
     "audit:check": "SHELL=sh check-audit --production",
     "dep:check": "npx ncu -e 2",
-    "dep:update": "npx ncu -u"
+    "dep:update": "npx ncu -u",
+    "release": "standard-version --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'"
   },
   "dependencies": {
     "@hapi/basic": "6.0.0",
@@ -111,6 +112,7 @@
     "request-promise-native": "1.0.9",
     "sinon": "9.2.4",
     "standard": "16.0.3",
+    "standard-version": "^9.1.1",
     "swagmock": "1.0.0"
   },
   "generator-swaggerize": {
