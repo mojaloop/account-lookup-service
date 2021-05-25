@@ -89,7 +89,6 @@
     "ajv-keywords": "5.0.0",
     "blipp": "4.0.2",
     "commander": "7.2.0",
-    "docdash": "1.2.0",
     "hapi-auth-bearer-token": "8.0.0",
     "joi": "17.4.0",
     "knex": "0.95.6",
@@ -101,6 +100,7 @@
   },
   "devDependencies": {
     "@types/jest": "26.0.23",
+    "docdash": "1.2.0",
     "eslint": "7.27.0",
     "eslint-plugin-jest": "24.3.6",
     "get-port": "5.1.1",
