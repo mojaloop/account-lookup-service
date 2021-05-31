@@ -78,64 +78,64 @@ describe('requestLogger', () => {
   })
 
   describe('logResponse', () => {
-    // it('handles deseralizing invalid JSON', async () => {
-    //   // Arrange
-    //   const infoSpy = sandbox.spy(Logger, 'debug')
-    //   Logger.isDebugEnabled = true
-    //   const req = {
-    //     headers: {
-    //       traceid: Uuid()
-    //     },
-    //     response: {
-    //       source: {
-    //         itemA: true
-    //       },
-    //       statusCode: 500
-    //     }
-    //   }
-    //   /* Make some circular JSON to break JSON.stringify() */
-    //   const inner = {}
-    //   const outer = {
-    //     inner
-    //   }
-    //   inner[outer] = outer
-    //   req.response.source = outer
+    it('handles deseralizing invalid JSON', async () => {
+      // Arrange
+      const infoSpy = sandbox.spy(Logger, 'debug')
+      Logger.isDebugEnabled = true
+      const req = {
+        headers: {
+          traceid: Uuid()
+        },
+        response: {
+          source: {
+            itemA: true
+          },
+          statusCode: 500
+        }
+      }
+      /* Make some circular JSON to break JSON.stringify() */
+      const inner = {}
+      const outer = {
+        inner
+      }
+      inner[outer] = outer
+      req.response.source = outer
 
-    //   // Act
-    //   requestLogger.logResponse(req)
+      // Act
+      requestLogger.logResponse(req)
 
-    //   const response = Util.inspect(req.response)
+      const response = Util.inspect(req.response)
 
-    //   // Assert
-    //   const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
-    //   expect(result).toBe(true)
-    // })
+      // Assert
+      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
+      expect(result).toBe(true)
+    })
 
-    // it('handles valid json', async () => {
-    //   // Arrange
-    //   const infoSpy = sandbox.spy(Logger, 'debug')
-    //   Logger.isDebugEnabled = true
-    //   const req = {
-    //     headers: {
-    //       traceid: Uuid()
-    //     },
-    //     response: {
-    //       source: {
-    //         itemA: true
-    //       },
-    //       statusCode: 500
-    //     }
-    //   }
+    it('handles valid json', async () => {
+      // Arrange
+      const infoSpy = sandbox.spy(Logger, 'debug')
+      Logger.isDebugEnabled = true
+      const req = {
+        headers: {
+          traceid: Uuid()
+        },
+        response: {
+          source: {
+            itemA: true
+          },
+          statusCode: 500
+        }
+      }
 
-    //   // Act
-    //   requestLogger.logResponse(req)
+      // Act
+      requestLogger.logResponse(req)
 
-    //   const response = JSON.stringify(req.response, null, 2)
-    //   // Assert
-    //   // const result = infoSpy.calledWith(`ALS-Trace - Response: ${JSON.stringify(req.response.source)} Status: ${req.response.statusCode}`)
-    //   const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
-    //   expect(result).toBe(true)
-    // })
+      const response = JSON.stringify(req.response, null, 2)
+      // Assert
+      // const result = infoSpy.calledWith(`ALS-Trace - Response: ${JSON.stringify(req.response.source)} Status: ${req.response.statusCode}`)
+      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
+      expect(result).toBe(true)
+    })
 
     it('handles valid json error response', async () => {
       // Arrange
