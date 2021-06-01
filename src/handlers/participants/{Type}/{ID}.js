@@ -62,7 +62,7 @@ module.exports = {
       participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
       histTimerEnd({ success: true })
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
+      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
