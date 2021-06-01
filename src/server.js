@@ -25,6 +25,7 @@
 
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
+const Uuid = require('uuid4')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
@@ -81,8 +82,9 @@ const createServer = async (port, api, routes, isAdmin) => {
   ])
   await server.ext([
     {
-      type: 'onRequest',
+      type: 'onPostAuth',
       method: (request, h) => {
+        request.headers.traceid = request.headers.traceid || Uuid()
         RequestLogger.logRequest(request)
         return h.continue
       }
@@ -90,7 +92,7 @@ const createServer = async (port, api, routes, isAdmin) => {
     {
       type: 'onPreResponse',
       method: (request, h) => {
-        RequestLogger.logResponse(request.response)
+        RequestLogger.logResponse(request)
         return h.continue
       }
     }
