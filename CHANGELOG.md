@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.5.1](https://github.com/mojaloop/account-lookup-service/compare/v11.5.0...v11.5.1) (2021-06-02)
+
+
+### Chore
+
+* **2151:** helm-release-v12.1.0 ([#411](https://github.com/mojaloop/account-lookup-service/issues/411)) ([fb83b4e](https://github.com/mojaloop/account-lookup-service/commit/fb83b4e1d2bc9de63b58ec3a6f544c871ff13c63))
+
 ## [11.5.0](https://github.com/mojaloop/account-lookup-service/compare/v11.3.2...v11.5.0) (2021-06-01)
 
 
