@@ -108,6 +108,38 @@ describe('Parties Tests', () => {
       expect(lastCallHeaderArgs[1]).toBe('fsp1')
     })
 
+    it('forwards request to destination if specified in headers without consulting any oracles', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().returns({})
+      sandbox.stub(oracle, 'oracleRequest')
+      participant.sendRequest = sandbox.stub().resolves()
+
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'payerfsp',
+        'fspiop-destination': 'destfsp',
+      }
+
+      const expectedHeaders = {
+        ...headers,
+        'fspiop-source': 'payerfsp',
+        'fspiop-destination': 'destfsp'
+      }
+
+      // Act
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
+
+      // Assert
+      const lastCallHeaderArgs = participant.sendRequest.getCall(0).args
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(oracle.oracleRequest.callCount).toBe(0)
+      expect(lastCallHeaderArgs[0]).toStrictEqual(expectedHeaders)
+      expect(lastCallHeaderArgs[1]).toBe('destfsp')
+    })
+
     it('handles error when `participant.validateParticipant()`cannot be found', async () => {
       expect.hasAssertions()
       // Arrange
