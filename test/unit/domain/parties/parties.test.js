@@ -242,7 +242,10 @@ describe('Parties Tests', () => {
       const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
 
       // Act
-      await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
+      const headers = { ...Helper.getByTypeIdRequest.headers }
+      delete headers['fspiop-destination']
+
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
 
       // Assert
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
