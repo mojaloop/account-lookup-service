@@ -67,13 +67,31 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
     const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
     if (requesterParticipantModel) {
+      let options = {
+        partyIdType: type,
+        partyIdentifier: params.ID
+      }
+      options = partySubIdOrType ? { ...options, partySubIdOrType } : options
+
+      // see https://github.com/mojaloop/design-authority/issues/79
+      if (headers[Enums.Http.Headers.FSPIOP.DESTINATION]) {
+        // the requester has specifid a destination routing header. We should respect that and forward the request directly to the destination
+        // without consulting any oracles.
+        
+        // first check the destination is a valid participant
+        const destParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], childSpan)
+        if(!destParticipantModel) {
+          Logger.error('Destination FSP not found')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Destination FSP not found')
+        }
+
+        // all ok, go ahead and forward the request
+        await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan);
+        return;
+      }
+
       const response = await oracle.oracleRequest(headers, method, params, query)
       if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-        let options = {
-          partyIdType: type,
-          partyIdentifier: params.ID
-        }
-        options = partySubIdOrType ? { ...options, partySubIdOrType } : options
         const clonedHeaders = { ...headers }
         if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
           clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId

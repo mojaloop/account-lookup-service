@@ -77,10 +77,14 @@ describe('/parties', () => {
   it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
+
+    const headers = Helper.defaultStandardHeaders('parties')
+    delete headers['fspiop-destination']
+
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties')
+      headers,
     }
 
     const badRequestError = ErrorHandler.Factory.createFSPIOPError(
@@ -113,10 +117,14 @@ describe('/parties', () => {
   it('getPartiesByTypeAndID endpoint sends async 3201 to /error for invalid party ID on response with status 404', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
+
+    const headers = Helper.defaultStandardHeaders('parties')
+    delete headers['fspiop-destination']
+
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties')
+      headers: headers,
     }
 
     const badRequestError = ErrorHandler.Factory.createFSPIOPError(
