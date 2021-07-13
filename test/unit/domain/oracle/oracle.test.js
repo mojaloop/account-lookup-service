@@ -66,7 +66,8 @@ const getOracleDatabaseResponse = [{
   value: 'http://localhost:8444',
   idType: 'MSISDN',
   currency: 'USD',
-  isDefault: true
+  isDefault: true,
+  isActive: true
 }]
 
 let sandbox
@@ -229,6 +230,9 @@ describe('Oracle tests', () => {
         connection: 'keep-alive'
       }
 
+      // Update mock to be deleted so it passes check
+      getOracleDatabaseResponse[0].isActive = false
+
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
 
@@ -257,6 +261,9 @@ describe('Oracle tests', () => {
         'content-length': 164,
         connection: 'keep-alive'
       }
+
+      // Update mock to be deleted so it passes check
+      getOracleDatabaseResponse[0].isActive = false
 
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)

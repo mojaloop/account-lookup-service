@@ -74,4 +74,93 @@ describe('Oracle', () => {
     const createdId = oracleEndpointResult[0].oracleEndpointId
     await Db.from('oracleEndpoint').destroy({ oracleEndpointId: createdId })
   })
+
+  it('rejects creating a similar oracle', async () => {
+    // Arrange
+    const payload = {
+      isDefault: true,
+      currency: 'AUD',
+      oracleIdType: 'MSISDN',
+      endpoint: {
+        value: 'http://localhost:8444',
+        endpointType: 'URL'
+      }
+    }
+    const createHeaders = {
+      accept: 'application/vnd.interoperability.participants+json;version=1',
+      'cache-control': 'no-cache',
+      date: '',
+      'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+      host: '127.0.0.1:4003',
+      'accept-encoding': 'gzip, deflate',
+      'content-length': 164,
+      connection: 'keep-alive'
+    }
+    const testSpan = EventSdk.Tracer.createSpan('createOracle service')
+
+    // Act
+    const result = await Oracle.createOracle(payload, createHeaders, testSpan)
+    // Assert
+    expect(result).toBe(true)
+    // Act
+    try {
+      await Oracle.createOracle(payload, createHeaders, testSpan)
+    } catch (error) {
+      expect(error.message).toBe('Active oracle already exists')
+    }
+    // Assert
+
+    // Cleanup
+    const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
+    const createdId = oracleEndpointResult[0].oracleEndpointId
+    await Db.from('oracleEndpoint').destroy({ oracleEndpointId: createdId })
+  })
+
+  it('creates a similar oracle if the first is inActive', async () => {
+    // Arrange
+    const payload = {
+      isDefault: true,
+      currency: 'AUD',
+      oracleIdType: 'MSISDN',
+      endpoint: {
+        value: 'http://localhost:8444',
+        endpointType: 'URL'
+      }
+    }
+    const createHeaders = {
+      accept: 'application/vnd.interoperability.participants+json;version=1',
+      'cache-control': 'no-cache',
+      date: '',
+      'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+      host: '127.0.0.1:4003',
+      'accept-encoding': 'gzip, deflate',
+      'content-length': 164,
+      connection: 'keep-alive'
+    }
+
+    const testSpan = EventSdk.Tracer.createSpan('createOracle service')
+
+    // Act
+    const result = await Oracle.createOracle(payload, createHeaders, testSpan)
+    // Assert
+    expect(result).toBe(true)
+
+    // delete/mark first oracle inactive
+    const previousOracleResult = await OracleModel.getOracleEndpointByType('MSISDN')
+    const firstOracleCreatedId = previousOracleResult[0].oracleEndpointId
+    await Oracle.deleteOracle({ ID: firstOracleCreatedId })
+
+    // Act
+    const secondResult = await Oracle.createOracle(payload, createHeaders, testSpan)
+    // Assert
+    expect(secondResult).toBe(true)
+
+    // Cleanup
+    const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
+    const activeCreatedId = oracleEndpointResult[0].oracleEndpointId
+    await Db.from('oracleEndpoint').destroy({ oracleEndpointId: activeCreatedId })
+
+    // Cleanup inactive endpoint for good measure
+    await Db.from('oracleEndpoint').destroy({ oracleEndpointId: firstOracleCreatedId })
+  })
 })

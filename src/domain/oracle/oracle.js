@@ -42,6 +42,20 @@ const Config = require('../../lib/config')
  */
 exports.createOracle = async (payload) => {
   try {
+    const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+    const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+    const existingActiveOracle = await oracleEndpoint.checkActiveOracleEndpoint(
+      payload,
+      partyIdTypeModel.partyIdTypeId,
+      endpointTypeModel.endpointTypeId
+    )
+
+    if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
+      const err = new Error('Active oracle already exists')
+      Logger.error(err)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+
     const oracleEntity = {}
     if (payload.isDefault) {
       oracleEntity.isDefault = payload.isDefault
@@ -53,8 +67,6 @@ exports.createOracle = async (payload) => {
     }
     oracleEntity.value = payload.endpoint.value
     oracleEntity.createdBy = 'Admin'
-    const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
-    const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
     oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
     oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
     await oracleEndpoint.createOracleEndpoint(oracleEntity)
