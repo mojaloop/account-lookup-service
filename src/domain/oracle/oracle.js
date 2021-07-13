@@ -134,7 +134,6 @@ exports.getOracle = async (query) => {
  */
 exports.updateOracle = async (params, payload) => {
   try {
-    console.log(params, payload)
     const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(params.ID)
     if (currentOracleEndpointList.length > 0) {
       const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
