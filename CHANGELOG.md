@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.5.5](https://github.com/mojaloop/account-lookup-service/compare/v11.5.4...v11.5.5) (2021-07-14)
+
 ### [11.5.4](https://github.com/mojaloop/account-lookup-service/compare/v11.5.3...v11.5.4) (2021-07-14)
 
 
