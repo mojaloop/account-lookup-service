@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.5.4](https://github.com/mojaloop/account-lookup-service/compare/v11.5.3...v11.5.4) (2021-07-14)
+
+
+### Refactors
+
+* change behaviour and validation of oracle CRUD ([#418](https://github.com/mojaloop/account-lookup-service/issues/418)) ([ef1e181](https://github.com/mojaloop/account-lookup-service/commit/ef1e1813d35bcff158e82a713a2e04ecd5e1baa5))
+
 ### [11.5.3](https://github.com/mojaloop/account-lookup-service/compare/v11.5.1...v11.5.3) (2021-06-11)
 
 
