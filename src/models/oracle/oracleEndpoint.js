@@ -126,6 +126,26 @@ const getAllOracleEndpoint = async () => {
   }
 }
 
+const getAllOracleEndpointsByMatchCondition = async (oracleEndpointModel, partyIdTypeId, endpointTypeId) => {
+  try {
+    return Db.from('oracleEndpoint').query(builder => {
+      return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
+        .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
+        .where({
+          'oracleEndpoint.currencyId': oracleEndpointModel.currency,
+          'et.endpointTypeId': endpointTypeId,
+          'pt.partyIdTypeId': partyIdTypeId,
+          'oracleEndpoint.isActive': 1
+        })
+        .select('oracleEndpoint.oracleEndpointId', 'et.type as endpointType', 'oracleEndpoint.value',
+          'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault',
+          'oracleEndpoint.isActive', 'oracleEndpoint.partyIdTypeId', 'oracleEndpoint.endpointTypeId', 'oracleEndpoint.currencyId')
+    })
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
 const createOracleEndpoint = async (oracleEndpointModel) => {
   try {
     return await Db.from('oracleEndpoint').insert(oracleEndpointModel)
@@ -164,6 +184,7 @@ module.exports = {
   getOracleEndpointByCurrency,
   getAllOracleEndpoint,
   getOracleEndpointById,
+  getAllOracleEndpointsByMatchCondition,
   createOracleEndpoint,
   updateOracleEndpointById,
   setIsActiveOracleEndpoint,
