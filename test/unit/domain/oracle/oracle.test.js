@@ -70,7 +70,7 @@ const getOracleDatabaseResponse = [{
     isActive: 1
 }]
 
-const checkActiveOracleEndpointResponse = [{
+const getAllOracleEndpointsByMatchConditionResponse = [{
   oracleEndpointId: 1,
   endpointType: 'URL',
   value: 'http://localhost:8444',
@@ -146,7 +146,7 @@ describe('Oracle tests', () => {
       // Arrange
       oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
       partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
-      oracleEndpoint.checkActiveOracleEndpoint = sandbox.stub().resolves([])
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       currency.getCurrencyById = sandbox.stub().resolves({
         currencyId: 'AUD',
         name: 'Australian Dollars',
@@ -184,7 +184,7 @@ describe('Oracle tests', () => {
       // Arrange
       oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
       partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
-      oracleEndpoint.checkActiveOracleEndpoint = sandbox.stub().resolves(checkActiveOracleEndpointResponse)
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves(getAllOracleEndpointsByMatchConditionResponse)
       currency.getCurrencyById = sandbox.stub().resolves({
         currencyId: 'EUR',
         name: 'European Dollars',
@@ -250,7 +250,7 @@ describe('Oracle tests', () => {
 
   describe('createOracle', () => {
     it('should create an oracle when isDefault is true', async () => {
-      oracleEndpoint.checkActiveOracleEndpoint = sandbox.stub().resolves([])
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       // Arrange
       const createPayload = {
         oracleIdType: 'MSISDN',
@@ -284,7 +284,7 @@ describe('Oracle tests', () => {
     })
 
     it('should create an oracle isDefault false', async () => {
-      oracleEndpoint.checkActiveOracleEndpoint = sandbox.stub().resolves([])
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       // Arrange
       const createPayload = {
         oracleIdType: 'MSISDN',

@@ -32,7 +32,7 @@ module.exports = {
   getOracleEndpointByTypeAndCurrency: oracleEndpointModel.getOracleEndpointByTypeAndCurrency,
   getOracleEndpointByCurrency: oracleEndpointModel.getOracleEndpointByCurrency,
   getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint,
-  checkActiveOracleEndpoint: oracleEndpointModel.checkActiveOracleEndpoint,
+  getAllOracleEndpointsByMatchCondition: oracleEndpointModel.getAllOracleEndpointsByMatchCondition,
   createOracleEndpoint: oracleEndpointModel.createOracleEndpoint,
   updateOracleEndpointById: oracleEndpointModel.updateOracleEndpointById,
   setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint,

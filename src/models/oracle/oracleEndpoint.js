@@ -126,7 +126,7 @@ const getAllOracleEndpoint = async () => {
   }
 }
 
-const checkActiveOracleEndpoint = async (oracleEndpointModel, partyIdTypeId, endpointTypeId) => {
+const getAllOracleEndpointsByMatchCondition = async (oracleEndpointModel, partyIdTypeId, endpointTypeId) => {
   try {
     return Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
@@ -184,7 +184,7 @@ module.exports = {
   getOracleEndpointByCurrency,
   getAllOracleEndpoint,
   getOracleEndpointById,
-  checkActiveOracleEndpoint,
+  getAllOracleEndpointsByMatchCondition,
   createOracleEndpoint,
   updateOracleEndpointById,
   setIsActiveOracleEndpoint,

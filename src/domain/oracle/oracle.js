@@ -44,7 +44,7 @@ exports.createOracle = async (payload) => {
   try {
     const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
     const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
-    const existingActiveOracle = await oracleEndpoint.checkActiveOracleEndpoint(
+    const existingActiveOracle = await oracleEndpoint.getAllOracleEndpointsByMatchCondition(
       payload,
       partyIdTypeModel.partyIdTypeId,
       endpointTypeModel.endpointTypeId
@@ -138,7 +138,7 @@ exports.updateOracle = async (params, payload) => {
     if (currentOracleEndpointList.length > 0) {
       const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
       const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
-      const existingActiveOracle = await oracleEndpoint.checkActiveOracleEndpoint(
+      const existingActiveOracle = await oracleEndpoint.getAllOracleEndpointsByMatchCondition(
         payload,
         partyIdTypeModel.partyIdTypeId,
         endpointTypeModel.endpointTypeId
