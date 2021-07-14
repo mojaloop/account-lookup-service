@@ -40,7 +40,7 @@ const partyIdTypeResponse = {
   partyIdTypeId: 1,
   name: 'MSISDN',
   description: 'A MSISDN (Mobile Station International Subscriber Directory Number, that is, the phone number)',
-  isActive: true,
+  isActive: 1,
   createdDate: '2019-05-24 08:52:19'
 }
 
@@ -48,7 +48,7 @@ const partyIdTypeResponseIBAN = {
   partyIdTypeId: 2,
   name: 'IBAN',
   description: 'An IBAN',
-  isActive: true,
+  isActive: 1,
   createdDate: '2019-05-24 08:52:19'
 }
 
@@ -56,17 +56,28 @@ const endpointTypeResponse = {
   endpointTypeId: 1,
   type: 'URL',
   description: 'REST URLs',
-  isActive: true,
+  isActive: 1,
   createdDate: '2019-05-24 08:52:19'
 }
 
 const getOracleDatabaseResponse = [{
+    oracleEndpointId: 1,
+    endpointType: 'URL',
+    value: 'http://localhost:8444',
+    idType: 'MSISDN',
+    currency: 'USD',
+    isDefault: 1,
+    isActive: 1
+}]
+
+const getAllOracleEndpointsByMatchConditionResponse = [{
   oracleEndpointId: 1,
   endpointType: 'URL',
   value: 'http://localhost:8444',
   idType: 'MSISDN',
-  currency: 'USD',
-  isDefault: true
+  currency: 'EUR',
+  isDefault: 1,
+  isActive: 1
 }]
 
 let sandbox
@@ -135,6 +146,7 @@ describe('Oracle tests', () => {
       // Arrange
       oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
       partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       currency.getCurrencyById = sandbox.stub().resolves({
         currencyId: 'AUD',
         name: 'Australian Dollars',
@@ -145,7 +157,7 @@ describe('Oracle tests', () => {
       const params = { ID: '12345' }
       const payload = {
         oracleIdType: 'IBAN',
-        isDefault: true,
+        isDefault: 1,
         currency: 'AUD',
         endpoint: {
           endpointType: 'CUSTOM_TYPE',
@@ -166,6 +178,37 @@ describe('Oracle tests', () => {
       const firstCallArgs = oracleEndpoint.updateOracleEndpointById.getCall(0).args
       expect(firstCallArgs[0]).toBe('12345')
       expect(firstCallArgs[1]).toEqual(expected)
+    })
+
+    it('rejects updating an oracle if it is similar to existing active oracle', async () => {
+      // Arrange
+      oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
+      partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves(getAllOracleEndpointsByMatchConditionResponse)
+      currency.getCurrencyById = sandbox.stub().resolves({
+        currencyId: 'EUR',
+        name: 'European Dollars',
+        isActive: true,
+        createdDate: (new Date()).toISOString()
+      })
+      oracleEndpoint.updateOracleEndpointById = sandbox.stub()
+      const params = { ID: '12345' }
+      const payload = {
+        oracleIdType: 'MSISDN',
+        isDefault: 1,
+        currency: 'EUR',
+        endpoint: {
+          endpointType: 'URL',
+          value: 'http://custom_url:8444'
+        }
+      }
+
+      // Act
+      try {
+        await oracleDomain.updateOracle(params, payload)
+      } catch(err){
+        expect(err.message).toEqual('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
+      }
     })
 
     it('handles error when oracleEndpointList is empty', async () => {
@@ -189,7 +232,7 @@ describe('Oracle tests', () => {
       const params = { ID: '12345' }
       const payload = {
         oracleIdType: 'IBAN',
-        isDefault: true,
+        isDefault: 1,
         currency: 'AUD',
         endpoint: {
           endpointType: 'CUSTOM_TYPE',
@@ -207,6 +250,7 @@ describe('Oracle tests', () => {
 
   describe('createOracle', () => {
     it('should create an oracle when isDefault is true', async () => {
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       // Arrange
       const createPayload = {
         oracleIdType: 'MSISDN',
@@ -214,7 +258,7 @@ describe('Oracle tests', () => {
           value: 'http://localhost:8444',
           endpointType: 'URL'
         },
-        isDefault: true
+        isDefault: 1
       }
       const createHeaders = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -229,6 +273,9 @@ describe('Oracle tests', () => {
         connection: 'keep-alive'
       }
 
+      // Update mock to be deleted so it passes check
+      getOracleDatabaseResponse[0].isActive = false
+
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
 
@@ -237,6 +284,7 @@ describe('Oracle tests', () => {
     })
 
     it('should create an oracle isDefault false', async () => {
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       // Arrange
       const createPayload = {
         oracleIdType: 'MSISDN',
@@ -257,6 +305,9 @@ describe('Oracle tests', () => {
         'content-length': 164,
         connection: 'keep-alive'
       }
+
+      // Update mock to be deleted so it passes check
+      getOracleDatabaseResponse[0].isActive = false
 
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
@@ -308,7 +359,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
@@ -342,7 +393,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
@@ -376,7 +427,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
@@ -411,7 +462,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
