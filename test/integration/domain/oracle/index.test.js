@@ -53,7 +53,7 @@ describe('Oracle', () => {
   }
   const testSpan = EventSdk.Tracer.createSpan('createOracle service')
 
-  const ORACLE_AUD_MSISDN_URL_PAYLOAD = {
+  const oracleAuhMsisdnUrlPayload = {
     isDefault: true,
     currency: 'AUD',
     oracleIdType: 'MSISDN',
@@ -63,7 +63,7 @@ describe('Oracle', () => {
     }
   }
 
-  const ORACLE_USD_MSISDN_URL_PAYLOAD = {
+  const oracleUsdMsisdnUrlPayload = {
     isDefault: true,
     currency: 'USD',
     oracleIdType: 'MSISDN',
@@ -73,7 +73,7 @@ describe('Oracle', () => {
     }
   }
 
-  const ORACLE_AUD_EMAIL_URL_PAYLOAD = {
+  const oracleAudEmailUrlPayload = {
     isDefault: true,
     currency: 'AUD',
     oracleIdType: 'EMAIL',
@@ -85,7 +85,7 @@ describe('Oracle', () => {
 
   describe('Create', () => {
     it('creates an oracle', async () => {
-      const result = await Oracle.createOracle(ORACLE_AUD_MSISDN_URL_PAYLOAD, createHeaders, testSpan)
+      const result = await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
       expect(result).toBe(true)
 
       const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
@@ -94,7 +94,7 @@ describe('Oracle', () => {
     })
 
     it('creates a similar oracle if the first is inactive', async () => {
-      const result = await Oracle.createOracle(ORACLE_AUD_MSISDN_URL_PAYLOAD, createHeaders, testSpan)
+      const result = await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
       expect(result).toBe(true)
 
       // Delete/mark first oracle inactive
@@ -102,7 +102,7 @@ describe('Oracle', () => {
       const firstOracleCreatedId = previousOracleResult[0].oracleEndpointId
       await Oracle.deleteOracle({ ID: firstOracleCreatedId })
 
-      const secondResult = await Oracle.createOracle(ORACLE_AUD_MSISDN_URL_PAYLOAD, createHeaders, testSpan)
+      const secondResult = await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
       expect(secondResult).toBe(true)
 
       const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
@@ -114,11 +114,11 @@ describe('Oracle', () => {
     })
 
     it('rejects creating a similar oracle when one is still active', async () => {
-      const result = await Oracle.createOracle(ORACLE_AUD_MSISDN_URL_PAYLOAD, createHeaders, testSpan)
+      const result = await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
       expect(result).toBe(true)
 
       try {
-        await Oracle.createOracle(ORACLE_AUD_MSISDN_URL_PAYLOAD, createHeaders, testSpan)
+        await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
       } catch (error) {
         expect(error.message).toBe('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
       }
@@ -131,7 +131,7 @@ describe('Oracle', () => {
 
   describe('Update', () => {
     it('updates an oracle', async () => {
-      const createResult = await Oracle.createOracle(ORACLE_AUD_MSISDN_URL_PAYLOAD, createHeaders, testSpan)
+      const createResult = await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
       expect(createResult).toBe(true)
 
       // Get newly created oracle
@@ -165,7 +165,7 @@ describe('Oracle', () => {
 
     it('updates an oracle even if there is a similar oracle that is inactive', async () => {
       const createResultAUD = await Oracle.createOracle(
-        ORACLE_AUD_MSISDN_URL_PAYLOAD,
+        oracleAuhMsisdnUrlPayload,
         createHeaders,
         testSpan
       )
@@ -229,7 +229,7 @@ describe('Oracle', () => {
     it('rejects updating an oracles currency if updating it would match an existing active oracle', async () => {
       const testSpan = EventSdk.Tracer.createSpan('createOracle service')
       const createResultAUD = await Oracle.createOracle(
-        ORACLE_AUD_MSISDN_URL_PAYLOAD,
+        oracleAuhMsisdnUrlPayload,
         createHeaders,
         testSpan
       )
@@ -237,7 +237,7 @@ describe('Oracle', () => {
 
       // Create USD currency oracle
       const createResultUSD = await Oracle.createOracle(
-        ORACLE_USD_MSISDN_URL_PAYLOAD,
+        oracleUsdMsisdnUrlPayload,
         createHeaders,
         testSpan
       )
@@ -253,7 +253,7 @@ describe('Oracle', () => {
           {
             ID: createdIdUSD,
           },
-          ORACLE_AUD_MSISDN_URL_PAYLOAD
+          oracleAuhMsisdnUrlPayload
         )
       } catch (error) {
         // Should throw error since there is an existing active oracle
@@ -275,7 +275,7 @@ describe('Oracle', () => {
     it('rejects updating an oracles id type if updating it would match an existing active oracle', async () => {
       const testSpan = EventSdk.Tracer.createSpan('createOracle service')
       const createResultMSISDN = await Oracle.createOracle(
-        ORACLE_AUD_MSISDN_URL_PAYLOAD,
+        oracleAuhMsisdnUrlPayload,
         createHeaders,
         testSpan
       )
@@ -283,7 +283,7 @@ describe('Oracle', () => {
 
       // Create email id type oracle
       const createResultEMAIL = await Oracle.createOracle(
-        ORACLE_AUD_EMAIL_URL_PAYLOAD,
+        oracleAudEmailUrlPayload,
         createHeaders,
         testSpan
       )
@@ -299,7 +299,7 @@ describe('Oracle', () => {
           {
             ID: createdIdEmail,
           },
-          ORACLE_AUD_MSISDN_URL_PAYLOAD
+          oracleAuhMsisdnUrlPayload
         )
       } catch (error) {
         // Should throw error since there is an existing active oracle
