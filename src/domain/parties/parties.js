@@ -78,10 +78,10 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
       if (headers[Enums.Http.Headers.FSPIOP.DESTINATION]) {
         // the requester has specifid a destination routing header. We should respect that and forward the request directly to the destination
         // without consulting any oracles.
-        
+
         // first check the destination is a valid participant
         const destParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], childSpan)
-        if(!destParticipantModel) {
+        if (!destParticipantModel) {
           Logger.error('Destination FSP not found')
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Destination FSP not found')
         }

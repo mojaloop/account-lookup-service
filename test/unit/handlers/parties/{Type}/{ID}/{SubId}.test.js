@@ -114,10 +114,14 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
   it('getPartiesByTypeAndID endpoint sends async 3201 to /error for invalid party ID with status 404', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
+
+    const headers = Helper.defaultStandardHeaders('parties')
+    delete headers['fspiop-destination']
+
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties')
+      headers: headers,
     }
 
     const badRequestError = ErrorHandler.Factory.createFSPIOPError(
