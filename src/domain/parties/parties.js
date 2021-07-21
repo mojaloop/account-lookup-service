@@ -22,6 +22,7 @@
  - Henk Kodde <henk.kodde@modusbox.com>
  - Steven Oderayi <steven.oderayi@modusbox.com>
  - Juan Correa <juan.correa@modusbox.com>
+ - James Bush <james.bush@modusbox.com>
 
  --------------
  ******/
@@ -86,8 +87,12 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         }
 
         // all ok, go ahead and forward the request
-        await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan);
-        return;
+        await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
+        histTimerEnd({ success: true })
+        if (childSpan && !childSpan.isFinished) {
+          childSpan.finish()
+        }
+        return
       }
 
       const response = await oracle.oracleRequest(headers, method, params, query)

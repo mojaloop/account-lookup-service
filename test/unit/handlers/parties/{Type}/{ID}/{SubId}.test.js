@@ -71,7 +71,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     parties.getPartiesByTypeAndID.restore()
   })
 
-  it.only('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
+  it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
 
