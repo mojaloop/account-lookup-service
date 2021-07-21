@@ -18,24 +18,21 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Kevin Leyow <kevin.leyow@modusbox.com>
 
  --------------
  ******/
 
 'use strict'
 
-const oracleEndpointModel = require('./oracleEndpoint')
+exports.up = function (knex) {
+  return knex.schema.table('oracleEndpoint', (t) => {
+    t.dropUnique(['partyIdTypeId', 'endpointTypeId', 'currencyId'])
+  })
+}
 
-module.exports = {
-  getOracleEndpointByType: oracleEndpointModel.getOracleEndpointByType,
-  getOracleEndpointByTypeAndCurrency: oracleEndpointModel.getOracleEndpointByTypeAndCurrency,
-  getOracleEndpointByCurrency: oracleEndpointModel.getOracleEndpointByCurrency,
-  getAllOracleEndpoint: oracleEndpointModel.getAllOracleEndpoint,
-  getAllOracleEndpointsByMatchCondition: oracleEndpointModel.getAllOracleEndpointsByMatchCondition,
-  createOracleEndpoint: oracleEndpointModel.createOracleEndpoint,
-  updateOracleEndpointById: oracleEndpointModel.updateOracleEndpointById,
-  setIsActiveOracleEndpoint: oracleEndpointModel.setIsActiveOracleEndpoint,
-  destroyOracleEndpointById: oracleEndpointModel.destroyOracleEndpointById,
-  getOracleEndpointById: oracleEndpointModel.getOracleEndpointById
+exports.down = function (knex) {
+  return knex.schema.table('oracleEndpoint', (t) => {
+    t.unique(['partyIdTypeId', 'endpointTypeId', 'currencyId'])
+  })
 }

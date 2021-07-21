@@ -42,6 +42,20 @@ const Config = require('../../lib/config')
  */
 exports.createOracle = async (payload) => {
   try {
+    const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+    const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+    const existingActiveOracle = await oracleEndpoint.getAllOracleEndpointsByMatchCondition(
+      payload,
+      partyIdTypeModel.partyIdTypeId,
+      endpointTypeModel.endpointTypeId
+    )
+
+    if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
+      const err = new Error('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
+      Logger.error(err)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+
     const oracleEntity = {}
     if (payload.isDefault) {
       oracleEntity.isDefault = payload.isDefault
@@ -53,8 +67,6 @@ exports.createOracle = async (payload) => {
     }
     oracleEntity.value = payload.endpoint.value
     oracleEntity.createdBy = 'Admin'
-    const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
-    const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
     oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
     oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
     await oracleEndpoint.createOracleEndpoint(oracleEntity)
@@ -124,6 +136,20 @@ exports.updateOracle = async (params, payload) => {
   try {
     const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(params.ID)
     if (currentOracleEndpointList.length > 0) {
+      const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+      const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+      const existingActiveOracle = await oracleEndpoint.getAllOracleEndpointsByMatchCondition(
+        payload,
+        partyIdTypeModel.partyIdTypeId,
+        endpointTypeModel.endpointTypeId
+      )
+
+      if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
+        const err = new Error('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
+        Logger.error(err)
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      }
+
       const currentOracleEndpoint = currentOracleEndpointList[0]
       const newOracleEntry = {}
       if (payload.oracleIdType && payload.oracleIdType !== currentOracleEndpoint.idType) {
