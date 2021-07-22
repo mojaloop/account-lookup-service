@@ -2,8 +2,8 @@
   "decisions": {
     "1693|@mojaloop/central-services-shared>shins>sanitize-html>postcss": {
       "decision": "ignore",
-      "madeAt": 1626261153380,
-      "expiresAt": 1628853147565
+      "madeAt": 1623336829070,
+      "expiresAt": 1623941956342
     },
     "1500|@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
@@ -12,8 +12,8 @@
     },
     "1675|@mojaloop/central-services-shared>shins>sanitize-html": {
       "decision": "ignore",
-      "madeAt": 1626261156762,
-      "expiresAt": 1628853147565
+      "madeAt": 1626939586100,
+      "expiresAt": 1627544372805
     },
     "1673|@mojaloop/central-services-shared>openapi-backend>lodash": {
       "decision": "fix",
@@ -31,20 +31,10 @@
       "decision": "fix",
       "madeAt": 1622647824779
     },
-    "1675|@mojaloop/central-services-shared>shins>sanitize-html": {
-      "decision": "ignore",
-      "madeAt": 1623336829070,
-      "expiresAt": 1623941956342
-    },
     "1676|@mojaloop/central-services-shared>shins>sanitize-html": {
       "decision": "ignore",
-      "madeAt": 1623336829070,
-      "expiresAt": 1623941956342
-    },
-    "1693|@mojaloop/central-services-shared>shins>sanitize-html>postcss": {
-      "decision": "ignore",
-      "madeAt": 1623336829070,
-      "expiresAt": 1623941956342
+      "madeAt": 1626939586100,
+      "expiresAt": 1627544372805
     },
     "1500|00unidentified>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
