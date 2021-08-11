@@ -1234,7 +1234,7 @@ components:
       title: FirstName
       maxLength: 128
       minLength: 1
-      pattern: '^(?!\s*$)[\p{L}\p{Nd} .,''-]{1,128}$'
+      pattern: '^(?!\s*$)[\p{L}\p{gc=Mark}\p{digit}\p{gc=Connector_Punctuation}\p{Join_Control} .,''-]{1,128}$'
       type: string
       description: First name of the Party (Name Type).
     HealthServicesType:
@@ -1251,14 +1251,14 @@ components:
       title: LastName
       maxLength: 128
       minLength: 1
-      pattern: '^(?!\s*$)[\p{L}\p{Nd} .,''-]{1,128}$'
+      pattern: '^(?!\s*$)[\p{L}\p{gc=Mark}\p{digit}\p{gc=Connector_Punctuation}\p{Join_Control} .,''-]{1,128}$'
       type: string
       description: Last name of the Party (Name Type).
     MiddleName:
       title: MiddleName
       maxLength: 128
       minLength: 1
-      pattern: '^(?!\s*$)[\p{L}\p{Nd} .,''-]{1,128}$'
+      pattern: '^(?!\s*$)[\p{L}\p{gc=Mark}\p{digit}\p{gc=Connector_Punctuation}\p{Join_Control} .,''-]{1,128}$'
       type: string
       description: Middle name of the Party (Name Type).
     ParticipantsTypeIDSubIDPostRequest:
