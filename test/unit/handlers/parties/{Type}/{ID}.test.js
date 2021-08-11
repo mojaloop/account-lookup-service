@@ -51,6 +51,10 @@ describe('/parties', () => {
     server = await initServer(await getPort())
   })
 
+  afterEach(async () => {
+    sandbox.restore()
+  })
+
   afterAll(async () => {
     await server.stop()
     sandbox.restore()
@@ -163,6 +167,27 @@ describe('/parties', () => {
     }
     options.payload.party.personalInfo.complexName.firstName = 'Justin'
     options.payload.party.personalInfo.complexName.middleName = 'middle'
+    options.payload.party.personalInfo.complexName.lastName = 'résumé'
+    sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(200)
+  })
+
+  it('putPartiesByTypeAndID endpoint with additional asian (Myanmar) unicode characters', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'put')
+    const options = {
+      method: 'put',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties'),
+      payload: mock.request.body
+    }
+    options.payload.party.personalInfo.complexName.firstName = 'Justin'
+    options.payload.party.personalInfo.complexName.middleName = 'ကောင်းထက်စံ'
     options.payload.party.personalInfo.complexName.lastName = 'résumé'
     sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
 
