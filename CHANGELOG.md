@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.7.3](https://github.com/mojaloop/account-lookup-service/compare/v11.7.2...v11.7.3) (2021-08-16)
+
+
+### Bug Fixes
+
+* **mojaloop/#2374:** ALS is sending out multiple requests to participants for both Oracle records that match non-subId and subId result set ([#424](https://github.com/mojaloop/account-lookup-service/issues/424)) ([3639ddc](https://github.com/mojaloop/account-lookup-service/commit/3639ddcc692abb0fbf835bfd879cf99bfa2556f3)), closes [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374)
+
 ### [11.7.2](https://github.com/mojaloop/account-lookup-service/compare/v11.7.0...v11.7.2) (2021-08-11)
 
 
