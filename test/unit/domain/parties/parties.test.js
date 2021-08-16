@@ -234,7 +234,7 @@ describe('Parties Tests', () => {
       expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
     })
 
-    it('ensures sendRequest is called with the right endpoint type when SubId is supplied', async () => {
+    it('ensures sendRequest is called with the right endpoint type when no SubId is supplied', async () => {
       expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().returns({})
@@ -242,6 +242,75 @@ describe('Parties Tests', () => {
         data: {
           partyList: [
             { fspId: 'fsp1' }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub().resolves()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'payerfsp'
+      }
+      const params = { ...Helper.getByTypeIdRequest.params }
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
+
+      // Act
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+
+      // Assert
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
+    })
+
+    it('ensures sendRequest is called with the right endpoint type when SubId is supplied', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().returns({})
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            { 
+              fspId: 'fsp1',
+              partySubIdOrType: 'subId'
+            }
+          ]
+        }
+      })
+      participant.sendRequest = sandbox.stub().resolves()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'payerfsp'
+      }
+      const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subId' }
+      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
+
+      // Act
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
+
+      // Assert
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
+    })
+
+    it('ensures sendRequest is called only once in FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET mode when oracle returns two records without SubId and with SubId', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().returns({})
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            { 
+              fspId: 'fsp1'
+            },
+            { 
+              fspId: 'fsp1',
+              partySubIdOrType: 'subId'
+            }
           ]
         }
       })

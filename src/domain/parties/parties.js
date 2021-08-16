@@ -96,12 +96,31 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
       }
 
       const response = await oracle.oracleRequest(headers, method, params, query)
+
       if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-        const clonedHeaders = { ...headers }
-        if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
-          clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = response.data.partyList[0].fspId
+        // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records. We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
+        let filteredResponsePartyList
+        switch (callbackEndpointType) {
+          case Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET:
+            filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter out records that DON'T contain a partySubIdOrType
+            break
+          case Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET:
+            filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType != null) // Filter out records that ONLY contain a partySubIdOrType
+            break
+          default:
+            filteredResponsePartyList = response // Fallback to providing the standard list
         }
-        for (const party of response.data.partyList) {
+
+        if (filteredResponsePartyList == null || !(Array.isArray(filteredResponsePartyList) && filteredResponsePartyList.length > 0)) {
+          Logger.error('Requester FSP not found')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+        }
+
+        for (const party of filteredResponsePartyList) {
+          const clonedHeaders = { ...headers }
+          if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
+            clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = party.fspId
+          }
           await participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
         }
         if (childSpan && !childSpan.isFinished) {
