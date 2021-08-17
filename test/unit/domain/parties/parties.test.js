@@ -297,7 +297,7 @@ describe('Parties Tests', () => {
       expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
     })
 
-    it('ensures sendRequest is called with the right endpoint type when SubId is supplied is not matched', async () => {
+    it('ensures sendErrorToParticipant is called with the right endpoint type when SubId is supplied is not matched', async () => {
       expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().returns({})
