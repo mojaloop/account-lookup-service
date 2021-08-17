@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.7.4](https://github.com/mojaloop/account-lookup-service/compare/v11.7.3...v11.7.4) (2021-08-17)
+
+
+### Bug Fixes
+
+* **#2358-2:** firstname, middlename and lastname regex not supporting myanmar script unicode strings ([#425](https://github.com/mojaloop/account-lookup-service/issues/425)) ([7a61510](https://github.com/mojaloop/account-lookup-service/commit/7a61510be1a5fdcaf812d0ff059cedae112a4b79)), closes [#2358-2](https://github.com/mojaloop/account-lookup-service/issues/2358-2) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374)
+
 ### [11.7.3](https://github.com/mojaloop/account-lookup-service/compare/v11.7.2...v11.7.3) (2021-08-16)
 
 
