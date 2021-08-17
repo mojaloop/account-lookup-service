@@ -102,10 +102,10 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         let filteredResponsePartyList
         switch (callbackEndpointType) {
           case Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET:
-            filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter out records that DON'T contain a partySubIdOrType
+            filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
             break
           case Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET:
-            filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType != null) // Filter out records that ONLY contain a partySubIdOrType
+            filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType === partySubIdOrType) // Filter records that match partySubIdOrType
             break
           default:
             filteredResponsePartyList = response // Fallback to providing the standard list
