@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.7.5](https://github.com/mojaloop/account-lookup-service/compare/v11.7.4...v11.7.5) (2021-09-09)
+
+
+### Chore
+
+* expand unit tests for myanmar characters ([#426](https://github.com/mojaloop/account-lookup-service/issues/426)) ([d21176c](https://github.com/mojaloop/account-lookup-service/commit/d21176c452a2f17cdbcb0ef57706351fd2f98567)), closes [/github.com/mojaloop/project/issues/2358#issuecomment-916031483](https://github.com/mojaloop//github.com/mojaloop/project/issues/2358/issues/issuecomment-916031483)
+
 ### [11.7.4](https://github.com/mojaloop/account-lookup-service/compare/v11.7.3...v11.7.4) (2021-08-17)
 
 
