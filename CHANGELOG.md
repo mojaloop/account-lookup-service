@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.7.6](https://github.com/mojaloop/account-lookup-service/compare/v11.7.5...v11.7.6) (2021-09-09)
+
+
+### Bug Fixes
+
+* updated circleci config for slack env var typo fix ([#427](https://github.com/mojaloop/account-lookup-service/issues/427)) ([a9b03d2](https://github.com/mojaloop/account-lookup-service/commit/a9b03d2a02c04d4c7f2555b967d864c5fff49dfe))
+
 ### [11.7.5](https://github.com/mojaloop/account-lookup-service/compare/v11.7.4...v11.7.5) (2021-09-09)
 
 
