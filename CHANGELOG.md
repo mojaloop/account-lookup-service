@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.7.7](https://github.com/mojaloop/account-lookup-service/compare/v11.7.6...v11.7.7) (2021-09-10)
+
+
+### Bug Fixes
+
+* **mojaloop/#2470:** central-services-shared streamingprotocol encode/decode functionality fix ([#428](https://github.com/mojaloop/account-lookup-service/issues/428)) ([2f5d26a](https://github.com/mojaloop/account-lookup-service/commit/2f5d26a094a329c20fa2b83d569a9e90f6474f89)), closes [mojaloop/#2470](https://github.com/mojaloop/account-lookup-service/issues/2470)
+
 ### [11.7.6](https://github.com/mojaloop/account-lookup-service/compare/v11.7.5...v11.7.6) (2021-09-09)
 
 
