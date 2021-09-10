@@ -76,3 +76,6 @@ jsconfig.json
 # https://devspace.sh/
 devspace*
 .devspace/**.*
+
+# General Ignore
+*IGNORE*
