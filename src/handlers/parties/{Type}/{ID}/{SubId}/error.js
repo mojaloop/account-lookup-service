@@ -24,7 +24,9 @@
  ******/
 'use strict'
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+// const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const parties = require('../../../../../domain/parties')
 
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}/error
@@ -38,6 +40,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (context, request, h) {
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span)
+    return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }
 }
