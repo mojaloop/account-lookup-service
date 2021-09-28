@@ -62,12 +62,33 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     }
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
-    sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
 
     // Act
     ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     expect(handler.response.calledOnce).toBe(true)
+    stub.restore()
+  })
+
+  it('putPartiesSubIdErrorByTypeAndID endpoint', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
+    const options = {
+      method: 'put',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties'),
+      payload: mock.request.body
+    }
+
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(200)
+    stub.restore()
   })
 })
