@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.8.0](https://github.com/mojaloop/account-lookup-service/compare/v11.7.7...v11.8.0) (2021-09-28)
+
+
+### Features
+
+* **mojaloop/#2505:** als-subid-error-callback-endpoint-not-implemented ([#429](https://github.com/mojaloop/account-lookup-service/issues/429)) ([6051259](https://github.com/mojaloop/account-lookup-service/commit/605125925a5e181677fd357caf5605895b4b42a6)), closes [mojaloop/#2505](https://github.com/mojaloop/account-lookup-service/issues/2505) [mojaloop/#2505](https://github.com/mojaloop/account-lookup-service/issues/2505)
+
 ### [11.7.7](https://github.com/mojaloop/account-lookup-service/compare/v11.7.6...v11.7.7) (2021-09-10)
 
 
