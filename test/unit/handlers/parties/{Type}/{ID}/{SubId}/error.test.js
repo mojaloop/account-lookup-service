@@ -54,8 +54,11 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
 
   it('handles PUT /error', async () => {
     // Arrange
+    const response = sandbox.stub().returns({
+      code: sandbox.stub()
+    })
     const handler = {
-      response: sandbox.stub()
+      response
     }
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
