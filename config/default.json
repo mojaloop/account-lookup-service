@@ -18,10 +18,10 @@
     "CREATE_RETRY_INTERVAL_MILLIS": 200
   },
   "PROTOCOL_VERSIONS": {
-    "CONTENT": "1.0",
+    "CONTENT": "1.1",
     "ACCEPT": [
         "1",
-        "1.0"
+        "1.1"
     ]
   },
   "DISPLAY_ROUTES": true,
