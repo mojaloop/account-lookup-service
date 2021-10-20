@@ -19,6 +19,13 @@
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
     "DEBUG": false
   },
+  "PROTOCOL_VERSIONS": {
+    "CONTENT": "1.0",
+    "ACCEPT": [
+        "1",
+        "1.0"
+    ]
+  },
   "DISPLAY_ROUTES": true,
   "RUN_MIGRATIONS": true,
   "ENDPOINT_CACHE_CONFIG": {
