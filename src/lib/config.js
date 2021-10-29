@@ -47,11 +47,20 @@ const getOrDefault = (value, defaultValue) => {
 }
 
 const DEFAULT_PROTOCOL_VERSION = {
-  CONTENT: '1.0',
-  ACCEPT: [
-    '1',
-    '1.0'
-  ]
+  CONTENT: '1.1',
+  ACCEPT: {
+    DEFAULT: '1', // This is not currently used by the account-lookup-service, but it is here for consistency between services. In future if we need to default the ACCEPT protocol, then this should be used.
+    VALIDATELIST: [
+      '1',
+      '1.1'
+    ]
+  }
+}
+
+const T_PROTOCOL_VERSION = { ...DEFAULT_PROTOCOL_VERSION, ...RC.PROTOCOL_VERSIONS }
+
+if (T_PROTOCOL_VERSION.ACCEPT && T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST && (typeof T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST === 'string' || T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST instanceof String)) {
+  T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST)
 }
 
 const config = {
@@ -109,7 +118,7 @@ const config = {
   JWS_SIGNING_KEY_PATH: RC.ENDPOINT_SECURITY.JWS.JWS_SIGNING_KEY_PATH,
   API_DOC_ENDPOINTS_ENABLED: RC.API_DOC_ENDPOINTS_ENABLED || false,
   FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE: RC.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE || false,
-  PROTOCOL_VERSIONS: RC.PROTOCOL_VERSIONS || DEFAULT_PROTOCOL_VERSION
+  PROTOCOL_VERSIONS: T_PROTOCOL_VERSION
 }
 
 if (config.JWS_SIGN) {

@@ -19,10 +19,12 @@
   },
   "PROTOCOL_VERSIONS": {
     "CONTENT": "1.1",
-    "ACCEPT": [
+    "ACCEPT": {
+      "VALIDATELIST": [
         "1",
         "1.1"
-    ]
+      ]
+    }
   },
   "DISPLAY_ROUTES": true,
   "RUN_MIGRATIONS": true,
