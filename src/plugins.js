@@ -80,12 +80,41 @@ const registerPlugins = async (server, openAPIBackend) => {
     plugin: require('hapi-auth-bearer-token')
   })
 
+  // Helper to construct FSPIOPHeaderValidation option configuration
+  const getOptionsForFSPIOPHeaderValidation = () => {
+    // configure supported FSPIOP Content-Type versions
+    const supportedProtocolContentVersions = [Config.PROTOCOL_VERSIONS.CONTENT.toString()]
+
+    // configure supported FSPIOP Accept version
+    const supportedProtocolAcceptVersions = []
+    for (const version of Config.PROTOCOL_VERSIONS.ACCEPT.VALIDATELIST) {
+      supportedProtocolAcceptVersions.push(version.toString())
+    }
+
+    // configure FSPIOP resources
+    const resources = [
+      'participants',
+      'parties'
+    ]
+
+    // return FSPIOPHeaderValidation plugin options
+    return {
+      resources,
+      supportedProtocolContentVersions,
+      supportedProtocolAcceptVersions
+    }
+  }
+
   await server.register([
     Inert,
     Vision,
     ErrorHandling,
     RawPayloadToDataUri,
-    CentralServices.Util.Hapi.HapiEventPlugin
+    CentralServices.Util.Hapi.HapiEventPlugin,
+    {
+      plugin: CentralServices.Util.Hapi.FSPIOPHeaderValidation.plugin,
+      options: getOptionsForFSPIOPHeaderValidation()
+    }
   ])
 
   if (Config.DISPLAY_ROUTES === true) {

@@ -51,10 +51,10 @@ do
   echo "---------------------------------------------------------------------"
   curl --location ${ACCOUNT_LOOKUP_FSPIOP_URI_PREFIX}://${ACCOUNT_LOOKUP_FSPIOP_HOST}:${ACCOUNT_LOOKUP_FSPIOP_PORT}${ACCOUNT_LOOKUP_FSPIOP_BASE}participants/MSISDN/${PAYEE_PARTICIPANT} \
     --header 'Cache-Control: no-cache' \
-    --header 'Content-Type: application/vnd.interoperability.participants+json;version=1.0' \
+    --header 'Content-Type: application/vnd.interoperability.participants+json;version=1.1' \
     --header 'Date: Thu, 24 Jan 2019 10:22:12 GMT' \
     --header 'FSPIOP-Source: payeefsp' \
-    --header 'Accept: application/vnd.interoperability.participants+json;version=1.0' \
+    --header 'Accept: application/vnd.interoperability.participants+json;version=1.1' \
     --data-binary '{
       "fspId": "payeefsp",
       "currency": "USD"

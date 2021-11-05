@@ -45,7 +45,7 @@ describe('Oracle', () => {
     accept: 'application/vnd.interoperability.participants+json;version=1',
     'cache-control': 'no-cache',
     date: '',
-    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
     host: '127.0.0.1:4003',
     'accept-encoding': 'gzip, deflate',
     'content-length': 164,

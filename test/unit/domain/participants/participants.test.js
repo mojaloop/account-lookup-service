@@ -156,7 +156,7 @@ describe('participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -309,7 +309,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -348,7 +348,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -388,7 +388,7 @@ describe('participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -420,7 +420,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -453,7 +453,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -488,7 +488,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -520,7 +520,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -552,7 +552,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -584,7 +584,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -632,7 +632,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -669,7 +669,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -707,7 +707,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -745,7 +745,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -782,7 +782,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -820,7 +820,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -875,7 +875,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -914,7 +914,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -954,7 +954,7 @@ describe('participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -985,7 +985,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1017,7 +1017,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1051,7 +1051,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1082,7 +1082,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1113,7 +1113,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1144,7 +1144,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1199,7 +1199,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1249,7 +1249,7 @@ describe('participant Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1298,7 +1298,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1346,7 +1346,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1380,7 +1380,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1419,7 +1419,7 @@ describe('participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1470,7 +1470,7 @@ describe('participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1507,7 +1507,7 @@ describe('participant Tests', () => {
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1540,7 +1540,7 @@ describe('participant Tests', () => {
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1571,7 +1571,7 @@ describe('participant Tests', () => {
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1604,7 +1604,7 @@ describe('participant Tests', () => {
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1634,7 +1634,7 @@ describe('participant Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1664,7 +1664,7 @@ describe('participant Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1694,7 +1694,7 @@ describe('participant Tests', () => {
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }

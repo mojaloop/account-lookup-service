@@ -28,7 +28,6 @@ const Boom = require('@hapi/boom')
 const Uuid = require('uuid4')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
-const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Db = require('./lib/db')
@@ -75,11 +74,6 @@ const createServer = async (port, api, routes, isAdmin) => {
     }
   })
   await Plugins.registerPlugins(server, api, isAdmin)
-  await server.register([
-    {
-      plugin: HeaderValidator
-    }
-  ])
   await server.ext([
     {
       type: 'onPostAuth',

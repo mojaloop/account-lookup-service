@@ -88,7 +88,7 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().resolves()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -117,7 +117,7 @@ describe('Parties Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp',
         'fspiop-destination': 'destfsp',
@@ -179,7 +179,7 @@ describe('Parties Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp',
         // Also test the empty DESTINATION header case
@@ -219,7 +219,7 @@ describe('Parties Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -248,7 +248,7 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().resolves()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -281,7 +281,7 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().resolves()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -316,7 +316,7 @@ describe('Parties Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -352,7 +352,7 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().resolves()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
