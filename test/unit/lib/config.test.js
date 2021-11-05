@@ -24,8 +24,6 @@
 'use strict'
 
 const src = '../../../src/'
-const Util = require('@mojaloop/central-services-shared').Util
-const Default = require('../../../config/default.json')
 
 const configImport = `${src}/lib/config`
 jest.mock(configImport)
@@ -41,17 +39,15 @@ describe('Config tests', () => {
   })
 
   it('getFileContent should not throw', async () => {
+    // Setup
     let Config = null
     let isSuccess
+    // set env var
+    process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGN = true
 
     // Act
     try {
-      const DefaultStub = Util.clone(Default)
-      // set env var
-      process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGN = true
-      Config = jest.requireActual(configImport, {
-        '../../config/default.json': DefaultStub
-      })
+      Config = jest.requireActual(configImport)
       isSuccess = true
     } catch (e) {
       isSuccess = false
@@ -63,19 +59,16 @@ describe('Config tests', () => {
   })
 
   it('getFileContent should pass ENV var ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST as a string', async () => {
+    // Setup
     let Config = null
     let isSuccess
     const validateList = ['1']
+    // set env var
+    process.env.ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST = JSON.stringify(validateList)
 
     // Act
     try {
-      const DefaultStub = Util.clone(Default)
-      DefaultStub.ENDPOINT_SECURITY.JWS.JWS_SIGN = true
-      // set env var
-      process.env.ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST = JSON.stringify(validateList)
-      Config = jest.requireActual(configImport, {
-        '../../config/default.json': DefaultStub
-      })
+      Config = jest.requireActual(configImport)
       isSuccess = true
     } catch (e) {
       isSuccess = false
@@ -88,17 +81,17 @@ describe('Config tests', () => {
   })
 
   it('getFileContent should throw error when file not found', async () => {
+    // Setup
     let Config = null
     let error = null
     let isSuccess
     const validateList = ['1']
+    // set env var
+    process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGN = true
+    process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGNING_KEY_PATH = '/fake/path'
 
     // Act
     try {
-      // set env var
-      process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGN = true
-      process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGNING_KEY_PATH = '/fake/path'
-      // set env var
       Config = jest.requireActual(configImport)
       isSuccess = true
     } catch (e) {
