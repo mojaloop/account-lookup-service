@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [12.0.0](https://github.com/mojaloop/account-lookup-service/compare/v11.8.0...v12.0.0) (2021-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **mojaloop/#2534:** Forcing a major version change for awareness of the config changes. The `LIB_RESOURCE_VERSIONS` env var is now deprecated, and this is now also controlled by the PROTOCOL_VERSIONS config in the default.json. This has been done for consistency between all API services going forward and unifies the config for both inbound and outbound Protocol API validation/transformation features.
+
+### Bug Fixes
+
+* **mojaloop/#2534:** fspiop api version negotiation not handled by account lookup service ([#430](https://github.com/mojaloop/account-lookup-service/issues/430)) ([f1cf4a3](https://github.com/mojaloop/account-lookup-service/commit/f1cf4a3f2001d6c814ec5832aae9da83efce1ffa)), closes [mojaloop/#2534](https://github.com/mojaloop/account-lookup-service/issues/2534) [mojaloop/#2534](https://github.com/mojaloop/account-lookup-service/issues/2534)
+
 ## [11.8.0](https://github.com/mojaloop/account-lookup-service/compare/v11.7.7...v11.8.0) (2021-09-28)
 
 
