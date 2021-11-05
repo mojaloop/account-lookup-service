@@ -38,7 +38,7 @@ describe('Config tests', () => {
     jest.clearAllMocks()
   })
 
-  it('getFileContent should not throw', async () => {
+  it('should load successfully', async () => {
     // Setup
     let Config = null
     let isSuccess
@@ -58,7 +58,7 @@ describe('Config tests', () => {
     expect(isSuccess).toBe(true)
   })
 
-  it('getFileContent should pass ENV var ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST as a string', async () => {
+  it('should parse ENV var ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST as a string', async () => {
     // Setup
     let Config = null
     let isSuccess
@@ -80,7 +80,7 @@ describe('Config tests', () => {
     expect(Config.PROTOCOL_VERSIONS.ACCEPT.VALIDATELIST).toMatchObject(validateList)
   })
 
-  it('getFileContent should throw error when file not found', async () => {
+  it('should should throw error when file not found', async () => {
     // Setup
     let Config = null
     let error = null
