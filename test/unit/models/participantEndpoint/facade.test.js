@@ -56,6 +56,23 @@ describe('participantEndpoint Facade', () => {
   describe('sendRequest', () => {
     it('sends the most basic request', async () => {
       // Arrange
+      const mockedConfig = {
+        JWS_SIGN: false,
+        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        PROTOCOL_VERSIONS: {
+          CONTENT: '2.1',
+          ACCEPT: {
+            DEFAULT: '2',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          }
+        }
+      }
+
+      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
       mockSendRequest.mockImplementation(() => Promise.resolve(true))
       const ParticipantFacade = require(`${src}/models/participantEndpoint/facade`)
@@ -69,10 +86,31 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(result).toBe(true)
+      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+        accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
+        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT
+      })
     })
 
     it('fails to send the request', async () => {
       // Arrange
+      const mockedConfig = {
+        JWS_SIGN: false,
+        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        PROTOCOL_VERSIONS: {
+          CONTENT: '2.1',
+          ACCEPT: {
+            DEFAULT: '2',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          }
+        }
+      }
+
+      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
       mockSendRequest.mockImplementation(() => { throw new Error('Request failed') })
       const ParticipantFacade = require(`${src}/models/participantEndpoint/facade`)
@@ -86,6 +124,10 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       await expect(action()).rejects.toThrow('Request failed')
+      expect(mockSendRequest.mock.calls[1][9]).toMatchObject({
+        accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
+        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT
+      })
     })
   })
 
