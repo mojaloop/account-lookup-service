@@ -111,7 +111,17 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGN: false,
         FSPIOP_SOURCE_TO_SIGN: 'switch',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey'
+        JWS_SIGNING_KEY: 'somekey',
+        PROTOCOL_VERSIONS: {
+          CONTENT: '2.1',
+          ACCEPT: {
+            DEFAULT: '2',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          }
+        }
       }))
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
@@ -140,7 +150,17 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGN: false,
         FSPIOP_SOURCE_TO_SIGN: 'switch',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey'
+        JWS_SIGNING_KEY: 'somekey',
+        PROTOCOL_VERSIONS: {
+          CONTENT: '2.1',
+          ACCEPT: {
+            DEFAULT: '2',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          }
+        }
       }))
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
@@ -174,7 +194,17 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGN: true,
         FSPIOP_SOURCE_TO_SIGN: 'switch',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey'
+        JWS_SIGNING_KEY: 'somekey',
+        PROTOCOL_VERSIONS: {
+          CONTENT: '2.1',
+          ACCEPT: {
+            DEFAULT: '2',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          }
+        }
       }))
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/parties/MSISDN12345')
