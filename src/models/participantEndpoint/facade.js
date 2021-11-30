@@ -20,6 +20,7 @@
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Juan Correa <juan.correa@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
  --------------
  ******/
 
