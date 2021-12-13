@@ -36,6 +36,7 @@ services:
   central-ledger:
     image: mojaloop/central-ledger:latest
     container_name: als_central-ledger
+    user: root
     command:
       - "sh"
       - "-c"
@@ -82,7 +83,7 @@ services:
 
   mysql-als:
     image: mysql/mysql-server
-    container_name: als_mysql_central_ledger
+    container_name: als_mysql
     ports:
       - "3306:3306"
     volumes:
@@ -103,7 +104,7 @@ services:
 
   mysql-cl:
     image: mysql/mysql-server
-    container_name: als_mysql
+    container_name: als_mysql_central_ledger
     ports:
       - "3307:3306"
     volumes:

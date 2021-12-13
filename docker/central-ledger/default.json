@@ -7,7 +7,7 @@
     "PORT": 3306,
     "USER": "central_ledger",
     "PASSWORD": "password",
-    "DATABASE": "central_ledger",
+    "SCHEMA": "central_ledger",
     "POOL_MIN_SIZE": 10,
     "POOL_MAX_SIZE": 10,
     "ACQUIRE_TIMEOUT_MILLIS": 30000,
@@ -17,6 +17,16 @@
     "REAP_INTERVAL_MILLIS": 1000,
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
     "DEBUG": false
+  },
+  "PROTOCOL_VERSIONS": {
+    "CONTENT": "1.1",
+    "ACCEPT": {
+      "DEFAULT": "1",
+      "VALIDATELIST": [
+        "1",
+        "1.1"
+      ]
+    }
   },
   "MIGRATIONS": {
     "DISABLED": false,
@@ -168,6 +178,30 @@
             "rdkafkaConf": {
               "client.id": "cl-con-bulk-fulfil",
               "group.id": "cl-group-bulk-fulfil",
+              "metadata.broker.list": "kafka:29092",
+              "socket.keepalive.enable": true,
+              "allow.auto.create.topics": true
+            },
+            "topicConf": {
+              "auto.offset.reset": "earliest"
+            }
+          }
+        },
+        "GET": {
+          "config": {
+            "options": {
+              "mode": 2,
+              "batchSize": 1,
+              "pollFrequency": 10,
+              "recursiveTimeout": 100,
+              "messageCharset": "utf8",
+              "messageAsJSON": true,
+              "sync": true,
+              "consumeTimeout": 1000
+            },
+            "rdkafkaConf": {
+              "client.id": "cl-con-bulk-get",
+              "group.id": "cl-group-bulk-get",
               "metadata.broker.list": "kafka:29092",
               "socket.keepalive.enable": true,
               "allow.auto.create.topics": true
