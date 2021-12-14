@@ -20,6 +20,7 @@
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
 
  --------------
  ******/

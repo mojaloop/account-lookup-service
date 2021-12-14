@@ -20,6 +20,7 @@
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Juan Correa <juan.correa@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
  --------------
  ******/
 
@@ -55,9 +56,15 @@ const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
  */
 exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined, span = undefined) => {
   try {
+    // Injected Configuration for outbound Content-Type & Accept headers.
+    const protocolVersions = {
+      content: Config.PROTOCOL_VERSIONS.CONTENT.toString(),
+      accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
+    }
+
     const requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
     Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
-    return await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span)
+    return await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, null, protocolVersions)
   } catch (err) {
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -109,6 +116,12 @@ exports.validateParticipant = async (fsp, span = undefined) => {
  */
 exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined, span = undefined) => {
   try {
+    // Injected Configuration for outbound Content-Type & Accept headers.
+    const protocolVersions = {
+      content: Config.PROTOCOL_VERSIONS.CONTENT.toString(),
+      accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
+    }
+
     let requestIdExists = false
     if (payload && payload.requestId) {
       requestIdExists = true
@@ -140,7 +153,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
         signingKey: Config.JWS_SIGNING_KEY
       })
     }
-    await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner)
+    await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
   } catch (err) {
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)

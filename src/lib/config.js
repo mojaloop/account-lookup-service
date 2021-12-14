@@ -49,7 +49,7 @@ const getOrDefault = (value, defaultValue) => {
 const DEFAULT_PROTOCOL_VERSION = {
   CONTENT: '1.1',
   ACCEPT: {
-    DEFAULT: '1', // This is not currently used by the account-lookup-service, but it is here for consistency between services. In future if we need to default the ACCEPT protocol, then this should be used.
+    DEFAULT: '1',
     VALIDATELIST: [
       '1',
       '1.1'
