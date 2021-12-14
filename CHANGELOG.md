@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [12.1.0](https://github.com/mojaloop/account-lookup-service/compare/v12.0.0...v12.1.0) (2021-12-14)
+
+
+### Features
+
+* **mojaloop/#2608:** injected resource versions config for outbound requests ([#432](https://github.com/mojaloop/account-lookup-service/issues/432)) ([9df1d88](https://github.com/mojaloop/account-lookup-service/commit/9df1d88e3387fb4ddd6abfdfee40f45dbbd15ab5)), closes [mojaloop/#2608](https://github.com/mojaloop/account-lookup-service/issues/2608)
+
 ## [12.0.0](https://github.com/mojaloop/account-lookup-service/compare/v11.8.0...v12.0.0) (2021-11-05)
 
 
