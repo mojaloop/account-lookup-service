@@ -63,7 +63,6 @@ describe('participantEndpoint Facade', () => {
           CONTENT: {
             DEFAULT: '2.1',
             VALIDATELIST: [
-              '2',
               '2.1'
             ]
           },
@@ -107,7 +106,6 @@ describe('participantEndpoint Facade', () => {
           CONTENT: {
             DEFAULT: '2.1',
             VALIDATELIST: [
-              '2',
               '2.1'
             ]
           },
@@ -170,7 +168,6 @@ describe('participantEndpoint Facade', () => {
           CONTENT: {
             DEFAULT: '2.1',
             VALIDATELIST: [
-              '2',
               '2.1'
             ]
           },
@@ -215,7 +212,6 @@ describe('participantEndpoint Facade', () => {
           CONTENT: {
             DEFAULT: '2.1',
             VALIDATELIST: [
-              '2',
               '2.1'
             ]
           },
@@ -270,7 +266,6 @@ describe('participantEndpoint Facade', () => {
           CONTENT: {
             DEFAULT: '2.1',
             VALIDATELIST: [
-              '2',
               '2.1'
             ]
           },
