@@ -58,7 +58,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
   try {
     // Injected Configuration for outbound Content-Type & Accept headers.
     const protocolVersions = {
-      content: Config.PROTOCOL_VERSIONS.CONTENT.toString(),
+      content: Config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
 
@@ -118,7 +118,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
   try {
     // Injected Configuration for outbound Content-Type & Accept headers.
     const protocolVersions = {
-      content: Config.PROTOCOL_VERSIONS.CONTENT.toString(),
+      content: Config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
 

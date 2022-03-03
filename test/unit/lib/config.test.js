@@ -64,6 +64,7 @@ describe('Config tests', () => {
     let isSuccess
     const validateList = ['1']
     // set env var
+    process.env.ALS_PROTOCOL_VERSIONS__CONTENT__VALIDATELIST = JSON.stringify(validateList)
     process.env.ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST = JSON.stringify(validateList)
 
     // Act
@@ -77,6 +78,7 @@ describe('Config tests', () => {
     // Assert
     expect(Config != null).toBe(true)
     expect(isSuccess).toBe(true)
+    expect(Config.PROTOCOL_VERSIONS.CONTENT.VALIDATELIST).toMatchObject(validateList)
     expect(Config.PROTOCOL_VERSIONS.ACCEPT.VALIDATELIST).toMatchObject(validateList)
   })
 

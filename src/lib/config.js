@@ -47,20 +47,52 @@ const getOrDefault = (value, defaultValue) => {
 }
 
 const DEFAULT_PROTOCOL_VERSION = {
-  CONTENT: '1.1',
+  CONTENT: {
+    DEFAULT: '1.1',
+    VALIDATELIST: [
+      '1.0',
+      '1.1'
+    ]
+  },
   ACCEPT: {
     DEFAULT: '1',
     VALIDATELIST: [
       '1',
+      '1.0',
       '1.1'
     ]
   }
 }
 
 const getProtocolVersions = (defaultProtocolVersions, overrideProtocolVersions) => {
-  const T_PROTOCOL_VERSION = { ...defaultProtocolVersions, ...overrideProtocolVersions }
-  if (overrideProtocolVersions && overrideProtocolVersions.ACCEPT) T_PROTOCOL_VERSION.ACCEPT = { ...defaultProtocolVersions.ACCEPT, ...overrideProtocolVersions.ACCEPT }
-  if (T_PROTOCOL_VERSION.ACCEPT && T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST && (typeof T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST === 'string' || T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST instanceof String)) {
+  const T_PROTOCOL_VERSION = {
+    ...defaultProtocolVersions,
+    ...overrideProtocolVersions
+  }
+
+  if (overrideProtocolVersions && overrideProtocolVersions.CONTENT) {
+    T_PROTOCOL_VERSION.CONTENT = {
+      ...defaultProtocolVersions.CONTENT,
+      ...overrideProtocolVersions.CONTENT
+    }
+  }
+  if (overrideProtocolVersions && overrideProtocolVersions.ACCEPT) {
+    T_PROTOCOL_VERSION.ACCEPT = {
+      ...defaultProtocolVersions.ACCEPT,
+      ...overrideProtocolVersions.ACCEPT
+    }
+  }
+
+  if (T_PROTOCOL_VERSION.CONTENT &&
+    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST &&
+    (typeof T_PROTOCOL_VERSION.CONTENT.VALIDATELIST === 'string' ||
+      T_PROTOCOL_VERSION.CONTENT.VALIDATELIST instanceof String)) {
+    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.CONTENT.VALIDATELIST)
+  }
+  if (T_PROTOCOL_VERSION.ACCEPT &&
+    T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST &&
+    (typeof T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST === 'string' ||
+      T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST instanceof String)) {
     T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST)
   }
   return T_PROTOCOL_VERSION

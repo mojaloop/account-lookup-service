@@ -60,7 +60,13 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGN: false,
         FSPIOP_SOURCE_TO_SIGN: 'switch',
         PROTOCOL_VERSIONS: {
-          CONTENT: '2.1',
+          CONTENT: {
+            DEFAULT: '2.1',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          },
           ACCEPT: {
             DEFAULT: '2',
             VALIDATELIST: [
@@ -88,7 +94,7 @@ describe('participantEndpoint Facade', () => {
       expect(result).toBe(true)
       expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
-        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT
+        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
     })
 
@@ -98,7 +104,13 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGN: false,
         FSPIOP_SOURCE_TO_SIGN: 'switch',
         PROTOCOL_VERSIONS: {
-          CONTENT: '2.1',
+          CONTENT: {
+            DEFAULT: '2.1',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          },
           ACCEPT: {
             DEFAULT: '2',
             VALIDATELIST: [
@@ -126,7 +138,7 @@ describe('participantEndpoint Facade', () => {
       await expect(action()).rejects.toThrow('Request failed')
       expect(mockSendRequest.mock.calls[1][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
-        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT
+        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
     })
   })
@@ -155,7 +167,13 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
-          CONTENT: '2.1',
+          CONTENT: {
+            DEFAULT: '2.1',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          },
           ACCEPT: {
             DEFAULT: '2',
             VALIDATELIST: [
@@ -194,7 +212,13 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
-          CONTENT: '2.1',
+          CONTENT: {
+            DEFAULT: '2.1',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          },
           ACCEPT: {
             DEFAULT: '2',
             VALIDATELIST: [
@@ -230,7 +254,7 @@ describe('participantEndpoint Facade', () => {
       expect(typeof (mockSendRequest.mock.calls[4][8])).toBe('undefined')
       expect(mockSendRequest.mock.calls[4][9]).toMatchObject({
           accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
-          content: mockedConfig.PROTOCOL_VERSIONS.CONTENT
+          content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
       spy.mockRestore()
     })
@@ -243,7 +267,13 @@ describe('participantEndpoint Facade', () => {
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
-          CONTENT: '2.1',
+          CONTENT: {
+            DEFAULT: '2.1',
+            VALIDATELIST: [
+              '2',
+              '2.1'
+            ]
+          },
           ACCEPT: {
             DEFAULT: '2',
             VALIDATELIST: [
@@ -281,7 +311,7 @@ describe('participantEndpoint Facade', () => {
       expect(typeof (mockSendRequest.mock.calls[5][8])).toBe('object')
       expect(mockSendRequest.mock.calls[5][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
-        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT
+        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
       spy.mockRestore()
     })
