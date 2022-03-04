@@ -18,16 +18,6 @@
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
     "DEBUG": false
   },
-  "PROTOCOL_VERSIONS": {
-    "CONTENT": "1.1",
-    "ACCEPT": {
-      "DEFAULT": "1",
-      "VALIDATELIST": [
-        "1",
-        "1.1"
-      ]
-    }
-  },
   "MIGRATIONS": {
     "DISABLED": false,
     "RUN_DATA_MIGRATIONS": true
