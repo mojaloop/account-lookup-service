@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [13.0.0](https://github.com/mojaloop/account-lookup-service/compare/v12.1.0...v13.0.0) (2022-03-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* **mojaloop/#2704:** - Config PROTOCOL_VERSIONS.CONTENT has now been modified to support backward compatibility for minor versions (i.e. v1.0 & 1.1) as follows:
+
+> ```
+>   "PROTOCOL_VERSIONS": {
+>     "CONTENT": "1.1", <-- used when generating messages from the "SWITCH", and validate incoming FSPIOP API requests/callbacks CONTENT-TYPE headers
+>     "ACCEPT": {
+>       "DEFAULT": "1", <-- used when generating messages from the "SWITCH"
+>       "VALIDATELIST": [ <-- used to validate incoming FSPIOP API requests/callbacks ACCEPT headers
+>         "1",
+>         "1.0",
+>         "1.1"
+>       ]
+>     }
+>   },
+> ```
+> 
+> to be consistent with the ACCEPT structure as follows:
+> 
+> ```
+>   "PROTOCOL_VERSIONS": {
+>     "CONTENT": {
+>       "DEFAULT": "1.1", <-- used when generating messages from the "SWITCH"
+>       "VALIDATELIST": [ <-- used to validate incoming FSPIOP API requests/callbacks CONTENT-TYPE headers
+>         "1.1",
+>         "1.0"
+>       ]
+>     },
+>     "ACCEPT": {
+>       "DEFAULT": "1", <-- used when generating messages from the "SWITCH"
+>       "VALIDATELIST": [ <-- used to validate incoming FSPIOP API requests/callbacks ACCEPT headers
+>         "1",
+>         "1.0",
+>         "1.1"
+>       ]
+>     }
+>   },
+> ```
+
+### Features
+
+* **mojaloop/#2704:** core-services support for non-breaking backward api compatibility ([#436](https://github.com/mojaloop/account-lookup-service/issues/436)) ([5900e52](https://github.com/mojaloop/account-lookup-service/commit/5900e52d48d511934fea222d093727e3fc02ffc3)), closes [mojaloop/#2704](https://github.com/mojaloop/account-lookup-service/issues/2704) [mojaloop/#2704](https://github.com/mojaloop/account-lookup-service/issues/2704)
+
+
+### Bug Fixes
+
+* [#2704](https://github.com/mojaloop/account-lookup-service/issues/2704) core services support for non breaking backward api compatibility ([#438](https://github.com/mojaloop/account-lookup-service/issues/438)) ([273bd7d](https://github.com/mojaloop/account-lookup-service/commit/273bd7d0b1447d97114483370ee9e2fffccd9edf))
+
+
+### Chore
+
+* **deps:** bump follow-redirects from 1.14.5 to 1.14.7 ([#433](https://github.com/mojaloop/account-lookup-service/issues/433)) ([d7a715a](https://github.com/mojaloop/account-lookup-service/commit/d7a715a672da7345e7fc40708f71ad9d71d27abb))
+
 ## [12.1.0](https://github.com/mojaloop/account-lookup-service/compare/v12.0.0...v12.1.0) (2021-12-14)
 
 
