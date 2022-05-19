@@ -82,7 +82,7 @@
     "@mojaloop/central-services-logger": "10.6.2",
     "@mojaloop/central-services-metrics": "11.0.0",
     "@mojaloop/central-services-shared": "16.0.0",
-    "@mojaloop/event-sdk": "10.7.1",
+    "@mojaloop/event-sdk": "11.0.0",
     "@mojaloop/sdk-standard-components": "15.13.0",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.10.0",
