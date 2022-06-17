@@ -249,8 +249,8 @@ describe('participantEndpoint Facade', () => {
       expect(spy).toHaveBeenCalled()
       expect(typeof (mockSendRequest.mock.calls[4][8])).toBe('undefined')
       expect(mockSendRequest.mock.calls[4][9]).toMatchObject({
-          accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
-          content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
+        accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
+        content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
       spy.mockRestore()
     })
@@ -280,7 +280,6 @@ describe('participantEndpoint Facade', () => {
       }
 
       jest.mock('../../../../src/lib/config', () => (mockedConfig))
-
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/parties/MSISDN12345')
       mockSendRequest.mockImplementation(() => Promise.resolve(true))

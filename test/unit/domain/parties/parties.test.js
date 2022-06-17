@@ -120,7 +120,7 @@ describe('Parties Tests', () => {
         'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp',
-        'fspiop-destination': 'destfsp',
+        'fspiop-destination': 'destfsp'
       }
 
       const expectedHeaders = {
@@ -271,7 +271,7 @@ describe('Parties Tests', () => {
       sandbox.stub(oracle, 'oracleRequest').returns({
         data: {
           partyList: [
-            { 
+            {
               fspId: 'fsp1',
               partySubIdOrType: 'subId'
             }
@@ -304,7 +304,7 @@ describe('Parties Tests', () => {
       sandbox.stub(oracle, 'oracleRequest').returns({
         data: {
           partyList: [
-            { 
+            {
               fspId: 'fsp1',
               partySubIdOrType: 'subId'
             }
@@ -322,7 +322,6 @@ describe('Parties Tests', () => {
       }
       const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subIdNOTFOUND' }
       const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
-      
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
@@ -339,10 +338,10 @@ describe('Parties Tests', () => {
       sandbox.stub(oracle, 'oracleRequest').returns({
         data: {
           partyList: [
-            { 
+            {
               fspId: 'fsp1'
             },
-            { 
+            {
               fspId: 'fsp1',
               partySubIdOrType: 'subId'
             }

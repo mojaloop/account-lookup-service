@@ -57,7 +57,7 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
   })
 
   describe('GET /participants', () => {
-    it('getParticipantsByTypeAndID returns 202', async () => {
+    it('returns 202 when getParticipantsByTypeAndID resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
       const options = {
@@ -65,13 +65,17 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         url: mock.request.path,
         headers: Helper.defaultSwitchHeaders
       }
-      sandbox.stub(participants, 'getParticipantsByTypeAndID').returns({})
+      sandbox.stub(participants, 'getParticipantsByTypeAndID').resolves({})
 
       // Act
       const response = await server.inject(options)
 
       // Assert
       expect(response.statusCode).toBe(202)
+      expect(participants.getParticipantsByTypeAndID.callCount).toBe(1)
+      expect(participants.getParticipantsByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+      // Cleanup
       participants.getParticipantsByTypeAndID.restore()
     })
 
@@ -92,10 +96,10 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         [{ key: 'status', value: 400 }]
       )
       const stubs = [
-        sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
-        sandbox.stub(participant, 'validateParticipant').returns(true),
-        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
-        sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+        sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
+        sandbox.stub(participant, 'validateParticipant').resolves(true),
+        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+        sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
       ]
       const response = await server.inject(options)
       const errorCallStub = stubs[0]
@@ -104,6 +108,8 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
       expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR)
       expect(response.statusCode).toBe(202)
+
+      // Cleanup
       stubs.forEach(s => s.restore())
     })
 
@@ -126,10 +132,10 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         [{ key: 'status', value: 404 }]
       )
       const stubs = [
-        sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
-        sandbox.stub(participant, 'validateParticipant').returns(true),
-        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
-        sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+        sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
+        sandbox.stub(participant, 'validateParticipant').resolves(true),
+        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+        sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
       ]
       const response = await server.inject(options)
       const errorCallStub = stubs[0]
@@ -138,10 +144,12 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3201')
       expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR)
       expect(response.statusCode).toBe(202)
+
+      // Cleanup
       stubs.forEach(s => s.restore())
     })
 
-    it('handles error when getParticipantsByTypeAndID fails', async () => {
+    it('return 202 when getParticipantsByTypeAndID rejects with an unknown error', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
       const options = {
@@ -149,19 +157,24 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         url: mock.request.path,
         headers: Helper.defaultSwitchHeaders
       }
-      sandbox.stub(participants, 'getParticipantsByTypeAndID').throws(new Error('Unknown error'))
+      const throwError = new Error('Unknown error')
+      sandbox.stub(participants, 'getParticipantsByTypeAndID').rejects(throwError)
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(202)
+      expect(participants.getParticipantsByTypeAndID.callCount).toBe(1)
+      expect(participants.getParticipantsByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+      // Cleanup
       participants.getParticipantsByTypeAndID.restore()
     })
   })
 
   describe('POST /participants', () => {
-    it('postParticipants returns 202', async () => {
+    it('returns 202 when postParticipants resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'post')
       const options = {
@@ -170,17 +183,21 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'postParticipants').returns({})
+      sandbox.stub(participants, 'postParticipants').resolves({})
 
       // Act
       const response = await server.inject(options)
 
       // Assert
       expect(response.statusCode).toBe(202)
+      expect(participants.postParticipants.callCount).toBe(1)
+      expect(participants.postParticipants.getCall(0).returnValue).resolves.toStrictEqual({})
+
+      // Cleanup
       participants.postParticipants.restore()
     })
 
-    it('postParticipants returns 500 on unknown error', async () => {
+    it('returns 202 when postParticipants rejects with an unknown error', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'post')
       const options = {
@@ -189,19 +206,24 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'postParticipants').throws(new Error('Unknown Error'))
+      const throwError = new Error('Unknown error')
+      sandbox.stub(participants, 'postParticipants').rejects(throwError)
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(202)
+      expect(participants.postParticipants.callCount).toBe(1)
+      expect(participants.postParticipants.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+      // Cleanup
       participants.postParticipants.restore()
     })
   })
 
   describe('PUT /participants', () => {
-    it('putParticipantsByTypeAndID returns 200', async () => {
+    it('returns 200 when putParticipantsByTypeAndID resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'put')
       const options = {
@@ -210,17 +232,21 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'putParticipantsByTypeAndID').returns({})
+      sandbox.stub(participants, 'putParticipantsByTypeAndID').resolves({})
 
       // Act
       const response = await server.inject(options)
 
       // Assert
       expect(response.statusCode).toBe(200)
+      expect(participants.putParticipantsByTypeAndID.callCount).toBe(1)
+      expect(participants.putParticipantsByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+      // Cleanup
       participants.putParticipantsByTypeAndID.restore()
     })
 
-    it('putParticipantsByTypeAndID returns 500 on unknown error', async () => {
+    it('returns 200 when putParticipantsByTypeAndID rejects with an unknown error', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'put')
       const options = {
@@ -229,19 +255,24 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'putParticipantsByTypeAndID').throws(new Error('Unknown Error'))
+      const throwError = new Error('Unknown error')
+      sandbox.stub(participants, 'putParticipantsByTypeAndID').rejects(throwError)
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(200)
+      expect(participants.putParticipantsByTypeAndID.callCount).toBe(1)
+      expect(participants.putParticipantsByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+      // Cleanup
       participants.putParticipantsByTypeAndID.restore()
     })
   })
 
   describe('PUT /error', () => {
-    it('putParticipantsErrorByTypeAndID returns 200', async () => {
+    it('returns 200 when putParticipantsErrorByTypeAndID resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}/error', 'put')
       const options = {
@@ -250,17 +281,21 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').returns({})
+      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').resolves({})
 
       // Act
       const response = await server.inject(options)
 
       // Assert
       expect(response.statusCode).toBe(200)
+      expect(participants.putParticipantsErrorByTypeAndID.callCount).toBe(1)
+      expect(participants.putParticipantsErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+      // Cleanup
       participants.putParticipantsErrorByTypeAndID.restore()
     })
 
-    it('putParticipantsErrorByTypeAndID returns 500 on unknown error', async () => {
+    it('returns 200 when putParticipantsErrorByTypeAndID rejects with an unknown error', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}/error', 'put')
       const options = {
@@ -269,19 +304,24 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').throws(new Error('Unknown Error'))
+      const throwError = new Error('Unknown error')
+      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').rejects(throwError)
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(200)
+      expect(participants.putParticipantsErrorByTypeAndID.callCount).toBe(1)
+      expect(participants.putParticipantsErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+      // Cleanup
       participants.putParticipantsErrorByTypeAndID.restore()
     })
   })
 
   describe('DELETE /participants', () => {
-    it('deleteParticipants returns 202', async () => {
+    it('returns 202 when deleteParticipants resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'delete')
       const options = {
@@ -290,17 +330,21 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'deleteParticipants').returns({})
+      sandbox.stub(participants, 'deleteParticipants').resolves({})
 
       // Act
       const response = await server.inject(options)
 
       // Assert
       expect(response.statusCode).toBe(202)
+      expect(participants.deleteParticipants.callCount).toBe(1)
+      expect(participants.deleteParticipants.getCall(0).returnValue).resolves.toStrictEqual({})
+
+      // Cleanup
       participants.deleteParticipants.restore()
     })
 
-    it('deleteParticipants returns 500 on unknown error', async () => {
+    it('returns 202 when deleteParticipants rejects with an unknown error', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'delete')
       const options = {
@@ -309,13 +353,18 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
         headers: Helper.defaultSwitchHeaders,
         payload: mock.request.body
       }
-      sandbox.stub(participants, 'deleteParticipants').throws(new Error('Unknown Error'))
+      const throwError = new Error('Unknown error')
+      sandbox.stub(participants, 'deleteParticipants').rejects(throwError)
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(202)
+      expect(participants.deleteParticipants.callCount).toBe(1)
+      expect(participants.deleteParticipants.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+      // Cleanup
       participants.deleteParticipants.restore()
     })
   })

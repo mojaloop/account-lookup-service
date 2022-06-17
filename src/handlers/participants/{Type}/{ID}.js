@@ -59,7 +59,9 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
+      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
+        request.server.log(['error'], `ERROR - getParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      })
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
@@ -83,7 +85,9 @@ module.exports = {
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
+      participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
+        request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      })
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
@@ -114,7 +118,9 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.postParticipants(request.headers, request.method, request.params, request.payload, span)
+      participants.postParticipants(request.headers, request.method, request.params, request.payload, span).catch(err => {
+        request.server.log(['error'], `ERROR - postParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      })
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)
@@ -138,7 +144,9 @@ module.exports = {
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
-      participants.deleteParticipants(request.headers, request.params, request.method, request.query)
+      participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
+        request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      })
       histTimerEnd({ success: true })
     } catch (err) {
       Logger.error(`ERROR - ${metadata}: ${err.stack}`)

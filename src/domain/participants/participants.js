@@ -225,10 +225,20 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
     const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
     if (destinationParticipant) {
       const decodedPayload = decodePayload(dataUri, { asParsed: false })
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, decodedPayload.body.toString(), headers, params)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.DESTINATION],
+        callbackEndpointType,
+        decodedPayload.body.toString(),
+        headers,
+        params)
     } else {
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
-        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        callbackEndpointType,
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(),
+        headers,
+        params,
+        payload)
     }
     histTimerEnd({ success: true })
   } catch (err) {
@@ -394,7 +404,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
 
       for (const [key, value] of typeMap) {
         const payload = {
-          requestId: requestId,
+          requestId,
           partyList: value
         }
         Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)

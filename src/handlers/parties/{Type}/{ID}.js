@@ -50,7 +50,9 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span)
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
+      request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(202)
   },
 
@@ -71,7 +73,9 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri)
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(200)
   }
 }

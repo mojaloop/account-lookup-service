@@ -1,7 +1,0 @@
-{
-  "reject": [
-    "get-port",
-    "eslint",
-    "eslint-plugin-jest"
-  ]
-}

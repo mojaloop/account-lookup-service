@@ -26,11 +26,11 @@
 
 'use strict'
 
-const inspect = require('util').inspect
 const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
 const participants = require('../../../../../domain/participants')
+const LibUtil = require('../../../../../lib/util')
 
 /**
  * Operations on /participants/{Type}/{ID}/{SubId}/error
@@ -51,12 +51,15 @@ module.exports = {
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
     try {
-      request.server.log(['info'], `received: ${metadata}. ${inspect(request.params)}`)
-      await participants.putParticipantsErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri)
+      request.server.log(['info'], `received: ${metadata}. ${LibUtil.getStackOrInspect(request.params)}`)
+      // await participants.putParticipantsErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri)
+      participants.putParticipantsErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri).catch(err => {
+        request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      })
       request.server.log(['info'], `success: ${metadata}.`)
       histTimerEnd({ success: true })
     } catch (err) {
-      request.server.log(['error'], `ERROR - ${metadata}: ${inspect(err)}`)
+      request.server.log(['error'], `ERROR - ${metadata}: ${LibUtil.getStackOrInspect(err)}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }

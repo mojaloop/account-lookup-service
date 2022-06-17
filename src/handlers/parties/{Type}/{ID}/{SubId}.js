@@ -26,6 +26,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
 
 /**
@@ -40,7 +41,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: function (context, request, h) {
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span)
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
+      request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -51,7 +54,9 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (context, request, h) {
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri)
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }
 }

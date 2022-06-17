@@ -61,13 +61,13 @@ const endpointTypeResponse = {
 }
 
 const getOracleDatabaseResponse = [{
-    oracleEndpointId: 1,
-    endpointType: 'URL',
-    value: 'http://localhost:8444',
-    idType: 'MSISDN',
-    currency: 'USD',
-    isDefault: 1,
-    isActive: 1
+  oracleEndpointId: 1,
+  endpointType: 'URL',
+  value: 'http://localhost:8444',
+  idType: 'MSISDN',
+  currency: 'USD',
+  isDefault: 1,
+  isActive: 1
 }]
 
 const getAllOracleEndpointsByMatchConditionResponse = [{
@@ -137,7 +137,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.deleteOracle(undefined)
 
       // Assert
-      await expect(action()).rejects.toThrowError(/Cannot read property 'ID' of undefined/)
+      await expect(action()).rejects.toThrowError('Cannot read properties of undefined (reading \'ID\')')
     })
   })
 
@@ -206,7 +206,7 @@ describe('Oracle tests', () => {
       // Act
       try {
         await oracleDomain.updateOracle(params, payload)
-      } catch(err){
+      } catch (err) {
         expect(err.message).toEqual('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
       }
     })

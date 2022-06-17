@@ -61,7 +61,6 @@ describe('partyIdType Model', () => {
       findOne: sandbox.stub().resolves(partyIdType)
     }
 
-
     // Act
     const response = await getPartyIdTypeByName('MSISDN')
 

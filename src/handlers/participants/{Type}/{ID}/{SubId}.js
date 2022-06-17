@@ -26,6 +26,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const LibUtil = require('../../../../lib/util')
 const participants = require('../../../../domain/participants')
 
 /**
@@ -40,7 +41,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (context, request, h) => {
-    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span)
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
+      request.server.log(['error'], `ERROR - getParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -51,7 +54,9 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (context, request, h) => {
-    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
+      request.server.log(['error'], `ERROR - putParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
   /**
@@ -62,7 +67,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (context, request, h) => {
-    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span)
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span).catch(err => {
+      request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -73,7 +80,9 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (context, request, h) => {
-    participants.deleteParticipants(request.headers, request.params, request.method, request.query)
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
+      request.server.log(['error'], `ERROR - deleteParticipants: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   }
 }

@@ -31,7 +31,6 @@ const Util = require('util')
 const Uuid = require('uuid4')
 
 const requestLogger = require('../../../src/lib/requestLogger')
-const Config = require('../../../src/lib/config')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
@@ -145,7 +144,6 @@ describe('requestLogger', () => {
         headers: {
           traceid: Uuid()
         },
-        // response: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code').toApiErrorObject(Config.ERROR_HANDLING)
         response: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code')
       }
 
