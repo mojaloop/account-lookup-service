@@ -50,6 +50,7 @@
     "test:coverage": "jest --runInBand --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.js'",
     "test:coverage-check": "jest --runInBand --coverage --testMatch '**/test/unit/**/*.test.js'",
     "test:junit": "jest --runInBand --reporters=default --reporters=jest-junit --testMatch '**/test/unit/**/*.test.js'",
+    "test:xunit": "npm run test:junit",
     "test:integration": "./test/integration-runner.sh ",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "migrate": "run-s migrate:latest seed:run",
