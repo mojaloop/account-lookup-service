@@ -121,7 +121,7 @@ docker-compose -f docker-compose.yml -f docker-compose.integration.yml rm -f
 | Environment variable      | Description | Example values | Default Value |
 | ------------------------- | ----------- | -------------- | ------------- |
 | `TEST_MODE`               | The mode that `integration-runner.sh` uses. See `./test/integration-runner.sh` for more information. | `default`, `wait`, `rm` | `default` |
-| `JEST_JUNIT_OUTPUT_DIR`   | The output directory (inside the docker container) for the jest runner | `/tmp`, `/opt/account-lookup-service/test/results` | `/tmp` |
+| `JEST_JUNIT_OUTPUT_DIR`   | The output directory (inside the docker container) for the jest runner | `/tmp`, `/opt/app/test/results` | `/tmp` |
 | `JEST_JUNIT_OUTPUT_NAME`  | The filename (inside the docker container) for the jest runner         | `junit.xml` | `junit.xml` |
 | `RESULTS_DIR`             | The output directory (on the host machine) that the test results is copied to | `/tmp` | `/tmp` |
 
