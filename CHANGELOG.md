@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [14.0.0](https://github.com/mojaloop/account-lookup-service/compare/v13.0.0...v14.0.0) (2022-06-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **mojaloop/#2092:** Major version bump for node v16 LTS support, re-structuring of project directories to align to core Mojaloop repositories and docker image now uses `/opt/app` instead of `/opt/account-lookup-service` which will impact config mounts. Also, take note of the [knexfile.js](https://github.com/mojaloop/helm/blob/master/account-lookup-service/chart-service/configs/knexfile.js#L2) defined in the Helm charts which have hard-coded directories which should also be changed to reflect this change.
+
+### Features
+
+* **mojaloop/#2092:** upgrade nodeJS version for core services ([#445](https://github.com/mojaloop/account-lookup-service/issues/445)) ([67d9a0e](https://github.com/mojaloop/account-lookup-service/commit/67d9a0eb72e5eb8365c73f9c98cb215755b54dbe)), closes [mojaloop/#2092](https://github.com/mojaloop/project/issues/2092)
+
+
+### Bug Fixes
+
+* package.json & package-lock.json to reduce vulnerabilities ([#443](https://github.com/mojaloop/account-lookup-service/issues/443)) ([812671e](https://github.com/mojaloop/account-lookup-service/commit/812671e56587ed1c6fdeebb0005ee78b2740421d))
+
 ## [13.0.0](https://github.com/mojaloop/account-lookup-service/compare/v12.1.0...v13.0.0) (2022-03-04)
 
 
@@ -47,7 +63,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* **mojaloop/#2704:** core-services support for non-breaking backward api compatibility ([#436](https://github.com/mojaloop/account-lookup-service/issues/436)) ([5900e52](https://github.com/mojaloop/account-lookup-service/commit/5900e52d48d511934fea222d093727e3fc02ffc3)), closes [mojaloop/#2704](https://github.com/mojaloop/account-lookup-service/issues/2704) [mojaloop/#2704](https://github.com/mojaloop/account-lookup-service/issues/2704)
+* **mojaloop/#2704:** core-services support for non-breaking backward api compatibility ([#436](https://github.com/mojaloop/account-lookup-service/issues/436)) ([5900e52](https://github.com/mojaloop/account-lookup-service/commit/5900e52d48d511934fea222d093727e3fc02ffc3)), closes [mojaloop/#2704](https://github.com/mojaloop/project/issues/2704)
 
 
 ### Bug Fixes
@@ -64,7 +80,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* **mojaloop/#2608:** injected resource versions config for outbound requests ([#432](https://github.com/mojaloop/account-lookup-service/issues/432)) ([9df1d88](https://github.com/mojaloop/account-lookup-service/commit/9df1d88e3387fb4ddd6abfdfee40f45dbbd15ab5)), closes [mojaloop/#2608](https://github.com/mojaloop/account-lookup-service/issues/2608)
+* **mojaloop/#2608:** injected resource versions config for outbound requests ([#432](https://github.com/mojaloop/account-lookup-service/issues/432)) ([9df1d88](https://github.com/mojaloop/account-lookup-service/commit/9df1d88e3387fb4ddd6abfdfee40f45dbbd15ab5)), closes [mojaloop/#2608](https://github.com/mojaloop/project/issues/2608)
 
 ## [12.0.0](https://github.com/mojaloop/account-lookup-service/compare/v11.8.0...v12.0.0) (2021-11-05)
 
@@ -75,21 +91,21 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* **mojaloop/#2534:** fspiop api version negotiation not handled by account lookup service ([#430](https://github.com/mojaloop/account-lookup-service/issues/430)) ([f1cf4a3](https://github.com/mojaloop/account-lookup-service/commit/f1cf4a3f2001d6c814ec5832aae9da83efce1ffa)), closes [mojaloop/#2534](https://github.com/mojaloop/account-lookup-service/issues/2534) [mojaloop/#2534](https://github.com/mojaloop/account-lookup-service/issues/2534)
+* **mojaloop/#2534:** fspiop api version negotiation not handled by account lookup service ([#430](https://github.com/mojaloop/account-lookup-service/issues/430)) ([f1cf4a3](https://github.com/mojaloop/account-lookup-service/commit/f1cf4a3f2001d6c814ec5832aae9da83efce1ffa)), closes [mojaloop/#2534](https://github.com/mojaloop/project/issues/2534)
 
 ## [11.8.0](https://github.com/mojaloop/account-lookup-service/compare/v11.7.7...v11.8.0) (2021-09-28)
 
 
 ### Features
 
-* **mojaloop/#2505:** als-subid-error-callback-endpoint-not-implemented ([#429](https://github.com/mojaloop/account-lookup-service/issues/429)) ([6051259](https://github.com/mojaloop/account-lookup-service/commit/605125925a5e181677fd357caf5605895b4b42a6)), closes [mojaloop/#2505](https://github.com/mojaloop/account-lookup-service/issues/2505) [mojaloop/#2505](https://github.com/mojaloop/account-lookup-service/issues/2505)
+* **mojaloop/#2505:** als-subid-error-callback-endpoint-not-implemented ([#429](https://github.com/mojaloop/account-lookup-service/issues/429)) ([6051259](https://github.com/mojaloop/account-lookup-service/commit/605125925a5e181677fd357caf5605895b4b42a6)), closes [mojaloop/#2505](https://github.com/mojaloop/project/issues/2505)
 
 ### [11.7.7](https://github.com/mojaloop/account-lookup-service/compare/v11.7.6...v11.7.7) (2021-09-10)
 
 
 ### Bug Fixes
 
-* **mojaloop/#2470:** central-services-shared streamingprotocol encode/decode functionality fix ([#428](https://github.com/mojaloop/account-lookup-service/issues/428)) ([2f5d26a](https://github.com/mojaloop/account-lookup-service/commit/2f5d26a094a329c20fa2b83d569a9e90f6474f89)), closes [mojaloop/#2470](https://github.com/mojaloop/account-lookup-service/issues/2470)
+* **mojaloop/#2470:** central-services-shared streamingprotocol encode/decode functionality fix ([#428](https://github.com/mojaloop/account-lookup-service/issues/428)) ([2f5d26a](https://github.com/mojaloop/account-lookup-service/commit/2f5d26a094a329c20fa2b83d569a9e90f6474f89)), closes [mojaloop/#2470](https://github.com/mojaloop/project/issues/2470)
 
 ### [11.7.6](https://github.com/mojaloop/account-lookup-service/compare/v11.7.5...v11.7.6) (2021-09-09)
 
@@ -110,14 +126,14 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* **#2358-2:** firstname, middlename and lastname regex not supporting myanmar script unicode strings ([#425](https://github.com/mojaloop/account-lookup-service/issues/425)) ([7a61510](https://github.com/mojaloop/account-lookup-service/commit/7a61510be1a5fdcaf812d0ff059cedae112a4b79)), closes [#2358-2](https://github.com/mojaloop/account-lookup-service/issues/2358-2) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374)
+* **#2358-2:** firstname, middlename and lastname regex not supporting myanmar script unicode strings ([#425](https://github.com/mojaloop/account-lookup-service/issues/425)) ([7a61510](https://github.com/mojaloop/account-lookup-service/commit/7a61510be1a5fdcaf812d0ff059cedae112a4b79)), closes [#2358-2](https://github.com/mojaloop/account-lookup-service/issues/2358-2) [mojaloop/#2374](https://github.com/mojaloop/project/issues/2374)
 
 ### [11.7.3](https://github.com/mojaloop/account-lookup-service/compare/v11.7.2...v11.7.3) (2021-08-16)
 
 
 ### Bug Fixes
 
-* **mojaloop/#2374:** ALS is sending out multiple requests to participants for both Oracle records that match non-subId and subId result set ([#424](https://github.com/mojaloop/account-lookup-service/issues/424)) ([3639ddc](https://github.com/mojaloop/account-lookup-service/commit/3639ddcc692abb0fbf835bfd879cf99bfa2556f3)), closes [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374) [mojaloop/#2374](https://github.com/mojaloop/account-lookup-service/issues/2374)
+* **mojaloop/#2374:** ALS is sending out multiple requests to participants for both Oracle records that match non-subId and subId result set ([#424](https://github.com/mojaloop/account-lookup-service/issues/424)) ([3639ddc](https://github.com/mojaloop/account-lookup-service/commit/3639ddcc692abb0fbf835bfd879cf99bfa2556f3)), closes [mojaloop/#2374](https://github.com/mojaloop/project/issues/2374)
 
 ### [11.7.2](https://github.com/mojaloop/account-lookup-service/compare/v11.7.0...v11.7.2) (2021-08-11)
 
