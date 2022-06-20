@@ -45,11 +45,11 @@ services:
     ports:
       - "3001:3001"
     volumes:
-       - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+       - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
     environment:
       - LOG_LEVEL=info
-      - CLEDG_DATABASE_URI=mysql://central_ledger:password@als_mysql_central_ledger:3306/central_ledger
+      - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql-cl:3306/central_ledger
       - CLEDG_SIDECAR__DISABLED=true
       - CLEDG_MONGODB__DISABLED=true
     networks:

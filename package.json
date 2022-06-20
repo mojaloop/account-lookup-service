@@ -51,7 +51,7 @@
     "test:coverage-check": "jest --runInBand --coverage --testMatch '**/test/unit/**/*.test.js'",
     "test:junit": "jest --runInBand --reporters=default --reporters=jest-junit --testMatch '**/test/unit/**/*.test.js'",
     "test:xunit": "npm run test:junit",
-    "test:integration": "./test/integration-runner.sh ",
+    "test:integration": "TEST_MODE=rm sh ./test/integration-runner.sh ",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "migrate": "run-s migrate:latest seed:run",
     "migrate:latest": "knex $npm_package_config_knex migrate:latest",

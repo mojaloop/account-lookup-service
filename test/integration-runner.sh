@@ -71,6 +71,10 @@ function tearDown() {
   docker-compose \
     -f ${DIR}/../docker-compose.yml \
     -f ${DIR}/../docker-compose.integration.yml \
+    down -v
+  docker-compose \
+    -f ${DIR}/../docker-compose.yml \
+    -f ${DIR}/../docker-compose.integration.yml \
     rm -f
 }
 
@@ -102,4 +106,3 @@ case ${TEST_MODE} in
     echo "Unsupported TEST_MODE: ${TEST_MODE}"
     exit 1
 esac
-
