@@ -116,6 +116,45 @@ docker-compose -f docker-compose.yml -f docker-compose.integration.yml stop
 docker-compose -f docker-compose.yml -f docker-compose.integration.yml rm -f
 ```
 
+### Running Integration Tests interactively
+
+If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose` via one of the following methods:
+
+- Running locally
+
+    Start containers required for Integration Tests
+
+    ```bash
+    docker-compose -f docker-compose.yml up -d
+    ```
+
+    Run wait script which will report once all required containers are up and running
+
+    ```bash
+    npm run wait-4-docker
+    ```
+
+    Run the Integration Tests
+
+    ```bash
+    npm run test:int
+    ```
+
+- Running inside docker
+
+    Start containers required for Integration Tests, including a `central-ledger` container which will be used as a proxy shell.
+
+    ```bash
+    docker-compose -f docker-compose.yml -f docker-compose.integration.yml up -d
+    ```
+
+    Run the Integration Tests from the `central-ledger` container
+
+    ```bash
+    docker exec -it als_account-lookup-service-int sh
+    npm run test:int
+  ```
+
 #### Environment Variables
 
 | Environment variable      | Description | Example values | Default Value |

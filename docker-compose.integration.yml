@@ -2,6 +2,7 @@ version: "3.7"
 
 services:
   account-lookup-service-int:
+    image: mojaloop/account-lookup-service-int:local
     build:
       context: .
       target: builder

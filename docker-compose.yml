@@ -6,6 +6,7 @@ networks:
 
 services:
   account-lookup-service:
+    image: mojaloop/account-lookup-service:local
     build:
       context: .
       target: builder
