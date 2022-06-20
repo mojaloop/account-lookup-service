@@ -72,7 +72,7 @@ module.exports = {
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
-    // _must_ be handled by getPartiesByTypeAndID.
+    // _must_ be handled by putPartiesByTypeAndID.
     parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })

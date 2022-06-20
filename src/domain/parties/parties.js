@@ -90,7 +90,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         await participant.sendRequest(headers, headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
         histTimerEnd({ success: true })
         if (childSpan && !childSpan.isFinished) {
-          childSpan.finish()
+          await childSpan.finish()
         }
         return
       }
@@ -124,7 +124,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
           await participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
         }
         if (childSpan && !childSpan.isFinished) {
-          childSpan.finish()
+          await childSpan.finish()
         }
       } else {
         const callbackHeaders = createCallbackHeaders({
@@ -140,7 +140,6 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
           const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
           await childSpan.error(fspiopError, state)
           await childSpan.finish(fspiopError.message, state)
-          childSpan.finish()
         }
       }
     } else {
@@ -257,7 +256,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       const decodedPayload = decodePayload(dataUri, { asParsed: false })
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
       if (childSpan && !childSpan.isFinished) {
-        childSpan.finish()
+        await childSpan.finish()
       }
     } else {
       fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
