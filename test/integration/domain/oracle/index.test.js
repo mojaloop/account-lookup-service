@@ -30,7 +30,6 @@ const Config = require('../../../../src/lib/config')
 const Oracle = require('../../../../src/domain/oracle')
 const OracleModel = require('../../../../src/models/oracle')
 const EventSdk = require('@mojaloop/event-sdk')
-const { assert } = require('joi')
 
 describe('Oracle', () => {
   beforeAll(async () => {
@@ -141,7 +140,7 @@ describe('Oracle', () => {
       // Update the oracle's currency
       const updateResult = await Oracle.updateOracle(
         {
-          ID: createdId,
+          ID: createdId
         },
         {
           isDefault: true,
@@ -199,7 +198,7 @@ describe('Oracle', () => {
       // Update the USD currency oracle to be AUD currency
       const updateResult = await Oracle.updateOracle(
         {
-          ID: createdIdUSD,
+          ID: createdIdUSD
         },
         {
           isDefault: true,
@@ -251,7 +250,7 @@ describe('Oracle', () => {
       try {
         await Oracle.updateOracle(
           {
-            ID: createdIdUSD,
+            ID: createdIdUSD
           },
           oracleAuhMsisdnUrlPayload
         )
@@ -297,7 +296,7 @@ describe('Oracle', () => {
       try {
         await Oracle.updateOracle(
           {
-            ID: createdIdEmail,
+            ID: createdIdEmail
           },
           oracleAuhMsisdnUrlPayload
         )

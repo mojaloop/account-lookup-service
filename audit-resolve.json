@@ -89,6 +89,71 @@
       "decision": "ignore",
       "madeAt": 1646392230752,
       "expiresAt": 1648984217062
+    },
+    "1070483|@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs": {
+      "decision": "ignore",
+      "madeAt": 1655472315199,
+      "expiresAt": 1658064309843
+    },
+    "1070483|@mojaloop/event-sdk>grpc>protobufjs": {
+      "decision": "ignore",
+      "madeAt": 1655472315199,
+      "expiresAt": 1658064309843
+    },
+    "1070030|@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>widdershins>markdown-it": {
+      "decision": "ignore",
+      "madeAt": 1655472316304,
+      "expiresAt": 1658064309843
+    },
+    "1070030|shins>markdown-it": {
+      "decision": "ignore",
+      "madeAt": 1655472316304,
+      "expiresAt": 1658064309843
+    },
+    "1068310|@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>widdershins>markdown-it>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1655472317385,
+      "expiresAt": 1658064309843
+    },
+    "1070273|ansi-regex": {
+      "decision": "ignore",
+      "madeAt": 1655472318782,
+      "expiresAt": 1658064309843
+    },
+    "1070412|ejs": {
+      "decision": "ignore",
+      "madeAt": 1655472319944,
+      "expiresAt": 1658064309843
+    },
+    "1068155|shins>markdown-it>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1655472321029,
+      "expiresAt": 1658064309843
+    },
+    "1070260|shins>markdown-it>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1655472322173,
+      "expiresAt": 1658064309843
+    },
+    "1067553|swagger2openapi>better-ajv-errors>jsonpointer": {
+      "decision": "ignore",
+      "madeAt": 1655472323260,
+      "expiresAt": 1658064309843
+    },
+    "1067946|swagger2openapi>better-ajv-errors>jsonpointer>oas-validator>ajv": {
+      "decision": "ignore",
+      "madeAt": 1655472324971,
+      "expiresAt": 1658064309843
+    },
+    "1067384|urijs": {
+      "decision": "ignore",
+      "madeAt": 1655472326095,
+      "expiresAt": 1658064309843
+    },
+    "1069987|urijs": {
+      "decision": "ignore",
+      "madeAt": 1655472327208,
+      "expiresAt": 1658064309843
     }
   },
   "rules": {},

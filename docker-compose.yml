@@ -6,6 +6,7 @@ networks:
 
 services:
   account-lookup-service:
+    image: mojaloop/account-lookup-service:local
     build:
       context: .
       target: builder
@@ -24,9 +25,9 @@ services:
       - mysql-als
       - central-ledger
     volumes:
-      - ./secrets:/opt/account-lookup-service/secrets
-      - ./src:/opt/account-lookup-service/src
-      - ./docker/account-lookup-service/default.json:/opt/account-lookup-service/config/default.json
+      - ./secrets:/opt/app/secrets
+      - ./src:/opt/app/src
+      - ./docker/account-lookup-service/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
     healthcheck:
       test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4001/health"]
@@ -45,7 +46,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-       - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+       - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
     environment:
       - LOG_LEVEL=info

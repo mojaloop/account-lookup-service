@@ -90,7 +90,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
     if (childSpan && !childSpan.isFinished) {
-      childSpan.finish()
+      await childSpan.finish()
     }
   } catch (err) {
     Logger.error(err)
@@ -225,10 +225,20 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
     const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
     if (destinationParticipant) {
       const decodedPayload = decodePayload(dataUri, { asParsed: false })
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, decodedPayload.body.toString(), headers, params)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.DESTINATION],
+        callbackEndpointType,
+        decodedPayload.body.toString(),
+        headers,
+        params)
     } else {
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
-        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        callbackEndpointType,
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(),
+        headers,
+        params,
+        payload)
     }
     histTimerEnd({ success: true })
   } catch (err) {
@@ -301,7 +311,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
           }
           await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.PUT, responsePayload, options, childSpan)
           if (childSpan && !childSpan.isFinished) {
-            childSpan.finish()
+            await childSpan.finish()
           }
         } else {
           fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
@@ -394,7 +404,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
 
       for (const [key, value] of typeMap) {
         const payload = {
-          requestId: requestId,
+          requestId,
           partyList: value
         }
         Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
@@ -433,7 +443,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
       }
       await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId }, childSpan)
       if (childSpan && !childSpan.isFinished) {
-        childSpan.finish()
+        await childSpan.finish()
       }
       Logger.info('postParticipantsBatch::end')
     } else {

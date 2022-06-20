@@ -31,38 +31,38 @@ const path = require('path')
 
 describe('Util', () => {
   it('pathForInterface should return correct path', async () => {
-    const apiPath = Util.pathForInterface({isAdmin: false, isMockInterface: false });
+    const apiPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
     const expectedAPIpathResult = path.join('interface', 'api-swagger.yaml')
-    expect(apiPath).toContain(expectedAPIpathResult);
-    
-    const apiAdminPath = Util.pathForInterface({isAdmin: true, isMockInterface: false })
-    const expectedApiAdminPath = path.join('interface','admin-swagger.yaml')
+    expect(apiPath).toContain(expectedAPIpathResult)
+
+    const apiAdminPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
+    const expectedApiAdminPath = path.join('interface', 'admin-swagger.yaml')
     expect(apiAdminPath).toContain(expectedApiAdminPath)
-    
-    const apiMockPath = Util.pathForInterface({isAdmin: false, isMockInterface: true })
+
+    const apiMockPath = Util.pathForInterface({ isAdmin: false, isMockInterface: true })
     const expectedApiMockPath = path.join('interface', 'api_swagger.json')
     expect(apiMockPath).toContain(expectedApiMockPath)
-    
-    const apiAdminMockPath = Util.pathForInterface({isAdmin: true, isMockInterface: true })
+
+    const apiAdminMockPath = Util.pathForInterface({ isAdmin: true, isMockInterface: true })
     const expectedApiAdminMockPath = path.join('interface', 'admin_swagger.json')
     expect(apiAdminMockPath).toContain(expectedApiAdminMockPath)
-    
+
     Config.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE = true
-    
-    const apiExtendedPath = Util.pathForInterface({isAdmin: false, isMockInterface: false })
-    const expectedApiExtendedPath = path.join('interface','thirdparty', 'api-swagger.yaml')
+
+    const apiExtendedPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
+    const expectedApiExtendedPath = path.join('interface', 'thirdparty', 'api-swagger.yaml')
     expect(apiExtendedPath).toContain(expectedApiExtendedPath)
-    
-    const apiExtendedAdminPath = Util.pathForInterface({isAdmin: true, isMockInterface: false })
-    const expectedApiExtendedAdminPath = path.join('interface','thirdparty', 'admin-swagger.yaml')
+
+    const apiExtendedAdminPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
+    const expectedApiExtendedAdminPath = path.join('interface', 'thirdparty', 'admin-swagger.yaml')
     expect(apiExtendedAdminPath).toContain(expectedApiExtendedAdminPath)
-    
-    const apiExtendedMockPath = Util.pathForInterface({isAdmin: false, isMockInterface: true })
-    const expectedApiExtendedMockPath = path.join('interface', 'thirdparty','api_swagger.json')
+
+    const apiExtendedMockPath = Util.pathForInterface({ isAdmin: false, isMockInterface: true })
+    const expectedApiExtendedMockPath = path.join('interface', 'thirdparty', 'api_swagger.json')
     expect(apiExtendedMockPath).toContain(expectedApiExtendedMockPath)
-    
-    const apiExtendedAdminMockPath = Util.pathForInterface({isAdmin: true, isMockInterface: true })
-    const expectedApiExtendedAdminMockPath = path.join('interface','thirdparty', 'admin_swagger.json')
+
+    const apiExtendedAdminMockPath = Util.pathForInterface({ isAdmin: true, isMockInterface: true })
+    const expectedApiExtendedAdminMockPath = path.join('interface', 'thirdparty', 'admin_swagger.json')
     expect(apiExtendedAdminMockPath).toContain(expectedApiExtendedAdminMockPath)
   })
 })

@@ -1,3 +1,4 @@
+const util = require('util')
 const Path = require('path')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const Config = require('../lib/config')
@@ -42,7 +43,17 @@ const pathForInterface = ({ isAdmin, isMockInterface }) => {
   return Path.resolve(__dirname, pathFolder + apiFile)
 }
 
+/**
+ * @function getStackOrInspect
+ * @description Gets the error stack, or uses util.inspect to inspect the error
+ * @param {*} err - An error object
+ */
+function getStackOrInspect (err) {
+  return err?.stack || util.inspect(err)
+}
+
 module.exports = {
   getSpanTags,
-  pathForInterface
+  pathForInterface,
+  getStackOrInspect
 }

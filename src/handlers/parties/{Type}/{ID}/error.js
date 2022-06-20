@@ -48,7 +48,9 @@ module.exports = {
       headers: request.headers,
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
-    await parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span)
+    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(200)
   }
 }

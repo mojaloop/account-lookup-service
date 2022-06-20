@@ -53,6 +53,29 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     sandbox.restore()
   })
 
+  it('getPartiesByTypeAndID (with SubId) failure', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties')
+    }
+    const throwError = new Error('Unknown error')
+    sandbox.stub(parties, 'getPartiesByTypeAndID').rejects(throwError)
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(202)
+    expect(parties.getPartiesByTypeAndID.callCount).toBe(1)
+    expect(parties.getPartiesByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+    // Cleanup
+    parties.getPartiesByTypeAndID.restore()
+  })
+
   it('getPartiesByTypeAndID (with SubId) success', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
@@ -61,13 +84,17 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
-    sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
+    sandbox.stub(parties, 'getPartiesByTypeAndID').resolves({})
 
     // Act
     const response = await server.inject(options)
 
     // Assert
     expect(response.statusCode).toBe(202)
+    expect(parties.getPartiesByTypeAndID.callCount).toBe(1)
+    expect(parties.getPartiesByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+    // Cleanup
     parties.getPartiesByTypeAndID.restore()
   })
 
@@ -92,10 +119,10 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       [{ key: 'status', value: 400 }]
     )
     const stubs = [
-      sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
-      sandbox.stub(participant, 'validateParticipant').returns(true),
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
-      sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+      sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
+      sandbox.stub(participant, 'validateParticipant').resolves(true),
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
 
     // Act
@@ -106,6 +133,8 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
     expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR)
     expect(response.statusCode).toBe(202)
+
+    // Cleanup
     stubs.forEach(s => s.restore())
   })
 
@@ -121,7 +150,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     const options = {
       method: 'get',
       url: mock.request.path,
-      headers: headers,
+      headers
     }
 
     const badRequestError = ErrorHandler.Factory.createFSPIOPError(
@@ -132,10 +161,10 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       [{ key: 'status', value: 404 }]
     )
     const stubs = [
-      sandbox.stub(participant, 'sendErrorToParticipant').returns({}),
-      sandbox.stub(participant, 'validateParticipant').returns(true),
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').returns(['whatever']),
-      sandbox.stub(requestUtil, 'sendRequest').throws(badRequestError)
+      sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
+      sandbox.stub(participant, 'validateParticipant').resolves(true),
+      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
 
     // Act
@@ -146,10 +175,12 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3201')
     expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR)
     expect(response.statusCode).toBe(202)
+
+    // Cleanup
     stubs.forEach(s => s.restore())
   })
 
-  it('putPartiesByTypeAndID endpoint', async () => {
+  it('putPartiesByTypeAndID endpoint success', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'put')
     const options = {
@@ -161,12 +192,44 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     options.payload.party.personalInfo.complexName.firstName = 'Justin'
     options.payload.party.personalInfo.complexName.middleName = 'middle'
     options.payload.party.personalInfo.complexName.lastName = 'résumé'
-    sandbox.stub(parties, 'putPartiesByTypeAndID').returns({})
+    sandbox.stub(parties, 'putPartiesByTypeAndID').resolves({})
 
     // Act
     const response = await server.inject(options)
 
     // Assert
     expect(response.statusCode).toBe(200)
+    expect(parties.putPartiesByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+    // Cleanup
+    parties.putPartiesByTypeAndID.restore()
+  })
+
+  it('putPartiesByTypeAndID endpoint failure', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'put')
+    const options = {
+      method: 'put',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties'),
+      payload: mock.request.body
+    }
+    options.payload.party.personalInfo.complexName.firstName = 'Justin'
+    options.payload.party.personalInfo.complexName.middleName = 'middle'
+    options.payload.party.personalInfo.complexName.lastName = 'résumé'
+    const throwError = new Error('Unknown error')
+    sandbox.stub(parties, 'putPartiesByTypeAndID').rejects(throwError)
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(200)
+    expect(parties.putPartiesByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+    // Cleanup
+    parties.putPartiesByTypeAndID.restore()
   })
 })

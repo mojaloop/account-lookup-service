@@ -30,8 +30,8 @@
 'use strict'
 const SwagMock = require('swagmock')
 const { pathForInterface } = require('../../src/lib/util')
-const apiPath = pathForInterface({isAdmin: false, isMockInterface: true})
-const adminPath = pathForInterface({isAdmin: true, isMockInterface: true})
+const apiPath = pathForInterface({ isAdmin: false, isMockInterface: true })
+const adminPath = pathForInterface({ isAdmin: true, isMockInterface: true })
 let mockGen
 
 module.exports = function (isApi = true) {

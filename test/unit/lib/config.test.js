@@ -29,7 +29,6 @@ const configImport = `${src}/lib/config`
 jest.mock(configImport)
 
 describe('Config tests', () => {
-
   beforeEach(() => {
     jest.resetModules()
   })
@@ -87,7 +86,7 @@ describe('Config tests', () => {
     let Config = null
     let error = null
     let isSuccess
-    const validateList = ['1']
+
     // set env var
     process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGN = true
     process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGNING_KEY_PATH = '/fake/path'
@@ -102,6 +101,7 @@ describe('Config tests', () => {
     }
 
     // Assert
+    expect(Config).toBeDefined()
     expect(isSuccess).toBe(false)
     expect(error.message).toBe('File doesn\'t exist')
   })

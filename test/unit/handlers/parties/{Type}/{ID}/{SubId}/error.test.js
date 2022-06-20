@@ -52,7 +52,7 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     sandbox.restore()
   })
 
-  it('handles PUT /error', async () => {
+  it('handles PUT /error with resolve', async () => {
     // Arrange
     const response = sandbox.stub().returns({
       code: sandbox.stub()
@@ -62,13 +62,52 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     }
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
-    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
+    mock.request.server = {
+      log: sandbox.stub()
+    }
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
     // Act
-    ErrHandler.put(mockContext, mock.request, handler)
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     expect(handler.response.calledOnce).toBe(true)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+    expect(mock.request.server.log.callCount).toEqual(0)
+
+    // Cleanup
+    stub.restore()
+  })
+
+  it('handles PUT /error with reject', async () => {
+    // Arrange
+    const response = sandbox.stub().returns({
+      code: sandbox.stub()
+    })
+    const handler = {
+      response
+    }
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
+    mock.request.server = {
+      log: sandbox.stub()
+    }
+    const throwError = new Error('Unknown error')
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
+
+    // Act
+    await ErrHandler.put(mockContext, mock.request, handler)
+
+    // Assert
+    expect(handler.response.calledOnce).toBe(true)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+    expect(mock.request.server.log.callCount).toEqual(1)
+    const logCatchCallArgs = mock.request.server.log.getCall(0).args
+    expect(logCatchCallArgs[0]).toEqual(['error'])
+
+    // Cleanup
     stub.restore()
   })
 
@@ -82,13 +121,17 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
       payload: mock.request.body
     }
 
-    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
     // Act
     const response = await server.inject(options)
 
     // Assert
     expect(response.statusCode).toBe(200)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+    // Cleanup
     stub.restore()
   })
 })

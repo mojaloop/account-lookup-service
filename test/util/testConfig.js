@@ -38,7 +38,7 @@ const defaultConfig = require('../../src/lib/config')
 
 module.exports = {
   /* Test Config */
-  TEST_ALS_HOST: RC.TEST_ALS_HOST,
+  TEST_ALS_HOST: RC.TEST_ALS_HOST || 'localhost',
 
   ...defaultConfig
 }

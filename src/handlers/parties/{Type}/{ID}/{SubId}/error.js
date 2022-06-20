@@ -24,8 +24,8 @@
  ******/
 'use strict'
 
-// const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Enum = require('@mojaloop/central-services-shared').Enum
+const LibUtil = require('../../../../../lib/util')
 const parties = require('../../../../../domain/parties')
 
 /**
@@ -40,7 +40,9 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (context, request, h) {
-    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span)
+    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }
 }

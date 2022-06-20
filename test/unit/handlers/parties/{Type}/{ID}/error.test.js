@@ -67,11 +67,19 @@ describe('/parties/{Type}/{ID}/error', () => {
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
     const setTagsStub = sandbox.stub().returns({})
-    mock.request.span = {
-      setTags: setTagsStub,
-      audit: sandbox.stub().returns(Promise.resolve({}))
+
+    mock.request = {
+      log: sandbox.stub(),
+      server: {
+        log: sandbox.stub()
+      },
+      span: {
+        setTags: setTagsStub,
+        audit: sandbox.stub().returns(Promise.resolve({}))
+      }
     }
-    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').returns({})
+
+    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
     // Act
     await ErrHandler.put(mockContext, mock.request, handler)
@@ -80,6 +88,11 @@ describe('/parties/{Type}/{ID}/error', () => {
     expect(codeStub.calledWith(200)).toBe(true)
     expect(setTagsStub.calledWith({})).toBe(true)
     expect(setTagsStub.calledOnce).toBe(true)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+    expect(mock.request.server.log.callCount).toEqual(0)
+
+    // Cleanup
     parties.putPartiesErrorByTypeAndID.restore()
   })
 
@@ -94,17 +107,32 @@ describe('/parties/{Type}/{ID}/error', () => {
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
     const setTagsStub = sandbox.stub().returns({})
-    mock.request.span = {
-      setTags: setTagsStub,
-      audit: sandbox.stub().returns(Promise.resolve({}))
+
+    mock.request = {
+      log: sandbox.stub(),
+      server: {
+        log: sandbox.stub()
+      },
+      span: {
+        setTags: setTagsStub,
+        audit: sandbox.stub().returns(Promise.resolve({}))
+      }
     }
-    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').throws(new Error('Error in putPartiesErrorByTypeAndId'))
+
+    const throwError = new Error('Unknown error')
+    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
 
     // Act
-    const action = async () => ErrHandler.put(mockContext, mock.request, handler)
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
-    await expect(action()).rejects.toThrowError('Error in putPartiesErrorByTypeAndId')
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+    expect(mock.request.server.log.callCount).toEqual(1)
+    const logCatchCallArgs = mock.request.server.log.getCall(0).args
+    expect(logCatchCallArgs[0]).toEqual(['error'])
+
+    // Cleanup
     parties.putPartiesErrorByTypeAndID.restore()
   })
 })
