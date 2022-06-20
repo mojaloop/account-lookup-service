@@ -142,13 +142,13 @@ If you want to run integration tests in a repetitive manner, you can startup the
 
 - Running inside docker
 
-    Start containers required for Integration Tests, including a `central-ledger` container which will be used as a proxy shell.
+    Start containers required for Integration Tests, including a `account-lookup-service` container which will be used as a proxy shell.
 
     ```bash
     docker-compose -f docker-compose.yml -f docker-compose.integration.yml up -d
     ```
 
-    Run the Integration Tests from the `central-ledger` container
+    Run the Integration Tests from the `account-lookup-service-int` container
 
     ```bash
     docker exec -it als_account-lookup-service-int sh
