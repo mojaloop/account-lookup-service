@@ -37,7 +37,7 @@ const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
  */
 module.exports = {
   /**
-   * summary: Get Oracles
+   * summary: GET API health
    * description: The HTTP request GET /health is used to return the current status of the API .
    * parameters:
    * produces: application/json
