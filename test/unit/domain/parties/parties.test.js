@@ -77,7 +77,7 @@ describe('Parties Tests', () => {
     it('handles error case where destination header is missing', async () => {
       expect.hasAssertions()
       // Arrange
-      participant.validateParticipant = sandbox.stub().returns({})
+      participant.validateParticipant = sandbox.stub().resolves({})
       sandbox.stub(oracle, 'oracleRequest').returns({
         data: {
           partyList: [
@@ -372,7 +372,126 @@ describe('Parties Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().resolves(null)
-      oracle.oracleRequest = sandbox.stub().resolves(null)
+      sandbox.stub(oracle, 'oracleRequest').returns(null)
+      sandbox.stub(Logger)
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+
+      // Act
+      const headers = { ...Helper.getByTypeIdRequest.headers }
+      delete headers['fspiop-destination']
+
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
+
+      // Assert
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
+    })
+
+    it('handles sendRequest when `oracleRequest` returns a valid fspId for party from oracle', async () => {
+      // expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub()
+      // Mock initial requester validation
+      participant.validateParticipant.onCall(0).returns({})
+      // Mock fsp1 failing validation
+      participant.validateParticipant.onCall(1).returns(null)
+      // Mock fsp2 passing validation
+      participant.validateParticipant.onCall(2).returns({})
+      participant.sendRequest = sandbox.stub().resolves()
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            {
+              fspId: 'fsp1'
+            },
+            {
+              fspId: 'fsp2'
+            }
+          ]
+        }
+      })
+      sandbox.stub(Logger)
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
+
+      // Act
+      const headers = { ...Helper.getByTypeIdRequest.headers }
+      delete headers['fspiop-destination']
+
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
+
+      // Assert
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(firstCallArgs[1]).toBe('fsp2')
+      expect(firstCallArgs[2]).toBe(expectedErrorCallbackEnpointType)
+    })
+
+    it('handles several sendRequest when `oracleRequest` returns a valid fspIds for party from oracle', async () => {
+      // expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub()
+      // Mock initial requester validation
+      participant.validateParticipant.onCall(0).returns({})
+      // Mock fsp1 failing validation
+      participant.validateParticipant.onCall(1).returns({})
+      // Mock fsp2 passing validation
+      participant.validateParticipant.onCall(2).returns({})
+      participant.sendRequest = sandbox.stub().resolves()
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            {
+              fspId: 'fsp1'
+            },
+            {
+              fspId: 'fsp2'
+            }
+          ]
+        }
+      })
+      sandbox.stub(Logger)
+      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
+
+      // Act
+      const headers = { ...Helper.getByTypeIdRequest.headers }
+      delete headers['fspiop-destination']
+
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(2)
+      const firstCallArgs = participant.sendRequest.getCall(0).args
+      expect(firstCallArgs[1]).toBe('fsp1')
+      expect(firstCallArgs[2]).toBe(expectedErrorCallbackEnpointType)
+
+      const secondCallArgs = participant.sendRequest.getCall(1).args
+      expect(secondCallArgs[1]).toBe('fsp2')
+      expect(secondCallArgs[2]).toBe(expectedErrorCallbackEnpointType)
+    })
+
+    it('handles error when `oracleRequest` returns no valid fspId for party from oracle', async () => {
+      // expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub()
+      // Mock initial requester validation
+      participant.validateParticipant.onCall(0).returns({})
+      // Mock fsp1 failing validation
+      participant.validateParticipant.onCall(1).returns(null)
+      // Mock fsp2 failing validation
+      participant.validateParticipant.onCall(2).returns(null)
+      participant.sendErrorToParticipant = sandbox.stub().resolves(null)
+      sandbox.stub(oracle, 'oracleRequest').returns({
+        data: {
+          partyList: [
+            {
+              fspId: 'fsp1'
+            },
+            {
+              fspId: 'fsp2'
+            }
+          ]
+        }
+      })
       sandbox.stub(Logger)
       const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
 

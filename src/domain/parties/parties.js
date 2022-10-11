@@ -116,13 +116,28 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
         }
 
+        // An oracle may return multiple participants for a party identifier.
+        // Validate all potential participants that the oracle returns for a party.
+        // If valid proceed with sending GET parties request to fsp. If non are valid throw a error.
+        let anyValidParticipants = false
         for (const party of filteredResponsePartyList) {
-          const clonedHeaders = { ...headers }
-          if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
-            clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = party.fspId
+          const destParticipant = await participant.validateParticipant(party.fspId)
+
+          if (destParticipant) {
+            anyValidParticipants = true
+            const clonedHeaders = { ...headers }
+            if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION]) {
+              clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = party.fspId
+            }
+            await participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
           }
-          await participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, Enums.Http.RestMethods.GET, undefined, options, childSpan)
         }
+
+        if (!anyValidParticipants) {
+          Logger.error('Destination FSP not found')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Destination FSP not found')
+        }
+
         if (childSpan && !childSpan.isFinished) {
           await childSpan.finish()
         }
