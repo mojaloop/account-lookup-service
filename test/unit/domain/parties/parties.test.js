@@ -37,6 +37,7 @@ const Util = require('@mojaloop/central-services-shared').Util
 const Logger = require('@mojaloop/central-services-logger')
 const { encodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const Enums = require('@mojaloop/central-services-shared').Enum
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const Helper = require('../../../util/helper')
 const Db = require('../../../../src/lib/db')
@@ -504,6 +505,10 @@ describe('Parties Tests', () => {
       // Assert
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
+      expect(firstCallArgs[2]).toStrictEqual(
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Destination FSP not found')
+          .toApiErrorObject()
+      )
     })
   })
 
