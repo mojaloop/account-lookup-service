@@ -65,8 +65,8 @@
     "docker:run": "docker run -p 3000:3000 --rm central-directory:local",
     "package-lock": "docker run --rm -it central-directory:local cat package-lock.json > package-lock.json",
     "generate-docs": "jsdoc -c jsdoc.json",
-    "audit:resolve": "npx resolve-audit --production",
-    "audit:check": "npx check-audit --production",
+    "audit:fix": "npm audit fix",
+    "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
     "dep:check": "npx ncu -e 2",
     "dep:update": "npx ncu -u",
     "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
@@ -106,6 +106,7 @@
   },
   "devDependencies": {
     "@types/jest": "29.2.3",
+    "audit-ci": "^6.3.0",
     "axios": "^1.2.0",
     "docdash": "2.0.0",
     "get-port": "5.1.1",
