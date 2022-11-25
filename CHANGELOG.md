@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [14.1.0](https://github.com/mojaloop/account-lookup-service/compare/v14.0.0...v14.1.0) (2022-11-25)
+
+
+### Features
+
+* **mojaloop/#2740:** add testing currency codes and update codeowners ([#450](https://github.com/mojaloop/account-lookup-service/issues/450)) ([7cec9f2](https://github.com/mojaloop/account-lookup-service/commit/7cec9f2633dd29e8b7854fd5a5846ebdc70e764d)), closes [mojaloop/#2740](https://github.com/mojaloop/project/issues/2740)
+
 ## [14.0.0](https://github.com/mojaloop/account-lookup-service/compare/v13.0.0...v14.0.0) (2022-06-20)
 
 
