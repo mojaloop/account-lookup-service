@@ -732,6 +732,14 @@ const currencies = [
   {
     name: 'Zimbabwe dollar (3rd denomination)',
     currencyId: 'ZWL'
+  },
+  {
+    name: 'ISO_4217 code reserved for testing',
+    currencyId: 'XTS'
+  },
+  {
+    name: 'ISO_4217 code for transaction with involving no currency',
+    currencyId: 'XXX'
   }
 ]
 
