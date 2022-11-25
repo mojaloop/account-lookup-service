@@ -27,7 +27,7 @@
 
 'use strict'
 
-const axios = require('axios')
+const axios = require('axios').default
 
 const {
   TEST_ALS_HOST,
