@@ -59,7 +59,7 @@ describe('currency model', () => {
     it('returns null when it cannot find a currency', async () => {
       // Arrange
       // Act
-      const currency = await getCurrencyById('XXX')
+      const currency = await getCurrencyById('UUU')
 
       // Assert
       expect(currency).toBe(null)
