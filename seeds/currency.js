@@ -734,11 +734,11 @@ const currencies = [
     currencyId: 'ZWL'
   },
   {
-    name: 'ISO_4217 code reserved for testing',
+    name: 'ISO_4217 testing code',
     currencyId: 'XTS'
   },
   {
-    name: 'ISO_4217 code for transaction with involving no currency',
+    name: 'ISO_4217 no currency code',
     currencyId: 'XXX'
   }
 ]
