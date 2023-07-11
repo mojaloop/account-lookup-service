@@ -18,6 +18,7 @@
  * Gates Foundation
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Vijay Kumar Guthi <vijaya.guthi@infitx.com>
 
  --------------
  ******/
@@ -32,6 +33,7 @@ const CentralServices = require('@mojaloop/central-services-shared')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
 const OpenapiBackendValidator = require('@mojaloop/central-services-shared').Util.Hapi.OpenapiBackendValidator
 const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
+const MetricsPlugin = require('./metrics/plugin')
 
 const registerPlugins = async (server, openAPIBackend) => {
   await server.register(OpenapiBackendValidator)
@@ -42,6 +44,12 @@ const registerPlugins = async (server, openAPIBackend) => {
       options: {
         document: openAPIBackend.document
       }
+    })
+  }
+
+  if (!Config.INSTRUMENTATION_METRICS_DISABLED) {
+    await server.register({
+      plugin: MetricsPlugin
     })
   }
 

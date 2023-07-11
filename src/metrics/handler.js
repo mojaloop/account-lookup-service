@@ -18,44 +18,16 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Lewis Daly <lewis@vesselstech.com>
- --------------
+ - Pedro Barreto <pedrob@crosslaketech.com>
+ - Rajiv Mothilal <rajivmothilal@gmail.com>
+ - Shashikant Hirugade <shashikant.hirugade@modusbox.com>
+--------------
  ******/
+
 'use strict'
 
-const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
-const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
 
-const MigrationLockModel = require('../../models/misc/migrationLock')
-
-/**
- * @function getSubServiceHealthDatastore
- *
- * @description
- *   Gets the health of the Datastore by ensuring the table is currently locked
- *   in a migration state. This implicity checks the connection with the database.
- *
- * @returns Promise<SubServiceHealth> The SubService health object for the datastore
- */
-const getSubServiceHealthDatastore = async () => {
-  let status = statusEnum.OK
-
-  try {
-    const isLocked = await MigrationLockModel.getIsMigrationLocked()
-    if (isLocked) {
-      status = statusEnum.DOWN
-    }
-  } catch (err) {
-    Logger.debug(`getSubServiceHealthDatastore failed with error ${err.message}.`)
-    status = statusEnum.DOWN
-  }
-
-  return {
-    name: serviceName.datastore,
-    status
-  }
-}
-
-module.exports = {
-  getSubServiceHealthDatastore
+exports.metrics = async function (request, h) {
+  return h.response(await Metrics.getMetricsForPrometheus()).code(200)
 }

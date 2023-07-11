@@ -43,8 +43,8 @@ module.exports = {
    */
   get: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
-      'oracles_get',
-      'Get oracles',
+      'ing_getOracle',
+      'Ingress: Get oracles',
       ['success']
     ).startTimer()
     const span = request.span
@@ -73,8 +73,8 @@ module.exports = {
    */
   post: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
-      'oracles_put',
-      'Put oracles',
+      'ing_createOracle',
+      'Ingress: Create oracles',
       ['success']
     ).startTimer()
     const span = request.span

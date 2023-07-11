@@ -28,6 +28,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../lib/util')
 const participants = require('../domain/participants')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /participants
@@ -41,6 +42,11 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_postParticipantsBatch',
+      'Ingress: Post participants batch',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
@@ -51,6 +57,7 @@ module.exports = {
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by postParticipantsBatch.
     participants.postParticipantsBatch(request.headers, request.method, request.payload, span)
+    histTimerEnd({ success: true })
     return h.response().code(200)
   }
 }

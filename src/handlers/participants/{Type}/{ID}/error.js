@@ -45,8 +45,8 @@ module.exports = {
    */
   put: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
-      'participantErrorByTypeAndID_put',
-      'Put participant lookup error by Type and Id',
+      'ing_putParticipantsErrorByTypeAndID',
+      'Ingress: Put participant error by Type and Id',
       ['success']
     ).startTimer()
     const span = request.span
