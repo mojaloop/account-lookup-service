@@ -45,8 +45,8 @@ module.exports = {
    */
   put: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
-      'oracle_put',
-      'Update oracle details by Id',
+      'ing_updateOracle',
+      'Ingress: Update oracle details by Id',
       ['success']
     ).startTimer()
     const span = request.span
@@ -76,8 +76,8 @@ module.exports = {
    */
   delete: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
-      'authorization_get',
-      'Get authorization by Id',
+      'ing_deleteOracle',
+      'Ingress: Delete oracle by Id',
       ['success']
     ).startTimer()
     const span = request.span

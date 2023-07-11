@@ -46,8 +46,8 @@ module.exports = {
    */
   get: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
-      'participantsByTypeAndID_get',
-      'Get participant by Type and Id',
+      'ing_getParticipantsByTypeAndID',
+      'Ingress: Get participant by Type and Id',
       ['success']
     ).startTimer()
     const span = request.span
@@ -79,8 +79,8 @@ module.exports = {
    */
   put: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
-      'participantsByTypeAndID_put',
-      'Put participant by Type and Id',
+      'ing_putParticipantsByTypeAndID',
+      'Ingress: Put participant by Type and Id',
       ['success']
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
@@ -105,8 +105,8 @@ module.exports = {
    */
   post: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
-      'participantsByTypeAndID_post',
-      'Post participant by Type and Id',
+      'ing_postParticipantsbyTypeAndID',
+      'Ingress: Post participant by Type and Id',
       ['success']
     ).startTimer()
     const span = request.span
@@ -138,8 +138,8 @@ module.exports = {
    */
   delete: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
-      'participantsByTypeAndID_delete',
-      'Delete participant by Type and Id',
+      'ing_deleteParticipantsByTypeAndID',
+      'Ingress: Delete participant by Type and Id',
       ['success']
     ).startTimer()
     const metadata = `${request.method} ${request.path}`

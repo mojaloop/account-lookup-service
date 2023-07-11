@@ -28,6 +28,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /parties/{Type}/{ID}/error
@@ -41,6 +42,11 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putPartiesErrorByTypeAndID',
+      'Ingress - Put parties error by Type and Id',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
@@ -51,6 +57,7 @@ module.exports = {
     parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
+    histTimerEnd({ success: true })
     return h.response().code(200)
   }
 }

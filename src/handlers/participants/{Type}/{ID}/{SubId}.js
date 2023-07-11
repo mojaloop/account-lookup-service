@@ -28,6 +28,7 @@
 const Enum = require('@mojaloop/central-services-shared').Enum
 const LibUtil = require('../../../../lib/util')
 const participants = require('../../../../domain/participants')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /participants/{Type}/{ID}/{SubId}
@@ -41,9 +42,15 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_getParticipantsByTypeIdAndSubID',
+      'Ingress: Get participant by Type, ID and SubId',
+      ['success']
+    ).startTimer()
     participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
+    histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -54,9 +61,15 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putParticipantsByTypeIDAndSubID',
+      'Ingress: Put participant by Type, ID and SubId',
+      ['success']
+    ).startTimer()
     participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
+    histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   },
   /**
@@ -67,9 +80,15 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   post: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_postParticipantsByTypeIDAndSubID',
+      'Ingress: Post participant by Type, ID and SubId',
+      ['success']
+    ).startTimer()
     participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
+    histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -80,9 +99,15 @@ module.exports = {
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
   delete: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_deleteParticipantsByTypeIDAndSubID',
+      'Ingress: Delete participant by Type, ID and SubId',
+      ['success']
+    ).startTimer()
     participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
+    histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   }
 }

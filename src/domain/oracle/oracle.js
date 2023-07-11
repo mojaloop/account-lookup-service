@@ -32,6 +32,7 @@ const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * @function createOracle
@@ -41,6 +42,11 @@ const Config = require('../../lib/config')
  * @param {object} payload The payload from the Hapi server request
  */
 exports.createOracle = async (payload) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'createOracle',
+    'Create Oracle',
+    ['success']
+  ).startTimer()
   try {
     const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
     const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
@@ -70,8 +76,10 @@ exports.createOracle = async (payload) => {
     oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
     oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
     await oracleEndpoint.createOracleEndpoint(oracleEntity)
+    histTimerEnd({ success: true })
     return true
   } catch (err) {
+    histTimerEnd({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -85,6 +93,11 @@ exports.createOracle = async (payload) => {
  * @param {object} query The query parameters from the Hapi server request
  */
 exports.getOracle = async (query) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'getOracle',
+    'Get Oracle',
+    ['success']
+  ).startTimer()
   try {
     let oracleEndpointModelList
     let isCurrency; let isType = false
@@ -117,8 +130,10 @@ exports.getOracle = async (query) => {
       }
       oracleList.push(oracle)
     }
+    histTimerEnd({ success: true })
     return oracleList
   } catch (err) {
+    histTimerEnd({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -133,6 +148,11 @@ exports.getOracle = async (query) => {
  * @param {object} payload The payload from the Hapi server request
  */
 exports.updateOracle = async (params, payload) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'updateOracle',
+    'Update Oracle',
+    ['success']
+  ).startTimer()
   try {
     const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(params.ID)
     if (currentOracleEndpointList.length > 0) {
@@ -175,11 +195,13 @@ exports.updateOracle = async (params, payload) => {
         newOracleEntry.isDefault = payload.isDefault
       }
       await oracleEndpoint.updateOracleEndpointById(params.ID, newOracleEntry)
+      histTimerEnd({ success: true })
       return true
     } else {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, 'Oracle not found')
     }
   } catch (err) {
+    histTimerEnd({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -193,10 +215,17 @@ exports.updateOracle = async (params, payload) => {
  * @param {object} params The parameters from the Hapi server request
  */
 exports.deleteOracle = async (params) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'deleteOracle',
+    'Delete Oracle',
+    ['success']
+  ).startTimer()
   try {
     await oracleEndpoint.destroyOracleEndpointById(params.ID)
+    histTimerEnd({ success: true })
     return true
   } catch (err) {
+    histTimerEnd({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }

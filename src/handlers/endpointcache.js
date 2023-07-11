@@ -44,8 +44,8 @@ module.exports = {
    */
   delete: async (context, request, h) => {
     const histTimerEnd = Metrics.getHistogram(
-      'enpointCache_delete',
-      'Reset endpoint cache',
+      'ing_ResetParticipantEndpointCache',
+      'Ingress: Reset endpoint cache',
       ['success']
     ).startTimer()
     const span = request.span
