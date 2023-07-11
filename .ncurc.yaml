@@ -5,6 +5,6 @@ reject: [
   # Axios >1.2.0 seems to break integration tests on ci but not locally.
   # TODO: Investigate cause and upgrade.
   "axios",
-  # Issues created to resolve this: https://github.com/mojaloop/project/issues/3260
+  # Issue to resolve this: https://github.com/mojaloop/project/issues/3260
   "@mojaloop/central-services-shared"
 ]

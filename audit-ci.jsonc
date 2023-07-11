@@ -14,6 +14,13 @@
     "GHSA-rjqq-98f6-6j3r",
     "GHSA-mjxr-4v3x-q3m4",
     "GHSA-qgmg-gppg-76g5",
-    "GHSA-p9pc-299p-vxgp"
+    "GHSA-p9pc-299p-vxgp",
+    // The following issues are related to central-services-shared upgrade skip
+    // Issue to resolve this: https://github.com/mojaloop/project/issues/3260
+    "GHSA-hjrf-2m68-5959",
+    "GHSA-qwph-4952-7xr6",
+    "GHSA-4jv9-3563-23j3",
+    "GHSA-h755-8qp9-cq85",
+    "GHSA-f9xv-q969-pqx4"
   ]
 }
