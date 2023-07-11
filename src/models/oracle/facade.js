@@ -78,7 +78,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       const resp = await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
       histTimerEnd({ success: true })
       return resp
-    } catch(err) {
+    } catch (err) {
       histTimerEnd({ success: false })
       throw err
     }

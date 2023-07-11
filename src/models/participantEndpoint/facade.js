@@ -56,26 +56,25 @@ const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
  * @returns {object} - Returns http response from request endpoint
  */
 exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined, span = undefined) => {
-
   // Get endpoint for participant
   let requestedEndpoint
-  const histTimerEnd_getParticipantEndpoint = Metrics.getHistogram(
+  const histTimerEndGetParticipantEndpoint = Metrics.getHistogram(
     'egress_getParticipantEndpoint',
     'Egress: Get Endpoint of participant',
     ['success']
   ).startTimer()
   try {
     requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
-    histTimerEnd_getParticipantEndpoint({ success: true })
+    histTimerEndGetParticipantEndpoint({ success: true })
     Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
   } catch (err) {
-    histTimerEnd_getParticipantEndpoint({ success: false })
+    histTimerEndGetParticipantEndpoint({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
   // Send request to participant
-  const histTimerEnd_sendRequestToParticipant = Metrics.getHistogram(
+  const histTimerEndSendRequestToParticipant = Metrics.getHistogram(
     'egress_sendRequestToParticipant',
     'Egress: Send request to participant',
     ['success']
@@ -87,10 +86,10 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
     const resp = await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, null, protocolVersions)
-    histTimerEnd_sendRequestToParticipant({ success: true })
+    histTimerEndSendRequestToParticipant({ success: true })
     return resp
   } catch (err) {
-    histTimerEnd_sendRequestToParticipant({ success: false })
+    histTimerEndSendRequestToParticipant({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -123,8 +122,8 @@ exports.validateParticipant = async (fsp, span = undefined) => {
       null,
       Enums.Http.ResponseTypes.JSON,
       span)
-      histTimerEnd({ success: true })
-      return resp
+    histTimerEnd({ success: true })
+    return resp
   } catch (err) {
     histTimerEnd({ success: false })
     Logger.error(err)
@@ -150,7 +149,7 @@ exports.validateParticipant = async (fsp, span = undefined) => {
 exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined, span = undefined) => {
   // Get endpoint for participant
   let requesterErrorEndpoint
-  const histTimerEnd_getParticipantErrorEndpoint = Metrics.getHistogram(
+  const histTimerEndGetParticipantErrorEndpoint = Metrics.getHistogram(
     'egress_getParticipantErrorEndpoint',
     'Egress: Get Error Endpoint of participant',
     ['success']
@@ -166,15 +165,15 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       partySubIdOrType: params.SubId || undefined,
       requestId: requestIdExists ? payload.requestId : undefined
     })
-    histTimerEnd_getParticipantErrorEndpoint({ success: true })
+    histTimerEndGetParticipantErrorEndpoint({ success: true })
   } catch (err) {
-    histTimerEnd_getParticipantErrorEndpoint({ success: false })
+    histTimerEndGetParticipantErrorEndpoint({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
   // Send error to participant
-  const histTimerEnd_sendErrorToParticipant = Metrics.getHistogram(
+  const histTimerEndSendErrorToParticipant = Metrics.getHistogram(
     'egress_sendErrorToParticipant',
     'Egress: Send error to participant',
     ['success']
@@ -208,9 +207,9 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       })
     }
     await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
-    histTimerEnd_sendErrorToParticipant({ success: true })
+    histTimerEndSendErrorToParticipant({ success: true })
   } catch (err) {
-    histTimerEnd_sendErrorToParticipant({ success: false })
+    histTimerEndSendErrorToParticipant({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
