@@ -32,6 +32,7 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const JwsSigner = require('@mojaloop/sdk-standard-components').Jws.signer
 const Mustache = require('mustache')
+const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../../lib/config')
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
 
@@ -55,17 +56,41 @@ const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
  * @returns {object} - Returns http response from request endpoint
  */
 exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined, span = undefined) => {
+
+  // Get endpoint for participant
+  let requestedEndpoint
+  const histTimerEnd_getParticipantEndpoint = Metrics.getHistogram(
+    'egress_getParticipantEndpoint',
+    'Egress: Get Endpoint of participant',
+    ['success']
+  ).startTimer()
+  try {
+    requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
+    histTimerEnd_getParticipantEndpoint({ success: true })
+    Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
+  } catch (err) {
+    histTimerEnd_getParticipantEndpoint({ success: false })
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+
+  // Send request to participant
+  const histTimerEnd_sendRequestToParticipant = Metrics.getHistogram(
+    'egress_sendRequestToParticipant',
+    'Egress: Send request to participant',
+    ['success']
+  ).startTimer()
   try {
     // Injected Configuration for outbound Content-Type & Accept headers.
     const protocolVersions = {
       content: Config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
-
-    const requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
-    Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
-    return await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, null, protocolVersions)
+    const resp = await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, null, protocolVersions)
+    histTimerEnd_sendRequestToParticipant({ success: true })
+    return resp
   } catch (err) {
+    histTimerEnd_sendRequestToParticipant({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -81,10 +106,15 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
  * @returns the participants info in a successful case and
  */
 exports.validateParticipant = async (fsp, span = undefined) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'egress_validateParticipant',
+    'Egress: Validate participant',
+    ['success']
+  ).startTimer()
   try {
     const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
     Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
-    return await Util.Request.sendRequest(
+    const resp = await Util.Request.sendRequest(
       requestedParticipantUrl,
       Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value),
       Enums.Http.Headers.FSPIOP.SWITCH.value,
@@ -93,7 +123,10 @@ exports.validateParticipant = async (fsp, span = undefined) => {
       null,
       Enums.Http.ResponseTypes.JSON,
       span)
+      histTimerEnd({ success: true })
+      return resp
   } catch (err) {
+    histTimerEnd({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
@@ -115,6 +148,37 @@ exports.validateParticipant = async (fsp, span = undefined) => {
  * @returns {object} - Returns http response from request endpoint
  */
 exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined, span = undefined) => {
+  // Get endpoint for participant
+  let requesterErrorEndpoint
+  const histTimerEnd_getParticipantErrorEndpoint = Metrics.getHistogram(
+    'egress_getParticipantErrorEndpoint',
+    'Egress: Get Error Endpoint of participant',
+    ['success']
+  ).startTimer()
+  try {
+    let requestIdExists = false
+    if (payload && payload.requestId) {
+      requestIdExists = true
+    }
+    requesterErrorEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, participantName, endpointType, {
+      partyIdType: params.Type || undefined,
+      partyIdentifier: params.ID || undefined,
+      partySubIdOrType: params.SubId || undefined,
+      requestId: requestIdExists ? payload.requestId : undefined
+    })
+    histTimerEnd_getParticipantErrorEndpoint({ success: true })
+  } catch (err) {
+    histTimerEnd_getParticipantErrorEndpoint({ success: false })
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+
+  // Send error to participant
+  const histTimerEnd_sendErrorToParticipant = Metrics.getHistogram(
+    'egress_sendErrorToParticipant',
+    'Egress: Send error to participant',
+    ['success']
+  ).startTimer()
   try {
     // Injected Configuration for outbound Content-Type & Accept headers.
     const protocolVersions = {
@@ -122,16 +186,6 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
 
-    let requestIdExists = false
-    if (payload && payload.requestId) {
-      requestIdExists = true
-    }
-    const requesterErrorEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, participantName, endpointType, {
-      partyIdType: params.Type || undefined,
-      partyIdentifier: params.ID || undefined,
-      partySubIdOrType: params.SubId || undefined,
-      requestId: requestIdExists ? payload.requestId : undefined
-    })
     const clonedHeaders = { ...headers }
 
     if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
@@ -154,7 +208,9 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       })
     }
     await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
+    histTimerEnd_sendErrorToParticipant({ success: true })
   } catch (err) {
+    histTimerEnd_sendErrorToParticipant({ success: false })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }

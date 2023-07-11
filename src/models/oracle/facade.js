@@ -33,6 +33,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * @function oracleRequest
@@ -68,7 +69,19 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       }
     }
     Logger.debug(`Oracle endpoints: ${url}`)
-    return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
+    const histTimerEnd = Metrics.getHistogram(
+      'egress_oracleRequest',
+      'Egress: oracleRequest',
+      ['success']
+    ).startTimer()
+    try {
+      const resp = await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
+      histTimerEnd({ success: true })
+      return resp
+    } catch(err) {
+      histTimerEnd({ success: false })
+      throw err
+    }
   } catch (err) {
     Logger.error(err)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
