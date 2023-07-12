@@ -30,6 +30,7 @@ const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Ut
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
 const Db = require('./lib/db')
 const Config = require('./lib/config.js')
 const Util = require('./lib/util')
@@ -98,7 +99,14 @@ const createServer = async (port, api, routes, isAdmin) => {
   return server
 }
 
+const initializeInstrumentation = () => {
+  if (!Config.INSTRUMENTATION_METRICS_DISABLED) {
+    Metrics.setup(Config.INSTRUMENTATION_METRICS_CONFIG)
+  }
+}
+
 const initializeApi = async (port = Config.API_PORT) => {
+  initializeInstrumentation()
   await connectDatabase()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
@@ -109,6 +117,7 @@ const initializeApi = async (port = Config.API_PORT) => {
 }
 
 const initializeAdmin = async (port = Config.ADMIN_PORT) => {
+  initializeInstrumentation()
   await connectDatabase()
   await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
