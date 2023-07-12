@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [14.2.1](https://github.com/mojaloop/account-lookup-service/compare/v14.2.0...v14.2.1) (2023-07-12)
+
+
+### Bug Fixes
+
+* added missing metrics initialisation ([#458](https://github.com/mojaloop/account-lookup-service/issues/458)) ([fd0d87b](https://github.com/mojaloop/account-lookup-service/commit/fd0d87ba52862b2e901ea1a52310f5f1d23a377f))
+
 ## [14.2.0](https://github.com/mojaloop/account-lookup-service/compare/v14.1.0...v14.2.0) (2023-07-11)
 
 
