@@ -53,7 +53,7 @@
       },
       "config": {
         "timeout": 5000,
-        "prefix": "moja_",
+        "prefix": "moja_als_",
         "defaultLabels": {
           "serviceName": "account-lookup-service"
         }
