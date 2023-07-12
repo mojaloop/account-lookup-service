@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [14.2.2](https://github.com/mojaloop/account-lookup-service/compare/v14.2.1...v14.2.2) (2023-07-12)
+
+
+### Chore
+
+* update default.json ([#459](https://github.com/mojaloop/account-lookup-service/issues/459)) ([527d5ee](https://github.com/mojaloop/account-lookup-service/commit/527d5ee118ea2fb347327491486f82b456a4cc7d))
+
 ### [14.2.1](https://github.com/mojaloop/account-lookup-service/compare/v14.2.0...v14.2.1) (2023-07-12)
 
 
