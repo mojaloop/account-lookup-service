@@ -34,6 +34,17 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
+// Ref: https://github.com/node-cache/node-cache
+const NodeCache = require('node-cache')
+const confNodeCacheEnabled = process.env?.NODE_CACHE_ENABLED || false
+const confNodeCachestdTTL = process.env?.NODE_CACHE_STDTTL || 100
+const confNodeCacheCheckPeriod = process.env?.NODE_CACHE_CHECKPERIOD || 120
+const oracleCache = new NodeCache({
+  stdTTL: confNodeCachestdTTL,
+  checkperiod: confNodeCacheCheckPeriod,
+  deleteOnExpire: true,
+  useClones: false
+})
 
 /**
  * @function oracleRequest
@@ -56,31 +67,38 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const currency = (payload && payload.currency) ? payload.currency : (query && query.currency) ? query.currency : undefined
     const partySubIdOrType = (params && params.SubId) ? params.SubId : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
     const isGetRequest = method.toUpperCase() === Enums.Http.RestMethods.GET
-    if (currency && partySubIdOrType && isGetRequest) {
-      url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType)
-    } else if (currency && isGetRequest) {
-      url = await _getOracleEndpointByTypeAndCurrency(partyIdType, partyIdentifier, currency)
-    } else if (partySubIdOrType && isGetRequest) {
-      url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType)
-    } else {
-      url = await _getOracleEndpointByType(partyIdType, partyIdentifier)
-      if (partySubIdOrType) {
-        payload = { ...payload, partySubIdOrType }
-      }
-    }
-    Logger.debug(`Oracle endpoints: ${url}`)
-    const histTimerEnd = Metrics.getHistogram(
-      'egress_oracleRequest',
-      'Egress: oracleRequest',
-      ['success']
-    ).startTimer()
-    try {
-      const resp = await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
-      histTimerEnd({ success: true })
+    const oracleCacheKey = `getOracle-${partyIdType}-${partyIdentifier}-${currency}-${partySubIdOrType}-${isGetRequest}`
+    let resp = confNodeCacheEnabled ? oracleCache.get(oracleCacheKey) : null
+    if (resp) {
       return resp
-    } catch (err) {
-      histTimerEnd({ success: false })
-      throw err
+    } else {
+      if (currency && partySubIdOrType && isGetRequest) {
+        url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType)
+      } else if (currency && isGetRequest) {
+        url = await _getOracleEndpointByTypeAndCurrency(partyIdType, partyIdentifier, currency)
+      } else if (partySubIdOrType && isGetRequest) {
+        url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType)
+      } else {
+        url = await _getOracleEndpointByType(partyIdType, partyIdentifier)
+        if (partySubIdOrType) {
+          payload = { ...payload, partySubIdOrType }
+        }
+      }
+      Logger.debug(`Oracle endpoints: ${url}`)
+      const histTimerEnd = Metrics.getHistogram(
+        'egress_oracleRequest',
+        'Egress: oracleRequest',
+        ['success']
+      ).startTimer()
+      try {
+        resp = await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
+        oracleCache.set(oracleCacheKey, resp)
+        histTimerEnd({ success: true })
+        return resp
+      } catch (err) {
+        histTimerEnd({ success: false })
+        throw err
+      }
     }
   } catch (err) {
     Logger.error(err)
