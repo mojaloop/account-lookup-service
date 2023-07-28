@@ -37,7 +37,7 @@ const Config = require('../../lib/config')
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
 
 // Ref: https://github.com/node-cache/node-cache
-const NodeCache = require( "node-cache" )
+const NodeCache = require('node-cache')
 const confNodeCachestdTTL = process.env?.NODE_CACHE_STDTTL || 100
 const confNodeCacheCheckPeriod = process.env?.NODE_CACHE_CHECKPERIOD || 120
 const participantCache = new NodeCache({
@@ -123,7 +123,7 @@ exports.validateParticipant = async (fsp, span = undefined) => {
   ).startTimer()
   const participantCacheKey = `validateParticipant-${fsp}`
   let resp = participantCache.get(participantCacheKey)
-  let cachehit = false 
+  let cachehit = false
   try {
     if (resp) {
       // resp = participantCache.get(participantCacheKey)
@@ -145,7 +145,7 @@ exports.validateParticipant = async (fsp, span = undefined) => {
         span)
       let isValidated = false
       if (resp) {
-        let isValidated = true
+        isValidated = true
       }
       participantCache.set(participantCacheKey, {
         fsp,
