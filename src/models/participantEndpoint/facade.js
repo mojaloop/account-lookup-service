@@ -36,6 +36,17 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../../lib/config')
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
 
+// Ref: https://github.com/node-cache/node-cache
+const NodeCache = require( "node-cache" )
+const confNodeCachestdTTL = process.env?.NODE_CACHE_STDTTL || 100
+const confNodeCacheCheckPeriod = process.env?.NODE_CACHE_CHECKPERIOD || 120
+const participantCache = new NodeCache({
+  stdTTL: confNodeCachestdTTL,
+  checkperiod: confNodeCacheCheckPeriod,
+  deleteOnExpire: true,
+  useClones: false
+})
+
 /**
  * @module src/models/participantEndpoint/facade
  */
@@ -108,24 +119,43 @@ exports.validateParticipant = async (fsp, span = undefined) => {
   const histTimerEnd = Metrics.getHistogram(
     'egress_validateParticipant',
     'Egress: Validate participant',
-    ['success']
+    ['success', 'cachehit']
   ).startTimer()
+  const participantCacheKey = `validateParticipant-${fsp}`
+  let resp = participantCache.get(participantCacheKey)
+  let cachehit = false 
   try {
-    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
-    Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
-    const resp = await Util.Request.sendRequest(
-      requestedParticipantUrl,
-      Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value),
-      Enums.Http.Headers.FSPIOP.SWITCH.value,
-      Enums.Http.Headers.FSPIOP.SWITCH.value,
-      Enums.Http.RestMethods.GET,
-      null,
-      Enums.Http.ResponseTypes.JSON,
-      span)
-    histTimerEnd({ success: true })
+    if (resp) {
+      // resp = participantCache.get(participantCacheKey)
+      console.log('CACHE HIT!')
+      cachehit = true
+    } else {
+      console.log('CACHE MISS!')
+      const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
+      Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
+      // const resp = await Util.Request.sendRequest(
+      resp = await Util.Request.sendRequest(
+        requestedParticipantUrl,
+        Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value),
+        Enums.Http.Headers.FSPIOP.SWITCH.value,
+        Enums.Http.Headers.FSPIOP.SWITCH.value,
+        Enums.Http.RestMethods.GET,
+        null,
+        Enums.Http.ResponseTypes.JSON,
+        span)
+      let isValidated = false
+      if (resp) {
+        let isValidated = true
+      }
+      participantCache.set(participantCacheKey, {
+        fsp,
+        isValidated
+      })
+    }
+    histTimerEnd({ success: true, cachehit })
     return resp
   } catch (err) {
-    histTimerEnd({ success: false })
+    histTimerEnd({ success: false, cachehit })
     Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
