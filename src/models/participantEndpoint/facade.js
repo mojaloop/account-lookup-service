@@ -147,10 +147,7 @@ exports.validateParticipant = async (fsp, span = undefined) => {
       if (resp) {
         isValidated = true
       }
-      participantCache.set(participantCacheKey, {
-        fsp,
-        isValidated
-      })
+      participantCache.set(participantCacheKey, resp)
     }
     histTimerEnd({ success: true, cachehit })
     return resp
