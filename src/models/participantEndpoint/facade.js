@@ -143,10 +143,10 @@ exports.validateParticipant = async (fsp, span = undefined) => {
         null,
         Enums.Http.ResponseTypes.JSON,
         span)
-      let isValidated = false
-      if (resp) {
-        isValidated = true
-      }
+      // let isValidated = false
+      // if (resp) {
+      //   isValidated = true
+      // }
       participantCache.set(participantCacheKey, resp)
     }
     histTimerEnd({ success: true, cachehit })
