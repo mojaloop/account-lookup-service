@@ -16,9 +16,7 @@ WORKDIR /opt/app
 
 RUN apk --no-cache add git
 RUN apk add --no-cache -t build-dependencies make gcc g++ python3 libtool openssl-dev autoconf automake bash \
-    && cd $(npm root -g)/npm \
-    && npm config set unsafe-perm true \
-    && npm install -g node-gyp
+    && cd $(npm root -g)/npm
 
 COPY package.json package-lock.json* /opt/app/
 
