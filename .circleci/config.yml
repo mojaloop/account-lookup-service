@@ -291,6 +291,25 @@ jobs:
           destination: test
       - store_test_results:
           path: ./test/results
+  
+  test-functional:
+    executor: default-machine
+    environment:
+      <<: *defaults_environment
+      ML_CORE_TEST_HARNESS_DIR: /tmp/ml-core-test-harness
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load the pre-built docker image from workspace
+          command: docker load -i /tmp/docker-image.tar
+      - run:
+          name: Execute TTK functional tests
+          command: bash ./test/scripts/test-functional.sh
+      - store_artifacts:
+          path: /tmp/ml-core-test-harness/reports
+          destination: test
 
   vulnerability-check:
     executor: default-docker
@@ -732,17 +751,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      # - test-functional:
-      #     context: org-global
-      #     requires:
-      #       - setup
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
+      - test-functional:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
@@ -773,7 +792,7 @@ workflows:
             - test-unit
             - test-coverage
             - test-integration
-            # - test-functional
+            - test-functional
             - vulnerability-check
             - audit-licenses
           filters:
@@ -811,7 +830,7 @@ workflows:
             - test-unit
             - test-coverage
             - test-integration
-            # - test-functional
+            - test-functional
             - vulnerability-check
             - audit-licenses
             - license-scan
@@ -838,7 +857,7 @@ workflows:
             - test-unit
             - test-coverage
             - test-integration
-            # - test-functional
+            - test-functional
             - vulnerability-check
             - audit-licenses
             - license-scan
@@ -857,7 +876,7 @@ workflows:
             - test-unit
             - test-coverage
             - test-integration
-            # - test-functional
+            - test-functional
             - vulnerability-check
             - audit-licenses
             - license-scan
