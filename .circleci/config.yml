@@ -279,7 +279,12 @@ jobs:
           command: mkdir -p ./test/results
       - run:
           name: Execute integration tests
-          command:  RESULTS_DIR="./test/results" npm -s run test:integration
+          command:  |
+            # Set Node version to default (Note: this is needed on Ubuntu)
+            nvm use default
+            
+            # Execute Integration Tests
+            RESULTS_DIR="./test/results" npm run test:integration
           no_output_timeout: 25m
       - store_artifacts:
           path: ./test/results
