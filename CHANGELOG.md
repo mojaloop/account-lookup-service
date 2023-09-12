@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [14.2.5](https://github.com/mojaloop/account-lookup-service/compare/v14.2.3...v14.2.5) (2023-09-12)
+
+
+### Chore
+
+* **mojaloop/#3435:** nodejs upgrade ([#462](https://github.com/mojaloop/account-lookup-service/issues/462)) ([cea1fae](https://github.com/mojaloop/account-lookup-service/commit/cea1fae3fc32043e381b9dbcfc8642bf5387ce67)), closes [mojaloop/#3435](https://github.com/mojaloop/project/issues/3435)
+
 ### [14.2.3](https://github.com/mojaloop/account-lookup-service/compare/v14.2.2...v14.2.3) (2023-07-27)
 
 
