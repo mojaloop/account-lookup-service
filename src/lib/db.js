@@ -23,4 +23,4 @@
  ******/
 'use strict'
 
-module.exports = require('@mojaloop/central-services-database').Db
+module.exports = require('@mojaloop/database-lib').Db
