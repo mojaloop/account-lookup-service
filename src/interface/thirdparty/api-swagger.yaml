@@ -1172,6 +1172,7 @@ components:
         - DEVICE
         - ACCOUNT_ID
         - IBAN
+        - MERCHANT_PAYINTOID
         - ALIAS
         - CONSENT
         - THIRD_PARTY_LINK
@@ -1728,6 +1729,7 @@ components:
           - DEVICE
           - ACCOUNT_ID
           - IBAN
+          - MERCHANT_PAYINTOID
           - ALIAS
           - CONSENT
           - THIRD_PARTY_LINK
