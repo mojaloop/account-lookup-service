@@ -54,9 +54,16 @@ module.exports = {
       headers: request.headers,
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
+    const partiesRequest = {
+      payload: { ...request.payload },
+      headers: { ...request.headers },
+      params: { ...request.params },
+      method: request.method,
+      query: { ...request.query }
+    }
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
+    parties.getPartiesByTypeAndID(partiesRequest.headers, partiesRequest.params, partiesRequest.method, partiesRequest.query, span).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -83,9 +90,17 @@ module.exports = {
       headers: request.headers,
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
+    const partiesRequest = {
+      payload: { ...request.payload },
+      headers: { ...request.headers },
+      params: { ...request.params },
+      method: request.method,
+      dataUri: request.dataUri,
+      query: { ...request.query }
+    }
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by putPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+    parties.putPartiesByTypeAndID(partiesRequest.headers, partiesRequest.params, partiesRequest.method, partiesRequest.payload, partiesRequest.dataUri).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
