@@ -506,7 +506,7 @@ describe('participant Tests', () => {
       await participantsDomain.putParticipantsByTypeAndID(headers, params, method, payload)
 
       // Assert
-      const loggerFirstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
+      const loggerFirstCallArgs = Logger.error.getCall(0).args
       expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
     })
 
@@ -652,8 +652,8 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
       // Assert
-      expect(Logger.isInfoEnabled && Logger.info.callCount).toBe(0)
-      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(0)
+      expect(Logger.info.callCount).toBe(0)
+      expect(Logger.error.callCount).toBe(0)
     })
 
     it('handles PUT /error when SubId is supplied', async () => {
@@ -691,7 +691,7 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(0)
+      expect(Logger.error.callCount).toBe(0)
     })
 
     it('handles PUT /error when SubId supplied but validateParticipant fails to return participant', async () => {
@@ -729,7 +729,7 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(0)
+      expect(Logger.error.callCount).toBe(0)
     })
 
     it('handles PUT /error when SubId supplied but validateParticipant throws error', async () => {
@@ -767,7 +767,7 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(1)
+      expect(Logger.error.callCount).toBe(1)
     })
 
     it('handles PUT /error when `sendErrorToParticipant` throws error', async () => {
@@ -805,7 +805,7 @@ describe('participant Tests', () => {
       const secondCallArgs = participant.sendErrorToParticipant.getCall(1).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
       expect(secondCallArgs[0]).toBe('switch')
-      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(2)
+      expect(Logger.error.callCount).toBe(2)
     })
 
     it('handles PUT /error when SubId is supplied and `sendErrorToParticipant` throws error', async () => {
@@ -844,7 +844,7 @@ describe('participant Tests', () => {
       const secondCallArgs = participant.sendErrorToParticipant.getCall(1).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
       expect(secondCallArgs[0]).toBe('switch')
-      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(2)
+      expect(Logger.error.callCount).toBe(2)
     })
   })
 
@@ -1068,7 +1068,7 @@ describe('participant Tests', () => {
       await participantsDomain.postParticipants(headers, 'get', params, payload)
 
       // Assert
-      const loggerFirstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
+      const loggerFirstCallArgs = Logger.error.getCall(0).args
       expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
     })
 
@@ -1364,8 +1364,8 @@ describe('participant Tests', () => {
       await participantsDomain.postParticipantsBatch(headers, 'get', payload, Helper.mockSpan())
 
       // Assert
-      const firstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
-      const thirdCallArgs = Logger.isErrorEnabled && Logger.error.getCall(2).args
+      const firstCallArgs = Logger.error.getCall(0).args
+      const thirdCallArgs = Logger.error.getCall(2).args
       expect(firstCallArgs[0]).toBe('Requester FSP not found')
       expect(thirdCallArgs[0].message).toBe('unknown error')
     })
@@ -1621,7 +1621,7 @@ describe('participant Tests', () => {
       await participantsDomain.deleteParticipants(headers, params, method, query)
 
       // Assert
-      const loggerFirstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
+      const loggerFirstCallArgs = Logger.error.getCall(0).args
       expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
     })
 
