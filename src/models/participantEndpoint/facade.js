@@ -199,7 +199,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       clonedHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = clonedHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] || Enums.Http.RestMethods.PUT
       clonedHeaders[Enums.Http.Headers.FSPIOP.URI] = clonedHeaders[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requesterErrorEndpoint)[1]
       const logger = Logger
-      logger.log = Logger.isInfoEnabled && Logger.info
+      logger.log = logger.info
       Logger.isDebugEnabled && Logger.debug('JWS is enabled, getting JwsSigner')
       jwsSigner = new JwsSigner({
         logger,
