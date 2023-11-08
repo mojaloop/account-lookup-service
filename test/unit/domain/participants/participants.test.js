@@ -483,7 +483,7 @@ describe('participant Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -514,7 +514,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
 
       const headers = {
@@ -546,7 +546,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
 
       const headers = {
@@ -578,7 +578,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
@@ -624,8 +624,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isInfoEnabled && Logger.info = sandbox.stub()
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -660,8 +660,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isInfoEnabled && Logger.info = sandbox.stub()
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -698,8 +698,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isInfoEnabled && Logger.info = sandbox.stub()
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves(null)
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -736,8 +736,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isInfoEnabled && Logger.info = sandbox.stub()
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation failed'))
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -774,8 +774,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isInfoEnabled && Logger.info = sandbox.stub()
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('sendErrorToParticipant failed'))
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
@@ -812,8 +812,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isInfoEnabled && Logger.info = sandbox.stub()
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.info = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('sendErrorToParticipant failed'))
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
@@ -1046,7 +1046,7 @@ describe('participant Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -1076,7 +1076,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
 
       const headers = {
@@ -1107,7 +1107,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
 
       const headers = {
@@ -1138,7 +1138,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
@@ -1183,7 +1183,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleBatchRequest = sandbox.stub().resolves({
         data: {
@@ -1234,7 +1234,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleBatchRequest = sandbox.stub().resolves({
         data: {
@@ -1284,7 +1284,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleBatchRequest = sandbox.stub().resolves({
         data: {
@@ -1339,7 +1339,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('unknown error'))
 
@@ -1600,7 +1600,7 @@ describe('participant Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -1629,7 +1629,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
 
       const headers = {
@@ -1659,7 +1659,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
 
       const headers = {
@@ -1689,7 +1689,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.isErrorEnabled && Logger.error = sandbox.stub()
+      Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
