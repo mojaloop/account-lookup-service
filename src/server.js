@@ -111,7 +111,7 @@ const initializeApi = async (port = Config.API_PORT) => {
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
-  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  Logger.isInfoEnabled && Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   return server
 }
@@ -123,7 +123,7 @@ const initializeAdmin = async (port = Config.ADMIN_PORT) => {
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
   const server = await createServer(port, api, Routes.AdminRoutes(api), true)
-  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }
 

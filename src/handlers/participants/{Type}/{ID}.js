@@ -64,7 +64,7 @@ module.exports = {
       })
       histTimerEnd({ success: true })
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -90,7 +90,7 @@ module.exports = {
       })
       histTimerEnd({ success: true })
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -123,7 +123,7 @@ module.exports = {
       })
       histTimerEnd({ success: true })
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -149,7 +149,7 @@ module.exports = {
       })
       histTimerEnd({ success: true })
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }

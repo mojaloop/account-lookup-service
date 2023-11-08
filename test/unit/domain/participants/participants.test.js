@@ -483,7 +483,7 @@ describe('participant Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -506,7 +506,7 @@ describe('participant Tests', () => {
       await participantsDomain.putParticipantsByTypeAndID(headers, params, method, payload)
 
       // Assert
-      const loggerFirstCallArgs = Logger.error.getCall(0).args
+      const loggerFirstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
       expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
     })
 
@@ -514,7 +514,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
 
       const headers = {
@@ -546,7 +546,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
 
       const headers = {
@@ -578,7 +578,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
@@ -624,8 +624,8 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub()
-      Logger.error = sandbox.stub()
+      Logger.isInfoEnabled && Logger.info = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -652,16 +652,16 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
       // Assert
-      expect(Logger.info.callCount).toBe(0)
-      expect(Logger.error.callCount).toBe(0)
+      expect(Logger.isInfoEnabled && Logger.info.callCount).toBe(0)
+      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(0)
     })
 
     it('handles PUT /error when SubId is supplied', async () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub()
-      Logger.error = sandbox.stub()
+      Logger.isInfoEnabled && Logger.info = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -691,15 +691,15 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(Logger.error.callCount).toBe(0)
+      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(0)
     })
 
     it('handles PUT /error when SubId supplied but validateParticipant fails to return participant', async () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub()
-      Logger.error = sandbox.stub()
+      Logger.isInfoEnabled && Logger.info = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves(null)
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -729,15 +729,15 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(Logger.error.callCount).toBe(0)
+      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(0)
     })
 
     it('handles PUT /error when SubId supplied but validateParticipant throws error', async () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub()
-      Logger.error = sandbox.stub()
+      Logger.isInfoEnabled && Logger.info = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation failed'))
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
@@ -767,15 +767,15 @@ describe('participant Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(Logger.error.callCount).toBe(1)
+      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(1)
     })
 
     it('handles PUT /error when `sendErrorToParticipant` throws error', async () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub()
-      Logger.error = sandbox.stub()
+      Logger.isInfoEnabled && Logger.info = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('sendErrorToParticipant failed'))
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
@@ -805,15 +805,15 @@ describe('participant Tests', () => {
       const secondCallArgs = participant.sendErrorToParticipant.getCall(1).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
       expect(secondCallArgs[0]).toBe('switch')
-      expect(Logger.error.callCount).toBe(2)
+      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(2)
     })
 
     it('handles PUT /error when SubId is supplied and `sendErrorToParticipant` throws error', async () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.info = sandbox.stub()
-      Logger.error = sandbox.stub()
+      Logger.isInfoEnabled && Logger.info = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('sendErrorToParticipant failed'))
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
@@ -844,7 +844,7 @@ describe('participant Tests', () => {
       const secondCallArgs = participant.sendErrorToParticipant.getCall(1).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
       expect(secondCallArgs[0]).toBe('switch')
-      expect(Logger.error.callCount).toBe(2)
+      expect(Logger.isErrorEnabled && Logger.error.callCount).toBe(2)
     })
   })
 
@@ -1046,7 +1046,7 @@ describe('participant Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -1068,7 +1068,7 @@ describe('participant Tests', () => {
       await participantsDomain.postParticipants(headers, 'get', params, payload)
 
       // Assert
-      const loggerFirstCallArgs = Logger.error.getCall(0).args
+      const loggerFirstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
       expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
     })
 
@@ -1076,7 +1076,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
 
       const headers = {
@@ -1107,7 +1107,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
 
       const headers = {
@@ -1138,7 +1138,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
@@ -1183,7 +1183,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleBatchRequest = sandbox.stub().resolves({
         data: {
@@ -1234,7 +1234,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleBatchRequest = sandbox.stub().resolves({
         data: {
@@ -1284,7 +1284,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleBatchRequest = sandbox.stub().resolves({
         data: {
@@ -1339,7 +1339,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('unknown error'))
 
@@ -1364,8 +1364,8 @@ describe('participant Tests', () => {
       await participantsDomain.postParticipantsBatch(headers, 'get', payload, Helper.mockSpan())
 
       // Assert
-      const firstCallArgs = Logger.error.getCall(0).args
-      const thirdCallArgs = Logger.error.getCall(2).args
+      const firstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
+      const thirdCallArgs = Logger.isErrorEnabled && Logger.error.getCall(2).args
       expect(firstCallArgs[0]).toBe('Requester FSP not found')
       expect(thirdCallArgs[0].message).toBe('unknown error')
     })
@@ -1600,7 +1600,7 @@ describe('participant Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -1621,7 +1621,7 @@ describe('participant Tests', () => {
       await participantsDomain.deleteParticipants(headers, params, method, query)
 
       // Assert
-      const loggerFirstCallArgs = Logger.error.getCall(0).args
+      const loggerFirstCallArgs = Logger.isErrorEnabled && Logger.error.getCall(0).args
       expect(loggerFirstCallArgs[0]).toBe('Requester FSP not found')
     })
 
@@ -1629,7 +1629,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub()
 
       const headers = {
@@ -1659,7 +1659,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
 
       const headers = {
@@ -1689,7 +1689,7 @@ describe('participant Tests', () => {
       expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
-      Logger.error = sandbox.stub()
+      Logger.isErrorEnabled && Logger.error = sandbox.stub()
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending error to participant'))
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {

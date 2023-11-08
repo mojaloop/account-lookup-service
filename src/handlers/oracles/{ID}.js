@@ -62,7 +62,7 @@ module.exports = {
       histTimerEnd({ success: true })
       return h.response().code(204)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -92,7 +92,7 @@ module.exports = {
       histTimerEnd({ success: true })
       return h.response().code(204)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
       histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
