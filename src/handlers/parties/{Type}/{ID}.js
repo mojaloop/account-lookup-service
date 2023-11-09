@@ -29,6 +29,16 @@ const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../lib/util')
 const parties = require('../../../domain/parties')
 const Metrics = require('@mojaloop/central-services-metrics')
+const Async = require('async')
+const Config = require('../../../lib/config')
+
+var asyncQueue = Async.queue(function(task, callback) {
+  parties.getPartiesByTypeAndID(task.request.headers, task.request.params, task.request.method, task.request.query, task.span).then(() => {
+    callback(null)
+  }).catch((err) => {
+    callback(err)
+  })
+}, Config.ASYNC_CONCURRENCY)
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -56,9 +66,17 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
-      request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    asyncQueue.push({
+      request,
+      span
+    }, function(err) {
+      if(err) {
+        request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+      }
     })
+    // parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
+    //   request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    // })
     histTimerEnd({ success: true })
     return h.response().code(202)
   },
