@@ -32,8 +32,16 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const Async = require('async')
 const Config = require('../../../lib/config')
 
-var asyncQueue = Async.queue(function(task, callback) {
+var asyncQueue1 = Async.queue(function(task, callback) {
   parties.getPartiesByTypeAndID(task.request.headers, task.request.params, task.request.method, task.request.query, task.span).then(() => {
+    callback(null)
+  }).catch((err) => {
+    callback(err)
+  })
+}, Config.ASYNC_CONCURRENCY)
+
+var asyncQueue2 = Async.queue(function(task, callback) {
+  parties.putPartiesByTypeAndID(task.request.headers, task.request.params, task.request.method, task.request.payload, task.request.dataUri).then(() => {
     callback(null)
   }).catch((err) => {
     callback(err)
@@ -66,7 +74,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    asyncQueue.push({
+    asyncQueue1.push({
       request,
       span
     }, function(err) {
@@ -103,9 +111,17 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by putPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
-      request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    asyncQueue2.push({
+      request,
+      span
+    }, function(err) {
+      if(err) {
+        request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+      }
     })
+    // parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+    //   request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    // })
     histTimerEnd({ success: true })
     return h.response().code(200)
   }
