@@ -33,7 +33,7 @@ const Async = require('async')
 const Config = require('../../../lib/config')
 
 var asyncQueue1 = Async.queue(function(task, callback) {
-  parties.getPartiesByTypeAndID(task.request.headers, task.request.params, task.request.method, task.request.query, task.span).then(() => {
+  parties.getPartiesByTypeAndID(task.headers, task.params, task.method, task.query, task.span).then(() => {
     callback(null)
   }).catch((err) => {
     callback(err)
@@ -41,7 +41,7 @@ var asyncQueue1 = Async.queue(function(task, callback) {
 }, Config.ASYNC_CONCURRENCY)
 
 var asyncQueue2 = Async.queue(function(task, callback) {
-  parties.putPartiesByTypeAndID(task.request.headers, task.request.params, task.request.method, task.request.payload, task.request.dataUri).then(() => {
+  parties.putPartiesByTypeAndID(task.headers, task.params, task.method, task.payload, task.dataUri).then(() => {
     callback(null)
   }).catch((err) => {
     callback(err)
@@ -75,7 +75,10 @@ module.exports = {
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
     asyncQueue1.push({
-      request,
+      headers: { ...request.headers },
+      params: { ...request.params },
+      method: request.method,
+      query: { ...request.query },
       span
     }, function(err) {
       if(err) {
@@ -112,8 +115,11 @@ module.exports = {
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by putPartiesByTypeAndID.
     asyncQueue2.push({
-      request,
-      span
+      headers: { ...request.headers },
+      params: { ...request.params },
+      method: request.method,
+      payload: { ...request.payload },
+      dataUri: request.dataUri
     }, function(err) {
       if(err) {
         request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
