@@ -93,6 +93,7 @@
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.12.0",
     "ajv-keywords": "5.1.0",
+    "async": "^3.2.5",
     "blipp": "4.0.2",
     "commander": "11.1.0",
     "hapi-auth-bearer-token": "8.0.0",
