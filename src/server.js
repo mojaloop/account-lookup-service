@@ -27,6 +27,7 @@ const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
 const Uuid = require('uuid4')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
+const ParticipantCache = require('@mojaloop/central-services-shared').Util.Participants
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
@@ -113,6 +114,7 @@ const initializeApi = async (port = Config.API_PORT) => {
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+  await ParticipantCache.initializeCache(Config.PARTICIPANT_CACHE_CONFIG)
   return server
 }
 

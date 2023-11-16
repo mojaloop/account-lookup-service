@@ -203,7 +203,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri) 
         }
         options = partySubIdOrType ? { ...options, partySubIdOrType } : options
         const decodedPayload = decodePayload(dataUri, { asParsed: false })
-        await participant.sendRequest(headers, destinationParticipant.data.name, callbackEndpointType, Enums.Http.RestMethods.PUT, decodedPayload.body.toString(), options)
+        await participant.sendRequest(headers, destinationParticipant.name, callbackEndpointType, Enums.Http.RestMethods.PUT, decodedPayload.body.toString(), options)
         Logger.isInfoEnabled && Logger.info('parties::putPartiesByTypeAndID::end')
       } else {
         await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,

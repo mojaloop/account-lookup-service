@@ -31,7 +31,6 @@ const Util = require('@mojaloop/central-services-shared').Util
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const JwsSigner = require('@mojaloop/sdk-standard-components').Jws.signer
-const Mustache = require('mustache')
 const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../../lib/config')
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
@@ -111,17 +110,7 @@ exports.validateParticipant = async (fsp, span = undefined) => {
     ['success']
   ).startTimer()
   try {
-    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
-    Logger.isDebugEnabled && Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
-    const resp = await Util.Request.sendRequest(
-      requestedParticipantUrl,
-      Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value),
-      Enums.Http.Headers.FSPIOP.SWITCH.value,
-      Enums.Http.Headers.FSPIOP.SWITCH.value,
-      Enums.Http.RestMethods.GET,
-      null,
-      Enums.Http.ResponseTypes.JSON,
-      span)
+    const resp = await Util.Participants.getParticipant(Config.SWITCH_ENDPOINT, fsp)
     histTimerEnd({ success: true })
     return resp
   } catch (err) {
