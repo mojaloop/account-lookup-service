@@ -49,7 +49,7 @@ let sandbox
 
 describe('Parties Tests', () => {
   beforeEach(async () => {
-    await Endpoints.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+    await Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
     sandbox = Sinon.createSandbox()
     sandbox.stub(request)
     sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)

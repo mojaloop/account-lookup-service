@@ -117,8 +117,8 @@ const initializeApi = async (port = Config.API_PORT) => {
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
-  await ParticipantCache.initializeCache(Config.PARTICIPANT_CACHE_CONFIG)
+  await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
+  await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG)
   return server
 }
 
