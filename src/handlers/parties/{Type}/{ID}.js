@@ -56,7 +56,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

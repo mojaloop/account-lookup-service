@@ -33,10 +33,10 @@ const requestUtil = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
 const initServer = require('../../../../../../src/server').initializeApi
 const Db = require('../../../../../../src/lib/db')
-const oracleEndpoint = require('../../../../../../src/models/oracle')
 const parties = require('../../../../../../src/domain/parties')
 const participant = require('../../../../../../src/models/participantEndpoint/facade')
 const Helper = require('../../../../../util/helper')
+const oracleEndpointCached = require('../../../../../../src/models/oracle/oracleEndpointCached')
 
 let server
 let sandbox
@@ -121,7 +121,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
       sandbox.stub(participant, 'validateParticipant').resolves(true),
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
 
@@ -163,7 +163,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
       sandbox.stub(participant, 'validateParticipant').resolves(true),
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
 

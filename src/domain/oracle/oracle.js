@@ -33,6 +33,7 @@ const currency = require('../../models/currency')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
+const cachedOracleEndpoint = require('../../models/oracle/oracleEndpointCached')
 
 /**
  * @function createOracle
@@ -109,11 +110,11 @@ exports.getOracle = async (query) => {
       isType = true
     }
     if (isCurrency && isType) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(query.type, query.currency)
+      oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(query.type, query.currency)
     } else if (isCurrency && !isType) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByCurrency(query.currency)
+      oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByCurrency(query.currency)
     } else if (isType && !isCurrency) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByType(query.type)
+      oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByType(query.type)
     } else {
       oracleEndpointModelList = await oracleEndpoint.getAllOracleEndpoint()
     }

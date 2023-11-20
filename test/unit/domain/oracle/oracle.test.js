@@ -35,6 +35,7 @@ const oracleEndpoint = require('../../../../src/models/oracle')
 const currency = require('../../../../src/models/currency')
 const partyIdType = require('../../../../src/models/partyIdType')
 const Db = require('../../../../src/lib/db')
+const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
 
 const partyIdTypeResponse = {
   partyIdTypeId: 1,
@@ -105,6 +106,10 @@ describe('Oracle tests', () => {
     Db.oracleEndpoint.insert.returns(true)
     Db.oracleEndpoint.query.returns(getOracleDatabaseResponse)
     Db.oracleEndpoint.update.returns(true)
+
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleDatabaseResponse)
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleDatabaseResponse)
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByCurrency').returns(getOracleDatabaseResponse)
 
     SpanStub = {
       audit: sandbox.stub().callsFake(),

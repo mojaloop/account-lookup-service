@@ -32,7 +32,7 @@
 
 const Sinon = require('sinon')
 const Db = require('../../../../../src/lib/db')
-const oracleEndpoint = require('../../../../../src/models/oracle')
+const oracleEndpointCached = require('../../../../../src/models/oracle/oracleEndpointCached')
 const participant = require('../../../../../src/models/participantEndpoint/facade')
 const participants = require('../../../../../src/domain/participants')
 const requestLogger = require('../../../../../src/lib/requestLogger')
@@ -102,7 +102,7 @@ describe('/participants/{Type}/{ID}', () => {
       const stubs = [
         sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
         sandbox.stub(participant, 'validateParticipant').resolves(true),
-        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+        sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
         sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
       ]
       const response = await server.inject(options)
@@ -138,7 +138,7 @@ describe('/participants/{Type}/{ID}', () => {
       const stubs = [
         sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
         sandbox.stub(participant, 'validateParticipant').resolves(true),
-        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+        sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
         sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
       ]
       const response = await server.inject(options)

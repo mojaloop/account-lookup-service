@@ -40,6 +40,7 @@ const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
 const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
+const Cache = require('./lib/cache')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -74,6 +75,9 @@ const createServer = async (port, api, routes, isAdmin) => {
         output: 'stream'
       }
     }
+  })
+  server.app.cache = Cache.registerCacheClient({
+    id: 'serverGeneralCache'
   })
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
