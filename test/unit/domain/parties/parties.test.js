@@ -401,9 +401,7 @@ describe('Parties Tests', () => {
       expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({
-        data: {
-          name: 'fsp1'
-        }
+        name: 'fsp1'
       })
       participant.sendRequest = sandbox.stub().resolves()
       const payload = JSON.stringify({ testPayload: true })

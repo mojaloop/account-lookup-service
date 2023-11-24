@@ -58,7 +58,7 @@ exports.createOracle = async (payload) => {
 
     if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
       const err = new Error('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
-      Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
 
@@ -80,7 +80,7 @@ exports.createOracle = async (payload) => {
     return true
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -134,7 +134,7 @@ exports.getOracle = async (query) => {
     return oracleList
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -166,7 +166,7 @@ exports.updateOracle = async (params, payload) => {
 
       if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
         const err = new Error('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
-        Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
 
@@ -202,7 +202,7 @@ exports.updateOracle = async (params, payload) => {
     }
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -226,7 +226,7 @@ exports.deleteOracle = async (params) => {
     return true
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

@@ -68,7 +68,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         payload = { ...payload, partySubIdOrType }
       }
     }
-    Logger.debug(`Oracle endpoints: ${url}`)
+    Logger.isDebugEnabled && Logger.debug(`Oracle endpoints: ${url}`)
     const histTimerEnd = Metrics.getHistogram(
       'egress_oracleRequest',
       'Egress: oracleRequest',
@@ -83,7 +83,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       throw err
     }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
     if (
@@ -133,7 +133,7 @@ const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier,
       )
     }
   } else {
-    Logger.error(`Oracle type:${partyIdType} and currency:${currency} not found`)
+    Logger.isErrorEnabled && Logger.error(`Oracle type:${partyIdType} and currency:${currency} not found`)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType} and currency:${currency} not found`).toApiErrorObject(Config.ERROR_HANDLING)
   }
   return url
@@ -168,7 +168,7 @@ const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
       )
     }
   } else {
-    Logger.error(`Oracle type:${partyIdType} not found`)
+    Logger.isErrorEnabled && Logger.error(`Oracle type:${partyIdType} not found`)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type: ${partyIdType} not found`)
   }
   return url
@@ -204,7 +204,7 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
       )
     }
   } else {
-    Logger.error(`Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`)
+    Logger.isErrorEnabled && Logger.error(`Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`).toApiErrorObject(Config.ERROR_HANDLING)
   }
   return url
@@ -241,7 +241,7 @@ const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdenti
       )
     }
   } else {
-    Logger.error(`Oracle type: ${partyIdType}, currency: ${currency}, and subId: ${partySubIdOrType} not found`)
+    Logger.isErrorEnabled && Logger.error(`Oracle type: ${partyIdType}, currency: ${currency}, and subId: ${partySubIdOrType} not found`)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${partyIdType}, currency:${currency} and subId: ${partySubIdOrType} not found`).toApiErrorObject(Config.ERROR_HANDLING)
   }
   return url
@@ -280,14 +280,14 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
       } else {
         url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
       }
-      Logger.debug(`Oracle endpoints: ${url}`)
+      Logger.isDebugEnabled && Logger.debug(`Oracle endpoints: ${url}`)
       return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method, payload || undefined)
     } else {
-      Logger.error(`Oracle type:${type} not found`)
+      Logger.isErrorEnabled && Logger.error(`Oracle type:${type} not found`)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
     }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

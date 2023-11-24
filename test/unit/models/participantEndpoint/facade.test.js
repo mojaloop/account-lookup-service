@@ -28,6 +28,7 @@
 'use strict'
 
 const mockGetEndpoint = jest.fn()
+const mockGetParticipant = jest.fn()
 const mockSendRequest = jest.fn()
 const mockEnums = {
   Http: {
@@ -44,6 +45,7 @@ const src = '../../../../src'
 jest.mock('@mojaloop/central-services-shared', () => ({
   Util: {
     Endpoints: { getEndpoint: mockGetEndpoint },
+    Participants: { getParticipant: mockGetParticipant },
     Request: { sendRequest: mockSendRequest },
     Http: { SwitchDefaultHeaders: jest.fn() }
   },
@@ -51,7 +53,10 @@ jest.mock('@mojaloop/central-services-shared', () => ({
 }))
 
 describe('participantEndpoint Facade', () => {
-  beforeEach(() => jest.resetModules())
+  beforeEach(() => {
+    jest.resetModules()
+    jest.clearAllMocks()
+  })
 
   describe('sendRequest', () => {
     it('sends the most basic request', async () => {
@@ -134,7 +139,7 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       await expect(action()).rejects.toThrow('Request failed')
-      expect(mockSendRequest.mock.calls[1][9]).toMatchObject({
+      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -144,7 +149,7 @@ describe('participantEndpoint Facade', () => {
   describe('validateParticipant', () => {
     it('fails to validate the participant', async () => {
       // Arrange
-      mockSendRequest.mockImplementation(() => { throw new Error('Validate Request failed') })
+      mockGetParticipant.mockImplementation(() => { throw new Error('Validate Request failed') })
       const fspId = 'fsp1'
       const ParticipantFacade = require(`${src}/models/participantEndpoint/facade`)
 
@@ -247,8 +252,9 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      expect(typeof (mockSendRequest.mock.calls[4][8])).toBe('undefined')
-      expect(mockSendRequest.mock.calls[4][9]).toMatchObject({
+      console.log(mockSendRequest.mock.calls)
+      expect(typeof (mockSendRequest.mock.calls[0][8])).toBe('undefined')
+      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -302,8 +308,8 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      expect(typeof (mockSendRequest.mock.calls[5][8])).toBe('object')
-      expect(mockSendRequest.mock.calls[5][9]).toMatchObject({
+      expect(typeof (mockSendRequest.mock.calls[0][8])).toBe('object')
+      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
