@@ -25,6 +25,30 @@ To populate the database with tables and seeded valued, ensure that the correct 
 npm run migrate
 ```
 
+## Caching
+
+This services uses Mojaloop's `central-services-shared` library to fetch participants and participant endpoints from
+the central ledger. The cache's are initialized in `server.js`.
+
+```
+  await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+  await ParticipantCache.initializeCache(Config.PARTICIPANT_CACHE_CONFIG)
+```
+
+with the default config structure being
+```
+{
+    "expiresIn": 180000,
+    "generateTimeout": 30000,
+    "getDecoratedValue": true
+}
+```
+
+`getDecorated` used by the library for cache statistics and needs to be `true` for Prometheus metrics to display
+cache hits.
+
+Further configuration reading can be found here https://hapi.dev/module/catbox/api/?v=12.1.1#policy
+
 ## Start API
 
 To run the API and/or Admin servers run the following commands
