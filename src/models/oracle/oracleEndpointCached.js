@@ -3,7 +3,7 @@
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Cache = require('../../lib/cache')
 const Metrics = require('@mojaloop/central-services-metrics')
-const { getOracleEndpointByType, getOracleEndpointByTypeAndCurrency, getOracleEndpointByCurrency } = require('./oracleEndpoint')
+const OracleEndpointUncached = require('./oracleEndpoint')
 
 let cacheClient
 
@@ -27,11 +27,11 @@ const getOracleEndpointCached = async (params) => {
     // No oracleEndpoint in the cache, so fetch from participant API
     let oracleEndpoints
     if (partyIdType && currency) {
-      oracleEndpoints = await getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+      oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
     } else if (currency) {
-      oracleEndpoints = await getOracleEndpointByCurrency(currency)
+      oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByCurrency(currency)
     } else {
-      oracleEndpoints = await getOracleEndpointByType(partyIdType)
+      oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByType(partyIdType)
     }
 
     // store in cache

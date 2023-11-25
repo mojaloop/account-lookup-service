@@ -40,6 +40,7 @@ const Helper = require('../../../../util/helper')
 const initServer = require('../../../../../src/server').initializeApi
 const getPort = require('get-port')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
 const requestUtil = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
 
@@ -53,6 +54,8 @@ describe('/participants/{Type}/{ID}', () => {
     sandbox.stub(requestLogger, 'logRequest').returns({})
     sandbox.stub(requestLogger, 'logResponse').returns({})
     server = await initServer(await getPort())
+    sandbox.stub(Logger)
+    Logger.error = sandbox.stub()
   })
 
   afterAll(async () => {
