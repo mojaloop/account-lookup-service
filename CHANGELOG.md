@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [15.1.0](https://github.com/mojaloop/account-lookup-service/compare/v15.0.0...v15.1.0) (2023-11-24)
+
+
+### Features
+
+* **mojaloop/#3426:** add participant req caching, enable cache metrics, log fixes ([#465](https://github.com/mojaloop/account-lookup-service/issues/465)) ([803d671](https://github.com/mojaloop/account-lookup-service/commit/803d671f77acd97b224d0f7debed1e2edc5b10d5))
+
 ## [15.0.0](https://github.com/mojaloop/account-lookup-service/compare/v14.2.5...v15.0.0) (2023-11-07)
 
 
