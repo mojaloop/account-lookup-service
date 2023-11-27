@@ -37,7 +37,11 @@ const parties = require('../../../../../../src/domain/parties')
 const participant = require('../../../../../../src/models/participantEndpoint/facade')
 const Helper = require('../../../../../util/helper')
 const oracleEndpointCached = require('../../../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 

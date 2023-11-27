@@ -33,7 +33,11 @@ const request = require('@mojaloop/central-services-shared').Util.Request
 
 const OracleFacade = require('../../../../src/models/oracle/facade')
 const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 
 describe('Oracle Facade', () => {

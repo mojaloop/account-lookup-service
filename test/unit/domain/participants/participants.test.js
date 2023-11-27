@@ -41,6 +41,10 @@ const oracle = require('../../../../src/models/oracle/facade')
 const Helper = require('../../../util/helper')
 const Config = require('../../../../src/lib/config')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
+
 describe('participant Tests', () => {
   describe('getParticipantsByTypeAndID', () => {
     let sandbox

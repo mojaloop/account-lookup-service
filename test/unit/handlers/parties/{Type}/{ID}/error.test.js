@@ -37,7 +37,11 @@ const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/error`)
 const Helper = require('../../../../../util/helper')
 const LibUtil = require(`${src}/lib/util`)
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 const mockContext = jest.fn()

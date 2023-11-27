@@ -5,7 +5,11 @@ const OracleEndpointUncached = require('../../../../src/models/oracle/oracleEndp
 const Cache = require('../../../../src/lib/cache')
 const Model = require('../../../../src/models/oracle/oracleEndpointCached')
 const Db = require('../../../../src/lib/db')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 
 describe('ParticipantCurrency cached model', () => {

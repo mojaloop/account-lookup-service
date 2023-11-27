@@ -36,6 +36,11 @@ const currency = require('../../../../src/models/currency')
 const partyIdType = require('../../../../src/models/partyIdType')
 const Db = require('../../../../src/lib/db')
 const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
+
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 
 const partyIdTypeResponse = {
   partyIdTypeId: 1,
