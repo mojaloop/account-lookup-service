@@ -56,7 +56,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     try {
       await ParticipantEndpointCache.stopCache()
-      await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+      await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
       histTimerEnd({ success: true })
     } catch (err) {
       histTimerEnd({ success: false })

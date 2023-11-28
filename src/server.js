@@ -40,6 +40,7 @@ const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
 const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
+const Cache = require('./lib/cache')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -74,6 +75,9 @@ const createServer = async (port, api, routes, isAdmin) => {
         output: 'stream'
       }
     }
+  })
+  server.app.cache = Cache.registerCacheClient({
+    id: 'serverGeneralCache'
   })
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
@@ -113,8 +117,8 @@ const initializeApi = async (port = Config.API_PORT) => {
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
-  await ParticipantCache.initializeCache(Config.PARTICIPANT_CACHE_CONFIG)
+  await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
+  await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG)
   return server
 }
 

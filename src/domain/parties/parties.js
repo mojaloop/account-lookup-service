@@ -52,7 +52,7 @@ const Config = require('../../lib/config')
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
  */
-const getPartiesByTypeAndID = async (headers, params, method, query, span = undefined) => {
+const getPartiesByTypeAndID = async (headers, params, method, query, span = undefined, cache) => {
   const histTimerEnd = Metrics.getHistogram(
     'getPartiesByTypeAndID',
     'Get party by Type and Id',
@@ -95,7 +95,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         return
       }
 
-      const response = await oracle.oracleRequest(headers, method, params, query)
+      const response = await oracle.oracleRequest(headers, method, params, query, cache)
 
       if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
         // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records. We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:

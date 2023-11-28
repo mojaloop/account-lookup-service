@@ -26,9 +26,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
-const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
@@ -58,16 +56,11 @@ module.exports = {
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
-        request.server.log(['error'], `ERROR - getParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
-      })
-      histTimerEnd({ success: true })
-    } catch (err) {
-      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      histTimerEnd({ success: false })
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span).catch(err => {
+      request.server.log(['error'], `ERROR - getParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
+
     return h.response().code(202)
   },
   /**
@@ -84,16 +77,10 @@ module.exports = {
       ['success']
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
-        request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
-      })
-      histTimerEnd({ success: true })
-    } catch (err) {
-      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      histTimerEnd({ success: false })
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
+      request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(200)
   },
   /**
@@ -117,16 +104,10 @@ module.exports = {
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.postParticipants(request.headers, request.method, request.params, request.payload, span).catch(err => {
-        request.server.log(['error'], `ERROR - postParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
-      })
-      histTimerEnd({ success: true })
-    } catch (err) {
-      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      histTimerEnd({ success: false })
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, span).catch(err => {
+      request.server.log(['error'], `ERROR - postParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(202)
   },
   /**
@@ -143,16 +124,10 @@ module.exports = {
       ['success']
     ).startTimer()
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
-        request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
-      })
-      histTimerEnd({ success: true })
-    } catch (err) {
-      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      histTimerEnd({ success: false })
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
+      request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(202)
   }
 }

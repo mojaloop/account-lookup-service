@@ -36,15 +36,20 @@
   },
   "DISPLAY_ROUTES": true,
   "RUN_MIGRATIONS": true,
-  "ENDPOINT_CACHE_CONFIG": {
+  "CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
     "generateTimeout": 30000,
     "getDecoratedValue": true
   },
-  "PARTICIPANT_CACHE_CONFIG": {
+  "CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG": {
     "expiresIn": 61000,
     "generateTimeout": 30000,
     "getDecoratedValue": true
+  },
+  "ALS_GENERAL_CACHE_CONFIG": {
+    "CACHE_ENABLED": false,
+    "MAX_BYTE_SIZE": 10000000,
+    "EXPIRES_IN_MS": 61000
   },
   "ERROR_HANDLING": {
     "includeCauseExtension": false,

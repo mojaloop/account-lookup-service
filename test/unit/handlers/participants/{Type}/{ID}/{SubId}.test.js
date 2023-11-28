@@ -32,13 +32,17 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const requestUtil = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
 const Db = require('../../../../../../src/lib/db')
-const oracleEndpoint = require('../../../../../../src/models/oracle')
+const oracleEndpointCached = require('../../../../../../src/models/oracle/oracleEndpointCached')
 const participant = require('../../../../../../src/models/participantEndpoint/facade')
 const participants = require('../../../../../../src/domain/participants')
 const requestLogger = require('../../../../../../src/lib/requestLogger')
 const Helper = require('../../../../../util/helper')
 const initServer = require('../../../../../../src/server').initializeApi
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 
@@ -98,7 +102,7 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       const stubs = [
         sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
         sandbox.stub(participant, 'validateParticipant').resolves(true),
-        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+        sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
         sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
       ]
       const response = await server.inject(options)
@@ -134,7 +138,7 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
       const stubs = [
         sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
         sandbox.stub(participant, 'validateParticipant').resolves(true),
-        sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+        sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
         sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
       ]
       const response = await server.inject(options)

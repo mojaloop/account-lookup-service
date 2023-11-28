@@ -36,6 +36,11 @@ const initServer = require('../../../src/server').initializeAdmin
 const Db = require('../../../src/lib/db')
 const getPort = require('get-port')
 const Migrator = require('../../../src/lib/migrator')
+const Logger = require('@mojaloop/central-services-logger')
+
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 
 const getResponse = [{
   oracleId: '1',

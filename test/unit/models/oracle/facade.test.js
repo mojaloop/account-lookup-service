@@ -32,8 +32,12 @@ const Enums = require('@mojaloop/central-services-shared').Enum
 const request = require('@mojaloop/central-services-shared').Util.Request
 
 const OracleFacade = require('../../../../src/models/oracle/facade')
-const oracleEndpoint = require('../../../../src/models/oracle')
+const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 
 describe('Oracle Facade', () => {
@@ -71,7 +75,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: false
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {
 
       }
@@ -106,7 +110,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: true
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -139,7 +143,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: true
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -173,7 +177,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: true
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -216,7 +220,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: false
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -242,7 +246,7 @@ describe('Oracle Facade', () => {
       requestStub.resolves(true)
 
       const getOracleResponse = []
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -282,7 +286,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: false
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -308,7 +312,7 @@ describe('Oracle Facade', () => {
       requestStub.resolves(true)
 
       const getOracleResponse = []
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -331,7 +335,7 @@ describe('Oracle Facade', () => {
       requestStub.resolves(true)
 
       const getOracleResponse = []
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -364,7 +368,7 @@ describe('Oracle Facade', () => {
         },
         isDefault: true
       }]
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -402,7 +406,7 @@ describe('Oracle Facade', () => {
         isDefault: false
       }]
 
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -422,7 +426,7 @@ describe('Oracle Facade', () => {
       requestStub.resolves(true)
 
       const getOracleResponse = []
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -467,7 +471,7 @@ describe('Oracle Facade', () => {
         isDefault: false
       }]
 
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -498,7 +502,7 @@ describe('Oracle Facade', () => {
         isDefault: true
       }]
 
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'
@@ -522,7 +526,7 @@ describe('Oracle Facade', () => {
       requestStub.resolves(true)
 
       const getOracleResponse = []
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByTypeAndCurrency').resolves(getOracleResponse)
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleResponse)
       const headers = {}
       headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp01'
       headers[Enums.Http.Headers.FSPIOP.DESTINATION] = 'fsp02'

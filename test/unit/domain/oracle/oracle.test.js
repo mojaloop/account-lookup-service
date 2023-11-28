@@ -35,6 +35,12 @@ const oracleEndpoint = require('../../../../src/models/oracle')
 const currency = require('../../../../src/models/currency')
 const partyIdType = require('../../../../src/models/partyIdType')
 const Db = require('../../../../src/lib/db')
+const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
+
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 
 const partyIdTypeResponse = {
   partyIdTypeId: 1,
@@ -105,6 +111,10 @@ describe('Oracle tests', () => {
     Db.oracleEndpoint.insert.returns(true)
     Db.oracleEndpoint.query.returns(getOracleDatabaseResponse)
     Db.oracleEndpoint.update.returns(true)
+
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleDatabaseResponse)
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleDatabaseResponse)
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByCurrency').returns(getOracleDatabaseResponse)
 
     SpanStub = {
       audit: sandbox.stub().callsFake(),

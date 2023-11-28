@@ -51,9 +51,14 @@ jest.mock('@mojaloop/central-services-shared', () => ({
   },
   Enum: mockEnums
 }))
+const Logger = require('@mojaloop/central-services-logger')
+
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 
 describe('participantEndpoint Facade', () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
   })
