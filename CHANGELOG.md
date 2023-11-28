@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [15.2.0](https://github.com/mojaloop/account-lookup-service/compare/v15.1.0...v15.2.0) (2023-11-28)
+
+
+### Features
+
+* **mojaloop/#3427:** add oracle endpoint db caching and oracle request caching ([#467](https://github.com/mojaloop/account-lookup-service/issues/467)) ([42e93d0](https://github.com/mojaloop/account-lookup-service/commit/42e93d013427c69b93ad1b096bb480630528a047)), closes [mojaloop/#3427](https://github.com/mojaloop/project/issues/3427)
+
 ## [15.1.0](https://github.com/mojaloop/account-lookup-service/compare/v15.0.0...v15.1.0) (2023-11-24)
 
 
