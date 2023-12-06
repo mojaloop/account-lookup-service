@@ -42,7 +42,6 @@ const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
-const Cache = require('./lib/cache')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
