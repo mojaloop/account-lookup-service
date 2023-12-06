@@ -32,7 +32,6 @@
 const Sinon = require('sinon')
 const initServer = require('../../../../../src/server').initializeApi
 const Db = require('../../../../../src/lib/db')
-const oracleEndpoint = require('../../../../../src/models/oracle')
 const parties = require('../../../../../src/domain/parties')
 const participant = require('../../../../../src/models/participantEndpoint/facade')
 const getPort = require('get-port')
@@ -40,7 +39,12 @@ const Helper = require('../../../../util/helper')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const requestUtil = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
+const oracleEndpointCached = require('../../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 
@@ -128,7 +132,9 @@ describe('/parties', () => {
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
       sandbox.stub(participant, 'validateParticipant').resolves(true),
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').resolves(['whatever']),
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByCurrency').resolves(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
 
@@ -137,6 +143,7 @@ describe('/parties', () => {
 
     // Assert
     const errorCallStub = stubs[0]
+    console.log(errorCallStub.args[0][2].errorInformation)
     expect(errorCallStub.args[0][2].errorInformation.errorCode).toBe('3204')
     expect(errorCallStub.args[0][1]).toBe(Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR)
     expect(response.statusCode).toBe(202)
@@ -170,7 +177,7 @@ describe('/parties', () => {
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
       sandbox.stub(participant, 'validateParticipant').resolves(true),
-      sandbox.stub(oracleEndpoint, 'getOracleEndpointByType').resolves(['whatever']),
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
 

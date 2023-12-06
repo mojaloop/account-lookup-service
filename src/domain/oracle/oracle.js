@@ -33,6 +33,7 @@ const currency = require('../../models/currency')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
+const cachedOracleEndpoint = require('../../models/oracle/oracleEndpointCached')
 
 /**
  * @function createOracle
@@ -58,7 +59,7 @@ exports.createOracle = async (payload) => {
 
     if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
       const err = new Error('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
-      Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
 
@@ -80,7 +81,7 @@ exports.createOracle = async (payload) => {
     return true
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -109,11 +110,11 @@ exports.getOracle = async (query) => {
       isType = true
     }
     if (isCurrency && isType) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByTypeAndCurrency(query.type, query.currency)
+      oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(query.type, query.currency)
     } else if (isCurrency && !isType) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByCurrency(query.currency)
+      oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByCurrency(query.currency)
     } else if (isType && !isCurrency) {
-      oracleEndpointModelList = await oracleEndpoint.getOracleEndpointByType(query.type)
+      oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByType(query.type)
     } else {
       oracleEndpointModelList = await oracleEndpoint.getAllOracleEndpoint()
     }
@@ -134,7 +135,7 @@ exports.getOracle = async (query) => {
     return oracleList
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -166,7 +167,7 @@ exports.updateOracle = async (params, payload) => {
 
       if (existingActiveOracle.length > 0 && existingActiveOracle[0].isActive === 1) {
         const err = new Error('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
-        Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
 
@@ -202,7 +203,7 @@ exports.updateOracle = async (params, payload) => {
     }
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -226,7 +227,7 @@ exports.deleteOracle = async (params) => {
     return true
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

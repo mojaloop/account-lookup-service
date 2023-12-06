@@ -31,7 +31,6 @@ const Util = require('@mojaloop/central-services-shared').Util
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const JwsSigner = require('@mojaloop/sdk-standard-components').Jws.signer
-const Mustache = require('mustache')
 const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../../lib/config')
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
@@ -66,10 +65,10 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
   try {
     requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
     histTimerEndGetParticipantEndpoint({ success: true, endpointType, participantName: requestedParticipant })
-    Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
+    Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName: requestedParticipant })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
@@ -90,7 +89,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
     return resp
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName: requestedParticipant })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -111,22 +110,12 @@ exports.validateParticipant = async (fsp, span = undefined) => {
     ['success']
   ).startTimer()
   try {
-    const requestedParticipantUrl = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp })
-    Logger.debug(`validateParticipant url: ${requestedParticipantUrl}`)
-    const resp = await Util.Request.sendRequest(
-      requestedParticipantUrl,
-      Util.Http.SwitchDefaultHeaders(Enums.Http.Headers.FSPIOP.SWITCH.value, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.Headers.FSPIOP.SWITCH.value),
-      Enums.Http.Headers.FSPIOP.SWITCH.value,
-      Enums.Http.Headers.FSPIOP.SWITCH.value,
-      Enums.Http.RestMethods.GET,
-      null,
-      Enums.Http.ResponseTypes.JSON,
-      span)
+    const resp = await Util.Participants.getParticipant(Config.SWITCH_ENDPOINT, fsp)
     histTimerEnd({ success: true })
     return resp
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -168,7 +157,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     histTimerEndGetParticipantEndpoint({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
@@ -192,7 +181,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
     }
 
-    Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
+    Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
     let jwsSigner
     if (Config.JWS_SIGN && clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] === Config.FSPIOP_SOURCE_TO_SIGN) {
       // We need below 2 headers for JWS
@@ -200,7 +189,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       clonedHeaders[Enums.Http.Headers.FSPIOP.URI] = clonedHeaders[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requesterErrorEndpoint)[1]
       const logger = Logger
       logger.log = logger.info
-      Logger.debug('JWS is enabled, getting JwsSigner')
+      Logger.isDebugEnabled && Logger.debug('JWS is enabled, getting JwsSigner')
       jwsSigner = new JwsSigner({
         logger,
         signingKey: Config.JWS_SIGNING_KEY
@@ -210,7 +199,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName })
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

@@ -33,7 +33,11 @@ const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
 const Sinon = require('sinon')
 const MigrationLockModel = require('../../../../src/models/misc/migrationLock')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 let server
 
