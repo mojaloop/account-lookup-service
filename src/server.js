@@ -42,6 +42,7 @@ const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
+const Cache = require('./lib/cache')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -121,6 +122,7 @@ const initializeApi = async (port = Config.API_PORT) => {
   await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
   await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG)
   await OracleEndpointCache.initialize()
+  await Cache.initCache()
   return server
 }
 
