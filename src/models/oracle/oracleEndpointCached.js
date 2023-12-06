@@ -76,7 +76,8 @@ const getOracleEndpointCached = async (params) => {
 exports.initialize = async () => {
   /* Register as cache client */
   const oracleEndpointCacheClientMeta = {
-    id: 'oracleEndpoints'
+    id: 'oracleEndpoints',
+    preloadCache: async () => Promise.resolve()
   }
 
   cacheClient = Cache.registerCacheClient(oracleEndpointCacheClientMeta)

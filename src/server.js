@@ -78,7 +78,8 @@ const createServer = async (port, api, routes, isAdmin) => {
     }
   })
   server.app.cache = Cache.registerCacheClient({
-    id: 'serverGeneralCache'
+    id: 'serverGeneralCache',
+    preloadCache: async () => Promise.resolve()
   })
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
