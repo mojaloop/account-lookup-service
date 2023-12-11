@@ -32,7 +32,7 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const Async = require('async')
 const Config = require('../../../lib/config')
 
-var asyncQueue1 = Async.queue(function(task, callback) {
+const asyncQueue1 = Async.queue(function (task, callback) {
   parties.getPartiesByTypeAndID(task.headers, task.params, task.method, task.query, task.span).then(() => {
     callback(null)
   }).catch((err) => {
@@ -40,7 +40,7 @@ var asyncQueue1 = Async.queue(function(task, callback) {
   })
 }, Config.ASYNC_CONCURRENCY)
 
-var asyncQueue2 = Async.queue(function(task, callback) {
+const asyncQueue2 = Async.queue(function (task, callback) {
   parties.putPartiesByTypeAndID(task.headers, task.params, task.method, task.payload, task.dataUri).then(() => {
     callback(null)
   }).catch((err) => {
@@ -80,8 +80,8 @@ module.exports = {
       method: request.method,
       query: { ...request.query },
       span
-    }, function(err) {
-      if(err) {
+    }, function (err) {
+      if (err) {
         request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
       }
     })
@@ -120,8 +120,8 @@ module.exports = {
       method: request.method,
       payload: { ...request.payload },
       dataUri: request.dataUri
-    }, function(err) {
-      if(err) {
+    }, function (err) {
+      if (err) {
         request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
       }
     })
