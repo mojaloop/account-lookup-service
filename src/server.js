@@ -41,6 +41,7 @@ const Migrator = require('./lib/migrator')
 const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
 const Cache = require('./lib/cache')
+const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -77,7 +78,8 @@ const createServer = async (port, api, routes, isAdmin) => {
     }
   })
   server.app.cache = Cache.registerCacheClient({
-    id: 'serverGeneralCache'
+    id: 'serverGeneralCache',
+    preloadCache: async () => Promise.resolve()
   })
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
@@ -119,6 +121,8 @@ const initializeApi = async (port = Config.API_PORT) => {
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
   await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG)
+  await OracleEndpointCache.initialize()
+  await Cache.initCache()
   return server
 }
 

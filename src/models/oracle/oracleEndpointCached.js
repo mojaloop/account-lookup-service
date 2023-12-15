@@ -33,7 +33,7 @@ const OracleEndpointUncached = require('./oracleEndpoint')
 let cacheClient
 
 const getCacheKey = (params) => {
-  return `${Object.values(params).join('__')}`
+  return cacheClient.createKey(`${Object.values(params).join('__')}`)
 }
 
 const getOracleEndpointCached = async (params) => {
@@ -58,9 +58,9 @@ const getOracleEndpointCached = async (params) => {
     } else {
       oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByType(partyIdType)
     }
-
     // store in cache
-    cacheClient.set(cacheClient, oracleEndpoints)
+    cacheClient.set(cacheKey, oracleEndpoints)
+    cachedEndpoints = oracleEndpoints
     histTimer({ success: true, queryName: 'model_getOracleEndpointCached', hit: false })
   } else {
     // unwrap oracleEnpoints list from catbox structure
@@ -76,7 +76,8 @@ const getOracleEndpointCached = async (params) => {
 exports.initialize = async () => {
   /* Register as cache client */
   const oracleEndpointCacheClientMeta = {
-    id: 'oracleEndpoints'
+    id: 'oracleEndpoints',
+    preloadCache: async () => Promise.resolve()
   }
 
   cacheClient = Cache.registerCacheClient(oracleEndpointCacheClientMeta)

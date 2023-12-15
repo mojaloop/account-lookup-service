@@ -77,7 +77,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     try {
       if (isGetRequest) {
         let cachedOracleFspResponse
-        cachedOracleFspResponse = cache && cache.get(`oracleSendRequest_${url}`)
+        cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
         if (!cachedOracleFspResponse) {
           cachedOracleFspResponse = await request.sendRequest(
             url,
@@ -87,7 +87,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
             method.toUpperCase(),
             payload || undefined
           )
-          cache && cache.set(`oracleSendRequest_${url}`, cachedOracleFspResponse)
+          cache && cache.set(cache.createKey(`oracleSendRequest_${url}`), cachedOracleFspResponse)
         } else {
           Logger.isDebugEnabled && Logger.debug(`${new Date().toISOString()}, [oracleRequest]: cache hit for fsp for partyId lookup`)
         }

@@ -83,12 +83,12 @@ const registerCacheClient = (clientMeta) => {
 
 const initCache = async function () {
   // Read config
-  ttl = Config.ALS_GENERAL_CACHE_CONFIG.EXPIRES_IN_MS
-  enabled = Config.ALS_GENERAL_CACHE_CONFIG.CACHE_ENABLED
+  ttl = Config.GENERAL_CACHE_CONFIG.EXPIRES_IN_MS
+  enabled = Config.GENERAL_CACHE_CONFIG.CACHE_ENABLED
 
   // Init catbox.
   catboxMemoryClient = new CatboxMemory.Engine({
-    maxByteSize: Config.ALS_GENERAL_CACHE_CONFIG.MAX_BYTE_SIZE
+    maxByteSize: Config.GENERAL_CACHE_CONFIG.MAX_BYTE_SIZE
   })
   catboxMemoryClient.start()
 

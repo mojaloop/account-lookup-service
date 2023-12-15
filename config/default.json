@@ -46,7 +46,7 @@
     "generateTimeout": 30000,
     "getDecoratedValue": true
   },
-  "ALS_GENERAL_CACHE_CONFIG": {
+  "GENERAL_CACHE_CONFIG": {
     "CACHE_ENABLED": false,
     "MAX_BYTE_SIZE": 10000000,
     "EXPIRES_IN_MS": 61000
