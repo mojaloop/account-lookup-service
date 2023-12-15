@@ -47,7 +47,7 @@ module.exports = {
       'Ingress: Get participant by Type, ID and SubId',
       ['success']
     ).startTimer()
-    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -66,7 +66,7 @@ module.exports = {
       'Ingress: Put participant by Type, ID and SubId',
       ['success']
     ).startTimer()
-    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -85,7 +85,7 @@ module.exports = {
       'Ingress: Post participant by Type, ID and SubId',
       ['success']
     ).startTimer()
-    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span).catch(err => {
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -104,7 +104,7 @@ module.exports = {
       'Ingress: Delete participant by Type, ID and SubId',
       ['success']
     ).startTimer()
-    participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

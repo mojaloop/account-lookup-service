@@ -34,6 +34,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
 const cachedOracleEndpoint = require('../oracle/oracleEndpointCached')
+const safeStringify = require('fast-safe-stringify')
 
 /**
  * @function oracleRequest
@@ -72,7 +73,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const histTimerEnd = Metrics.getHistogram(
       'egress_oracleRequest',
       'Egress: oracleRequest',
-      ['success']
+      ['success', 'hit']
     ).startTimer()
     try {
       if (isGetRequest) {
@@ -87,12 +88,14 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
             method.toUpperCase(),
             payload || undefined
           )
-          cache && cache.set(cache.createKey(`oracleSendRequest_${url}`), cachedOracleFspResponse)
+          cache && cache.set(cache.createKey(`oracleSendRequest_${url}`), safeStringify(cachedOracleFspResponse))
+          histTimerEnd({ success: true, hit: false })
         } else {
+          cachedOracleFspResponse = JSON.parse(cachedOracleFspResponse.item)
+          histTimerEnd({ success: true, hit: true })
           Logger.isDebugEnabled && Logger.debug(`${new Date().toISOString()}, [oracleRequest]: cache hit for fsp for partyId lookup`)
         }
 
-        histTimerEnd({ success: true })
         return cachedOracleFspResponse
       }
 
@@ -105,7 +108,8 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         payload || undefined
       )
     } catch (err) {
-      histTimerEnd({ success: false })
+      histTimerEnd({ success: false, hit: false })
+      Logger.isErrorEnabled && Logger.error(err)
       throw err
     }
   } catch (err) {
