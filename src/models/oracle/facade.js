@@ -34,7 +34,6 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
 const cachedOracleEndpoint = require('../oracle/oracleEndpointCached')
-const safeStringify = require('fast-safe-stringify')
 
 /**
  * @function oracleRequest
@@ -88,10 +87,18 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
             method.toUpperCase(),
             payload || undefined
           )
-          cache && cache.set(cache.createKey(`oracleSendRequest_${url}`), safeStringify(cachedOracleFspResponse))
+          // Trying to cache the whole response object will fail because it contains circular references
+          // so we'll just cache the data property of the response.
+          cachedOracleFspResponse = {
+            data: cachedOracleFspResponse.data
+          }
+          cache && cache.set(
+            cache.createKey(`oracleSendRequest_${url}`),
+            cachedOracleFspResponse
+          )
           histTimerEnd({ success: true, hit: false })
         } else {
-          cachedOracleFspResponse = JSON.parse(cachedOracleFspResponse.item)
+          cachedOracleFspResponse = cachedOracleFspResponse.item
           histTimerEnd({ success: true, hit: true })
           Logger.isDebugEnabled && Logger.debug(`${new Date().toISOString()}, [oracleRequest]: cache hit for fsp for partyId lookup`)
         }
