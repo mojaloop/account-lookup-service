@@ -37,7 +37,9 @@ pushd $ML_CORE_TEST_HARNESS_DIR
 
   ## Start the test harness
   echo "==> Starting Docker compose"
-  docker compose --project-name ttk-func --ansi never --profile all-services --profile ttk-provisioning --profile ttk-tests up -d
+  ## For some reason the env vars are not overriding the .env file found in the ttk repo
+  ## So we're setting it in the command
+  ACCOUNT_LOOKUP_SERVICE_VERSION=local docker compose --project-name ttk-func --ansi never --profile all-services --profile ttk-provisioning --profile ttk-tests up -d
 
   echo "==> Running wait-for-container.sh $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME"
   ## Wait for the test harness to complete, and capture the exit code
