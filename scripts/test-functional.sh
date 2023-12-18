@@ -32,7 +32,6 @@ TTK_FUNC_TEST_EXIT_CODE=1
 ## Change to the test harness directory
 pushd $ML_CORE_TEST_HARNESS_DIR
 
-  docker ps
   ## Make reports directory
   mkdir ./reports
 
@@ -46,6 +45,9 @@ pushd $ML_CORE_TEST_HARNESS_DIR
   ## Capture exit code for test harness
   TTK_FUNC_TEST_EXIT_CODE="$?"
   echo "==> wait-for-container.sh exited with code: $TTK_FUNC_TEST_EXIT_CODE"
+
+  ## Print docker containers
+  docker ps
 
   ## Copy the test results
   docker logs $ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME > ./reports/ttk-provisioning-console.log
