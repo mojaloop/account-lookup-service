@@ -32,6 +32,7 @@ TTK_FUNC_TEST_EXIT_CODE=1
 ## Change to the test harness directory
 pushd $ML_CORE_TEST_HARNESS_DIR
 
+  docker ps
   ## Make reports directory
   mkdir ./reports
 
