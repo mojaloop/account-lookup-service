@@ -24,6 +24,11 @@
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
+  "CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG": {
+    "expiresIn": 1,
+    "generateTimeout": 30000,
+    "getDecoratedValue": true
+  },
   "SWITCH_ENDPOINT": "http://localhost:3001",
   "INSTRUMENTATION": {
     "METRICS": {
