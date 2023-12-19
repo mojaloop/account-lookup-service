@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 'use-strict'
-const util = require('util')
 const fs = require('fs')
 const { promisify } = require('util')
 const readFileAsync = promisify(fs.readFile)
@@ -16,11 +15,11 @@ const writeFileAsync = promisify(fs.writeFile)
  */
 
 // Validate command line arguments
-if (process.argv.length != 5) {
+if (process.argv.length !== 5) {
   console.log('Usage: ./run.js <original_file> <override_file> <new_file>')
   process.exit(1)
 }
-const myArgs = process.argv.slice(2);
+const myArgs = process.argv.slice(2)
 const ORIGINAL_FILE = myArgs[0]
 const OVERRIDE_FILE = myArgs[1]
 const NEW_FILE = myArgs[2]
@@ -33,9 +32,9 @@ async function main () {
 
     // Read the Json file `default.json`
     const overrideConfig = require(OVERRIDE_FILE)
-    
+
     // Merge the config in config/central-ledger.js into default.json
-    const newConfig = deepMerge(origConfig,overrideConfig)
+    const newConfig = deepMerge(origConfig, overrideConfig)
     // Write the new default.json
     await writeFileAsync(NEW_FILE, JSON.stringify(newConfig, null, 2))
 
@@ -57,24 +56,25 @@ main()
  * @param {object} object3 - and so on ...
  */
 const deepMerge = function () {
-	// Setup merged object
-	const newObj = {}
-	// Merge the object into the newObj object
-	const merge = function (obj) {
-		for (var prop in obj) {
-			if (obj.hasOwnProperty(prop)) {
-				// If property is an object, merge properties
-				if (Object.prototype.toString.call(obj[prop]) === '[object Object]') {
-					newObj[prop] = deepMerge(newObj[prop], obj[prop])
-				} else {
-					newObj[prop] = obj[prop]
-				}
-			}
-		}
-	};
-	// Loop through each object and conduct a merge
-	for (var i = 0; i < arguments.length; i++) {
-		merge(arguments[i])
-	}
-	return newObj
+  // Setup merged object
+  const newObj = {}
+  // Merge the object into the newObj object
+  const merge = function (obj) {
+    for (const prop in obj) {
+      // eslint-disable-next-line
+      if (obj.hasOwnProperty(prop)) {
+        // If property is an object, merge properties
+        if (Object.prototype.toString.call(obj[prop]) === '[object Object]') {
+          newObj[prop] = deepMerge(newObj[prop], obj[prop])
+        } else {
+          newObj[prop] = obj[prop]
+        }
+      }
+    }
+  }
+  // Loop through each object and conduct a merge
+  for (let i = 0; i < arguments.length; i++) {
+    merge(arguments[i])
+  }
+  return newObj
 }
