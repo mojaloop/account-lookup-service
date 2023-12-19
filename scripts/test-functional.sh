@@ -25,6 +25,7 @@ git clone --depth 1 --branch $ML_CORE_TEST_HARNESS_VERSION $ML_CORE_TEST_HARNESS
 
 echo "==> Copying configs from ./docker/config-modifier/*.* to $ML_CORE_TEST_HARNESS_DIR/docker/config-modifier/configs/"
 cp -f ./docker/config-modifier/*.* $ML_CORE_TEST_HARNESS_DIR/docker/config-modifier/configs/
+cat $ML_CORE_TEST_HARNESS_DIR/docker/config-modifier/configs/account-lookup-service.js
 
 ## Set initial exit code value to 1 (i.e. assume error!)
 TTK_FUNC_TEST_EXIT_CODE=1
