@@ -43,9 +43,7 @@ pushd $ML_CORE_TEST_HARNESS_DIR
 
   echo "==> Running wait-for-container.sh $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME"
   ## Wait for the test harness to complete, and capture the exit code
-  docker wait $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME
-  ## Capture exit code for test harness
-  TTK_FUNC_TEST_EXIT_CODE="$?"
+  TTK_FUNC_TEST_EXIT_CODE=$(docker wait $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME)
   echo "==> exited with code: $TTK_FUNC_TEST_EXIT_CODE"
 
   ## Print docker containers
