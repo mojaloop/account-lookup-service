@@ -5,7 +5,7 @@ module.exports = {
   },
   SWITCH_ENDPOINT: 'http://central-ledger:3001',
   ALS_GENERAL_CACHE_CONFIG: {
-    CACHE_ENABLED: true,
+    CACHE_ENABLED: false,
     MAX_BYTE_SIZE: 10000000,
     EXPIRES_IN_MS: 61000
   },

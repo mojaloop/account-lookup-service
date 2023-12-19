@@ -52,6 +52,7 @@ pushd $ML_CORE_TEST_HARNESS_DIR
   docker ps
 
   ## Copy the test results
+  docker logs account-lookup-service > ./reports/account-lookup-service-console.log
   docker logs $ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME > ./reports/ttk-provisioning-console.log
   docker logs $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME > ./reports/ttk-tests-console.log
 
