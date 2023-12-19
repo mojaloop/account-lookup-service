@@ -77,7 +77,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     try {
       if (isGetRequest) {
         let cachedOracleFspResponse
-        cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
+        cachedOracleFspResponse = cache && await cache.get(cache.createKey(`oracleSendRequest_${url}`))
         if (!cachedOracleFspResponse) {
           cachedOracleFspResponse = await request.sendRequest(
             url,
@@ -92,7 +92,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
           cachedOracleFspResponse = {
             data: cachedOracleFspResponse.data
           }
-          cache && cache.set(
+          cache && await cache.set(
             cache.createKey(`oracleSendRequest_${url}`),
             cachedOracleFspResponse
           )

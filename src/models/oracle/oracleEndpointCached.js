@@ -47,7 +47,7 @@ const getOracleEndpointCached = async (params) => {
 
   // Do we have valid participants list in the cache ?
   const cacheKey = getCacheKey(params)
-  let cachedEndpoints = cacheClient.get(cacheKey)
+  let cachedEndpoints = await cacheClient.get(cacheKey)
   if (!cachedEndpoints) {
     // No oracleEndpoint in the cache, so fetch from participant API
     let oracleEndpoints
@@ -59,11 +59,11 @@ const getOracleEndpointCached = async (params) => {
       oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByType(partyIdType)
     }
     // store in cache
-    cacheClient.set(cacheKey, oracleEndpoints)
+    await cacheClient.set(cacheKey, oracleEndpoints)
     cachedEndpoints = oracleEndpoints
     histTimer({ success: true, queryName: 'model_getOracleEndpointCached', hit: false })
   } else {
-    // unwrap oracleEnpoints list from catbox structure
+    // unwrap oracleEndpoints list from catbox structure
     cachedEndpoints = cachedEndpoints.item
     histTimer({ success: true, queryName: 'model_getOracleEndpointCached', hit: true })
   }

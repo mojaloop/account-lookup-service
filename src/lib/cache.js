@@ -48,19 +48,19 @@ class CacheClient {
     }
   }
 
-  get (key) {
+  async get (key) {
     if (enabled) {
-      return catboxMemoryClient.get(key)
+      return await catboxMemoryClient.get(key)
     }
     return null
   }
 
-  set (key, value) {
-    catboxMemoryClient.set(key, value, parseInt(ttl))
+  async set (key, value) {
+    await catboxMemoryClient.set(key, value, parseInt(ttl))
   }
 
-  drop (key) {
-    catboxMemoryClient.drop(key)
+  async drop (key) {
+    await catboxMemoryClient.drop(key)
   }
 }
 
@@ -90,7 +90,7 @@ const initCache = async function () {
   catboxMemoryClient = new CatboxMemory.Engine({
     maxByteSize: Config.GENERAL_CACHE_CONFIG.MAX_BYTE_SIZE
   })
-  catboxMemoryClient.start()
+  await catboxMemoryClient.start()
 
   for (const clientId in cacheClients) {
     const clientMeta = cacheClients[clientId].getMeta()
@@ -99,7 +99,7 @@ const initCache = async function () {
 }
 
 const destroyCache = async function () {
-  catboxMemoryClient.stop()
+  await catboxMemoryClient.stop()
   catboxMemoryClient = null
 }
 
