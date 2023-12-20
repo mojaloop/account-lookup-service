@@ -4,7 +4,7 @@ module.exports = {
     SCHEMA: 'account_lookup'
   },
   SWITCH_ENDPOINT: 'http://central-ledger:3001',
-  ALS_GENERAL_CACHE_CONFIG: {
+  GENERAL_CACHE_CONFIG: {
     CACHE_ENABLED: true,
     MAX_BYTE_SIZE: 10000000,
     EXPIRES_IN_MS: 61000

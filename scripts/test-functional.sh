@@ -3,13 +3,13 @@
 echo "--=== Running Functional Test Runner ===--"
 echo
 
-ACCOUNT_LOOKUP_SERVICE_VERSION=${ACCOUNT_LOOKUP_SERVICE_VERSION:-"local"}
-ML_CORE_TEST_HARNESS_VERSION=${ML_CORE_TEST_HARNESS_VERSION:-"v1.2.3"}
-ML_CORE_TEST_HARNESS_GIT=${ML_CORE_TEST_HARNESS_GIT:-"https://github.com/mojaloop/ml-core-test-harness.git"}
-ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME:-"ttk-func-ttk-provisioning-1"}
-ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME:-"ttk-func-ttk-tests-1"}
-ML_CORE_TEST_HARNESS_DIR=${ML_CORE_TEST_HARNESS_DIR:-"/tmp/ml-api-adapter-core-test-harness"}
-ML_CORE_TEST_SKIP_SHUTDOWN=${ML_CORE_TEST_SKIP_SHUTDOWN:-false}
+export ACCOUNT_LOOKUP_SERVICE_VERSION=${ACCOUNT_LOOKUP_SERVICE_VERSION:-"local"}
+export ML_CORE_TEST_HARNESS_VERSION=${ML_CORE_TEST_HARNESS_VERSION:-"v1.2.3"}
+export ML_CORE_TEST_HARNESS_GIT=${ML_CORE_TEST_HARNESS_GIT:-"https://github.com/mojaloop/ml-core-test-harness.git"}
+export ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME:-"ttk-func-ttk-provisioning-1"}
+export ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME:-"ttk-func-ttk-tests-1"}
+export ML_CORE_TEST_HARNESS_DIR=${ML_CORE_TEST_HARNESS_DIR:-"/tmp/ml-api-adapter-core-test-harness"}
+export ML_CORE_TEST_SKIP_SHUTDOWN=${ML_CORE_TEST_SKIP_SHUTDOWN:-false}
 
 echo "==> Variables:"
 echo "====> ACCOUNT_LOOKUP_SERVICE_VERSION=$ACCOUNT_LOOKUP_SERVICE_VERSION"
@@ -38,9 +38,7 @@ pushd $ML_CORE_TEST_HARNESS_DIR
 
   ## Start the test harness
   echo "==> Starting Docker compose"
-  ## For some reason the env vars are not overriding the .env file found in the ttk repo
-  ## So we're setting it in the command
-  ACCOUNT_LOOKUP_SERVICE_VERSION=local docker compose --project-name ttk-func --ansi never --profile all-services --profile ttk-provisioning --profile ttk-tests up -d
+  docker compose --project-name ttk-func --ansi never --profile all-services --profile ttk-provisioning --profile ttk-tests up -d
 
   echo "==> Running wait-for-container.sh $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME"
   ## Wait for the test harness to complete, and capture the exit code

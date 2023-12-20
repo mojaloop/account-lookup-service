@@ -48,19 +48,19 @@ class CacheClient {
     }
   }
 
-  async get (key) {
+  get (key) {
     if (enabled) {
-      return await catboxMemoryClient.get(key)
+      return catboxMemoryClient.get(key)
     }
     return null
   }
 
-  async set (key, value) {
-    await catboxMemoryClient.set(key, value, parseInt(ttl))
+  set (key, value) {
+    catboxMemoryClient.set(key, value, parseInt(ttl))
   }
 
-  async drop (key) {
-    await catboxMemoryClient.drop(key)
+  drop (key) {
+    catboxMemoryClient.drop(key)
   }
 }
 
