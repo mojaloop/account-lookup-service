@@ -59,7 +59,7 @@ describe('Config tests', () => {
     })
 
     it('get() should call Catbox Memory get()', async () => {
-      Config.ALS_GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
+      Config.GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
       const getSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'get')
 
       const cacheClient = Cache.registerCacheClient({
@@ -79,7 +79,7 @@ describe('Config tests', () => {
     })
 
     it('get() should NOT call Catbox Memory get() when cache is disabled', async () => {
-      Config.ALS_GENERAL_CACHE_CONFIG.CACHE_ENABLED = false
+      Config.GENERAL_CACHE_CONFIG.CACHE_ENABLED = false
       const getSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'get')
 
       const cacheClient = Cache.registerCacheClient({
@@ -99,7 +99,7 @@ describe('Config tests', () => {
     })
 
     it('set() should call Catbox Memory set() and should work', async () => {
-      Config.ALS_GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
+      Config.GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
       const getSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'get')
       const setSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'set')
       const cacheClient = Cache.registerCacheClient({
@@ -129,7 +129,7 @@ describe('Config tests', () => {
     })
 
     it('drop() works', async () => {
-      Config.ALS_GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
+      Config.GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
       const getSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'get')
       const setSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'set')
       const dropSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'drop')

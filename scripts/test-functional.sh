@@ -3,13 +3,13 @@
 echo "--=== Running Functional Test Runner ===--"
 echo
 
-ACCOUNT_LOOKUP_SERVICE_VERSION=${ACCOUNT_LOOKUP_SERVICE_VERSION:-"local"}
-ML_CORE_TEST_HARNESS_VERSION=${ML_CORE_TEST_HARNESS_VERSION:-"v1.1.1"}
-ML_CORE_TEST_HARNESS_GIT=${ML_CORE_TEST_HARNESS_GIT:-"https://github.com/mojaloop/ml-core-test-harness.git"}
-ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME:-"ttk-func-ttk-provisioning-1"}
-ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME:-"ttk-func-ttk-tests-1"}
-ML_CORE_TEST_HARNESS_DIR=${ML_CORE_TEST_HARNESS_DIR:-"/tmp/ml-api-adapter-core-test-harness"}
-ML_CORE_TEST_SKIP_SHUTDOWN=${ML_CORE_TEST_SKIP_SHUTDOWN:-false}
+export ACCOUNT_LOOKUP_SERVICE_VERSION=${ACCOUNT_LOOKUP_SERVICE_VERSION:-"local"}
+export ML_CORE_TEST_HARNESS_VERSION=${ML_CORE_TEST_HARNESS_VERSION:-"v1.2.3"}
+export ML_CORE_TEST_HARNESS_GIT=${ML_CORE_TEST_HARNESS_GIT:-"https://github.com/mojaloop/ml-core-test-harness.git"}
+export ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME:-"ttk-func-ttk-provisioning-1"}
+export ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME=${ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME:-"ttk-func-ttk-tests-1"}
+export ML_CORE_TEST_HARNESS_DIR=${ML_CORE_TEST_HARNESS_DIR:-"/tmp/ml-api-adapter-core-test-harness"}
+export ML_CORE_TEST_SKIP_SHUTDOWN=${ML_CORE_TEST_SKIP_SHUTDOWN:-false}
 
 echo "==> Variables:"
 echo "====> ACCOUNT_LOOKUP_SERVICE_VERSION=$ACCOUNT_LOOKUP_SERVICE_VERSION"
@@ -25,6 +25,7 @@ git clone --depth 1 --branch $ML_CORE_TEST_HARNESS_VERSION $ML_CORE_TEST_HARNESS
 
 echo "==> Copying configs from ./docker/config-modifier/*.* to $ML_CORE_TEST_HARNESS_DIR/docker/config-modifier/configs/"
 cp -f ./docker/config-modifier/*.* $ML_CORE_TEST_HARNESS_DIR/docker/config-modifier/configs/
+cat $ML_CORE_TEST_HARNESS_DIR/docker/config-modifier/configs/account-lookup-service.js
 
 ## Set initial exit code value to 1 (i.e. assume error!)
 TTK_FUNC_TEST_EXIT_CODE=1
@@ -41,12 +42,14 @@ pushd $ML_CORE_TEST_HARNESS_DIR
 
   echo "==> Running wait-for-container.sh $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME"
   ## Wait for the test harness to complete, and capture the exit code
-  bash wait-for-container.sh $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME
-  ## Capture exit code for test harness
-  TTK_FUNC_TEST_EXIT_CODE="$?"
-  echo "==> wait-for-container.sh exited with code: $TTK_FUNC_TEST_EXIT_CODE"
+  TTK_FUNC_TEST_EXIT_CODE=$(docker wait $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME)
+  echo "==> exited with code: $TTK_FUNC_TEST_EXIT_CODE"
+
+  ## Print docker containers
+  docker ps
 
   ## Copy the test results
+  docker logs account-lookup-service > ./reports/account-lookup-service-console.log
   docker logs $ML_CORE_TEST_HARNESS_TEST_PROV_CONT_NAME > ./reports/ttk-provisioning-console.log
   docker logs $ML_CORE_TEST_HARNESS_TEST_FUNC_CONT_NAME > ./reports/ttk-tests-console.log
 

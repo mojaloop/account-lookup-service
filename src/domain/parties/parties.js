@@ -67,6 +67,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
     const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
     const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
+
     if (requesterParticipantModel) {
       let options = {
         partyIdType: type,
@@ -94,9 +95,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         }
         return
       }
-
-      const response = await oracle.oracleRequest(headers, method, params, query, cache)
-
+      const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache)
       if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
         // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records. We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
         let filteredResponsePartyList

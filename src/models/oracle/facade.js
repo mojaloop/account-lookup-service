@@ -72,12 +72,12 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const histTimerEnd = Metrics.getHistogram(
       'egress_oracleRequest',
       'Egress: oracleRequest',
-      ['success']
+      ['success', 'hit']
     ).startTimer()
     try {
       if (isGetRequest) {
         let cachedOracleFspResponse
-        cachedOracleFspResponse = cache && cache.get(`oracleSendRequest_${url}`)
+        cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
         if (!cachedOracleFspResponse) {
           cachedOracleFspResponse = await request.sendRequest(
             url,
@@ -87,12 +87,22 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
             method.toUpperCase(),
             payload || undefined
           )
-          cache && cache.set(`oracleSendRequest_${url}`, cachedOracleFspResponse)
+          // Trying to cache the whole response object will fail because it contains circular references
+          // so we'll just cache the data property of the response.
+          cachedOracleFspResponse = {
+            data: cachedOracleFspResponse.data
+          }
+          cache && cache.set(
+            cache.createKey(`oracleSendRequest_${url}`),
+            cachedOracleFspResponse
+          )
+          histTimerEnd({ success: true, hit: false })
         } else {
+          cachedOracleFspResponse = cachedOracleFspResponse.item
+          histTimerEnd({ success: true, hit: true })
           Logger.isDebugEnabled && Logger.debug(`${new Date().toISOString()}, [oracleRequest]: cache hit for fsp for partyId lookup`)
         }
 
-        histTimerEnd({ success: true })
         return cachedOracleFspResponse
       }
 
@@ -105,7 +115,8 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         payload || undefined
       )
     } catch (err) {
-      histTimerEnd({ success: false })
+      histTimerEnd({ success: false, hit: false })
+      Logger.isErrorEnabled && Logger.error(err)
       throw err
     }
   } catch (err) {
