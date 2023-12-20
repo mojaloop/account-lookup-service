@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [15.2.1](https://github.com/mojaloop/account-lookup-service/compare/v15.2.0...v15.2.1) (2023-12-20)
+
+
+### Bug Fixes
+
+* **mojaloop/#3682:** fix cache implementation ([#468](https://github.com/mojaloop/account-lookup-service/issues/468)) ([b2458d9](https://github.com/mojaloop/account-lookup-service/commit/b2458d9afa00e7e47ae38670286d0d0314454330))
+
 ## [15.2.0](https://github.com/mojaloop/account-lookup-service/compare/v15.1.0...v15.2.0) (2023-11-28)
 
 
