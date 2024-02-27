@@ -111,8 +111,8 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
         }
 
         if (filteredResponsePartyList == null || !(Array.isArray(filteredResponsePartyList) && filteredResponsePartyList.length > 0)) {
-          Logger.isErrorEnabled && Logger.error('Requester FSP not found')
-          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+          Logger.isErrorEnabled && Logger.error('Requested FSP/Party not found')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requested FSP/Party not found')
         }
 
         for (const party of filteredResponsePartyList) {
