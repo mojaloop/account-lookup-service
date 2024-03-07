@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [15.2.3](https://github.com/mojaloop/account-lookup-service/compare/v15.2.2...v15.2.3) (2024-03-07)
+
+
+### Chore
+
+* **mojaloop/#3759:** update central shared ([#470](https://github.com/mojaloop/account-lookup-service/issues/470)) ([3f6b233](https://github.com/mojaloop/account-lookup-service/commit/3f6b233420ebb6d78d88fdc81c27ff2c12caeeb2)), closes [mojaloop/#3759](https://github.com/mojaloop/project/issues/3759)
+
 ### [15.2.2](https://github.com/mojaloop/account-lookup-service/compare/v15.2.1...v15.2.2) (2024-03-01)
 
 
