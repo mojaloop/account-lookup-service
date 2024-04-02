@@ -23,6 +23,7 @@ COPY package.json package-lock.json* /opt/app/
 RUN npm ci
 
 COPY src /opt/app/src
+COPY instrumentation.js /opt/app/instrumentation.js
 COPY config /opt/app/config
 COPY migrations /opt/app/migrations
 COPY seeds /opt/app/seeds

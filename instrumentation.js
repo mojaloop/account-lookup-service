@@ -1,24 +1,21 @@
-const opentelemetry = require('@opentelemetry/sdk-node')
-const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
-const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-proto')
-// const {
-//   OTLPMetricExporter,
-// } = require('@opentelemetry/exporter-metrics-otlp-proto');
-// const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics');
+const { BasicTracerProvider, BatchSpanProcessor } = require('@opentelemetry/sdk-trace-base')
+const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http')
 
-const sdk = new opentelemetry.NodeSDK({
-  traceExporter: new OTLPTraceExporter({
-    url: 'tempo-grafana-tempo-distributor.monitoring.cluster.svc.local:9095/v1/traces',
-    // optional - collection of custom headers to be sent with each request, empty by default
-    headers: {}
-  }),
-  // metricReader: new PeriodicExportingMetricReader({ // configure to export metrics to prometheus
-  //   exporter: new OTLPMetricExporter({
-  //     url: '<your-otlp-endpoint>/v1/metrics', // url is optional and can be omitted - default is http://localhost:4318/v1/metrics
-  //     headers: {}, // an optional object containing custom headers to be sent with each request
-  //     concurrencyLimit: 1, // an optional limit on pending requests
-  //   }),
-  // }),
-  instrumentations: [getNodeAutoInstrumentations()]
-})
-sdk.start()
+const collectorOptions = {
+  url: 'tempo-grafana-tempo-distributor.monitoring.cluster.svc.local:55681', // url is optional and can be omitted - default is http://localhost:4318/v1/traces
+  headers: {
+    foo: 'bar'
+  }, // an optional object containing custom headers to be sent with each request will only work with http
+  concurrencyLimit: 10 // an optional limit on pending requests
+}
+
+const provider = new BasicTracerProvider()
+const exporter = new OTLPTraceExporter(collectorOptions)
+provider.addSpanProcessor(new BatchSpanProcessor(exporter, {
+  // The maximum queue size. After the size is reached spans are dropped.
+  maxQueueSize: 1000,
+  // The interval between two consecutive exports
+  scheduledDelayMillis: 30000
+}))
+
+provider.register()
