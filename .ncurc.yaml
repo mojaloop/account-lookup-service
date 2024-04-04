@@ -3,5 +3,6 @@ reject: [
   # TODO: v6+ (ref: https://github.com/sindresorhus/get-port/releases/tag/v6.0.0) is an ESM library and thus not compatible with CommonJS. Future story needed to resolve.
   "get-port",
   "@mojaloop/sdk-standard-components",
+  # axios is devDeps, and after updating it to the latest version, mocking of it in unit-tests doesn't work
   "axios"
 ]
