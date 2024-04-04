@@ -24,6 +24,8 @@
     "GHSA-h755-8qp9-cq85",
     "GHSA-f9xv-q969-pqx4",
     "GHSA-7fh5-64p2-3v2j",
-    "GHSA-rm97-x556-q36h" // https://github.com/advisories/GHSA-rm97-x556-q36h
+    "GHSA-rm97-x556-q36h", // https://github.com/advisories/GHSA-rm97-x556-q36h
+    "GHSA-rv95-896h-c2vc" // https://github.com/advisories/GHSA-rv95-896h-c2vc
+
   ]
 }
