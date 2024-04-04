@@ -61,6 +61,7 @@ describe('participantEndpoint Facade', () => {
   afterEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
+    jest.unmock('@mojaloop/sdk-standard-components')
   })
 
   describe('sendRequest', () => {
@@ -148,6 +149,45 @@ describe('participantEndpoint Facade', () => {
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
+    })
+
+    it('should define jwsSigner and add fspiop-signature header', async () => {
+      const axios = require('axios')
+      jest.mock('axios')
+      axios.mockImplementation(() => Promise.resolve({}))
+
+      jest.mock('../../../../src/lib/config', () => ({
+        JWS_SIGN: true,
+        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
+        JWS_SIGNING_KEY: 'somekey',
+        PROTOCOL_VERSIONS: {
+          CONTENT: { DEFAULT: '2' },
+          ACCEPT: { DEFAULT: '2' }
+        }
+      }))
+      jest.mock('@mojaloop/sdk-standard-components') // to mock JwsSigner.getSignature()
+
+      const { Util } = jest.requireActual('@mojaloop/central-services-shared')
+      mockSendRequest.mockImplementation(async (...args) => Util.Request.sendRequest(...args))
+      mockGetEndpoint.mockImplementation(() => 'https://example.com/parties/MSISDN12345')
+      const participantFacade = require(`${src}/models/participantEndpoint/facade`)
+
+      const participantName = 'fsp1'
+      const headers = {
+        [mockEnums.Http.Headers.FSPIOP.DESTINATION]: participantName,
+        [mockEnums.Http.Headers.FSPIOP.SOURCE]: 'switch',
+        'fspiop-source': 'switch'
+      }
+      const endpointType = 'URL'
+      const method = 'PUT'
+      const payload = {}
+      await participantFacade.sendRequest(headers, participantName, endpointType, method, payload)
+
+      const jswSigner = mockSendRequest.mock.lastCall.at(-2) // the last but one argument
+      expect(jswSigner).toBeTruthy()
+      expect(axios).toHaveBeenCalledTimes(1)
+      expect(axios.mock.calls[0][0].headers).toHaveProperty('fspiop-signature')
     })
   })
 
@@ -257,8 +297,7 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      console.log(mockSendRequest.mock.calls)
-      expect(typeof (mockSendRequest.mock.calls[0][8])).toBe('undefined')
+      expect(mockSendRequest.mock.calls[0][8]).toBe(null)
       expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
