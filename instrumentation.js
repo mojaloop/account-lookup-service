@@ -8,12 +8,12 @@ const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')
 
 const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter({
-    url: 'tempo-grafana-tempo-distributor.monitoring.svc.cluster.local::14268/v1/traces',
+    url: 'tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:3200/v1/traces',
     headers: {}
   }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
-      url: 'http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local::14268/v1/metrics',
+      url: 'http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:3200/v1/metrics',
       headers: {}, // an optional object containing custom headers to be sent with each request
       concurrencyLimit: 1 // an optional limit on pending requests
     })
