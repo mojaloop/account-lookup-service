@@ -39,6 +39,25 @@ const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
  * @module src/models/participantEndpoint/facade
  */
 
+const defineJwsSigner = (config, headers, requestedEndpoint) => {
+  let jwsSigner = null
+
+  if (config.JWS_SIGN && headers[Enums.Http.Headers.FSPIOP.SOURCE] === config.FSPIOP_SOURCE_TO_SIGN) {
+    // We need below 2 headers for JWS
+    headers[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = headers[Enums.Http.Headers.FSPIOP.HTTP_METHOD] || Enums.Http.RestMethods.PUT
+    headers[Enums.Http.Headers.FSPIOP.URI] = headers[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requestedEndpoint)[1]
+    const logger = Logger
+    logger.log = logger.info
+    Logger.isDebugEnabled && Logger.debug('JWS is enabled, getting JwsSigner')
+    jwsSigner = new JwsSigner({
+      logger,
+      signingKey: config.JWS_SIGNING_KEY
+    })
+  }
+
+  return jwsSigner
+}
+
 /**
  * @function sendRequest
  *
@@ -84,7 +103,10 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       content: Config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
-    const resp = await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, null, protocolVersions)
+    const jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
+
+    const resp = await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE],
+      headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName: requestedParticipant })
     return resp
   } catch (err) {
@@ -182,20 +204,10 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     }
 
     Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-    let jwsSigner
-    if (Config.JWS_SIGN && clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] === Config.FSPIOP_SOURCE_TO_SIGN) {
-      // We need below 2 headers for JWS
-      clonedHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = clonedHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] || Enums.Http.RestMethods.PUT
-      clonedHeaders[Enums.Http.Headers.FSPIOP.URI] = clonedHeaders[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requesterErrorEndpoint)[1]
-      const logger = Logger
-      logger.log = logger.info
-      Logger.isDebugEnabled && Logger.debug('JWS is enabled, getting JwsSigner')
-      jwsSigner = new JwsSigner({
-        logger,
-        signingKey: Config.JWS_SIGNING_KEY
-      })
-    }
-    await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE], clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
+    const jwsSigner = defineJwsSigner(Config, clonedHeaders, requesterErrorEndpoint)
+
+    await Util.Request.sendRequest(requesterErrorEndpoint, clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE],
+      clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.Http.RestMethods.PUT, errorInformation, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName })
