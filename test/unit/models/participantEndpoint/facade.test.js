@@ -184,8 +184,8 @@ describe('participantEndpoint Facade', () => {
       const payload = {}
       await participantFacade.sendRequest(headers, participantName, endpointType, method, payload)
 
-      const jswSigner = mockSendRequest.mock.lastCall.at(-2) // the last but one argument
-      expect(jswSigner).toBeTruthy()
+      const jwsSigner = mockSendRequest.mock.lastCall.at(-2) // the last but one argument
+      expect(jwsSigner).toBeTruthy()
       expect(axios).toHaveBeenCalledTimes(1)
       expect(axios.mock.calls[0][0].headers).toHaveProperty('fspiop-signature')
     })
