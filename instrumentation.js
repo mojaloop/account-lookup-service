@@ -13,7 +13,7 @@ const sdk = new NodeSDK({
   }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
-      url: `http://${hostName}:14268/api/v1/metrics`,
+      url: `http://${hostName}:14268/v1/metrics`,
       headers: {}, // an optional object containing custom headers to be sent with each request
       concurrencyLimit: 1 // an optional limit on pending requests
     })
