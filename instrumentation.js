@@ -4,16 +4,16 @@ const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-htt
 const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
 const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')
 
-const hostName = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'tempo-distributor'
+// const hostName = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'tempo-distributor'
 
 const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter({
-    url: `${hostName}:14268/v1/traces`,
+    url: 'tempo-grafana-tempo-distributor.monitoring.svc.cluster.local::14268/v1/traces',
     headers: {}
   }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
-      url: `http://${hostName}:14268/v1/metrics`,
+      url: 'http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local::14268/v1/metrics',
       headers: {}, // an optional object containing custom headers to be sent with each request
       concurrencyLimit: 1 // an optional limit on pending requests
     })
