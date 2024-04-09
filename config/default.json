@@ -5,8 +5,8 @@
     "DIALECT": "mysql",
     "HOST": "localhost",
     "PORT": 3306,
-    "USER": "account_lookup",
-    "PASSWORD": "password",
+    "USER": "root",
+    "PASSWORD": "4xzl68*%jlzuq6aq^8ZL",
     "DATABASE": "account_lookup",
     "POOL_MIN_SIZE": 10,
     "POOL_MAX_SIZE": 10,
@@ -69,9 +69,7 @@
           "serviceName": "account-lookup-service"
         }
       },
-      "tempo": {
-        "url": "http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:14268/api/traces"      
-      }
+      "TEMPO": "http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:14268/api/traces"
     }
   },
   "ENDPOINT_SECURITY":{
