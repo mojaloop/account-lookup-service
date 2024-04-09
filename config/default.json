@@ -68,6 +68,9 @@
         "defaultLabels": {
           "serviceName": "account-lookup-service"
         }
+      },
+      "tempo": {
+        "url": "http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:14268/api/traces"      
       }
     }
   },

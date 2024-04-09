@@ -23,6 +23,7 @@
  ******/
 'use strict'
 
+require('./tracing')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
 const Uuid = require('uuid4')
