@@ -27,13 +27,17 @@
 
 'use strict'
 
+const axios = require('axios')
 const Sinon = require('sinon')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const request = require('@mojaloop/central-services-shared').Util.Request
+const Logger = require('@mojaloop/central-services-logger')
+const { Factory } = require('@mojaloop/central-services-error-handling')
 
 const OracleFacade = require('../../../../src/models/oracle/facade')
 const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
-const Logger = require('@mojaloop/central-services-logger')
+
+jest.mock('axios')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -442,6 +446,46 @@ describe('Oracle Facade', () => {
 
       // Assert
       await expect(action()).rejects.toThrowError(/(Oracle type:.*not found)/)
+    })
+
+    it('should proxy error message when oracle request fails', async () => {
+      sandbox.restore()
+      const { AxiosError } = jest.requireActual('axios')// to restore request.sendRequest and use mocked axios
+      const status = 400
+      const code = (status >= 500)
+        ? AxiosError.ERR_BAD_RESPONSE
+        : AxiosError.ERR_BAD_REQUEST
+      const errResponse = {
+        status,
+        data: {
+          errorCode: '2001',
+          errorDescription: 'Test server error'
+        }
+      }
+      const error = new AxiosError('Test Error', code, null, null, errResponse)
+      axios.mockImplementation(() => Promise.reject(error))
+
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns([{}])
+
+      const fspId = 'fsp01'
+      const payload = { fspId }
+      const headers = { [Enums.Http.Headers.FSPIOP.SOURCE]: fspId }
+      const method = Enums.Http.RestMethods.POST
+      const params = { Type: 'MSISDN', ID: '27713803912' }
+
+      try {
+        await OracleFacade.oracleRequest(headers, method, params, {}, payload)
+        throw new Error('Not reachable code')
+      } catch (err) {
+        expect(err).toBeInstanceOf(Factory.FSPIOPError)
+        expect(err.httpStatusCode).toBe(status)
+        // expect(err.apiErrorCode).toEqual(expect.objectContaining({
+        //   code: '3204',
+        //   message: 'Party not found',
+        //   name: 'PARTY_NOT_FOUND',
+        //   httpStatusCode: status
+        // }))
+      }
     })
   })
 
