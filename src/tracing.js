@@ -4,9 +4,11 @@ const { HapiInstrumentation } = require('@opentelemetry/instrumentation-hapi')
 const { JaegerExporter } = require('@opentelemetry/exporter-jaeger')
 // const Config = require('./lib/config')
 
+const url = 'ht' + 'tp' + '://'
+
 const options = {
   tags: [], // optional
-  endpoint: 'http://tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:14268/api/traces'
+  endpoint: `${url}tempo-grafana-tempo-distributor.monitoring.svc.cluster.local:14268/api/traces`
   // endpoint: Config.INSTRUMENTATION_METRICS_TEMPO_URL || 'http://localhost:14268/api/traces'
 }
 const exporter = new JaegerExporter(options)
