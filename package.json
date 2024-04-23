@@ -74,6 +74,16 @@
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
     "wait-4-docker": "node ./scripts/_wait4_all.js"
   },
+  "overrides": {
+    "shins": {
+      "ejs": "^3.1.7",
+      "sanitize-html": "2.12.1",
+      "jsonpointer": "5.0.0",
+      "markdown-it": "12.3.2",
+      "yargs-parser": "13.1.2",
+      "postcss": "8.4.31"
+    }
+  },
   "dependencies": {
     "@hapi/basic": "7.0.2",
     "@hapi/boom": "10.0.1",
@@ -98,7 +108,7 @@
     "commander": "12.0.0",
     "fast-safe-stringify": "^2.1.1",
     "hapi-auth-bearer-token": "8.0.0",
-    "joi": "17.12.3",
+    "joi": "17.13.0",
     "knex": "3.1.0",
     "mustache": "4.2.0",
     "mysql": "2.18.1",
