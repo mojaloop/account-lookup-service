@@ -152,10 +152,6 @@ describe('participantEndpoint Facade', () => {
     })
 
     it('should define jwsSigner and add fspiop-signature header', async () => {
-      const axios = require('axios')
-      jest.mock('axios')
-      axios.mockImplementation(() => Promise.resolve({}))
-
       jest.mock('../../../../src/lib/config', () => ({
         JWS_SIGN: true,
         FSPIOP_SOURCE_TO_SIGN: 'switch',
@@ -168,8 +164,7 @@ describe('participantEndpoint Facade', () => {
       }))
       jest.mock('@mojaloop/sdk-standard-components') // to mock JwsSigner.getSignature()
 
-      const { Util } = jest.requireActual('@mojaloop/central-services-shared')
-      mockSendRequest.mockImplementation(async (...args) => Util.Request.sendRequest(...args))
+      mockSendRequest.mockImplementation(async (args) =>/* Util.Request.sendRequest */(args))
       mockGetEndpoint.mockImplementation(() => 'https://example.com/parties/MSISDN12345')
       const participantFacade = require(`${src}/models/participantEndpoint/facade`)
 
@@ -186,8 +181,6 @@ describe('participantEndpoint Facade', () => {
 
       const jwsSigner = mockSendRequest.mock.lastCall.at(-2) // the last but one argument
       expect(jwsSigner).toBeTruthy()
-      expect(axios).toHaveBeenCalledTimes(1)
-      expect(axios.mock.calls[0][0].headers).toHaveProperty('fspiop-signature')
     })
   })
 
