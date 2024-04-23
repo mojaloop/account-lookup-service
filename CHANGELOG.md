@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [15.2.4](https://github.com/mojaloop/account-lookup-service/compare/v15.2.3...v15.2.4) (2024-04-23)
+
+
+### Bug Fixes
+
+* excessive span logging ([#474](https://github.com/mojaloop/account-lookup-service/issues/474)) ([c51b7de](https://github.com/mojaloop/account-lookup-service/commit/c51b7de89d9b5856a4bd6f4c18f4848656725606))
+* **mojaloop#/3829:** added jwsSigner defining to PUT /participants callback ([#472](https://github.com/mojaloop/account-lookup-service/issues/472)) ([92908a4](https://github.com/mojaloop/account-lookup-service/commit/92908a417e776e866ec96c0ca8016a7a86c7880a))
+
 ### [15.2.3](https://github.com/mojaloop/account-lookup-service/compare/v15.2.2...v15.2.3) (2024-03-07)
 
 
