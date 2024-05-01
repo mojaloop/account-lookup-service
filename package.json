@@ -99,6 +99,7 @@
     "@mojaloop/central-services-logger": "11.3.1",
     "@mojaloop/central-services-metrics": "12.0.8",
     "@mojaloop/central-services-shared": "18.3.5",
+    "@mojaloop/central-services-stream": "11.2.5",
     "@mojaloop/database-lib": "11.0.5",
     "@mojaloop/event-sdk": "14.0.3-snapshot.0",
     "@mojaloop/sdk-standard-components": "18.1.0",
