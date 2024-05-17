@@ -46,11 +46,9 @@ const defineJwsSigner = (config, headers, requestedEndpoint) => {
     // We need below 2 headers for JWS
     headers[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = headers[Enums.Http.Headers.FSPIOP.HTTP_METHOD] || Enums.Http.RestMethods.PUT
     headers[Enums.Http.Headers.FSPIOP.URI] = headers[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requestedEndpoint)[1]
-    const logger = Logger
-    logger.log = logger.info
     Logger.isDebugEnabled && Logger.debug('JWS is enabled, getting JwsSigner')
     jwsSigner = new JwsSigner({
-      logger,
+      logger: Logger,
       signingKey: config.JWS_SIGNING_KEY
     })
   }
