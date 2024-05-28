@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [15.3.0](https://github.com/mojaloop/account-lookup-service/compare/v15.2.5...v15.3.0) (2024-05-28)
+
+
+### Features
+
+* enable sending events directly to Kafka ([#476](https://github.com/mojaloop/account-lookup-service/issues/476)) ([a2ad614](https://github.com/mojaloop/account-lookup-service/commit/a2ad61451be300304f050ceb9946774385fc2e23))
+
 ### [15.2.5](https://github.com/mojaloop/account-lookup-service/compare/v15.2.4...v15.2.5) (2024-05-17)
 
 
