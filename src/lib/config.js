@@ -99,6 +99,8 @@ const getProtocolVersions = (defaultProtocolVersions, overrideProtocolVersions) 
 }
 
 const config = {
+  HUB_ID: RC.HUB_PARTICIPANT.ID,
+  HUB_NAME: RC.HUB_PARTICIPANT.NAME,
   API_PORT: RC.API_PORT,
   DATABASE: {
     client: RC.DATABASE.DIALECT,

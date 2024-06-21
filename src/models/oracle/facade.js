@@ -83,7 +83,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
             url,
             headers,
             headers[Enums.Http.Headers.FSPIOP.SOURCE],
-            headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value,
+            headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
             method.toUpperCase(),
             payload || undefined
           )
@@ -110,7 +110,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         url,
         headers,
         headers[Enums.Http.Headers.FSPIOP.SOURCE],
-        headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value,
+        headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
         method.toUpperCase(),
         payload || undefined
       )
@@ -318,7 +318,7 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
         url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
       }
       Logger.isDebugEnabled && Logger.debug(`Oracle endpoints: ${url}`)
-      return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method, payload || undefined)
+      return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME, method, payload || undefined)
     } else {
       Logger.isErrorEnabled && Logger.error(`Oracle type:${type} not found`)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)

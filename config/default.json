@@ -1,4 +1,8 @@
 {
+  "HUB_PARTICIPANT": {
+    "ID": 1,
+    "NAME": "switch"
+  },
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
   "DATABASE": {
