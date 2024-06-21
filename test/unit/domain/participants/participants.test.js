@@ -333,7 +333,7 @@ describe('participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('switch')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe(Config.HUB_NAME)
     })
 
     it('sends put request to the participant with SubId', async () => {
@@ -373,7 +373,7 @@ describe('participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('switch')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe(Config.HUB_NAME)
       expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
       expect(firstCallArgs[4].partyList[0].partySubIdOrType).toBe('subId')
     })
@@ -808,7 +808,7 @@ describe('participant Tests', () => {
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       const secondCallArgs = participant.sendErrorToParticipant.getCall(1).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(secondCallArgs[0]).toBe('switch')
+      expect(secondCallArgs[0]).toBe(Config.HUB_NAME)
       expect(Logger.error.callCount).toBe(2)
     })
 
@@ -847,7 +847,7 @@ describe('participant Tests', () => {
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       const secondCallArgs = participant.sendErrorToParticipant.getCall(1).args
       expect(firstCallArgs[1]).toBe(expectedCallbackEndpointType)
-      expect(secondCallArgs[0]).toBe('switch')
+      expect(secondCallArgs[0]).toBe(Config.HUB_NAME)
       expect(Logger.error.callCount).toBe(2)
     })
   })
@@ -898,7 +898,7 @@ describe('participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('switch')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe(Config.HUB_NAME)
     })
 
     it('sends the request to the participant with SubId', async () => {
@@ -938,7 +938,7 @@ describe('participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('switch')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe(Config.HUB_NAME)
       expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
       expect(firstCallArgs[4].partyList[0].partySubIdOrType).toBe('subId')
     })

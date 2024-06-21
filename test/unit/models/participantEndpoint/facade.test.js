@@ -32,7 +32,7 @@ const mockGetParticipant = jest.fn()
 const mockSendRequest = jest.fn()
 const mockEnums = {
   Http: {
-    Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', SWITCH: { value: 'switch' } } },
+    Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', SWITCH: { value: 'Hub' } } },
     RestMethods: { PUT: 'PUT' },
     ResponseTypes: { JSON: 'json' },
     HeaderResources: { PARTICIPANTS: 'value' }
@@ -69,7 +69,7 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       const mockedConfig = {
         JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: 'Hub',
         PROTOCOL_VERSIONS: {
           CONTENT: {
             DEFAULT: '2.1',
@@ -112,7 +112,7 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       const mockedConfig = {
         JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: 'Hub',
         PROTOCOL_VERSIONS: {
           CONTENT: {
             DEFAULT: '2.1',
@@ -154,7 +154,7 @@ describe('participantEndpoint Facade', () => {
     it('should define jwsSigner and add fspiop-signature header', async () => {
       jest.mock('../../../../src/lib/config', () => ({
         JWS_SIGN: true,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: 'Hub',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
@@ -171,8 +171,8 @@ describe('participantEndpoint Facade', () => {
       const participantName = 'fsp1'
       const headers = {
         [mockEnums.Http.Headers.FSPIOP.DESTINATION]: participantName,
-        [mockEnums.Http.Headers.FSPIOP.SOURCE]: 'switch',
-        'fspiop-source': 'switch'
+        [mockEnums.Http.Headers.FSPIOP.SOURCE]: 'Hub',
+        'fspiop-source': 'Hub'
       }
       const endpointType = 'URL'
       const method = 'PUT'
@@ -204,7 +204,7 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       jest.mock('../../../../src/lib/config', () => ({
         JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: 'Hub',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
@@ -248,7 +248,7 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       const mockedConfig = {
         JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: 'Hub',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
@@ -302,7 +302,7 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       const mockedConfig = {
         JWS_SIGN: true,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: 'Hub',
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
@@ -337,7 +337,7 @@ describe('participantEndpoint Facade', () => {
       }
       const headers = {}
       headers[mockEnums.Http.Headers.FSPIOP.DESTINATION] = 'fsp1'
-      headers[mockEnums.Http.Headers.FSPIOP.SOURCE] = 'switch'
+      headers[mockEnums.Http.Headers.FSPIOP.SOURCE] = 'Hub'
 
       // Act
       const action = async () => ParticipantFacade.sendErrorToParticipant(participantName, endpointType, errorInformation, headers)

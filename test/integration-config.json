@@ -1,4 +1,8 @@
 {
+  "HUB_PARTICIPANT": {
+    "ID": 1,
+    "NAME": "Hub"
+  },
   "TEST_ALS_HOST":"account-lookup-service",
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
@@ -61,7 +65,6 @@
   "ENDPOINT_SECURITY":{
     "JWS": {
       "JWS_SIGN": false,
-      "FSPIOP_SOURCE_TO_SIGN": "switch",
       "JWS_SIGNING_KEY_PATH": "secrets/jwsSigningKey.key"
     }
   },
