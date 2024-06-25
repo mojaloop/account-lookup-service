@@ -27,10 +27,11 @@
 
 'use strict'
 
+const mockHubName = require('../../../util/testConfig').HUB_NAME
+
 const mockGetEndpoint = jest.fn()
 const mockGetParticipant = jest.fn()
 const mockSendRequest = jest.fn()
-const mockHubName = require('../../../util/testConfig').HUB_NAME
 const mockEnums = {
   Http: {
     Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', SWITCH: { value: mockHubName } } },
