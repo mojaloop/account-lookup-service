@@ -78,7 +78,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
         if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
           clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE]
         }
-        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
         await participant.sendRequest(clonedHeaders, requesterName, callbackEndpointType, Enums.Http.RestMethods.PUT, payload, options, childSpan)
       } else {
         await participant.sendErrorToParticipant(requesterName, errorCallbackEndpointType,
@@ -168,7 +168,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
           const clonedHeaders = { ...headers }
           if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
             clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
-            clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+            clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
           }
           await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.PUT, responsePayload, options)
         } else {
@@ -307,7 +307,7 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
           const clonedHeaders = { ...headers }
           if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
             clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
-            clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+            clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
           }
           await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.PUT, responsePayload, options, childSpan)
           if (childSpan && !childSpan.isFinished) {
@@ -439,7 +439,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
       const clonedHeaders = { ...headers }
       if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
         clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.partyList[0].partyId.fspId
-        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
       }
       await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId }, childSpan)
       if (childSpan && !childSpan.isFinished) {
@@ -511,7 +511,7 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
           options = partySubIdOrType ? { ...options, partySubIdOrType } : options
           const clonedHeaders = { ...headers }
           clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = headers[Enums.Http.Headers.FSPIOP.SOURCE]
-          clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+          clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
           await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.PUT, responsePayload, options)
         } else {
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
