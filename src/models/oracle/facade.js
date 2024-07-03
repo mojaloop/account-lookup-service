@@ -34,6 +34,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
 const cachedOracleEndpoint = require('../oracle/oracleEndpointCached')
+const hubNameRegex = require('../../lib/util').hubNameConfig.hubNameRegex
 
 /**
  * @function oracleRequest
@@ -79,14 +80,15 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         let cachedOracleFspResponse
         cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
         if (!cachedOracleFspResponse) {
-          cachedOracleFspResponse = await request.sendRequest(
+          cachedOracleFspResponse = await request.sendRequest({
             url,
             headers,
-            headers[Enums.Http.Headers.FSPIOP.SOURCE],
-            headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
-            method.toUpperCase(),
-            payload || undefined
-          )
+            source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+            destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+            method: method.toUpperCase(),
+            payload,
+            hubNameRegex
+          })
           // Trying to cache the whole response object will fail because it contains circular references
           // so we'll just cache the data property of the response.
           cachedOracleFspResponse = {
@@ -106,14 +108,15 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         return cachedOracleFspResponse
       }
 
-      return await request.sendRequest(
+      return await request.sendRequest({
         url,
         headers,
-        headers[Enums.Http.Headers.FSPIOP.SOURCE],
-        headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
-        method.toUpperCase(),
-        payload || undefined
-      )
+        source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+        method: method.toUpperCase(),
+        payload,
+        hubNameRegex
+      })
     } catch (err) {
       histTimerEnd({ success: false, hit: false })
       Logger.isErrorEnabled && Logger.error(err)
@@ -318,7 +321,15 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
         url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
       }
       Logger.isDebugEnabled && Logger.debug(`Oracle endpoints: ${url}`)
-      return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME, method, payload || undefined)
+      return await request.sendRequest({
+        url,
+        headers,
+        source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+        method,
+        payload,
+        hubNameRegex
+      })
     } else {
       Logger.isErrorEnabled && Logger.error(`Oracle type:${type} not found`)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
