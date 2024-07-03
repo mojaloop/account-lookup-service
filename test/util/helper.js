@@ -33,7 +33,7 @@ const payerfsp = 'payerfsp'
 const payeefsp = 'payeefsp'
 const validatePayerFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payerfsp })
 const validatePayeeFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payeefsp })
-const defaultSwitchHeaders = defaultHeaders(Enums.Http.HeaderResources.SWITCH, Enums.Http.HeaderResources.PARTICIPANTS, Enums.Http.HeaderResources.SWITCH)
+const defaultSwitchHeaders = defaultHeaders(Config.HUB_NAME, Enums.Http.HeaderResources.PARTICIPANTS, Config.HUB_NAME)
 const defaultStandardHeaders = (resource = Enums.Http.HeaderResources.PARTICIPANTS) => defaultHeaders(payerfsp, resource, payeefsp)
 const getPayerfspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payerfsp })
 const getPayeefspEndpointsUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANT_ENDPOINTS_GET, { fsp: payeefsp })
