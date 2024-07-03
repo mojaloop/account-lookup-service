@@ -34,6 +34,7 @@ const Sinon = require('sinon')
 const request = require('@mojaloop/central-services-shared').Util.Request
 const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
 const Util = require('@mojaloop/central-services-shared').Util
+const { HeaderValidation } = require('@mojaloop/central-services-shared').Util
 const Logger = require('@mojaloop/central-services-logger')
 const { encodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const Enums = require('@mojaloop/central-services-shared').Enum
@@ -50,9 +51,14 @@ Logger.isErrorEnabled = jest.fn(() => true)
 Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 
+const hubNameConfig = {
+  hubName: Config.HUB_NAME,
+  hubNameRegex: HeaderValidation.getHubNameRegex(Config.HUB_NAME)
+}
+
 describe('Parties Tests', () => {
   beforeEach(async () => {
-    await Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
+    await Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, hubNameConfig)
     sandbox = Sinon.createSandbox()
     sandbox.stub(request)
     sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)

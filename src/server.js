@@ -29,6 +29,7 @@ const Uuid = require('uuid4')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const ParticipantCache = require('@mojaloop/central-services-shared').Util.Participants
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
+const { HeaderValidation } = require('@mojaloop/central-services-shared').Util
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
@@ -42,6 +43,11 @@ const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
+
+const hubNameConfig = {
+  hubName: Config.HUB_NAME,
+  hubNameRegex: HeaderValidation.getHubNameRegex(Config.HUB_NAME)
+}
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -119,8 +125,8 @@ const initializeApi = async (port = Config.API_PORT) => {
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(port, api, Routes.APIRoutes(api), false)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
-  await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG)
+  await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, hubNameConfig)
+  await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, hubNameConfig)
   await OracleEndpointCache.initialize()
   await Cache.initCache()
   return server
