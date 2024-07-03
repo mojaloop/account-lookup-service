@@ -31,36 +31,29 @@
 'use strict'
 
 const Sinon = require('sinon')
-const request = require('@mojaloop/central-services-shared').Util.Request
-const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
-const Util = require('@mojaloop/central-services-shared').Util
-const { HeaderValidation } = require('@mojaloop/central-services-shared').Util
+const { Enum, Util } = require('@mojaloop/central-services-shared')
 const Logger = require('@mojaloop/central-services-logger')
-const { encodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
-const Enums = require('@mojaloop/central-services-shared').Enum
 
-const Helper = require('../../../util/helper')
+const Config = require('../../../../src/lib/config')
 const Db = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
-const Config = require('../../../../src/lib/config')
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
+const libUtil = require('../../../../src/lib/util')
+const Helper = require('../../../util/helper')
+
+const { encodePayload } = Util.StreamingProtocol
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
 Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 
-const hubNameConfig = {
-  hubName: Config.HUB_NAME,
-  hubNameRegex: HeaderValidation.getHubNameRegex(Config.HUB_NAME)
-}
-
 describe('Parties Tests', () => {
   beforeEach(async () => {
-    await Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, hubNameConfig)
+    await Util.Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, libUtil.hubNameConfig)
     sandbox = Sinon.createSandbox()
-    sandbox.stub(request)
+    sandbox.stub(Util.Request)
     sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)
     Db.oracleEndpoint = {
       query: sandbox.stub()
@@ -233,7 +226,7 @@ describe('Parties Tests', () => {
         'fspiop-source': 'payerfsp'
       }
       const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subId' }
-      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+      const expectedErrorCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan())
@@ -262,7 +255,7 @@ describe('Parties Tests', () => {
         'fspiop-source': 'payerfsp'
       }
       const params = { ...Helper.getByTypeIdRequest.params }
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
@@ -295,7 +288,7 @@ describe('Parties Tests', () => {
         'fspiop-source': 'payerfsp'
       }
       const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subId' }
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
@@ -330,7 +323,7 @@ describe('Parties Tests', () => {
         'fspiop-source': 'payerfsp'
       }
       const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subIdNOTFOUND' }
-      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+      const expectedErrorCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
@@ -365,7 +358,7 @@ describe('Parties Tests', () => {
         'fspiop-source': 'payerfsp'
       }
       const params = { ...Helper.getByTypeIdRequest.params, SubId: 'subId' }
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
@@ -383,7 +376,7 @@ describe('Parties Tests', () => {
       participant.sendErrorToParticipant = sandbox.stub().resolves(null)
       oracle.oracleRequest = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
-      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+      const expectedErrorCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
 
       // Act
       const headers = { ...Helper.getByTypeIdRequest.headers }
@@ -437,7 +430,7 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().resolves()
       const payload = {}
       const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT
 
       // Act
       await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, null)
@@ -485,7 +478,7 @@ describe('Parties Tests', () => {
       const payload = JSON.stringify({ testPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
       const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
-      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+      const expectedErrorCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
       await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri)
@@ -539,7 +532,7 @@ describe('Parties Tests', () => {
       const payload = JSON.stringify({ testPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
       const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
-      const expectedErrorCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+      const expectedErrorCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
       await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri)
@@ -594,7 +587,7 @@ describe('Parties Tests', () => {
       const payload = JSON.stringify({ errorPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
       const params = { ...Helper.putByTypeIdRequest.params, SubId: 'subId' }
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
       await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, params, payload, dataUri)
@@ -652,7 +645,7 @@ describe('Parties Tests', () => {
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
 
       // Act
       await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload)
@@ -672,7 +665,7 @@ describe('Parties Tests', () => {
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
       const params = { ...Helper.putByTypeIdRequest.params, SubId: 'SubId' }
-      const expectedCallbackEnpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
+      const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
       await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, params, payload)

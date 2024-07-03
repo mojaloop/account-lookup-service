@@ -53,6 +53,7 @@ jest.mock('@mojaloop/central-services-shared', () => ({
   },
   Enum: mockEnums
 }))
+
 const Logger = require('@mojaloop/central-services-logger')
 
 Logger.isDebugEnabled = jest.fn(() => true)
