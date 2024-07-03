@@ -46,7 +46,6 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:one": "jest --runInBand -t='DELETE /endpointcache' ",
     "test:unit": "jest --runInBand --testMatch '**/test/unit/**/*.test.js'",
     "test:coverage": "jest --runInBand --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.js'",
     "test:coverage-check": "jest --runInBand --coverage --testMatch '**/test/unit/**/*.test.js'",
