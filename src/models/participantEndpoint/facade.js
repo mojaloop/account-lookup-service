@@ -33,6 +33,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const JwsSigner = require('@mojaloop/sdk-standard-components').Jws.signer
 const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../../lib/config')
+const hubNameRegex = require('../../lib/util').hubNameConfig.hubNameRegex
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
 
 /**
@@ -103,8 +104,19 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
     }
     const jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
 
-    const resp = await Util.Request.sendRequest(requestedEndpoint, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE],
-      headers[Enums.Http.Headers.FSPIOP.DESTINATION], method, payload, Enums.Http.ResponseTypes.JSON, span, jwsSigner, protocolVersions)
+    const resp = await Util.Request.sendRequest({
+      url: requestedEndpoint,
+      headers,
+      source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+      destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION],
+      method,
+      payload,
+      responseType: Enums.Http.ResponseTypes.JSON,
+      span,
+      jwsSigner,
+      protocolVersions,
+      hubNameRegex
+    })
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName: requestedParticipant })
     return resp
   } catch (err) {
