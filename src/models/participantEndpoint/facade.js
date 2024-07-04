@@ -120,10 +120,9 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
  * @description sends a request to central-ledger to retrieve participant details and validate that they exist within the switch
  *
  * @param {string} fsp The FSPIOP-Source fsp id
- * @param {object} span
  * @returns the participants info in a successful case and
  */
-exports.validateParticipant = async (fsp, span = undefined) => {
+exports.validateParticipant = async (fsp) => {
   const histTimerEnd = Metrics.getHistogram(
     'egress_validateParticipant',
     'Egress: Validate participant',
