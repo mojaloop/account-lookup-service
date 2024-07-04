@@ -27,13 +27,14 @@
 
 'use strict'
 
-const Helper = require('../../../util/helper')
-const Db = require('../../../../src/lib/db')
-const initServer = require('../../../../src/server').initializeApi
-const getPort = require('get-port')
 const Sinon = require('sinon')
-const MigrationLockModel = require('../../../../src/models/misc/migrationLock')
+const getPort = require('get-port')
 const Logger = require('@mojaloop/central-services-logger')
+
+const { initializeApi } = require('../../../../src/server')
+const Db = require('../../../../src/lib/db')
+const MigrationLockModel = require('../../../../src/models/misc/migrationLock')
+const Helper = require('../../../util/helper')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -45,7 +46,7 @@ describe('/endpointcache', () => {
   beforeEach(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    server = await initializeApi(await getPort())
   })
 
   afterEach(async () => {

@@ -49,10 +49,12 @@ jest.mock('@mojaloop/central-services-shared', () => ({
     Endpoints: { getEndpoint: mockGetEndpoint },
     Participants: { getParticipant: mockGetParticipant },
     Request: { sendRequest: mockSendRequest },
-    Http: { SwitchDefaultHeaders: jest.fn() }
+    Http: { SwitchDefaultHeaders: jest.fn() },
+    HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) }
   },
   Enum: mockEnums
 }))
+
 const Logger = require('@mojaloop/central-services-logger')
 
 Logger.isDebugEnabled = jest.fn(() => true)
@@ -104,7 +106,7 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(result).toBe(true)
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      expect(mockSendRequest.mock.calls[0][0].protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -147,7 +149,7 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       await expect(action()).rejects.toThrow('Request failed')
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      expect(mockSendRequest.mock.calls[0][0].protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -181,8 +183,7 @@ describe('participantEndpoint Facade', () => {
       const payload = {}
       await participantFacade.sendRequest(headers, participantName, endpointType, method, payload)
 
-      const jwsSigner = mockSendRequest.mock.lastCall.at(-2) // the last but one argument
-      expect(jwsSigner).toBeTruthy()
+      expect(mockSendRequest.mock.lastCall[0].jwsSigner).toBeTruthy()
     })
   })
 
