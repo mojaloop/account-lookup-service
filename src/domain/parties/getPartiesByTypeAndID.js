@@ -136,7 +136,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requested FSP/Party not found')
       }
 
-      let atLeastOneSent = false // we need to define, if we should restart the whole process
+      let atLeastOneSent = false // if false after sending, we should restart the whole process
       const sending = filteredResponsePartyList.map(async party => {
         const clonedHeaders = { ...headers }
         if (!destination) {
