@@ -3,29 +3,40 @@ const EventSdk = require('@mojaloop/event-sdk')
 
 const { FspEndpointTypes } = Enum.EndPoints
 
-const getPartyCbType = (partySubIdOrType) => partySubIdOrType
+const getPartyCbType = (partySubId) => partySubId
   ? FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
   : FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET
 
-const putPartyCbType = (partySubIdOrType) => partySubIdOrType
+const putPartyCbType = (partySubId) => partySubId
   ? FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT
   : FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT
 
-const errorPartyCbType = (partySubIdOrType) => partySubIdOrType
+const errorPartyCbType = (partySubId) => partySubId
   ? FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
   : FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
 
 const finishSpanWithError = async (childSpan, fspiopError) => {
-  if (childSpan && !childSpan.isFinished && fspiopError) {
-    const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
-    await childSpan.error(fspiopError, state)
-    await childSpan.finish(fspiopError.message, state)
+  if (childSpan && !childSpan.isFinished) {
+    if (fspiopError) {
+      const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      await childSpan.error(fspiopError, state)
+      await childSpan.finish(fspiopError.message, state)
+    } else {
+      await childSpan.finish()
+    }
   }
 }
+
+const alsRequestDto = (sourceId, params) => ({
+  sourceId,
+  type: params.Type,
+  partyId: params.ID
+})
 
 module.exports = {
   getPartyCbType,
   putPartyCbType,
   errorPartyCbType,
-  finishSpanWithError
+  finishSpanWithError,
+  alsRequestDto
 }

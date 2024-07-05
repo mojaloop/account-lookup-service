@@ -26,9 +26,8 @@
 
 'use strict'
 
+const Uuid = require('node:crypto').randomUUID
 const Sinon = require('sinon')
-const Util = require('util')
-const Uuid = require('uuid4')
 
 const requestLogger = require('../../../src/lib/requestLogger')
 const Logger = require('@mojaloop/central-services-logger')
@@ -103,10 +102,8 @@ describe('requestLogger', () => {
       // Act
       requestLogger.logResponse(req)
 
-      const response = Util.inspect(req.response)
-
       // Assert
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
+      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
       expect(result).toBe(true)
     })
 
@@ -129,10 +126,8 @@ describe('requestLogger', () => {
       // Act
       requestLogger.logResponse(req)
 
-      const response = JSON.stringify(req.response, null, 2)
       // Assert
-      // const result = infoSpy.calledWith(`ALS-Trace - Response: ${JSON.stringify(req.response.source)} Status: ${req.response.statusCode}`)
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
+      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
       expect(result).toBe(true)
     })
 
@@ -150,10 +145,8 @@ describe('requestLogger', () => {
       // Act
       requestLogger.logResponse(req)
 
-      const response = JSON.stringify(req.response, null, 2)
       // Assert
-      // const result = infoSpy.calledWith(`ALS-Trace - Response: ${JSON.stringify(req.response.source)} Status: ${req.response.statusCode}`)
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.httpStatusCode}, Stack: ${req.response.stack}`)
+      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.httpStatusCode}, Stack: ${req.response.stack}`)
       expect(result).toBe(true)
     })
 
@@ -171,11 +164,9 @@ describe('requestLogger', () => {
       }
       // Act
       requestLogger.logResponse(req)
-      const response = JSON.stringify(req.response, null, 2)
 
       // Assert
-      // const result = infoSpy.calledWith('ALS-Trace - Response: [object Object]')
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Response: ${response} Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
+      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
       expect(result).toBe(true)
     })
   })

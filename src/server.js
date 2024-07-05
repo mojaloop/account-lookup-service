@@ -23,17 +23,19 @@
  ******/
 'use strict'
 
+const { randomUUID } = require('node:crypto')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
-const Uuid = require('uuid4')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const ParticipantCache = require('@mojaloop/central-services-shared').Util.Participants
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
+const { createProxyCache, STORAGE_TYPES } = require('@mojaloop/inter-scheme-proxy-cache-lib')
+
+const Config = require('./lib/config')
 const Db = require('./lib/db')
-const Config = require('./lib/config.js')
 const Util = require('./lib/util')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
@@ -49,6 +51,12 @@ const connectDatabase = async () => {
 
 const migrate = async () => {
   return Config.RUN_MIGRATIONS ? Migrator.migrate() : {}
+}
+
+const createConnectedProxyCache = async () => {
+  const proxyCache = createProxyCache(STORAGE_TYPES.redis, Config.proxyCacheConfig)
+  await proxyCache.connect()
+  return proxyCache
 }
 
 /**
@@ -81,12 +89,17 @@ const createServer = async (port, api, routes, isAdmin) => {
     id: 'serverGeneralCache',
     preloadCache: async () => Promise.resolve()
   })
+
+  if (!isAdmin) {
+    server.app.proxyCache = await createConnectedProxyCache()
+  }
+
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
     {
       type: 'onPostAuth',
       method: (request, h) => {
-        request.headers.traceid = request.headers.traceid || Uuid()
+        request.headers.traceid = request.headers.traceid || randomUUID()
         RequestLogger.logRequest(request)
         return h.continue
       }

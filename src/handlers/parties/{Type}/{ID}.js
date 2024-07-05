@@ -47,16 +47,18 @@ module.exports = {
       'Ingress - Get party by Type and Id',
       ['success']
     ).startTimer()
-    const span = request.span
-    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
+    const { headers, payload, params, method, query, span } = request
+    const { cache, proxyCache } = request.server.app
+
+    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
-      headers: request.headers,
-      payload: request.payload
+      headers,
+      payload
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span, request.server.app.cache).catch(err => {
+    parties.getPartiesByTypeAndID(headers, params, method, query, span, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
