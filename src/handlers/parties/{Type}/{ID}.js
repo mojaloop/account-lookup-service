@@ -24,11 +24,11 @@
  ******/
 'use strict'
 
-const Enum = require('@mojaloop/central-services-shared').Enum
+const { Action, Type } = require('@mojaloop/central-services-shared').Enum.Events.Event
 const EventSdk = require('@mojaloop/event-sdk')
-const LibUtil = require('../../../lib/util')
-const parties = require('../../../domain/parties')
 const Metrics = require('@mojaloop/central-services-metrics')
+const parties = require('../../../domain/parties')
+const LibUtil = require('../../../lib/util')
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -50,7 +50,7 @@ module.exports = {
     const { headers, payload, params, method, query, span } = request
     const { cache, proxyCache } = request.server.app
 
-    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
+    const spanTags = LibUtil.getSpanTags({ headers }, Type.PARTY, Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
       headers,
@@ -78,16 +78,18 @@ module.exports = {
       'Ingress - Put party by Type and Id',
       ['success']
     ).startTimer()
-    const span = request.span
-    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    const { headers, payload, params, method, dataUri, span } = request
+    const { cache, proxyCache } = request.server.app
+
+    const spanTags = LibUtil.getSpanTags({ headers }, Type.PARTY, Action.PUT)
     span.setTags(spanTags)
     await span.audit({
-      headers: request.headers,
-      payload: request.payload
+      headers,
+      payload
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by putPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+    parties.putPartiesByTypeAndID(headers, params, method, payload, dataUri, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
