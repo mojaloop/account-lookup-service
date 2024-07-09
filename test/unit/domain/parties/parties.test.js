@@ -31,7 +31,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const { createProxyCache, STORAGE_TYPES } = require('@mojaloop/inter-scheme-proxy-cache-lib')
+const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const { Enum, Util } = require('@mojaloop/central-services-shared')
 const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
 const Logger = require('@mojaloop/central-services-logger')
@@ -73,7 +73,7 @@ describe('Parties Tests', () => {
     Db.from = (table) => {
       return Db[table]
     }
-    proxyCache = createProxyCache(STORAGE_TYPES.redis, Config.proxyCacheConfig)
+    proxyCache = createProxyCache(Config.proxyCacheType, Config.proxyCacheConfig)
     await proxyCache.connect()
   })
 
