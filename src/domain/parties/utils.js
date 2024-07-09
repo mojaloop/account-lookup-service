@@ -2,6 +2,7 @@ const { Enum } = require('@mojaloop/central-services-shared')
 const EventSdk = require('@mojaloop/event-sdk')
 
 const { FspEndpointTypes } = Enum.EndPoints
+const { Headers } = Enum.Http
 
 const getPartyCbType = (partySubId) => partySubId
   ? FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET
@@ -33,10 +34,25 @@ const alsRequestDto = (sourceId, params) => ({
   partyId: params.ID
 })
 
+const swapSourceDestinationHeaders = (headers) => {
+  const {
+    [Headers.FSPIOP.SOURCE]: source,
+    [Headers.FSPIOP.DESTINATION]: destination,
+    [Headers.FSPIOP.PROXY]: proxy,
+    ...restHeaders
+  } = headers
+  return {
+    ...restHeaders,
+    [Headers.FSPIOP.SOURCE]: destination,
+    [Headers.FSPIOP.DESTINATION]: source
+  }
+}
+
 module.exports = {
   getPartyCbType,
   putPartyCbType,
   errorPartyCbType,
   finishSpanWithError,
-  alsRequestDto
+  alsRequestDto,
+  swapSourceDestinationHeaders
 }

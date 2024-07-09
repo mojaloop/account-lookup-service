@@ -63,7 +63,8 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
     mock.request.server = {
-      log: sandbox.stub()
+      log: sandbox.stub(),
+      app: {}
     }
     const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
@@ -90,7 +91,8 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     }
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
     mock.request.server = {
-      log: sandbox.stub()
+      log: sandbox.stub(),
+      app: {}
     }
     const throwError = new Error('Unknown error')
     const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)

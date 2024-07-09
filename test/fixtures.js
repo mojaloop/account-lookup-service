@@ -23,7 +23,24 @@ const oracleRequestResponseDto = ({
   }
 })
 
+const errorCallbackResponseDto = ({
+  errorCode = '1234',
+  errorDescription = 'Error description',
+  extension = [{
+    key: 'k1', value: 'v1'
+  }]
+} = {}) => ({
+  errorInformation: {
+    errorCode,
+    errorDescription,
+    ...(extension && {
+      extensionList: { extension }
+    })
+  }
+})
+
 module.exports = {
   partiesCallHeadersDto,
-  oracleRequestResponseDto
+  oracleRequestResponseDto,
+  errorCallbackResponseDto
 }

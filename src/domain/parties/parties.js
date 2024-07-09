@@ -31,15 +31,16 @@
 
 const { Headers, RestMethods } = require('@mojaloop/central-services-shared').Enum.Http
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
 const stringify = require('fast-safe-stringify')
 
+const participantsDomain = require('../../domain/participants') // think, how to avoid such deps on another domain
 const participant = require('../../models/participantEndpoint/facade')
-const { postParticipants } = require('../../domain/participants') // think, how to avoid such deps on another domain
-const { ERROR_MESSAGES } = require('../../constants')
 const Config = require('../../lib/config')
+const { ERROR_MESSAGES } = require('../../constants')
 const utils = require('./utils')
 
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
@@ -55,7 +56,8 @@ const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
  * @param {object} payload - payload of the request being sent out
  * @param {string} dataUri - encoded payload of the request being sent out
  * @param {CacheClient} cache - in-memory cache with CatboxMemory engine
- * @param {IProxyCache} proxyCache - IProxyCache instance */
+ * @param {IProxyCache} proxyCache - IProxyCache instance
+ */
 const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, cache, proxyCache) => {
   const histTimerEnd = Metrics.getHistogram(
     'putPartiesByTypeAndID',
@@ -66,7 +68,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
-  Logger.isInfoEnabled && Logger.info('parties::putPartiesByTypeAndID::begin')
+  Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::begin - ${stringify({ source, destination, params })}`)
 
   try {
     const requesterParticipant = await participant.validateParticipant(source)
@@ -92,9 +94,13 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       // todo: add unit-tests
       const mappingPayload = {
         fspId: source
-        // todo: what about currency?
       }
-      await postParticipants(headers, method, params, mappingPayload, null, cache)
+      // todo: discuss these changes with Paul
+      // if (destinationParticipant) {
+      // await postParticipants(headers, method, params, mappingPayload, null, cache)
+      // Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
+      // }
+      await participantsDomain.postParticipants(headers, method, params, mappingPayload, null, cache)
       Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
     }
 
@@ -149,35 +155,68 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
  * @param {object} payload - payload of the request being sent out
  * @param {string} dataUri - encoded payload of the request being sent out
  * @param {object} span
+ * @param {CacheClient} cache - in-memory cache with CatboxMemory engine
+ * @param {IProxyCache} proxyCache - IProxyCache instance
  */
-const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span) => {
+const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, cache, proxyCache) => {
   const histTimerEnd = Metrics.getHistogram(
     'putPartiesErrorByTypeAndID',
     'Put parties error by type and id',
     ['success']
   ).startTimer()
-  const partySubIdOrType = params.SubId
-  const callbackEndpointType = utils.errorPartyCbType(partySubIdOrType)
+  const partySubId = params.SubId
+  const source = headers[Headers.FSPIOP.SOURCE]
+  const destination = headers[Headers.FSPIOP.DESTINATION]
+  const callbackEndpointType = utils.errorPartyCbType(partySubId)
 
   const childSpan = span ? span.getChild('putPartiesErrorByTypeAndID') : undefined
 
   let fspiopError
   try {
-    const destinationParticipant = await participant.validateParticipant(headers[Headers.FSPIOP.DESTINATION])
-    if (destinationParticipant) {
-      const decodedPayload = decodePayload(dataUri, { asParsed: false })
-      await participant.sendErrorToParticipant(headers[Headers.FSPIOP.DESTINATION], callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
-    } else {
-      fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
-      await participant.sendErrorToParticipant(headers[Headers.FSPIOP.SOURCE], callbackEndpointType,
-        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, payload, childSpan)
+    const proxy = headers[Headers.FSPIOP.PROXY]
+    if (proxy) {
+      if (isNotValidPayeeCase(payload)) {
+        const swappedHeaders = utils.swapSourceDestinationHeaders(headers)
+        await participantsDomain.deleteParticipants(swappedHeaders, params, RestMethods.DELETE, null, cache)
+        getPartiesByTypeAndID(swappedHeaders, params, RestMethods.GET, {}, span, cache, proxyCache)
+        // todo: - think if we need to send errorCallback?
+        //       - or sentCallback after getPartiesByTypeAndID is done
+        Logger.isInfoEnabled && Logger.info(`notValidPayee case - deleted Participants and run getPartiesByTypeAndID ${stringify({ proxy, params, payload })}`)
+        return
+      }
+
+      const alsReq = utils.alsRequestDto(destination, params) // or source?
+      const isLast = await proxyCache.receivedErrorResponse(alsReq, proxy)
+      if (!isLast) {
+        Logger.isInfoEnabled && Logger.info(`got NOT last error callback from proxy: ${stringify({ proxy, alsReq })}`)
+        return
+      }
     }
+
+    let sentTo
+    const destinationParticipant = await participant.validateParticipant(destination)
+
+    if (destinationParticipant) {
+      sentTo = destination
+    } else {
+      const proxyName = await proxyCache.lookupProxyByDfspId(destination)
+      if (!proxyName) {
+        const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
+        Logger.isErrorEnabled && Logger.error(errMessage)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
+      }
+      sentTo = proxyName
+    }
+    const decodedPayload = decodePayload(dataUri, { asParsed: false })
+    await participant.sendErrorToParticipant(sentTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
+
+    Logger.isInfoEnabled && Logger.info(`putPartiesErrorByTypeAndID callback was sent to ${sentTo}`)
     histTimerEnd({ success: true })
   } catch (err) {
     Logger.isErrorEnabled && Logger.error(err)
     try {
       fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-      await participant.sendErrorToParticipant(headers[Headers.FSPIOP.SOURCE], callbackEndpointType,
+      await participant.sendErrorToParticipant(source, callbackEndpointType,
         fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
@@ -188,6 +227,10 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
   }
+}
+
+function isNotValidPayeeCase (payload) {
+  return payload?.errorInformation?.errorCode === MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
 }
 
 module.exports = {

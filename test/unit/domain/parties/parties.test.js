@@ -33,12 +33,14 @@
 const Sinon = require('sinon')
 const { createProxyCache, STORAGE_TYPES } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const { Enum, Util } = require('@mojaloop/central-services-shared')
+const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
 const Logger = require('@mojaloop/central-services-logger')
 
 const Config = require('../../../../src/lib/config')
 const Db = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
 const partiesUtils = require('../../../../src/domain/parties/utils')
+const participantsDomain = require('../../../../src/domain/participants')
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
 const libUtil = require('../../../../src/lib/util')
@@ -63,6 +65,7 @@ describe('Parties Tests', () => {
     sandbox.stub(Util.Request)
     sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)
     sandbox.stub(Util.proxies)
+    sandbox.stub(participantsDomain)
 
     Db.oracleEndpoint = {
       query: sandbox.stub()
@@ -735,6 +738,7 @@ describe('Parties Tests', () => {
   describe('putPartiesErrorByTypeAndID', () => {
     beforeEach(() => {
       sandbox.stub(participant)
+      sandbox.stub(partiesDomain, 'getPartiesByTypeAndID')
     })
 
     afterEach(() => {
@@ -795,10 +799,10 @@ describe('Parties Tests', () => {
       const dataUri = encodePayload(payload, 'application/json')
 
       // Act
-      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, dataUri)
+      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, dataUri, null, proxyCache)
 
       // Assert
-      expect(participant.sendErrorToParticipant.callCount).toBe(2)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[0]).toStrictEqual('payerfsp')
     })
@@ -862,6 +866,26 @@ describe('Parties Tests', () => {
       expect(loggerStub.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
+    })
+
+    it('should handle notValidPayeeIdentifier case', async () => {
+      const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
+      const payload = fixtures.errorCallbackResponseDto({ errorCode })
+      const source = `source-${Date.now()}`
+      const proxy = `proxy-${Date.now()}`
+      const headers = fixtures.partiesCallHeadersDto({ source, proxy })
+      const { params } = Helper.putByTypeIdRequest
+      participant.sendRequest = sandbox.stub().resolves()
+      participant.sendErrorToParticipant = sandbox.stub().resolves()
+      participantsDomain.deleteParticipants = sandbox.stub().resolves()
+
+      await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
+
+      expect(participantsDomain.deleteParticipants.callCount).toBe(1)
+      expect(participant.sendRequest.callCount).toBe(0)
+      // todo: think, how to stub getPartiesByTypeAndID call
+      // expect(partiesDomain.getPartiesByTypeAndID.callCount).toBe(1)
+      // expect(participant.sendErrorToParticipant.callCount).toBe(0)
     })
   })
 })
