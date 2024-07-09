@@ -24,6 +24,7 @@ services:
     depends_on:
       - mysql-als
       - central-ledger
+      - redis
     volumes:
       - ./secrets:/opt/app/secrets
       - ./src:/opt/app/src
@@ -124,3 +125,16 @@ services:
       retries: 10
       start_period: 40s
       interval: 30s
+
+  redis:
+    image: redis:6.2.4-alpine
+    restart: "unless-stopped"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT=6379
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_TLS_ENABLED=no
+    ports:
+      - "6379:6379"
+    networks:
+      - als-mojaloop-net

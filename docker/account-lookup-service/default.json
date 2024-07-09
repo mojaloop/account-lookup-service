@@ -28,6 +28,10 @@
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
+  "PROXY_CACHE_CONFIG": {
+    "host": "redis",
+    "port": 6379
+  },
   "SWITCH_ENDPOINT": "http://localhost:3001",
   "INSTRUMENTATION": {
     "METRICS": {

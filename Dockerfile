@@ -6,12 +6,12 @@ ARG NODE_VERSION=lts-alpine
 #  export NODE_VERSION="$(cat .nvmrc)-alpine" \
 #  docker build \
 #    --build-arg NODE_VERSION=$NODE_VERSION \
-#    -t mojaloop/sdk-scheme-adapter:local \
+#    -t mojaloop/account-lookup-service:local \
 #    . \
 #
 
 # Build Image
-FROM node:${NODE_VERSION} as builder
+FROM node:${NODE_VERSION} AS builder
 WORKDIR /opt/app
 
 RUN apk --no-cache add git
@@ -36,7 +36,7 @@ RUN mkdir ./logs && touch ./logs/combined.log
 RUN ln -sf /dev/stdout ./logs/combined.log
 
 # Create a non-root user: ml-user
-RUN adduser -D ml-user 
+RUN adduser -D ml-user
 USER ml-user
 
 COPY --chown=ml-user --from=builder /opt/app .

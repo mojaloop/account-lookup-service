@@ -23,19 +23,24 @@
  --------------
  **********/
 
-const { Enum } = require('@mojaloop/central-services-shared')
+const { Enum, Util } = require('@mojaloop/central-services-shared')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
+const stringify = require('fast-safe-stringify')
 
 const config = require('../../lib/config')
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const { createCallbackHeaders } = require('../../lib/headers')
+const { ERROR_MESSAGES } = require('../../constants')
 const utils = require('./utils')
+const Config = require('../../lib/config')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
+
+const proxyCacheTtlSec = 5 // todo: make configurable
 
 /**
  * @function getPartiesByTypeAndID
@@ -47,60 +52,67 @@ const { Headers, RestMethods } = Enum.Http
  * @param {string} method - http request method
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
+ * @param {object} cache
+ * @param {IProxyCache} proxyCache - IProxyCache instance
  */
-const getPartiesByTypeAndID = async (headers, params, method, query, span = undefined, cache) => {
+const getPartiesByTypeAndID = async (headers, params, method, query, span, cache, proxyCache) => {
   const histTimerEnd = Metrics.getHistogram(
     'getPartiesByTypeAndID',
     'Get party by Type and Id',
     ['success']
   ).startTimer()
   const type = params.Type
-  const partySubIdOrType = params.SubId
-  const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
+  const partySubId = params.SubId
+  const source = headers[Headers.FSPIOP.SOURCE]
 
-  const callbackEndpointType = utils.getPartyCbType(partySubIdOrType)
-  const errorCallbackEndpointType = utils.errorPartyCbType(partySubIdOrType)
+  const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
   Logger.isInfoEnabled && Logger.info('parties::getPartiesByTypeAndID::begin')
+
+  const callbackEndpointType = utils.getPartyCbType(partySubId)
+  const errorCallbackEndpointType = utils.errorPartyCbType(partySubId)
 
   let fspiopError
   try {
-    const requesterParticipantModel = await participant.validateParticipant(headers[Headers.FSPIOP.SOURCE])
+    const proxy = headers[Headers.FSPIOP.PROXY]
+    const requesterId = proxy || source
+
+    const requesterParticipantModel = await participant.validateParticipant(requesterId)
     if (!requesterParticipantModel) {
-      // todO: DISCUSS WITH VIJAY
+      // todo: DISCUSS WITH VIJAY
       //   assuming adjacent scheme participants are not participants of the scheme
       // fspiop-proxy OR fspiop-source should be in the scheme
-      Logger.isErrorEnabled && Logger.error('Requester FSP not found')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+      const errMessage = proxy ? ERROR_MESSAGES.partyProxyNotFound : ERROR_MESSAGES.partySourceFspNotFound
+      Logger.isErrorEnabled && Logger.error(errMessage)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
     }
 
     const options = {
       partyIdType: type,
       partyIdentifier: params.ID,
-      ...(partySubIdOrType && { partySubIdOrType })
+      ...(partySubId && { partySubIdOrType: partySubId })
     }
 
+    let destination = headers[Headers.FSPIOP.DESTINATION]
     // see https://github.com/mojaloop/design-authority/issues/79
-    if (headers[Headers.FSPIOP.DESTINATION]) {
-      // the requester has specifid a destination routing header. We should respect that and forward the request directly to the destination
-      // without consulting any oracles.
-
-      // first check the destination is a valid participant
-      const destParticipantModel = await participant.validateParticipant(headers[Headers.FSPIOP.DESTINATION])
+    // the requester has specified a destination routing header. We should respect that and forward the request directly to the destination
+    // without consulting any oracles.
+    if (destination) {
+      const destParticipantModel = await participant.validateParticipant(destination)
       if (!destParticipantModel) {
-        // go to proxyCache, and try to get DESTINATION info (dfsp --> proxyId)
-        // if (!fount) throw error
-        // else        proxy to proxy
+        const proxyId = await proxyCache.lookupProxyByDfspId(destination)
 
-        Logger.isErrorEnabled && Logger.error('Destination FSP not found')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Destination FSP not found')
+        if (!proxyId) {
+          const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
+          Logger.isErrorEnabled && Logger.error(errMessage)
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+        }
+        destination = proxyId
       }
-
       // all ok, go ahead and forward the request
-      await participant.sendRequest(headers, headers[Headers.FSPIOP.DESTINATION], callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+      await participant.sendRequest(headers, destination, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+
       histTimerEnd({ success: true })
-      if (childSpan && !childSpan.isFinished) {
-        await childSpan.finish()
-      }
+      Logger.isVerboseEnabled && Logger.verbose(`discovery getPartiesByTypeAndID request was sent to destination: ${destination}`)
       return
     }
 
@@ -113,44 +125,79 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
           filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
           break
         case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET:
-          filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType === partySubIdOrType) // Filter records that match partySubIdOrType
+          filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType === partySubId) // Filter records that match partySubIdOrType
           break
         default:
           filteredResponsePartyList = response // Fallback to providing the standard list
       }
 
-      if (filteredResponsePartyList == null || !(Array.isArray(filteredResponsePartyList) && filteredResponsePartyList.length > 0)) {
+      if (!Array.isArray(filteredResponsePartyList) || !filteredResponsePartyList.length) {
         Logger.isErrorEnabled && Logger.error('Requested FSP/Party not found')
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requested FSP/Party not found')
       }
 
-      for (const party of filteredResponsePartyList) {
+      let atLeastOneSent = false // if false after sending, we should restart the whole process
+      const sending = filteredResponsePartyList.map(async party => {
         const clonedHeaders = { ...headers }
-        if (!clonedHeaders[Headers.FSPIOP.DESTINATION]) {
+        if (!destination) {
           clonedHeaders[Headers.FSPIOP.DESTINATION] = party.fspId
         }
-        // if (party.fspId is NOT in scheme) go to cache, and get proxyId   ?? (if no fspId --> proxyID mapping : delete reference in oracle, and restart process(if no participants else left)  )
-        //
-        await participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
-      }
-      if (childSpan && !childSpan.isFinished) {
-        await childSpan.finish()
-      }
-    } else {
-      // if (no proxy) throw error (current flow)
-      // else          start the whole flow of sendingToAllProxies..
-      const callbackHeaders = createCallbackHeaders({
-        requestHeaders: headers,
-        partyIdType: params.Type,
-        partyIdentifier: params.ID,
-        endpointTemplate: partySubIdOrType
-          ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
-          : FspEndpointTemplates.PARTIES_PUT_ERROR
+        const schemeParticipant = await participant.validateParticipant(party.fspId)
+        if (schemeParticipant) {
+          atLeastOneSent = true
+          Logger.isDebugEnabled && Logger.debug(`participant ${party.fspId} is in scheme`)
+          return participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+        }
+
+        const proxyName = await proxyCache.lookupProxyByDfspId(party.fspId)
+        if (!proxyName) {
+          Logger.isWarnEnabled && Logger.warn(`no proxyMapping for participant ${party.fspId}!  Deleting reference in oracle...`)
+          // todo: delete reference in oracle
+        } else {
+          atLeastOneSent = true
+          Logger.isDebugEnabled && Logger.debug(`participant ${party.fspId} NOT is in scheme, use proxy ${proxyName}`)
+          return participant.sendRequest(clonedHeaders, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+        }
       })
-      fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
-      await participant.sendErrorToParticipant(headers[Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
-        fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
-      await utils.finishSpanWithError(childSpan, fspiopError)
+      await Promise.all(sending)
+      Logger.isInfoEnabled && Logger.info(`participant.sendRequests are ${atLeastOneSent ? '' : 'NOT '}sent, based on oracle response`)
+    } else {
+      const proxyNames = await Util.proxies.getAllProxiesNames(Config.SWITCH_ENDPOINT)
+      const filteredProxyNames = proxyNames.filter(name => name !== proxy)
+
+      if (!filteredProxyNames.length) {
+        const callbackHeaders = createCallbackHeaders({
+          requestHeaders: headers,
+          partyIdType: type,
+          partyIdentifier: params.ID,
+          endpointTemplate: partySubId
+            ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
+            : FspEndpointTemplates.PARTIES_PUT_ERROR
+        })
+        fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        await participant.sendErrorToParticipant(source, errorCallbackEndpointType,
+          fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
+      } else {
+        const alsReq = utils.alsRequestDto(source, params)
+        Logger.isInfoEnabled && Logger.info(`starting setSendToProxiesList flow: ${stringify({ filteredProxyNames, alsReq })}`)
+        const isCached = await proxyCache.setSendToProxiesList(alsReq, filteredProxyNames, proxyCacheTtlSec)
+        if (!isCached) {
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.failedToCacheSendToProxiesList)
+        }
+
+        const sending = filteredProxyNames.map(
+          proxyName => participant.sendRequest(headers, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+        )
+        const results = await Promise.allSettled(sending)
+        const isOk = results.some(result => result.status === 'fulfilled')
+        // If, at least, one request is sent to proxy, we treat the whole flow as successful.
+        // Failed requests should be handled by TTL expired/timeout handler
+        // todo: - think, if we should handle failed requests here (e.g., by calling receivedErrorResponse)
+        Logger.isInfoEnabled && Logger.info(`setSendToProxiesList flow is done: ${stringify({ isOk, results, filteredProxyNames, alsReq })}`)
+        if (!isOk) {
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.proxyConnectionError)
+        }
+      }
     }
     histTimerEnd({ success: true })
   } catch (err) {
@@ -158,7 +205,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span = unde
     fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
 
     try {
-      await participant.sendErrorToParticipant(headers[Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
+      await participant.sendErrorToParticipant(source, errorCallbackEndpointType,
         fspiopError.toApiErrorObject(config.ERROR_HANDLING), headers, params, childSpan)
     } catch (exc) {
       fspiopError = ErrorHandler.Factory.reformatFSPIOPError(exc)
