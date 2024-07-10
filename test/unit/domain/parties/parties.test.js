@@ -45,6 +45,7 @@ const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
 const libUtil = require('../../../../src/lib/util')
 const { ERROR_MESSAGES } = require('../../../../src/constants')
+const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.proxyCacheConfig
 
 const Helper = require('../../../util/helper')
 const fixtures = require('../../../fixtures')
@@ -73,7 +74,8 @@ describe('Parties Tests', () => {
     Db.from = (table) => {
       return Db[table]
     }
-    proxyCache = createProxyCache(Config.proxyCacheType, Config.proxyCacheConfig)
+    Config.proxyCacheConfig.enabled = true
+    proxyCache = createProxyCache(proxyCacheType, proxyCacheConfig)
     await proxyCache.connect()
   })
 

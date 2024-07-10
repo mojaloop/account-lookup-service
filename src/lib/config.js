@@ -99,9 +99,8 @@ const getProtocolVersions = (defaultProtocolVersions, overrideProtocolVersions) 
   return T_PROTOCOL_VERSION
 }
 
-const { type, proxyConfig } = RC.PROXY_CACHE
-if (!storageTypeValues.includes(type)) {
-  throw new TypeError(`Incorrect proxyCache type: ${type}`)
+if (!storageTypeValues.includes(RC.PROXY_CACHE.type)) {
+  throw new TypeError(`Incorrect proxyCache type: ${RC.PROXY_CACHE.type}`)
 }
 
 const config = {
@@ -164,8 +163,7 @@ const config = {
   API_DOC_ENDPOINTS_ENABLED: RC.API_DOC_ENDPOINTS_ENABLED || false,
   FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE: RC.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE || false,
   PROTOCOL_VERSIONS: getProtocolVersions(DEFAULT_PROTOCOL_VERSION, RC.PROTOCOL_VERSIONS),
-  proxyCacheType: type,
-  proxyCacheConfig: proxyConfig
+  proxyCacheConfig: RC.PROXY_CACHE
 }
 
 if (config.JWS_SIGN) {
