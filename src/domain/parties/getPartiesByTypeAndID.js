@@ -65,13 +65,14 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
   const callbackEndpointType = utils.getPartyCbType(partySubId)
+  const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
 
   const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
   Logger.isInfoEnabled && Logger.info('parties::getPartiesByTypeAndID::begin')
 
   let fspiopError
   try {
-    const proxy = headers[Headers.FSPIOP.PROXY]
+    const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
     const requesterId = proxy || source
 
     const requesterParticipantModel = await participant.validateParticipant(requesterId)
@@ -97,7 +98,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     if (destination) {
       const destParticipantModel = await participant.validateParticipant(destination)
       if (!destParticipantModel) {
-        const proxyId = proxyCache && await proxyCache.lookupProxyByDfspId(destination)
+        const proxyId = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
 
         if (!proxyId) {
           const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
@@ -149,7 +150,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
 
         // If the participant is not in the scheme and proxy routing is enabled,
         // we should check if there is a proxy for it and send the request to the proxy
-        if (proxyCache) {
+        if (proxyEnabled) {
           const proxyName = await proxyCache.lookupProxyByDfspId(party.fspId)
           if (!proxyName) {
             Logger.isWarnEnabled && Logger.warn(`no proxyMapping for participant ${party.fspId}!  Deleting reference in oracle...`)
@@ -166,7 +167,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     } else {
       let filteredProxyNames = []
 
-      if (proxyCache) {
+      if (proxyEnabled) {
         const proxyNames = await Util.proxies.getAllProxiesNames(Config.SWITCH_ENDPOINT)
         filteredProxyNames = proxyNames.filter(name => name !== proxy)
       }
