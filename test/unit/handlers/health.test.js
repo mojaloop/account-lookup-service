@@ -37,6 +37,7 @@ const getPort = require('get-port')
 const Sinon = require('sinon')
 const MigrationLockModel = require('../../../src/models/misc/migrationLock')
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -46,6 +47,7 @@ let server
 
 describe('/health', () => {
   beforeEach(async () => {
+    Config.proxyCacheConfig.enabled = true
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     server = await initServer(await getPort())
@@ -66,6 +68,7 @@ describe('/health', () => {
   it('GET /health', async () => {
     // Arrange
     sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(false)
+    sandbox.stub(server.app.proxyCache, 'healthCheck').returns(false)
     const mock = await Helper.generateMockRequest('/health', 'get')
 
     const options = {

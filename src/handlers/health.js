@@ -27,10 +27,21 @@
 'use strict'
 
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
+const { getSubServiceHealthDatastore, getProxyCacheHealth } = require('../lib/healthCheck/subServiceHealth')
 const packageJson = require('../../package.json')
+const Config = require('../lib/config')
 
-const healthCheck = new HealthCheck(packageJson, [getSubServiceHealthDatastore])
+const subServices = []
+
+// Add the Datastore health check
+subServices.push(getSubServiceHealthDatastore)
+
+// Add the Proxy Cache health check, if enabled
+if (Config.proxyCacheConfig.enabled) {
+  subServices.push(getProxyCacheHealth)
+}
+
+const healthCheck = new HealthCheck(packageJson, subServices)
 
 /**
  * Operations on /health
@@ -44,7 +55,7 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (context, request, h) => {
-    const health = await healthCheck.getHealth()
+    const health = await healthCheck.getHealth({ request })
     const statusCode = health.status !== 'OK' ? 503 : 200
     return h.response(health).code(statusCode)
   }

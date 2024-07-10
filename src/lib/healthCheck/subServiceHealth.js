@@ -56,6 +56,31 @@ const getSubServiceHealthDatastore = async () => {
   }
 }
 
+/**
+ * @function getProxyCacheHealth
+ *
+ * @description
+ *   Gets the health of the proxy cache by checking the connection to the cache.
+ *
+ * @returns Promise<SubServiceHealth> The SubService health object for the proxy cache
+ */
+const getProxyCacheHealth = async ({ request }) => {
+  let status = statusEnum.OK
+
+  try {
+    status = await request.server.app.proxyCache.healthCheck() ? statusEnum.OK : statusEnum.DOWN
+  } catch (err) {
+    Logger.isDebugEnabled && Logger.debug(`getProxyCacheHealth failed with error ${err.message}.`)
+    status = statusEnum.DOWN
+  }
+
+  return {
+    name: serviceName.proxyCache,
+    status
+  }
+}
+
 module.exports = {
-  getSubServiceHealthDatastore
+  getSubServiceHealthDatastore,
+  getProxyCacheHealth
 }

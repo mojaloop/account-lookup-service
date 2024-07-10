@@ -44,7 +44,7 @@ const Handlers = require('./handlers')
 const Routes = require('./handlers/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
-const { type: proxyCacheType, proxyConfig: proxyCacheConfig, enabled: proxyCacheEnabled } = Config.proxyCacheConfig
+const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.proxyCacheConfig
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
@@ -91,7 +91,7 @@ const createServer = async (port, api, routes, isAdmin) => {
     preloadCache: async () => Promise.resolve()
   })
 
-  if (!isAdmin && proxyCacheEnabled) {
+  if (!isAdmin && Config.proxyCacheConfig.enabled) {
     server.app.proxyCache = await createConnectedProxyCache()
   }
 
