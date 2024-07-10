@@ -34,6 +34,7 @@
 let Sinon
 let Command
 let sandbox
+const Config = require('../../src/lib/config')
 
 describe('Base Tests', () => {
   beforeEach(() => {
@@ -109,7 +110,7 @@ describe('Base Tests', () => {
     // When starting with default args, both the admin and api servers get startec
     expect(mockInitStub.callCount).toBe(1)
     const initStubArgs = mockInitStub.getCall(0).args
-    expect(initStubArgs[0]).toBe(4002) // true is API
+    expect(initStubArgs[0]).toStrictEqual(Config)
   })
 
   it('should start the server with the --admin config', () => {
@@ -133,6 +134,6 @@ describe('Base Tests', () => {
     // When starting with default args, both the admin and api servers get startec
     expect(mockInitStub.callCount).toBe(1)
     const initStubArgs = mockInitStub.getCall(0).args
-    expect(initStubArgs[0]).toBe(4001) // false is admin
+    expect(initStubArgs[0]).toStrictEqual(Config)
   })
 })

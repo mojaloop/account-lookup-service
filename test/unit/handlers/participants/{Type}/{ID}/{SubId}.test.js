@@ -39,6 +39,7 @@ const requestLogger = require('../../../../../../src/lib/requestLogger')
 const Helper = require('../../../../../util/helper')
 const initServer = require('../../../../../../src/server').initializeApi
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -52,7 +53,8 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(requestLogger, 'logRequest').returns({})
     sandbox.stub(requestLogger, 'logResponse').returns({})
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {

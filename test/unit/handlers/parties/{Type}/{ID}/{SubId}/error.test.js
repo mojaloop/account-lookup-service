@@ -35,6 +35,7 @@ const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)
 const Helper = require('../../../../../../util/helper')
+const Config = require(`${src}/lib/config`)
 
 let server
 let sandbox
@@ -44,7 +45,8 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {

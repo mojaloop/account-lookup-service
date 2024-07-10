@@ -50,7 +50,8 @@ describe('/health', () => {
     Config.proxyCacheConfig.enabled = true
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterEach(async () => {
@@ -68,7 +69,6 @@ describe('/health', () => {
   it('GET /health', async () => {
     // Arrange
     sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(false)
-    sandbox.stub(server.app.proxyCache, 'healthCheck').returns(false)
     const mock = await Helper.generateMockRequest('/health', 'get')
 
     const options = {

@@ -47,13 +47,13 @@ Program.command('server') // sub-command name, coffeeType = type, required
   .action(async (args) => {
     if (args.api) {
       Logger.isDebugEnabled && Logger.debug('CLI: Executing --api')
-      module.exports = Server.initializeApi(Config.API_PORT)
+      module.exports = Server.initializeApi(Config)
     } else if (args.admin) {
       Logger.isDebugEnabled && Logger.debug('CLI: Executing --admin')
-      module.exports = Server.initializeAdmin(Config.ADMIN_PORT)
+      module.exports = Server.initializeAdmin(Config)
     } else {
-      module.exports = Server.initializeAdmin(Config.ADMIN_PORT)
-      module.exports = Server.initializeApi(Config.API_PORT)
+      module.exports = Server.initializeAdmin(Config)
+      module.exports = Server.initializeApi(Config)
     }
   })
 
