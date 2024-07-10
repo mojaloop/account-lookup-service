@@ -90,7 +90,7 @@ const createServer = async (port, api, routes, isAdmin) => {
     preloadCache: async () => Promise.resolve()
   })
 
-  if (!isAdmin) {
+  if (!isAdmin && Config.proxyCacheConfig.enabled) {
     server.app.proxyCache = await createConnectedProxyCache()
   }
 

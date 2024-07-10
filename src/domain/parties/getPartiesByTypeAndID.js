@@ -97,7 +97,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     if (destination) {
       const destParticipantModel = await participant.validateParticipant(destination)
       if (!destParticipantModel) {
-        const proxyId = await proxyCache.lookupProxyByDfspId(destination)
+        const proxyId = proxyCache && await proxyCache.lookupProxyByDfspId(destination)
 
         if (!proxyId) {
           const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
@@ -147,21 +147,29 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
           return participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
         }
 
-        const proxyName = await proxyCache.lookupProxyByDfspId(party.fspId)
-        if (!proxyName) {
-          Logger.isWarnEnabled && Logger.warn(`no proxyMapping for participant ${party.fspId}!  Deleting reference in oracle...`)
-          // todo: delete reference in oracle
-        } else {
-          atLeastOneSent = true
-          Logger.isDebugEnabled && Logger.debug(`participant ${party.fspId} NOT is in scheme, use proxy ${proxyName}`)
-          return participant.sendRequest(clonedHeaders, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+        // If the participant is not in the scheme and proxy routing is enabled,
+        // we should check if there is a proxy for it and send the request to the proxy
+        if (proxyCache) {
+          const proxyName = await proxyCache.lookupProxyByDfspId(party.fspId)
+          if (!proxyName) {
+            Logger.isWarnEnabled && Logger.warn(`no proxyMapping for participant ${party.fspId}!  Deleting reference in oracle...`)
+            // todo: delete reference in oracle
+          } else {
+            atLeastOneSent = true
+            Logger.isDebugEnabled && Logger.debug(`participant ${party.fspId} NOT is in scheme, use proxy ${proxyName}`)
+            return participant.sendRequest(clonedHeaders, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+          }
         }
       })
       await Promise.all(sending)
       Logger.isInfoEnabled && Logger.info(`participant.sendRequests are ${atLeastOneSent ? '' : 'NOT '}sent, based on oracle response`)
     } else {
-      const proxyNames = await Util.proxies.getAllProxiesNames(Config.SWITCH_ENDPOINT)
-      const filteredProxyNames = proxyNames.filter(name => name !== proxy)
+      let filteredProxyNames = []
+
+      if (proxyCache) {
+        const proxyNames = await Util.proxies.getAllProxiesNames(Config.SWITCH_ENDPOINT)
+        filteredProxyNames = proxyNames.filter(name => name !== proxy)
+      }
 
       if (!filteredProxyNames.length) {
         const callbackHeaders = createCallbackHeaders({

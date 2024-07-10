@@ -77,7 +77,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
         const errMessage = ERROR_MESSAGES.partySourceFspNotFound
         Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
-      } else {
+      } else if (proxyCache) {
         const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
         // todo: think, if we should throw error if isCached === false?
         Logger.isDebugEnabled && Logger.debug(`addDfspIdToProxyMapping is done: ${stringify({ source, proxy, isCached })}`)
