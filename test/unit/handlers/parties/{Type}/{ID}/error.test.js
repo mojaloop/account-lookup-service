@@ -74,7 +74,8 @@ describe('/parties/{Type}/{ID}/error', () => {
     mock.request = {
       log: sandbox.stub(),
       server: {
-        log: sandbox.stub()
+        log: sandbox.stub(),
+        app: {}
       },
       span: {
         setTags: setTagsStub,
@@ -114,7 +115,8 @@ describe('/parties/{Type}/{ID}/error', () => {
     mock.request = {
       log: sandbox.stub(),
       server: {
-        log: sandbox.stub()
+        log: sandbox.stub(),
+        app: {}
       },
       span: {
         setTags: setTagsStub,

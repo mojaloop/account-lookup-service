@@ -46,7 +46,8 @@ module.exports = {
       'Ingress - Put parties error by Type, ID and SubId',
       ['success']
     ).startTimer()
-    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span).catch(err => {
+    const { cache, proxyCache } = request.server.app
+    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

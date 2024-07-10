@@ -64,12 +64,10 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const type = params.Type
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
+  const callbackEndpointType = utils.getPartyCbType(partySubId)
 
   const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
   Logger.isInfoEnabled && Logger.info('parties::getPartiesByTypeAndID::begin')
-
-  const callbackEndpointType = utils.getPartyCbType(partySubId)
-  const errorCallbackEndpointType = utils.errorPartyCbType(partySubId)
 
   let fspiopError
   try {
@@ -175,6 +173,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
             : FspEndpointTemplates.PARTIES_PUT_ERROR
         })
         fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        const errorCallbackEndpointType = utils.errorPartyCbType(partySubId)
         await participant.sendErrorToParticipant(source, errorCallbackEndpointType,
           fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
       } else {
@@ -201,18 +200,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     }
     histTimerEnd({ success: true })
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-
-    try {
-      await participant.sendErrorToParticipant(source, errorCallbackEndpointType,
-        fspiopError.toApiErrorObject(config.ERROR_HANDLING), headers, params, childSpan)
-    } catch (exc) {
-      fspiopError = ErrorHandler.Factory.reformatFSPIOPError(exc)
-      // We can't do anything else here- we _must_ handle all errors _within_ this function because
-      // we've already sent a sync response- we cannot throw.
-      Logger.isErrorEnabled && Logger.error(exc)
-    }
+    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params)
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

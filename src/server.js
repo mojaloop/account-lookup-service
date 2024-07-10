@@ -32,7 +32,7 @@ const OpenapiBackend = require('@mojaloop/central-services-shared').Util.Openapi
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
-const { createProxyCache, STORAGE_TYPES } = require('@mojaloop/inter-scheme-proxy-cache-lib')
+const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
 const Config = require('./lib/config')
 const Db = require('./lib/db')
@@ -54,7 +54,7 @@ const migrate = async () => {
 }
 
 const createConnectedProxyCache = async () => {
-  const proxyCache = createProxyCache(STORAGE_TYPES.redis, Config.proxyCacheConfig)
+  const proxyCache = createProxyCache(Config.proxyCacheType, Config.proxyCacheConfig)
   await proxyCache.connect()
   return proxyCache
 }

@@ -46,7 +46,7 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:unit": "jest --runInBand --testMatch '**/test/unit/**/*.test.js' --setupFiles ./test/unit/setup.js",
+    "test:unit": "jest --runInBand --config=./jest-unit.config.js",
     "test:coverage": "npm test -- --coverage --coverageThreshold='{}'",
     "test:coverage-check": "npm test -- --coverage",
     "test:junit": "npm test -- --reporters=default --reporters=jest-junit",
@@ -93,7 +93,7 @@
     "@mojaloop/database-lib": "11.0.6",
     "@mojaloop/event-sdk": "14.1.1",
     "@mojaloop/inter-scheme-proxy-cache-lib": "^1.4.0",
-    "@mojaloop/sdk-standard-components": "18.1.0",
+    "@mojaloop/sdk-standard-components": "^18.4.0-snapshot.0",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.16.0",
     "ajv-keywords": "5.1.0",
@@ -110,6 +110,9 @@
     "rc": "1.2.8"
   },
   "overrides": {
+    "@mojaloop/central-services-error-handling": {
+      "@mojaloop/sdk-standard-components": "$@mojaloop/sdk-standard-components"
+    },
     "shins": {
       "ajv": "6.12.3",
       "ejs": "3.1.10",
