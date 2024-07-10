@@ -96,6 +96,8 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
     server.app.proxyCache = await createConnectedProxyCache(proxyCacheConfig)
   }
 
+  server.app.isAdmin = isAdmin
+
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
     {
@@ -133,7 +135,7 @@ const initializeApi = async (appConfig) => {
   await connectDatabase(appConfig.DATABASE)
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
-  const server = await createServer(appConfig.API_PORT, api, Routes.APIRoutes(api), false, appConfig)
+  const server = await createServer(appConfig.API_PORT, api, Routes.APIRoutes(api), false, appConfig.proxyCacheConfig)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(appConfig.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
   await ParticipantCache.initializeCache(appConfig.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
@@ -151,7 +153,7 @@ const initializeAdmin = async (appConfig) => {
   appConfig.RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
-  const server = await createServer(appConfig.ADMIN_PORT, api, Routes.AdminRoutes(api), true, appConfig)
+  const server = await createServer(appConfig.ADMIN_PORT, api, Routes.AdminRoutes(api), true, appConfig.proxyCacheConfig)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }

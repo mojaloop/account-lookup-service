@@ -56,7 +56,7 @@
     "EXPIRES_IN_MS": 61000
   },
   "PROXY_CACHE": {
-    "enabled": false,
+    "enabled": true,
     "type": "redis",
     "proxyConfig": {
       "host": "localhost",
