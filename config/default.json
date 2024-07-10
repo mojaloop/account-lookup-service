@@ -55,10 +55,13 @@
     "MAX_BYTE_SIZE": 10000000,
     "EXPIRES_IN_MS": 61000
   },
-  "PROXY_CACHE_CONFIG": {
+  "PROXY_CACHE": {
     "enabled": false,
-    "host": "localhost",
-    "port": 6379
+    "type": "redis",
+    "proxyConfig": {
+      "host": "localhost",
+      "port": 6379
+    }
   },
   "ERROR_HANDLING": {
     "includeCauseExtension": false,
