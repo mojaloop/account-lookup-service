@@ -46,7 +46,7 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:unit": "jest --runInBand --testMatch '**/test/unit/**/*.test.js' --setupFiles ./test/unit/setup.js",
+    "test:unit": "jest --runInBand --config=./jest-unit.config.js",
     "test:coverage": "npm test -- --coverage --coverageThreshold='{}'",
     "test:coverage-check": "npm test -- --coverage",
     "test:junit": "npm test -- --reporters=default --reporters=jest-junit",

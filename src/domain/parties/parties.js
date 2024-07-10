@@ -39,7 +39,6 @@ const stringify = require('fast-safe-stringify')
 
 const participantsDomain = require('../../domain/participants') // think, how to avoid such deps on another domain
 const participant = require('../../models/participantEndpoint/facade')
-const Config = require('../../lib/config')
 const { ERROR_MESSAGES } = require('../../constants')
 const utils = require('./utils')
 
@@ -131,16 +130,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::callback was sent - ${stringify({ sentTo, options })}`)
     histTimerEnd({ success: true })
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    const errorCallbackEndpointType = utils.errorPartyCbType(partySubId)
-    try {
-      await participant.sendErrorToParticipant(source, errorCallbackEndpointType,
-        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
-    } catch (exc) {
-      // We can't do anything else here- we _must_ handle all errors _within_ this function because
-      // we've already sent a sync response- we cannot throw.
-      Logger.isErrorEnabled && Logger.error(exc)
-    }
+    await utils.handleErrorOnSendingCallback(err, headers, params)
     histTimerEnd({ success: false })
   }
 }
@@ -165,7 +155,6 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     ['success']
   ).startTimer()
   const partySubId = params.SubId
-  const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const callbackEndpointType = utils.errorPartyCbType(partySubId)
 
@@ -213,16 +202,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     Logger.isInfoEnabled && Logger.info(`putPartiesErrorByTypeAndID callback was sent to ${sentTo}`)
     histTimerEnd({ success: true })
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    try {
-      fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-      await participant.sendErrorToParticipant(source, callbackEndpointType,
-        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
-    } catch (exc) {
-      // We can't do anything else here- we _must_ handle all errors _within_ this function because
-      // we've already sent a sync response- we cannot throw.
-      Logger.isErrorEnabled && Logger.error(exc)
-    }
+    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params)
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

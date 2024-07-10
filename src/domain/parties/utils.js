@@ -1,5 +1,11 @@
 const { Enum } = require('@mojaloop/central-services-shared')
 const EventSdk = require('@mojaloop/event-sdk')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
+const stringify = require('fast-safe-stringify')
+
+const participant = require('../../models/participantEndpoint/facade')
+const Config = require('../../lib/config')
 
 const { FspEndpointTypes } = Enum.EndPoints
 const { Headers } = Enum.Http
@@ -48,11 +54,31 @@ const swapSourceDestinationHeaders = (headers) => {
   }
 }
 
+const handleErrorOnSendingCallback = async (err, headers, params) => {
+  try {
+    Logger.isErrorEnabled && Logger.error(err)
+    const source = headers[Headers.FSPIOP.SOURCE]
+    const errorCallbackEndpointType = errorPartyCbType(params.SubId)
+    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+    const errInfo = fspiopError.toApiErrorObject(Config.ERROR_HANDLING)
+
+    await participant.sendErrorToParticipant(source, errorCallbackEndpointType, errInfo, headers, params)
+
+    Logger.isInfoEnabled && Logger.info(`sendErrorToParticipant in done: ${stringify({ source, params, errInfo })}`)
+    return fspiopError
+  } catch (exc) {
+    // We can't do anything else here- we _must_ handle all errors _within_ this function because
+    // we've already sent a sync response- we cannot throw.
+    Logger.isErrorEnabled && Logger.error(exc)
+  }
+}
+
 module.exports = {
   getPartyCbType,
   putPartyCbType,
   errorPartyCbType,
   finishSpanWithError,
+  handleErrorOnSendingCallback,
   alsRequestDto,
   swapSourceDestinationHeaders
 }
