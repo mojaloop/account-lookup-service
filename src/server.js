@@ -123,37 +123,54 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
   return server
 }
 
-const initializeInstrumentation = ({ enabled, metricsConfig }) => {
-  enabled && Metrics.setup(metricsConfig)
+const initializeInstrumentation = (metricsConfig) => {
+  Metrics.setup(metricsConfig)
 }
 
 const initializeApi = async (appConfig) => {
-  initializeInstrumentation({
-    enabled: !appConfig.INSTRUMENTATION_METRICS_DISABLED,
-    metricsConfig: appConfig.INSTRUMENTATION_METRICS_CONFIG
-  })
-  await connectDatabase(appConfig.DATABASE)
+  const {
+    INSTRUMENTATION_METRICS_DISABLED,
+    INSTRUMENTATION_METRICS_CONFIG,
+    DATABASE,
+    API_PORT,
+    proxyCacheConfig,
+    CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG,
+    CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG
+  } = appConfig
+
+  if (!INSTRUMENTATION_METRICS_DISABLED) {
+    initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
+  }
+  await connectDatabase(DATABASE)
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
-  const server = await createServer(appConfig.API_PORT, api, Routes.APIRoutes(api), false, appConfig.proxyCacheConfig)
+  const server = await createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache(appConfig.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
-  await ParticipantCache.initializeCache(appConfig.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
+  await ParticipantEndpointCache.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
+  await ParticipantCache.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
   await OracleEndpointCache.initialize()
   await Cache.initCache()
   return server
 }
 
 const initializeAdmin = async (appConfig) => {
-  initializeInstrumentation({
-    enabled: !appConfig.INSTRUMENTATION_METRICS_DISABLED,
-    metricsConfig: appConfig.INSTRUMENTATION_METRICS_CONFIG
-  })
-  await connectDatabase(appConfig.DATABASE)
-  appConfig.RUN_MIGRATIONS && await migrate()
+  const {
+    INSTRUMENTATION_METRICS_DISABLED,
+    INSTRUMENTATION_METRICS_CONFIG,
+    DATABASE,
+    RUN_MIGRATIONS,
+    ADMIN_PORT,
+    proxyCacheConfig
+  } = appConfig
+
+  if (!INSTRUMENTATION_METRICS_DISABLED) {
+    initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
+  }
+  await connectDatabase(DATABASE)
+  RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
-  const server = await createServer(appConfig.ADMIN_PORT, api, Routes.AdminRoutes(api), true, appConfig.proxyCacheConfig)
+  const server = await createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }
