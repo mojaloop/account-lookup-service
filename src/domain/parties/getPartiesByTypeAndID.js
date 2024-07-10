@@ -53,9 +53,9 @@ const proxyCacheTtlSec = 5 // todo: make configurable
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
  * @param {object} cache
- * @param {IProxyCache} proxyCache - IProxyCache instance
+ * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
-const getPartiesByTypeAndID = async (headers, params, method, query, span, cache, proxyCache) => {
+const getPartiesByTypeAndID = async (headers, params, method, query, span, cache, proxyCache = undefined) => {
   const histTimerEnd = Metrics.getHistogram(
     'getPartiesByTypeAndID',
     'Get party by Type and Id',
