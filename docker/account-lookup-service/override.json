@@ -1,0 +1,10 @@
+{
+  "DATABASE": {
+    "HOST": "mysql-als"
+  },
+  "PROXY_CACHE": {
+    "proxyConfig": {
+      "host": "redis"
+    }
+  }
+}
