@@ -34,7 +34,6 @@ const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
-const Config = require('./lib/config')
 const Db = require('./lib/db')
 const Util = require('./lib/util')
 const Plugins = require('./plugins')
@@ -45,16 +44,19 @@ const Routes = require('./handlers/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
 
-const connectDatabase = async () => {
-  return Db.connect(Config.DATABASE)
+const connectDatabase = async (dbConfig) => {
+  return Db.connect(dbConfig)
 }
 
 const migrate = async () => {
-  return Config.RUN_MIGRATIONS ? Migrator.migrate() : {}
+  return Migrator.migrate()
 }
 
-const createConnectedProxyCache = async () => {
-  const proxyCache = createProxyCache(Config.proxyCacheType, Config.proxyCacheConfig)
+const createConnectedProxyCache = async (proxyCacheConfig) => {
+  const proxyCache = createProxyCache(
+    proxyCacheConfig.type,
+    proxyCacheConfig.proxyConfig
+  )
   await proxyCache.connect()
   return proxyCache
 }
@@ -69,7 +71,7 @@ const createConnectedProxyCache = async () => {
  * @param {array} routes array of API routes
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, api, routes, isAdmin) => {
+const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -90,9 +92,11 @@ const createServer = async (port, api, routes, isAdmin) => {
     preloadCache: async () => Promise.resolve()
   })
 
-  if (!isAdmin) {
-    server.app.proxyCache = await createConnectedProxyCache()
+  if (!isAdmin && proxyCacheConfig.enabled) {
+    server.app.proxyCache = await createConnectedProxyCache(proxyCacheConfig)
   }
+
+  server.app.isAdmin = isAdmin
 
   await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
@@ -119,33 +123,54 @@ const createServer = async (port, api, routes, isAdmin) => {
   return server
 }
 
-const initializeInstrumentation = () => {
-  if (!Config.INSTRUMENTATION_METRICS_DISABLED) {
-    Metrics.setup(Config.INSTRUMENTATION_METRICS_CONFIG)
-  }
+const initializeInstrumentation = (metricsConfig) => {
+  Metrics.setup(metricsConfig)
 }
 
-const initializeApi = async (port = Config.API_PORT) => {
-  initializeInstrumentation()
-  await connectDatabase()
+const initializeApi = async (appConfig) => {
+  const {
+    INSTRUMENTATION_METRICS_DISABLED,
+    INSTRUMENTATION_METRICS_CONFIG,
+    CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG,
+    CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG,
+    DATABASE,
+    API_PORT,
+    proxyCacheConfig
+  } = appConfig
+
+  if (!INSTRUMENTATION_METRICS_DISABLED) {
+    initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
+  }
+  await connectDatabase(DATABASE)
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
-  const server = await createServer(port, api, Routes.APIRoutes(api), false)
+  const server = await createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
-  await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
+  await ParticipantEndpointCache.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
+  await ParticipantCache.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
   await OracleEndpointCache.initialize()
   await Cache.initCache()
   return server
 }
 
-const initializeAdmin = async (port = Config.ADMIN_PORT) => {
-  initializeInstrumentation()
-  await connectDatabase()
-  await migrate()
+const initializeAdmin = async (appConfig) => {
+  const {
+    INSTRUMENTATION_METRICS_DISABLED,
+    INSTRUMENTATION_METRICS_CONFIG,
+    DATABASE,
+    RUN_MIGRATIONS,
+    ADMIN_PORT,
+    proxyCacheConfig
+  } = appConfig
+
+  if (!INSTRUMENTATION_METRICS_DISABLED) {
+    initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
+  }
+  await connectDatabase(DATABASE)
+  RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
-  const server = await createServer(port, api, Routes.AdminRoutes(api), true)
+  const server = await createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }

@@ -41,6 +41,7 @@ const participantsDomain = require('../../domain/participants') // think, how to
 const participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
 const utils = require('./utils')
+const Config = require('../../lib/config')
 
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
 
@@ -55,9 +56,9 @@ const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
  * @param {object} payload - payload of the request being sent out
  * @param {string} dataUri - encoded payload of the request being sent out
  * @param {CacheClient} cache - in-memory cache with CatboxMemory engine
- * @param {IProxyCache} proxyCache - IProxyCache instance
+ * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
-const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, cache, proxyCache) => {
+const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, cache, proxyCache = undefined) => {
   const histTimerEnd = Metrics.getHistogram(
     'putPartiesByTypeAndID',
     'Put parties by type and id',
@@ -67,12 +68,14 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
+  const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
+
   Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::begin - ${stringify({ source, destination, params })}`)
 
   try {
     const requesterParticipant = await participant.validateParticipant(source)
     if (!requesterParticipant) {
-      const proxy = headers[Headers.FSPIOP.PROXY]
+      const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
       if (!proxy) {
         const errMessage = ERROR_MESSAGES.partySourceFspNotFound
         Logger.isErrorEnabled && Logger.error(errMessage)
@@ -84,30 +87,32 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       }
     }
 
-    const alsReq = utils.alsRequestDto(destination, params) // or source?
-    const isExists = await proxyCache.receivedSuccessResponse(alsReq)
-    if (!isExists) {
-      Logger.isWarnEnabled && Logger.warn(`destination is NOT in scheme, and no cached sendToProxiesList - ${stringify({ destination, alsReq })}`)
-      // todo: think, if we need to throw an error here
-    } else {
-      // todo: add unit-tests
-      const mappingPayload = {
-        fspId: source
+    if (proxyEnabled) {
+      const alsReq = utils.alsRequestDto(destination, params) // or source?
+      const isExists = await proxyCache.receivedSuccessResponse(alsReq)
+      if (!isExists) {
+        Logger.isWarnEnabled && Logger.warn(`destination is NOT in scheme, and no cached sendToProxiesList - ${stringify({ destination, alsReq })}`)
+        // todo: think, if we need to throw an error here
+      } else {
+        // todo: add unit-tests
+        const mappingPayload = {
+          fspId: source
+        }
+        // todo: discuss these changes with Paul
+        // if (destinationParticipant) {
+        // await postParticipants(headers, method, params, mappingPayload, null, cache)
+        // Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
+        // }
+        await participantsDomain.postParticipants(headers, method, params, mappingPayload, null, cache)
+        Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
       }
-      // todo: discuss these changes with Paul
-      // if (destinationParticipant) {
-      // await postParticipants(headers, method, params, mappingPayload, null, cache)
-      // Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
-      // }
-      await participantsDomain.postParticipants(headers, method, params, mappingPayload, null, cache)
-      Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
     }
 
     const destinationParticipant = await participant.validateParticipant(destination)
     let sentTo
     if (!destinationParticipant) {
       // todo: add unit-tests
-      const proxyName = await proxyCache.lookupProxyByDfspId(destination)
+      const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
         Logger.isErrorEnabled && Logger.error(errMessage)
@@ -146,9 +151,9 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
  * @param {string} dataUri - encoded payload of the request being sent out
  * @param {object} span
  * @param {CacheClient} cache - in-memory cache with CatboxMemory engine
- * @param {IProxyCache} proxyCache - IProxyCache instance
+ * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
-const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, cache, proxyCache) => {
+const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, cache, proxyCache = undefined) => {
   const histTimerEnd = Metrics.getHistogram(
     'putPartiesErrorByTypeAndID',
     'Put parties error by type and id',
@@ -157,12 +162,13 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   const partySubId = params.SubId
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const callbackEndpointType = utils.errorPartyCbType(partySubId)
+  const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
 
   const childSpan = span ? span.getChild('putPartiesErrorByTypeAndID') : undefined
 
   let fspiopError
   try {
-    const proxy = headers[Headers.FSPIOP.PROXY]
+    const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
     if (proxy) {
       if (isNotValidPayeeCase(payload)) {
         const swappedHeaders = utils.swapSourceDestinationHeaders(headers)
@@ -188,7 +194,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     if (destinationParticipant) {
       sentTo = destination
     } else {
-      const proxyName = await proxyCache.lookupProxyByDfspId(destination)
+      const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
         Logger.isErrorEnabled && Logger.error(errMessage)

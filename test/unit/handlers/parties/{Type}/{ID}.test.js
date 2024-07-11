@@ -41,6 +41,7 @@ const requestUtil = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
 const oracleEndpointCached = require('../../../../../src/models/oracle/oracleEndpointCached')
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -52,7 +53,8 @@ describe('/parties', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterEach(async () => {

@@ -38,6 +38,7 @@ const getPort = require('get-port')
 const Db = require('../../../../src/lib/db')
 const Migrator = require('../../../../src/lib/migrator')
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -50,7 +51,8 @@ describe('/oracles/{ID} handler', () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
-    server = await initServer(await getPort(), false)
+    Config.ADMIN_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {

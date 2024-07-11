@@ -29,14 +29,15 @@
 
 'use strict'
 
-const oracle = require('../../../src/domain/oracle')
 const Sinon = require('sinon')
+const getPort = require('get-port')
+const Logger = require('@mojaloop/central-services-logger')
+const oracle = require('../../../src/domain/oracle')
 const Helper = require('../../util/helper')
 const initServer = require('../../../src/server').initializeAdmin
 const Db = require('../../../src/lib/db')
-const getPort = require('get-port')
 const Migrator = require('../../../src/lib/migrator')
-const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -60,7 +61,8 @@ describe('/oracles', () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(Migrator, 'migrate').returns(Promise.resolve({}))
-    server = await initServer(await getPort(), false)
+    Config.ADMIN_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {

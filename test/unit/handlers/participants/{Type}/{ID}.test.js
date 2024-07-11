@@ -31,6 +31,11 @@
 'use strict'
 
 const Sinon = require('sinon')
+const getPort = require('get-port')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
+const requestUtil = require('@mojaloop/central-services-shared').Util.Request
+const Enums = require('@mojaloop/central-services-shared').Enum
 const Db = require('../../../../../src/lib/db')
 const oracleEndpointCached = require('../../../../../src/models/oracle/oracleEndpointCached')
 const participant = require('../../../../../src/models/participantEndpoint/facade')
@@ -38,11 +43,7 @@ const participants = require('../../../../../src/domain/participants')
 const requestLogger = require('../../../../../src/lib/requestLogger')
 const Helper = require('../../../../util/helper')
 const initServer = require('../../../../../src/server').initializeApi
-const getPort = require('get-port')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
-const requestUtil = require('@mojaloop/central-services-shared').Util.Request
-const Enums = require('@mojaloop/central-services-shared').Enum
+const Config = require('../../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -56,7 +57,8 @@ describe('/participants/{Type}/{ID}', () => {
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(requestLogger, 'logRequest').returns({})
     sandbox.stub(requestLogger, 'logResponse').returns({})
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
     sandbox.stub(Logger)
     Logger.error = sandbox.stub()
   })

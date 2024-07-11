@@ -37,6 +37,7 @@ const getPort = require('get-port')
 const Sinon = require('sinon')
 const MigrationLockModel = require('../../../src/models/misc/migrationLock')
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -46,9 +47,11 @@ let server
 
 describe('/health', () => {
   beforeEach(async () => {
+    Config.proxyCacheConfig.enabled = false
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterEach(async () => {
@@ -79,6 +82,10 @@ describe('/health', () => {
 
     // Assert
     expect(response.statusCode).toBe(200)
+    const payload = JSON.parse(response.payload)
+    expect(payload.status).toBe('OK')
+    expect(payload.services.length).toBe(1)
+    expect(payload.services[0].name).toBe('datastore')
   })
 
   it('GET /health service unavailable', async () => {
@@ -97,5 +104,38 @@ describe('/health', () => {
 
     // Assert
     expect(response.statusCode).toBe(503)
+    const payload = JSON.parse(response.payload)
+    expect(payload.status).toBe('DOWN')
+    expect(payload.services.length).toBe(1)
+    expect(payload.services[0].name).toBe('datastore')
+  })
+
+  it('GET /health should include proxy health', async () => {
+    // Arrange
+    Config.proxyCacheConfig.enabled = true
+    Config.API_PORT = await getPort()
+    let serverWithProxy
+    try {
+      serverWithProxy = await initServer(Config)
+      sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').resolves(false)
+      const mock = await Helper.generateMockRequest('/health', 'get')
+
+      const options = {
+        method: 'get',
+        url: mock.request.path,
+        headers: Helper.defaultAdminHeaders()
+      }
+
+      // Act
+      const response = await serverWithProxy.inject(options)
+
+      // Assert
+      const payload = JSON.parse(response.payload)
+      expect(response.statusCode).toBe(200)
+      expect(payload.services.length).toBe(2)
+      expect(payload.services[1].name).toBe('proxyCache')
+    } finally {
+      serverWithProxy && await serverWithProxy.stop()
+    }
   })
 })
