@@ -64,11 +64,11 @@ const getSubServiceHealthDatastore = async () => {
  *
  * @returns Promise<SubServiceHealth> The SubService health object for the proxy cache
  */
-const getProxyCacheHealth = async ({ request }) => {
+const getProxyCacheHealth = async (proxyCache) => {
   let status = statusEnum.OK
 
   try {
-    status = await request.server.app.proxyCache.healthCheck() ? statusEnum.OK : statusEnum.DOWN
+    status = await proxyCache.healthCheck() ? statusEnum.OK : statusEnum.DOWN
   } catch (err) {
     Logger.isDebugEnabled && Logger.debug(`getProxyCacheHealth failed with error ${err.message}.`)
     status = statusEnum.DOWN

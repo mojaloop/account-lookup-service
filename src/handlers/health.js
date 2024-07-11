@@ -31,8 +31,8 @@ const { getSubServiceHealthDatastore, getProxyCacheHealth } = require('../lib/he
 const packageJson = require('../../package.json')
 const Config = require('../lib/config')
 
-const getSubServices = (appConfig, request) => {
-  if (request.server.app.isAdmin) {
+const getSubServices = (appConfig, isAdmin) => {
+  if (isAdmin) {
     return [getSubServiceHealthDatastore]
   }
 
@@ -57,8 +57,9 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   get: async (context, request, h) => {
-    healthCheck.serviceChecks = getSubServices(Config, request)
-    const health = await healthCheck.getHealth({ request })
+    const { isAdmin, proxyCache } = request.server.app
+    healthCheck.serviceChecks = getSubServices(Config, isAdmin)
+    const health = await healthCheck.getHealth(proxyCache)
     const statusCode = health.status !== 'OK' ? 503 : 200
     return h.response(health).code(statusCode)
   }
