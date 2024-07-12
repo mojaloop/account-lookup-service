@@ -77,9 +77,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
 
     const requesterParticipantModel = await participant.validateParticipant(requesterId)
     if (!requesterParticipantModel) {
-      // todo: DISCUSS WITH VIJAY
-      //   assuming adjacent scheme participants are not participants of the scheme
-      // fspiop-proxy OR fspiop-source should be in the scheme
+      // assuming adjacent scheme participants are not participants of the scheme
       const errMessage = proxy ? ERROR_MESSAGES.partyProxyNotFound : ERROR_MESSAGES.partySourceFspNotFound
       Logger.isErrorEnabled && Logger.error(errMessage)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
