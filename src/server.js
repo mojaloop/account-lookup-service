@@ -28,6 +28,7 @@ const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
 const ParticipantCache = require('@mojaloop/central-services-shared').Util.Participants
+const proxies = require('@mojaloop/central-services-shared').Util.proxies
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
@@ -148,6 +149,7 @@ const initializeApi = async (appConfig) => {
   Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
   await ParticipantCache.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
+  await proxies.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
   await OracleEndpointCache.initialize()
   await Cache.initCache()
   return server
