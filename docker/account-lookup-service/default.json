@@ -3,6 +3,7 @@
     "ID": 1,
     "NAME": "Hub"
   },
+  "LOG_LEVEL": "debug",
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
   "DATABASE": {
@@ -56,6 +57,7 @@
     "EXPIRES_IN_MS": 61000
   },
   "PROXY_CACHE": {
+    "enabled": true,
     "type": "redis",
     "proxyConfig": {
       "host": "redis",
@@ -66,7 +68,7 @@
     "includeCauseExtension": false,
     "truncateExtensions": true
   },
-  "SWITCH_ENDPOINT": "http://localhost:3001",
+  "SWITCH_ENDPOINT": "http://central-ledger:3001",
   "INSTRUMENTATION": {
     "METRICS": {
       "DISABLED": false,

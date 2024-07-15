@@ -22,8 +22,9 @@ services:
     networks:
       - als-mojaloop-net
     depends_on:
-      - mysql-als
       - central-ledger
+      - proxy
+      - mysql-als
       - redis
     volumes:
       - ./secrets:/opt/app/secrets
@@ -37,7 +38,8 @@ services:
       interval: 30s
 
   central-ledger:
-    image: mojaloop/central-ledger:latest
+#    image: mojaloop/central-ledger:latest
+    image: mojaloop/central-ledger:v17.8.0.160-snapshot.4
     container_name: als_central-ledger
     user: root
     command:
@@ -45,12 +47,12 @@ services:
       - "-c"
       - "sh /opt/wait-for/wait-for-central-ledger.sh && node src/api/index.js"
     ports:
-      - "3001:3001"
+      - "${CL_PORT:-3001}:3001"
     volumes:
        - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
     environment:
-      - LOG_LEVEL=info
+      - LOG_LEVEL=debug
       - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql-cl:3306/central_ledger
       - CLEDG_SIDECAR__DISABLED=true
       - CLEDG_MONGODB__DISABLED=true
@@ -64,6 +66,17 @@ services:
       timeout: 20s
       retries: 10
       interval: 30s
+
+  proxy:
+    build:
+      context: ./docker/mock-proxy
+      dockerfile: Dockerfile
+    restart: always
+    env_file: ./test/integration/.env
+    ports:
+      - "${PROXY_PORT}:${PROXY_PORT}"
+    networks:
+      - als-mojaloop-net
 
   kafka:
     image: johnnypark/kafka-zookeeper:2.3.0

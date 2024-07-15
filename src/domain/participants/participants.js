@@ -26,12 +26,13 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
+const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
-const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const Metrics = require('@mojaloop/central-services-metrics')
+
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const Config = require('../../lib/config')

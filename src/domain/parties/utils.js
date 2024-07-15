@@ -64,7 +64,7 @@ const handleErrorOnSendingCallback = async (err, headers, params) => {
 
     await participant.sendErrorToParticipant(source, errorCallbackEndpointType, errInfo, headers, params)
 
-    Logger.isInfoEnabled && Logger.info(`sendErrorToParticipant in done: ${stringify({ source, params, errInfo })}`)
+    Logger.isInfoEnabled && Logger.info(`handleErrorOnSendingCallback in done: ${stringify({ source, params, errInfo })}`)
     return fspiopError
   } catch (exc) {
     // We can't do anything else here- we _must_ handle all errors _within_ this function because

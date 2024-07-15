@@ -26,13 +26,14 @@
 
 'use strict'
 
-const request = require('@mojaloop/central-services-shared').Util.Request
 const Mustache = require('mustache')
-const Logger = require('@mojaloop/central-services-logger')
+const request = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
+const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
+
+const Config = require('../../lib/config')
 const cachedOracleEndpoint = require('../oracle/oracleEndpointCached')
 const hubNameRegex = require('../../lib/util').hubNameConfig.hubNameRegex
 

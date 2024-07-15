@@ -193,6 +193,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
 
         const sending = filteredProxyNames.map(
           proxyName => participant.sendRequest(headers, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
+            .then(({ status, data } = {}) => ({ status, data }))
         )
         const results = await Promise.allSettled(sending)
         const isOk = results.some(result => result.status === 'fulfilled')

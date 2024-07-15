@@ -2,17 +2,45 @@ const { Enum } = require('@mojaloop/central-services-shared')
 
 const { Headers } = Enum.Http
 
-const partiesCallHeadersDto = ({
+const headersDto = ({
   source = 'fromDfsp',
   destination = 'toDfsp',
   proxy = '',
-  date = '2024-05-24 08:52:19'
+  date = '2024-05-24 08:52:19',
+  accept
 } = {}) => Object.freeze({
   [Headers.FSPIOP.SOURCE]: source,
   ...(destination && { [Headers.FSPIOP.DESTINATION]: destination }),
   ...(proxy && { [Headers.FSPIOP.PROXY]: proxy }),
   date,
-  'content-type': 'application/vnd.interoperability.participants+json;version=1.1'
+  accept,
+  'content-type': accept
+})
+
+const partiesCallHeadersDto = ({
+  source,
+  destination,
+  proxy,
+  date
+} = {}) => headersDto({
+  source,
+  destination,
+  proxy,
+  date,
+  accept: 'application/vnd.interoperability.parties+json;version=1.1'
+})
+
+const participantsCallHeadersDto = ({
+  source,
+  destination,
+  proxy,
+  date
+} = {}) => headersDto({
+  source,
+  destination,
+  proxy,
+  date,
+  accept: 'application/vnd.interoperability.participants+json;version=1'
 })
 
 const oracleRequestResponseDto = ({
@@ -39,8 +67,16 @@ const errorCallbackResponseDto = ({
   }
 })
 
+const mockAlsRequestDto = (sourceId, type, partyId) => ({
+  sourceId,
+  type,
+  partyId
+})
+
 module.exports = {
   partiesCallHeadersDto,
+  participantsCallHeadersDto,
   oracleRequestResponseDto,
-  errorCallbackResponseDto
+  errorCallbackResponseDto,
+  mockAlsRequestDto
 }
