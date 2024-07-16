@@ -10,7 +10,7 @@ const pause = async (ms = 1000) => new Promise(resolve => {
 })
 
 const prepareTestParticipants = async () => {
-  await pause(5000)
+  await pause(10_000) // sometimes on CircleCI env we have error: socket hang up
   await onboarding.createHubAccounts()
   await pause()
 
