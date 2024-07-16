@@ -7,7 +7,7 @@ const { PROXY_NAME, PAYER_DFSP } = require('../integration/constants')
 const pause = async (ms = 1000) => new Promise(resolve => setTimeout(resolve, ms))
 
 const prepareTestParticipants = async () => {
-  await pause(2000)
+  await pause(5000)
   await onboarding.createHubAccounts()
   await pause()
 
