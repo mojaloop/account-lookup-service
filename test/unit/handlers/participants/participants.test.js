@@ -36,6 +36,7 @@ const participants = require('../../../../src/domain/participants')
 const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -47,7 +48,8 @@ describe('/participants', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {

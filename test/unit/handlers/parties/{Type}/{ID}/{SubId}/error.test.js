@@ -35,6 +35,7 @@ const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)
 const Helper = require('../../../../../../util/helper')
+const Config = require(`${src}/lib/config`)
 
 let server
 let sandbox
@@ -44,7 +45,8 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {
@@ -63,7 +65,8 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
     mock.request.server = {
-      log: sandbox.stub()
+      log: sandbox.stub(),
+      app: {}
     }
     const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
@@ -90,7 +93,8 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     }
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
     mock.request.server = {
-      log: sandbox.stub()
+      log: sandbox.stub(),
+      app: {}
     }
     const throwError = new Error('Unknown error')
     const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)

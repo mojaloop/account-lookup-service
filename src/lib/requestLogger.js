@@ -48,7 +48,7 @@ const logResponse = function (request) {
     if (!response) {
       Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Response: ${request.response}`)
     } else {
-      Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Response: ${response} Status: ${request.response.statusCode || request.response.httpStatusCode}, Stack: ${request.response.stack}`)
+      Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Status: ${request.response.statusCode || request.response.httpStatusCode}, Stack: ${request.response.stack}`)
     }
   }
 }

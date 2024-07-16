@@ -38,6 +38,7 @@ const ErrHandler = require(`${src}/handlers/participants/{Type}/{ID}/error`)
 const Helper = require('../../../../../util/helper')
 const LibUtil = require(`${src}/lib/util`)
 const Logger = require('@mojaloop/central-services-logger')
+const Config = require(`${src}/lib/config`)
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -50,7 +51,8 @@ describe('/participants/{Type}/{ID}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
     sandbox.stub(LibUtil, 'getSpanTags').returns({})
   })
 

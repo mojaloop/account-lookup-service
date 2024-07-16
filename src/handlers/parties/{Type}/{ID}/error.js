@@ -47,14 +47,17 @@ module.exports = {
       'Ingress - Put parties error by Type and Id',
       ['success']
     ).startTimer()
-    const span = request.span
+    const { headers, payload, params, dataUri, span } = request
+    const { cache, proxyCache } = request.server.app
+
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
     await span.audit({
-      headers: request.headers,
-      payload: request.payload
+      headers,
+      payload
     }, EventSdk.AuditEventAction.start)
-    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span).catch(err => {
+
+    parties.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, span, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

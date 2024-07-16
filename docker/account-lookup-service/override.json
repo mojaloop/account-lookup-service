@@ -1,0 +1,12 @@
+{
+  "DATABASE": {
+    "HOST": "mysql-als"
+  },
+  "PROXY_CACHE": {
+    "proxyConfig": {
+      "host": "redis"
+    }
+  },
+  "SWITCH_ENDPOINT": "http://central-ledger:3001",
+  "LOG_LEVEL": "debug"
+}

@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "15.3.4",
+  "version": "15.4.0-snapshot.18",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -23,7 +23,8 @@
     "node": ">=18.x"
   },
   "config": {
-    "knex": "--knexfile ./config/knexfile.js"
+    "knex": "--knexfile ./config/knexfile.js",
+    "env_file": "--env-file ./test/integration/.env"
   },
   "standard": {
     "env": [
@@ -46,14 +47,15 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:unit": "jest --runInBand --testMatch '**/test/unit/**/*.test.js'",
-    "test:coverage": "jest --runInBand --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.js'",
-    "test:coverage-check": "jest --runInBand --coverage --testMatch '**/test/unit/**/*.test.js'",
-    "test:junit": "jest --runInBand --reporters=default --reporters=jest-junit --testMatch '**/test/unit/**/*.test.js'",
+    "test:unit": "jest --runInBand",
+    "test:coverage": "npm test -- --coverage --coverageThreshold='{}'",
+    "test:coverage-check": "npm test -- --coverage",
+    "test:junit": "npm test -- --reporters=default --reporters=jest-junit",
     "test:xunit": "npm run test:junit",
     "test:functional": "sh ./scripts/test-functional.sh",
-    "test:int": "npm run migrate && jest --runInBand --reporters=default --reporters=jest-junit --testMatch '**/test/integration/**/*.test.js'",
+    "test:int": "npm run migrate  &&  npm run onboarding  &&  jest --config=./jest-int.config.js --runInBand",
     "test:integration": "TEST_MODE=rm ./test/integration-runner.sh",
+    "onboarding": "node test/integration/prepareTestParticipants.js",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "migrate": "run-s migrate:latest seed:run",
     "migrate:latest": "knex $npm_package_config_knex migrate:latest",
@@ -63,9 +65,11 @@
     "seed:run": "knex seed:run $npm_package_config_knex",
     "seed:create": "knex seed:make $npm_package_config_knex",
     "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/api_swagger.json'",
+    "dc:build": "docker compose $npm_package_config_env_file build",
+    "dc:up": "docker compose $npm_package_config_env_file up -d  &&  docker ps",
+    "dc:down": "docker compose $npm_package_config_env_file down -v",
     "docker:build": "docker build --build-arg NODE_VERSION=\"$(cat .nvmrc)-alpine\" -t mojaloop/account-lookup-service:local -f ./Dockerfile .",
     "docker:run": "docker run -p 3000:3000 --rm central-directory:local",
-    "package-lock": "docker run --rm -it central-directory:local cat package-lock.json > package-lock.json",
     "generate-docs": "jsdoc -c jsdoc.json",
     "audit:fix": "npm audit fix",
     "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
@@ -88,14 +92,14 @@
     "@mojaloop/central-services-health": "15.0.0",
     "@mojaloop/central-services-logger": "11.3.1",
     "@mojaloop/central-services-metrics": "12.0.8",
-    "@mojaloop/central-services-shared": "^18.6.0-snapshot.1",
+    "@mojaloop/central-services-shared": "^18.6.0-snapshot.8",
     "@mojaloop/central-services-stream": "11.3.1",
     "@mojaloop/database-lib": "11.0.6",
     "@mojaloop/event-sdk": "14.1.1",
-    "@mojaloop/inter-scheme-proxy-cache-lib": "^1.2.0",
-    "@mojaloop/sdk-standard-components": "18.1.0",
+    "@mojaloop/inter-scheme-proxy-cache-lib": "^1.4.0",
+    "@mojaloop/sdk-standard-components": "^18.4.0-snapshot.0",
     "@now-ims/hapi-now-auth": "2.1.0",
-    "ajv": "8.16.0",
+    "ajv": "8.17.1",
     "ajv-keywords": "5.1.0",
     "blipp": "4.0.2",
     "commander": "12.1.0",
@@ -107,10 +111,12 @@
     "mysql": "2.18.1",
     "npm-run-all": "4.1.5",
     "parse-strings-in-object": "2.0.0",
-    "rc": "1.2.8",
-    "uuid4": "2.0.3"
+    "rc": "1.2.8"
   },
   "overrides": {
+    "@mojaloop/central-services-error-handling": {
+      "@mojaloop/sdk-standard-components": "$@mojaloop/sdk-standard-components"
+    },
     "shins": {
       "ajv": "6.12.3",
       "ejs": "3.1.10",
@@ -134,7 +140,9 @@
     "audit-ci": "^7.1.0",
     "axios": "1.7.2",
     "docdash": "2.0.2",
+    "dotenv": "^16.4.5",
     "get-port": "5.1.1",
+    "ioredis-mock": "^8.9.0",
     "jest": "29.7.0",
     "jest-junit": "16.0.0",
     "jsdoc": "4.0.3",

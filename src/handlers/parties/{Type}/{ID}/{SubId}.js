@@ -47,7 +47,8 @@ module.exports = {
       'Ingress - Get party by Type, ID and SubId',
       ['success']
     ).startTimer()
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
+    const { cache, proxyCache } = request.server.app
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -66,7 +67,8 @@ module.exports = {
       'Ingress - Put parties by Type, ID and SubId',
       ['success']
     ).startTimer()
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+    const { cache, proxyCache } = request.server.app
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

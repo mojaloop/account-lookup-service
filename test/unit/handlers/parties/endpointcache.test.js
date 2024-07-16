@@ -35,6 +35,7 @@ const { initializeApi } = require('../../../../src/server')
 const Db = require('../../../../src/lib/db')
 const MigrationLockModel = require('../../../../src/models/misc/migrationLock')
 const Helper = require('../../../util/helper')
+const Config = require('../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -46,7 +47,8 @@ describe('/endpointcache', () => {
   beforeEach(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initializeApi(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initializeApi(Config)
   })
 
   afterEach(async () => {

@@ -3,6 +3,7 @@
     "ID": 1,
     "NAME": "Hub"
   },
+  "LOG_LEVEL": "debug",
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
   "DATABASE": {
@@ -19,16 +20,56 @@
     "DESTROY_TIMEOUT_MILLIS": 5000,
     "IDLE_TIMEOUT_MILLIS": 30000,
     "REAP_INTERVAL_MILLIS": 1000,
-    "CREATE_RETRY_INTERVAL_MILLIS": 200,
-    "DEBUG": false
+    "CREATE_RETRY_INTERVAL_MILLIS": 200
+  },
+  "PROTOCOL_VERSIONS": {
+    "CONTENT": {
+      "DEFAULT": "1.1",
+      "VALIDATELIST": [
+        "1.1",
+        "1.0"
+      ]
+    },
+    "ACCEPT": {
+      "DEFAULT": "1",
+      "VALIDATELIST": [
+        "1",
+        "1.0",
+        "1.1"
+      ]
+    }
   },
   "DISPLAY_ROUTES": true,
   "RUN_MIGRATIONS": true,
   "CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
-    "generateTimeout": 30000
+    "generateTimeout": 30000,
+    "getDecoratedValue": true
   },
-  "SWITCH_ENDPOINT": "http://localhost:3001",
+  "CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG": {
+    "expiresIn": 61000,
+    "generateTimeout": 30000,
+    "getDecoratedValue": true
+  },
+  "GENERAL_CACHE_CONFIG": {
+    "CACHE_ENABLED": false,
+    "MAX_BYTE_SIZE": 10000000,
+    "EXPIRES_IN_MS": 61000
+  },
+  "PROXY_CACHE": {
+    "enabled": true,
+    "enabled": true,
+    "type": "redis",
+    "proxyConfig": {
+      "host": "redis",
+      "port": 6379
+    }
+  },
+  "ERROR_HANDLING": {
+    "includeCauseExtension": false,
+    "truncateExtensions": true
+  },
+  "SWITCH_ENDPOINT": "http://central-ledger:3001",
   "INSTRUMENTATION": {
     "METRICS": {
       "DISABLED": false,
@@ -37,18 +78,19 @@
       },
       "config": {
         "timeout": 5000,
-        "prefix": "moja_",
+        "prefix": "moja_als_",
         "defaultLabels": {
           "serviceName": "account-lookup-service"
         }
       }
     }
   },
-  "ENDPOINT_SECURITY":{
+  "ENDPOINT_SECURITY": {
     "JWS": {
       "JWS_SIGN": false,
       "JWS_SIGNING_KEY_PATH": "secrets/jwsSigningKey.key"
     }
   },
-  "API_DOC_ENDPOINTS_ENABLED": true
+  "API_DOC_ENDPOINTS_ENABLED": true,
+  "FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE": false
 }

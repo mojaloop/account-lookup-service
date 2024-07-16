@@ -28,12 +28,13 @@
 
 const Sinon = require('sinon')
 const getPort = require('get-port')
+const Logger = require('@mojaloop/central-services-logger')
 const initServer = require('../../../../../../../src/server').initializeApi
 const Db = require('../../../../../../../src/lib/db')
 const participants = require('../../../../../../../src/domain/participants')
 const ErrHandler = require('../../../../../../../src/handlers/participants/{Type}/{ID}/{SubId}/error')
 const Helper = require('../../../../../../util/helper')
-const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../../../../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -46,7 +47,8 @@ describe('/participants/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await initServer(await getPort())
+    Config.API_PORT = await getPort()
+    server = await initServer(Config)
   })
 
   afterAll(async () => {

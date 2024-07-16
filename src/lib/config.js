@@ -27,8 +27,9 @@
 
  --------------
  ******/
+const fs = require('node:fs')
 const RC = require('parse-strings-in-object')(require('rc')('ALS', require('../../config/default.json')))
-const fs = require('fs')
+const { storageTypeValues } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
 function getFileContent (path) {
   if (!fs.existsSync(path)) {
@@ -98,6 +99,10 @@ const getProtocolVersions = (defaultProtocolVersions, overrideProtocolVersions) 
   return T_PROTOCOL_VERSION
 }
 
+if (!storageTypeValues.includes(RC.PROXY_CACHE.type)) {
+  throw new TypeError(`Incorrect proxyCache type: ${RC.PROXY_CACHE.type}`)
+}
+
 const config = {
   HUB_ID: RC.HUB_PARTICIPANT.ID,
   HUB_NAME: RC.HUB_PARTICIPANT.NAME,
@@ -157,7 +162,8 @@ const config = {
   JWS_SIGNING_KEY_PATH: RC.ENDPOINT_SECURITY.JWS.JWS_SIGNING_KEY_PATH,
   API_DOC_ENDPOINTS_ENABLED: RC.API_DOC_ENDPOINTS_ENABLED || false,
   FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE: RC.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE || false,
-  PROTOCOL_VERSIONS: getProtocolVersions(DEFAULT_PROTOCOL_VERSION, RC.PROTOCOL_VERSIONS)
+  PROTOCOL_VERSIONS: getProtocolVersions(DEFAULT_PROTOCOL_VERSION, RC.PROTOCOL_VERSIONS),
+  proxyCacheConfig: RC.PROXY_CACHE
 }
 
 if (config.JWS_SIGN) {
