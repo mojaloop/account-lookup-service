@@ -35,6 +35,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
+const { name, version } = require('../package.json')
 const Db = require('./lib/db')
 const Util = require('./lib/util')
 const Plugins = require('./plugins')
@@ -146,7 +147,7 @@ const initializeApi = async (appConfig) => {
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
   const server = await createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
-  Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  Logger.isInfoEnabled && Logger.info(`${name}@${version} is running on ${server.info.host}:${server.info.port}`)
   await ParticipantEndpointCache.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
   await ParticipantCache.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
   await proxies.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
@@ -173,7 +174,7 @@ const initializeAdmin = async (appConfig) => {
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
   const server = await createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
-  Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  Logger.isInfoEnabled && Logger.info(`${name}-admin@${version} running on ${server.info.host}:${server.info.port}`)
   return server
 }
 

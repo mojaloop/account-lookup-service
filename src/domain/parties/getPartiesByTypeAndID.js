@@ -40,7 +40,7 @@ const Config = require('../../lib/config')
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
 
-const proxyCacheTtlSec = 5 // todo: make configurable
+const proxyCacheTtlSec = 40 // todo: make configurable
 
 /**
  * @function getPartiesByTypeAndID
