@@ -5,7 +5,7 @@ const { onboarding } = require('../util')
 const { PROXY_NAME, PAYER_DFSP } = require('../integration/constants')
 
 const pause = async (ms = 1000) => new Promise(resolve => {
-  Logger.info(`pause for ${ms/1000} sec....`)
+  Logger.info(`pause for ${ms / 1000} sec....`)
   setTimeout(resolve, ms)
 })
 

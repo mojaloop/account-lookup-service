@@ -159,6 +159,27 @@ describe('Parties Tests', () => {
       expect(lastCallHeaderArgs[1]).toBe('destfsp')
     })
 
+    it('should set source proxyMapping if source is not in scheme, and there is proxy-header', async () => {
+      Config.proxyCacheConfig.enabled = true
+      participant.validateParticipant = sandbox.stub()
+        .onFirstCall().resolves(null) // source
+        .onSecondCall().resolves({}) // proxy
+      const source = `source-${Date.now()}`
+      const proxy = `proxy-${Date.now()}`
+
+      let cached = await proxyCache.lookupProxyByDfspId(source)
+      expect(cached).toBe(null)
+
+      const headers = fixtures.partiesCallHeadersDto({ source, proxy })
+      const { params, method, query } = Helper.getByTypeIdRequest
+
+      await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, Helper.mockSpan(), null, proxyCache)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      cached = await proxyCache.lookupProxyByDfspId(source)
+      expect(cached).toBe(proxy)
+    })
+
     it('should send error callback if destination is not in the scheme, and not in proxyCache', async () => {
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves({}) // source

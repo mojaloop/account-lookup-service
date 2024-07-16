@@ -58,7 +58,6 @@
   },
   "PROXY_CACHE": {
     "enabled": true,
-    "enabled": true,
     "type": "redis",
     "proxyConfig": {
       "host": "redis",

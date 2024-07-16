@@ -82,19 +82,19 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       } else {
         const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
-        // todo: think, if we should throw error if isCached === false?
+        // think,if we should throw error if isCached === false?
         Logger.isDebugEnabled && Logger.debug(`addDfspIdToProxyMapping is done: ${stringify({ source, proxy, isCached })}`)
       }
     }
 
+    // todo: recheck the logic (only if )
     if (proxyEnabled) {
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isExists = await proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
         Logger.isWarnEnabled && Logger.warn(`destination is NOT in scheme, and no cached sendToProxiesList - ${stringify({ destination, alsReq })}`)
-        // todo: think, if we need to throw an error here
+        // think, if we need to throw an error here
       } else {
-        // todo: add unit-tests
         const mappingPayload = {
           fspId: source
         }
@@ -111,7 +111,6 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     const destinationParticipant = await participant.validateParticipant(destination)
     let sentTo
     if (!destinationParticipant) {
-      // todo: add unit-tests
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
