@@ -47,6 +47,7 @@
     "generateTimeout": 30000
   },
   "PROXY_CACHE": {
+    "enabled": true,
     "type": "redis",
     "proxyConfig": {
       "host": "redis",
