@@ -17,6 +17,17 @@ const headersDto = ({
   'content-type': accept
 })
 
+const protocolVersionsDto = () => ({
+  CONTENT: {
+    DEFAULT: '2.1',
+    VALIDATELIST: ['2.1']
+  },
+  ACCEPT: {
+    DEFAULT: '2',
+    VALIDATELIST: ['2', '2.1']
+  }
+})
+
 const partiesCallHeadersDto = ({
   source,
   destination,
@@ -78,5 +89,6 @@ module.exports = {
   participantsCallHeadersDto,
   oracleRequestResponseDto,
   errorCallbackResponseDto,
-  mockAlsRequestDto
+  mockAlsRequestDto,
+  protocolVersionsDto
 }

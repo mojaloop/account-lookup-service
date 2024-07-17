@@ -56,6 +56,7 @@ jest.mock('@mojaloop/central-services-shared', () => ({
 }))
 
 const Logger = require('@mojaloop/central-services-logger')
+const fixtures = require('../../../fixtures')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -74,21 +75,7 @@ describe('participantEndpoint Facade', () => {
       const mockedConfig = {
         JWS_SIGN: false,
         FSPIOP_SOURCE_TO_SIGN: mockHubName,
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
+        PROTOCOL_VERSIONS: fixtures.protocolVersionsDto()
       }
 
       jest.mock('../../../../src/lib/config', () => (mockedConfig))
@@ -203,29 +190,17 @@ describe('participantEndpoint Facade', () => {
   })
 
   describe('sendErrorToParticipant', () => {
+    const mockConfigDto = ({ jwsSign = false } = {}) => ({
+      JWS_SIGN: jwsSign,
+      FSPIOP_SOURCE_TO_SIGN: mockHubName,
+      JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
+      JWS_SIGNING_KEY: 'somekey',
+      PROTOCOL_VERSIONS: fixtures.protocolVersionsDto()
+    })
+
     it('throws an error when the request fails', async () => {
       // Arrange
-      jest.mock('../../../../src/lib/config', () => ({
-        JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: mockHubName,
-        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
-      }))
+      jest.mock('../../../../src/lib/config', () => mockConfigDto())
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
       mockSendRequest.mockImplementation(() => { throw new Error('Request failed') })
@@ -249,28 +224,8 @@ describe('participantEndpoint Facade', () => {
 
     it('Success without JWS', async () => {
       // Arrange
-      const mockedConfig = {
-        JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: mockHubName,
-        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
-      }
-      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+      const mockedConfig = mockConfigDto()
+      jest.mock('../../../../src/lib/config', () => mockedConfig)
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
       mockSendRequest.mockImplementation(() => Promise.resolve(true))
@@ -293,8 +248,9 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      expect(mockSendRequest.mock.calls[0][8]).toBe(null)
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      const { jwsSigner, protocolVersions } = mockSendRequest.mock.calls[0][0]
+      expect(jwsSigner).toBe(null)
+      expect(protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -303,29 +259,8 @@ describe('participantEndpoint Facade', () => {
 
     it('adds jws signature when enabled', async () => {
       // Arrange
-      const mockedConfig = {
-        JWS_SIGN: true,
-        FSPIOP_SOURCE_TO_SIGN: mockHubName,
-        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
-      }
-
-      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+      const mockedConfig = mockConfigDto({ jwsSign: true })
+      jest.mock('../../../../src/lib/config', () => mockedConfig)
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/parties/MSISDN12345')
       mockSendRequest.mockImplementation(() => Promise.resolve(true))
@@ -348,8 +283,9 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      expect(typeof (mockSendRequest.mock.calls[0][8])).toBe('object')
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      const { jwsSigner, protocolVersions } = mockSendRequest.mock.calls[0][0]
+      expect(jwsSigner).toBeTruthy()
+      expect(protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
