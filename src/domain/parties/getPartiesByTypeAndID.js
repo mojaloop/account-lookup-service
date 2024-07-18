@@ -42,26 +42,27 @@ const { Headers, RestMethods } = Enum.Http
 
 const proxyCacheTtlSec = 40 // todo: make configurable
 
-const validateSource = async ({ source, proxy, proxyCache }) => {
+const validateRequester = async ({ source, proxy, proxyCache }) => {
   const sourceParticipant = await participant.validateParticipant(source)
-  if (!sourceParticipant) {
-    if (!proxy) {
-      const errMessage = ERROR_MESSAGES.partySourceFspNotFound
-      Logger.isErrorEnabled && Logger.error(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
-    }
+  if (sourceParticipant) return source
 
-    const proxyParticipant = await participant.validateParticipant(proxy)
-    if (!proxyParticipant) {
-      const errMessage = ERROR_MESSAGES.partyProxyNotFound
-      Logger.isErrorEnabled && Logger.error(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
-    }
-
-    const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
-    // think, what if isAdded === false?
-    Logger.isInfoEnabled && Logger.info(`source is added to proxyMapping cache: ${stringify({ source, proxy, isCached })}`)
+  if (!proxy) {
+    const errMessage = ERROR_MESSAGES.partySourceFspNotFound
+    Logger.isErrorEnabled && Logger.error(errMessage)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
   }
+
+  const proxyParticipant = await participant.validateParticipant(proxy)
+  if (!proxyParticipant) {
+    const errMessage = ERROR_MESSAGES.partyProxyNotFound
+    Logger.isErrorEnabled && Logger.error(errMessage)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+  }
+
+  const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
+  // think, what if isCached !== true?
+  Logger.isInfoEnabled && Logger.info(`source is added to proxyMapping cache: ${stringify({ source, proxy, isCached })}`)
+  return proxy
 }
 
 /**
@@ -93,9 +94,11 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
   Logger.isInfoEnabled && Logger.info('parties::getPartiesByTypeAndID::begin')
 
+  let requester
   let fspiopError
+
   try {
-    await validateSource({ source, proxy, proxyCache })
+    requester = await validateRequester({ source, proxy, proxyCache })
 
     const options = {
       partyIdType: type,
@@ -143,8 +146,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
       }
 
       if (!Array.isArray(filteredResponsePartyList) || !filteredResponsePartyList.length) {
-        Logger.isErrorEnabled && Logger.error('Requested FSP/Party not found')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requested FSP/Party not found')
+        const errMessage = 'Requested FSP/Party not found'
+        Logger.isErrorEnabled && Logger.error(errMessage)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       }
 
       let atLeastOneSent = false // if false after sending, we should restart the whole process
@@ -195,7 +199,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         })
         fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
         const errorCallbackEndpointType = utils.errorPartyCbType(partySubId)
-        await participant.sendErrorToParticipant(source, errorCallbackEndpointType,
+        await participant.sendErrorToParticipant(requester, errorCallbackEndpointType,
           fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
       } else {
         const alsReq = utils.alsRequestDto(source, params)
@@ -222,7 +226,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     }
     histTimerEnd({ success: true })
   } catch (err) {
-    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params)
+    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

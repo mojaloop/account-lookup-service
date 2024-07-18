@@ -54,22 +54,23 @@ const swapSourceDestinationHeaders = (headers) => {
   }
 }
 
-const handleErrorOnSendingCallback = async (err, headers, params) => {
+// change signature to accept object
+const handleErrorOnSendingCallback = async (err, headers, params, requester) => {
   try {
-    Logger.isErrorEnabled && Logger.error(err)
-    const source = headers[Headers.FSPIOP.SOURCE]
+    Logger.isErrorEnabled && Logger.error(`error in sending parties callback: ${err?.stack}`)
+    const sendTo = requester || headers[Headers.FSPIOP.SOURCE]
     const errorCallbackEndpointType = errorPartyCbType(params.SubId)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
     const errInfo = fspiopError.toApiErrorObject(Config.ERROR_HANDLING)
 
-    await participant.sendErrorToParticipant(source, errorCallbackEndpointType, errInfo, headers, params)
+    await participant.sendErrorToParticipant(sendTo, errorCallbackEndpointType, errInfo, headers, params)
 
-    Logger.isInfoEnabled && Logger.info(`handleErrorOnSendingCallback in done: ${stringify({ source, params, errInfo })}`)
+    Logger.isInfoEnabled && Logger.info(`handleErrorOnSendingCallback in done: ${stringify({ sendTo, params, errInfo })}`)
     return fspiopError
   } catch (exc) {
     // We can't do anything else here- we _must_ handle all errors _within_ this function because
     // we've already sent a sync response- we cannot throw.
-    Logger.isErrorEnabled && Logger.error(exc)
+    Logger.isErrorEnabled && Logger.error(`error in handleErrorOnSendingCallback: ${exc?.stack}`)
   }
 }
 

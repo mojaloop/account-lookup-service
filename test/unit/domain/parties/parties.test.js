@@ -234,15 +234,12 @@ describe('Parties Tests', () => {
       await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
 
       // Assert
-      /*
-        The function catches all exceptions. The only way to inspect what happens
-        in the error cases is by mocking out the logger and ensuring it gets
-        called correctly
-      */
-      const firstCallArgs = loggerStub.getCall(0).args
-      const secondCallArgs = loggerStub.getCall(1).args
-      expect(firstCallArgs[0]).toBe(ERROR_MESSAGES.partySourceFspNotFound)
-      expect(secondCallArgs[0].name).toBe('FSPIOPError')
+      expect(loggerStub.callCount).toBe(2)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+
+      const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
+      expect(errorInformation.errorCode).toBe('3200')
+      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.partySourceFspNotFound)
     })
 
     it('should send error callback, if proxy-header is present, but no proxy in the scheme', async () => {
@@ -291,15 +288,8 @@ describe('Parties Tests', () => {
       await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
 
       // Assert
-      /*
-        The function catches all exceptions. The only way to inspect what happens
-        in the error cases is by mocking out the logger and ensuring it gets
-        called correctly
-      */
-      const firstCallArgs = loggerStub.getCall(0).args
-      const secondCallArgs = loggerStub.getCall(1).args
-      expect(firstCallArgs[0].name).toBe('Error')
-      expect(secondCallArgs[0].name).toBe('Error')
+      expect(participant.sendRequest.callCount).toBe(1)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
       expect(loggerStub.callCount).toBe(2)
     })
 
@@ -850,14 +840,15 @@ describe('Parties Tests', () => {
       const payload = JSON.stringify({ errorPayload: true })
       // Send a data uri that will cause `decodePayload` to throw
       const invalidDataUri = () => 'invalid uri'
+      const { headers, params } = Helper.putByTypeIdRequest
 
       // Act
-      await partiesDomain.putPartiesErrorByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, payload, invalidDataUri, Helper.mockSpan())
+      await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, invalidDataUri, Helper.mockSpan(), null)
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
-      expect(sendErrorCallArgs[0]).toStrictEqual('payerfsp')
+      expect(sendErrorCallArgs[0]).toStrictEqual(headers['fspiop-destination'])
     })
 
     it('handles error when `validateParticipant()` fails', async () => {
