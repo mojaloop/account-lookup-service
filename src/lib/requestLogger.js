@@ -24,32 +24,27 @@
 
 'use strict'
 
-const Logger = require('@mojaloop/central-services-logger')
-const Util = require('util')
+const { logger, asyncStorage } = require('./index')
 
 const logRequest = function (request) {
-  const traceId = request.headers.traceid
-  Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Method: ${request.method} Path: ${request.path} Query: ${JSON.stringify(request.query)}`)
-  Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Headers: ${JSON.stringify(request.headers, null, 2)}`)
-  if (request.payload) {
-    Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Body: ${JSON.stringify(request.payload, null, 2)}`)
-  }
+  const { path, method, headers, payload, query } = request
+  const requestId = request.info.id = `${request.info.id}__${headers.traceid}`
+  asyncStorage.enterWith({ requestId })
+
+  logger.isInfoEnabled && logger.info(`[==> req] ${method.toUpperCase()} ${path}`, { headers, payload, query })
 }
 
 const logResponse = function (request) {
-  if (Logger.isDebugEnabled && request.response) {
-    const traceId = request.headers.traceid
-    let response
-    try {
-      response = JSON.stringify(request.response, null, 2)
-    } catch (e) {
-      response = Util.inspect(request.response)
-    }
-    if (!response) {
-      Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Response: ${request.response}`)
-    } else {
-      Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Status: ${request.response.statusCode || request.response.httpStatusCode}, Stack: ${request.response.stack}`)
-    }
+  if (logger.isInfoEnabled) {
+    const { path, method, headers, payload, query, response } = request
+    const { received } = request.info
+
+    const statusCode = response instanceof Error
+      ? response.output?.statusCode
+      : response.statusCode
+    const respTimeSec = ((Date.now() - received) / 1000).toFixed(3)
+
+    logger.info(`[<== ${statusCode}][${respTimeSec} s] ${method.toUpperCase()} ${path}`, { headers, payload, query })
   }
 }
 

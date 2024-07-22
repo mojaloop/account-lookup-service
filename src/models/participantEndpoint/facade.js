@@ -86,7 +86,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
     Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName: requestedParticipant })
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in getEndpoint: ${err?.stack}`)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
@@ -121,7 +121,8 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
     return resp
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName: requestedParticipant })
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in sendRequest: ${err?.stack}`)
+
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -146,7 +147,7 @@ exports.validateParticipant = async (fsp) => {
     return resp
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in validateParticipant: ${err?.stack}`)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -175,20 +176,18 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     ['success', 'endpointType', 'participantName']
   ).startTimer()
   try {
-    let requestIdExists = false
-    if (payload && payload.requestId) {
-      requestIdExists = true
-    }
+    const { requestId } = payload || {}
+
     requesterErrorEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, participantName, endpointType, {
       partyIdType: params.Type || undefined,
       partyIdentifier: params.ID || undefined,
       partySubIdOrType: params.SubId || undefined,
-      requestId: requestIdExists ? payload.requestId : undefined
+      requestId
     })
     histTimerEndGetParticipantEndpoint({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName })
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isWarnEnabled && Logger.warn(`error in getEndpoint: ${err?.message}`)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
@@ -231,7 +230,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName })
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isWarnEnabled && Logger.warn(`error in sendErrorToParticipant: ${err?.message}`)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

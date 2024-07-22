@@ -26,41 +26,37 @@
 
 'use strict'
 
-const Uuid = require('node:crypto').randomUUID
 const Sinon = require('sinon')
-
-const requestLogger = require('../../../src/lib/requestLogger')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
+const requestLogger = require('../../../src/lib/requestLogger')
+const fixtures = require('../../fixtures')
+
 let sandbox
-let currentLoggerIsDebugEnabled
+let currentLoggerIsInfoEnabled
 
 describe('requestLogger', () => {
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    currentLoggerIsDebugEnabled = Logger.isDebugEnabled
+    currentLoggerIsInfoEnabled = Logger.isInfoEnabled
   })
 
   afterEach(() => {
     sandbox.restore()
-    Logger.isDebugEnabled = currentLoggerIsDebugEnabled
+    Logger.isInfoEnabled = currentLoggerIsInfoEnabled
   })
 
   describe('logRequest', () => {
     it('prints the request.payload if it exists', async () => {
       // Arrange
-      const debugSpy = sandbox.spy(Logger, 'debug')
-      Logger.isDebugEnabled = true
+      const infoSpy = sandbox.spy(Logger, 'info')
       const req = {
-        method: 'GET',
+        ...fixtures.mockHapiRequestDto(),
         url: {
           path: '/123/456'
         },
         query: {},
-        headers: {
-          traceid: Uuid()
-        },
         payload: {
           itemA: 123,
           itemB: 456
@@ -71,54 +67,21 @@ describe('requestLogger', () => {
       requestLogger.logRequest(req)
 
       // Assert
-      expect(debugSpy.calledThrice).toBe(true)
+      expect(infoSpy.calledOnce).toBe(true)
+      const logLine = infoSpy.firstCall.args[0]
+      expect(logLine).toContain(JSON.stringify(req.headers))
+      expect(logLine).toContain(JSON.stringify(req.query))
+      expect(logLine).toContain(JSON.stringify(req.payload))
     })
   })
 
   describe('logResponse', () => {
-    it('handles deseralizing invalid JSON', async () => {
+    it('should log response statusCode', async () => {
       // Arrange
-      const infoSpy = sandbox.spy(Logger, 'debug')
-      Logger.isDebugEnabled = true
+      const infoSpy = sandbox.spy(Logger, 'info')
       const req = {
-        headers: {
-          traceid: Uuid()
-        },
+        ...fixtures.mockHapiRequestDto(),
         response: {
-          source: {
-            itemA: true
-          },
-          statusCode: 500
-        }
-      }
-      /* Make some circular JSON to break JSON.stringify() */
-      const inner = {}
-      const outer = {
-        inner
-      }
-      inner[outer] = outer
-      req.response.source = outer
-
-      // Act
-      requestLogger.logResponse(req)
-
-      // Assert
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
-      expect(result).toBe(true)
-    })
-
-    it('handles valid json', async () => {
-      // Arrange
-      const infoSpy = sandbox.spy(Logger, 'debug')
-      Logger.isDebugEnabled = true
-      const req = {
-        headers: {
-          traceid: Uuid()
-        },
-        response: {
-          source: {
-            itemA: true
-          },
           statusCode: 500
         }
       }
@@ -127,47 +90,29 @@ describe('requestLogger', () => {
       requestLogger.logResponse(req)
 
       // Assert
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
-      expect(result).toBe(true)
+      const logLine = infoSpy.firstCall.args[0]
+      expect(logLine).toContain(JSON.stringify(req.response.statusCode))
     })
 
     it('handles valid json error response', async () => {
       // Arrange
-      const infoSpy = sandbox.spy(Logger, 'debug')
-      Logger.isDebugEnabled = true
+      const infoSpy = sandbox.spy(Logger, 'info')
+      const response = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code')
+      const statusCode = 123
+      response.output = {
+        statusCode
+      }
       const req = {
-        headers: {
-          traceid: Uuid()
-        },
-        response: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code')
+        ...fixtures.mockHapiRequestDto(),
+        response
       }
 
       // Act
       requestLogger.logResponse(req)
 
       // Assert
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.httpStatusCode}, Stack: ${req.response.stack}`)
-      expect(result).toBe(true)
-    })
-
-    it('handles if response is null or undefined after JSON stringifying', async () => {
-      // Arrange
-      const infoSpy = sandbox.spy(Logger, 'debug')
-      Logger.isDebugEnabled = true
-      const req = {
-        headers: {
-          traceid: Uuid()
-        },
-        response: {
-          statusCode: 500
-        }
-      }
-      // Act
-      requestLogger.logResponse(req)
-
-      // Assert
-      const result = infoSpy.calledWith(`ALS-Trace=${req.headers.traceid} - Status: ${req.response.statusCode}, Stack: ${req.response.stack}`)
-      expect(result).toBe(true)
+      const logLine = infoSpy.firstCall.args[0]
+      expect(logLine).toContain(JSON.stringify(statusCode))
     })
   })
 })

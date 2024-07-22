@@ -18,7 +18,7 @@ RUN apk --no-cache add git
 RUN apk add --no-cache -t build-dependencies make gcc g++ python3 py3-setuptools libtool openssl-dev autoconf automake bash \
     && cd $(npm root -g)/npm
 
-COPY package.json package-lock.json* /opt/app/
+COPY package.json package-lock.json /opt/app/
 
 RUN npm ci
 
@@ -26,7 +26,7 @@ COPY src /opt/app/src
 COPY config /opt/app/config
 COPY migrations /opt/app/migrations
 COPY seeds /opt/app/seeds
-COPY test /opt/app/test
+#COPY test /opt/app/test
 
 FROM node:${NODE_VERSION}
 WORKDIR /opt/app
