@@ -4,7 +4,9 @@
   },
   "PROXY_CACHE": {
     "proxyConfig": {
-      "host": "redis"
+      "cluster": [
+        { "host": "redis-node-0", "port": 6379 }
+      ]
     }
   },
   "SWITCH_ENDPOINT": "http://central-ledger:3001",

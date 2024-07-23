@@ -4,6 +4,14 @@ networks:
   als-mojaloop-net:
     name: als-mojaloop-net
 
+x-redis-node: &REDIS_NODE
+  image: docker.io/bitnami/redis-cluster:6.2.14
+  environment: &REDIS_ENVS
+    ALLOW_EMPTY_PASSWORD: yes
+    REDIS_NODES: redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+  networks:
+    - als-mojaloop-net
+
 services:
   account-lookup-service:
     image: mojaloop/account-lookup-service:local
@@ -25,7 +33,7 @@ services:
       - central-ledger
       - proxy
       - mysql-als
-      - redis
+      - redis-node-0
     volumes:
       - ./secrets:/opt/app/secrets
       - ./src:/opt/app/src
@@ -139,15 +147,27 @@ services:
       start_period: 40s
       interval: 30s
 
-  redis:
-    image: redis:6.2.4-alpine
-    restart: "unless-stopped"
+  redis-node-0:
+    <<: *REDIS_NODE
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_PORT=6379
-      - REDIS_REPLICATION_MODE=master
-      - REDIS_TLS_ENABLED=no
+      <<: *REDIS_ENVS
+      REDIS_CLUSTER_CREATOR: yes
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
     ports:
       - "6379:6379"
-    networks:
-      - als-mojaloop-net
+
+  redis-node-1:
+    <<: *REDIS_NODE
+  redis-node-2:
+    <<: *REDIS_NODE
+  redis-node-3:
+    <<: *REDIS_NODE
+  redis-node-4:
+    <<: *REDIS_NODE
+  redis-node-5:
+    <<: *REDIS_NODE

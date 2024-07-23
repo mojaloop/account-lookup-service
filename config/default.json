@@ -59,8 +59,9 @@
     "enabled": true,
     "type": "redis",
     "proxyConfig": {
-      "host": "localhost",
-      "port": 6379
+      "cluster": [
+        { "host": "localhost", "port": 6379 }
+      ]
     }
   },
   "ERROR_HANDLING": {
