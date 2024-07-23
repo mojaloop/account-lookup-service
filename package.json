@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "15.4.0-snapshot.22",
+  "version": "15.4.0-snapshot.23",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -37,7 +37,7 @@
     "test"
   ],
   "scripts": {
-    "start": "node src/index.js server",
+    "start": "LOG_LEVEL=debug node src/index.js server",
     "start:all": "run-p start:api start:admin",
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
