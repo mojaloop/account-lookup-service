@@ -69,6 +69,14 @@
     "includeCauseExtension": false,
     "truncateExtensions": true
   },
+  "HANDLERS": {
+    "DISABLED": false,
+    "TIMEOUT": {
+      "DISABLED": false,
+      "TIMEXP": "*/30 * * * * *",
+      "TIMEZONE": "UTC"
+    }
+  },
   "SWITCH_ENDPOINT": "http://central-ledger:3001",
   "INSTRUMENTATION": {
     "METRICS": {
