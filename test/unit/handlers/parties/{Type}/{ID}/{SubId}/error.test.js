@@ -33,7 +33,7 @@ const src = '../../../../../../../src'
 const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
-const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)
+const ErrHandler = require(`${src}/api/parties/{Type}/{ID}/{SubId}/error`)
 const Helper = require('../../../../../../util/helper')
 
 let server

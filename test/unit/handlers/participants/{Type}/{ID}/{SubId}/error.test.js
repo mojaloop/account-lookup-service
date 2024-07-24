@@ -31,7 +31,7 @@ const getPort = require('get-port')
 const initServer = require('../../../../../../../src/server').initializeApi
 const Db = require('../../../../../../../src/lib/db')
 const participants = require('../../../../../../../src/domain/participants')
-const ErrHandler = require('../../../../../../../src/handlers/participants/{Type}/{ID}/{SubId}/error')
+const ErrHandler = require('../../../../../../../src/api/participants/{Type}/{ID}/{SubId}/error')
 const Helper = require('../../../../../../util/helper')
 const Logger = require('@mojaloop/central-services-logger')
 
