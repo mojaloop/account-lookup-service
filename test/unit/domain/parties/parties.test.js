@@ -44,11 +44,13 @@ const participantsDomain = require('../../../../src/domain/participants')
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
 const libUtil = require('../../../../src/lib/util')
+const { logger } = require('../../../../src/lib')
 const { ERROR_MESSAGES } = require('../../../../src/constants')
-const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.proxyCacheConfig
 
 const Helper = require('../../../util/helper')
 const fixtures = require('../../../fixtures')
+
+const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.proxyCacheConfig
 
 const { encodePayload } = Util.StreamingProtocol
 
@@ -228,13 +230,13 @@ describe('Parties Tests', () => {
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub().resolves(null)
-      const loggerStub = sandbox.stub(Logger, 'error')
+      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
 
       // Act
       await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
 
       // Assert
-      expect(loggerStub.callCount).toBe(2)
+      expect(loggerStub.callCount).toBe(1)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
       const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
@@ -273,7 +275,7 @@ describe('Parties Tests', () => {
       })
       participant.sendRequest = sandbox.stub().throws(new Error('Error sending request'))
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Error sending Error'))
-      const loggerStub = sandbox.stub(Logger, 'error')
+      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
@@ -854,7 +856,7 @@ describe('Parties Tests', () => {
     it('handles error when `validateParticipant()` fails', async () => {
       expect.hasAssertions()
       // Arrange)
-      const loggerStub = sandbox.stub(Logger, 'error')
+      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
@@ -872,8 +874,9 @@ describe('Parties Tests', () => {
 
     it('handles error when SubID is supplied but `validateParticipant()` fails', async () => {
       expect.hasAssertions()
-      // Arrange)
-      const loggerStub = sandbox.stub(Logger, 'error')
+      // Arrange
+
+      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })

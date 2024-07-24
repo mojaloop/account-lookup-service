@@ -27,30 +27,27 @@
 'use strict'
 
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const requestLogger = require('../../../src/lib/requestLogger')
+const { logger } = require('../../../src/lib')
 const fixtures = require('../../fixtures')
 
 let sandbox
-let currentLoggerIsInfoEnabled
 
 describe('requestLogger', () => {
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    currentLoggerIsInfoEnabled = Logger.isInfoEnabled
   })
 
   afterEach(() => {
     sandbox.restore()
-    Logger.isInfoEnabled = currentLoggerIsInfoEnabled
   })
 
   describe('logRequest', () => {
     it('prints the request.payload if it exists', async () => {
       // Arrange
-      const infoSpy = sandbox.spy(Logger, 'info')
+      const infoSpy = sandbox.spy(logger.mlLogger, 'info')
       const req = {
         ...fixtures.mockHapiRequestDto(),
         url: {
@@ -78,7 +75,7 @@ describe('requestLogger', () => {
   describe('logResponse', () => {
     it('should log response statusCode', async () => {
       // Arrange
-      const infoSpy = sandbox.spy(Logger, 'info')
+      const infoSpy = sandbox.spy(logger.mlLogger, 'info')
       const req = {
         ...fixtures.mockHapiRequestDto(),
         response: {
@@ -96,7 +93,7 @@ describe('requestLogger', () => {
 
     it('handles valid json error response', async () => {
       // Arrange
-      const infoSpy = sandbox.spy(Logger, 'info')
+      const infoSpy = sandbox.spy(logger.mlLogger, 'info')
       const response = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid currency code')
       const statusCode = 123
       response.output = {
