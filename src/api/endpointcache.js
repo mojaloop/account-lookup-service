@@ -29,7 +29,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../lib/config.js')
-const LibUtil = require('../lib/util')
+const LibUtil = require('../lib/util.js')
 
 /**
  * Operations on /endpointcache
