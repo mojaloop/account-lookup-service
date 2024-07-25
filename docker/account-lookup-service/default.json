@@ -61,7 +61,7 @@
     "type": "redis",
     "proxyConfig": {
       "cluster": [
-        { "host": "redis-node-0", "port": 6379 }
+        { "host": "host.docker.internal", "port": 6379 }
       ]
     }
   },

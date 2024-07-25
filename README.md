@@ -51,7 +51,7 @@ Further configuration reading can be found here https://hapi.dev/module/catbox/a
 
 ## Start API
 
-__Note:__ If you're running this service locally in a **macOS** or **Windows** environment with proxy caching enabled and relying on the `redis-cluster` containers in the `docker-compose.yaml` file, please refer to th eOS specific instructions in that file.
+__Note:__ If you're running this service locally in a **macOS** or **Windows** environment with proxy caching enabled and relying on the `redis-cluster` containers in the `docker-compose.yaml` file, please refer to the OS specific instructions in that file.
 
 To run the API and/or Admin servers run the following commands
 
