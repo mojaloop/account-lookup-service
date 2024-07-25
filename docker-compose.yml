@@ -4,21 +4,32 @@ networks:
   als-mojaloop-net:
     name: als-mojaloop-net
 
-# @see https://uninterrupted.tech/blog/hassle-free-redis-cluster-deployment-using-docker/
-# `host.docker.internal` needs to be added to local host machine in /etc/hosts file
+# Linux only
+# Disbale the following block if running on macOS or Windows
 x-redis-node: &REDIS_NODE
   image: docker.io/bitnami/redis-cluster:6.2.14
   environment: &REDIS_ENVS
     ALLOW_EMPTY_PASSWORD: yes
     REDIS_NODES: redis-node-0:6379 redis-node-1:6380 redis-node-2:6381 redis-node-3:6382 redis-node-4:6383 redis-node-5:6384
-    # REDIS_CLUSTER_DYNAMIC_IPS: no
-    # REDIS_CLUSTER_ANNOUNCE_IP: 172.17.0.1
-    # REDIS_NODES: 172.17.0.1:6379 172.17.0.1:6380 172.17.0.1:6381 172.17.0.1:6382 172.17.0.1:6383 172.17.0.1:6384
-    # REDIS_CLUSTER_ANNOUNCE_IP: 192.168.1.2
-    # REDIS_NODES: localhost:6379 localhost:6380 localhost:6381 localhost:6382 localhost:6383 localhost:6384
-  # network_mode: host
   networks:
     - als-mojaloop-net
+
+# macOS or Windows only
+# - Enable the following `x-redis-node` block if running on macOS or Windows
+# - Update the `REDIS_CLUSTER_ANNOUNCE_IP` to the host machine's external IP.
+#   To retrieve the host machine's external IP in macOS, run `echo "$(route get ifconfig.me | grep interface | sed -e 's/.*: //' | xargs ipconfig getifaddr)"` in the terminal.
+#   To retrieve the host machine's external IP in Windows, run `ipconfig` in the command prompt and look for the `IPv4 Address` under the `Wireless LAN adapter Wi-Fi` section.
+# - In `docker/account-lookup-service/default.json` file, change `PROXY_CACHE.proxyConfig.cluster.host` to `host.docker.internal`.
+## @see https://uninterrupted.tech/blog/hassle-free-redis-cluster-deployment-using-docker/
+#
+# x-redis-node: &REDIS_NODE
+#   image: docker.io/bitnami/redis-cluster:6.2.14
+#   environment: &REDIS_ENVS
+#     ALLOW_EMPTY_PASSWORD: yes
+#     REDIS_CLUSTER_DYNAMIC_IPS: no
+#     REDIS_CLUSTER_ANNOUNCE_IP: <HOST MACHINE EXTERNAL IP>
+#     REDIS_NODES: localhost:6379 localhost:6380 localhost:6381 localhost:6382 localhost:6383 localhost:6384
+#   network_mode: host
 
 services:
   account-lookup-service:

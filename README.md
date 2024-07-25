@@ -51,6 +51,8 @@ Further configuration reading can be found here https://hapi.dev/module/catbox/a
 
 ## Start API
 
+__Note:__ If you're running this service locally in a **macOS** or **Windows** environment with proxy caching enabled and relying on the `redis-cluster` containers in the `docker-compose.yaml` file, please refer to th eOS specific instructions in that file.
+
 To run the API and/or Admin servers run the following commands
 
 ### Both Admin + API
@@ -103,6 +105,8 @@ npm run test:coverage-check
 
 The integration tests use `docker-compose` to spin up a test environment for running the integration tests.
 The tests are executed inside a standalone `account-lookup-service-int` container, defined in `docker-compose.integration.yml`.
+
+__Note:__ If you're running the integration tests in a **macOS** or **Windows** environment, please refer to the OS specific instructions in the `docker-compose.yaml` file.
 
 Run the tests in a standalone mode with:
 
