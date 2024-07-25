@@ -34,6 +34,7 @@
 const { Command } = require('commander')
 const Logger = require('@mojaloop/central-services-logger')
 const Package = require('../../package.json')
+const Server = require('../server')
 const Config = require('../lib/config')
 
 const Program = new Command()
@@ -57,6 +58,5 @@ Program.command('handler')
       })
     }
 
-    module.exports = Setup.initializeHandlers(handlers, Config)
+    module.exports = Server.initializeHandlers(handlers, Config)
   })
-

@@ -179,7 +179,16 @@ const initializeAdmin = async (appConfig) => {
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
 }
 
+const initializeHandlers = (handlers, config) => {
+  handlers.forEach(handler => {
+    if (handler.type === 'timeout') {
+      // @todo: start timeout handler
+    }
+  })
+}
+
 module.exports = {
   initializeApi,
-  initializeAdmin
+  initializeAdmin,
+  initializeHandlers
 }
