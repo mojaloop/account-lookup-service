@@ -8,9 +8,11 @@ x-redis-node: &REDIS_NODE
   image: docker.io/bitnami/redis-cluster:6.2.14
   environment: &REDIS_ENVS
     ALLOW_EMPTY_PASSWORD: yes
-    REDIS_NODES: redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
-  networks:
-    - als-mojaloop-net
+    REDIS_CLUSTER_DYNAMIC_IPS: no
+    REDIS_CLUSTER_ANNOUNCE_IP: 127.0.0.1
+    # REDIS_NODES: redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    REDIS_NODES: localhost:6379 localhost:6380 localhost:6381 localhost:6382 localhost:6383 localhost:6384
+  network_mode: host
 
 services:
   account-lookup-service:
@@ -146,12 +148,14 @@ services:
       retries: 10
       start_period: 40s
       interval: 30s
-
+  
+  # @see https://uninterrupted.tech/blog/hassle-free-redis-cluster-deployment-using-docker/
   redis-node-0:
     <<: *REDIS_NODE
     environment:
       <<: *REDIS_ENVS
       REDIS_CLUSTER_CREATOR: yes
+      REDIS_PORT_NUMBER: 6379
     depends_on:
       - redis-node-1
       - redis-node-2
@@ -160,14 +164,45 @@ services:
       - redis-node-5
     ports:
       - "6379:6379"
+      - "16379:16379"
 
   redis-node-1:
     <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6380
+    ports:
+      - "6380:6380"
+      - "16380:16380"
   redis-node-2:
     <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6381
+    ports:
+      - "6381:6381"
+      - "16381:16381"
   redis-node-3:
     <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6382
+    ports:
+      - "6382:6382"
+      - "16382:16382"
   redis-node-4:
     <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6383
+    ports:
+      - "6383:6383"
+      - "16383:16383"
   redis-node-5:
     <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6384
+    ports:
+      - "6384:6384"
+      - "16384:16384"
