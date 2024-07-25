@@ -20,7 +20,8 @@ x-redis-node: &REDIS_NODE
 #   To retrieve the host machine's external IP in macOS, run `echo "$(route get ifconfig.me | grep interface | sed -e 's/.*: //' | xargs ipconfig getifaddr)"` in the terminal.
 #   To retrieve the host machine's external IP in Windows, run `ipconfig` in the command prompt and look for the `IPv4 Address` under the `Wireless LAN adapter Wi-Fi` section.
 # - In `docker/account-lookup-service/default.json` file, change `PROXY_CACHE.proxyConfig.cluster.host` to `host.docker.internal`.
-## @see https://uninterrupted.tech/blog/hassle-free-redis-cluster-deployment-using-docker/
+# 
+# @see https://uninterrupted.tech/blog/hassle-free-redis-cluster-deployment-using-docker/
 #
 # x-redis-node: &REDIS_NODE
 #   image: docker.io/bitnami/redis-cluster:6.2.14
