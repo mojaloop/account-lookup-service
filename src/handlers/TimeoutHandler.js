@@ -26,68 +26,65 @@
 
  * INFITX
  - Steven Oderayi <steven.oderayi@infitx.com>
-
  --------------
  ******/
 'use strict'
 
+const CronJob = require('cron').CronJob
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
-const ProxyCache = require('../../lib/proxyCache')
+const TimeoutService = require('../domain/timeout')
+const Config = require('../lib/config')
 
-const timeoutInterschemePartiesLookups = async () => {
-  const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
-  // batch size, can be parameterized
-  const count = 100
-  const redis = (await ProxyCache.getConnectedCache()).redisClient
+let timeoutJob
+let isRegistered
+let isRunning
 
-  return new Promise((resolve, reject) => {
-    scanNode(redis.nodes('master'), 0, {
-      match: alsKeysExpiryPattern,
-      count,
-      resolve,
-      reject
-    })
-  })
+const timeout = async () => {
+  if (isRunning) return
+
+  try {
+    isRunning = true
+    Logger.isDebugEnabled && Logger.debug('Timeout handler triggered')
+    await TimeoutService.timeoutInterschemePartiesLookups()
+  } catch (err) {
+    Logger.isErrorEnabled && Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  } finally {
+    isRunning = false
+  }
 }
 
-const scanNode = (nodes, idx, options) => {
-  const node = nodes[idx]
-  const stream = node.scanStream({
-    match: options.match,
-    count: options.count
-  })
-  stream
-    .on('data', async (keys) => {
-      stream.pause()
-      const proxyCache = await ProxyCache.getConnectedCache()
-      const redis = proxyCache.redisClient
-
-      for (const key of keys) {
-        const item = await redis.get(key)
-        if (Number(item) < Date.now()) {
-          const actualKey = key.replace(':expiresAt', '')
-          const proxyIds = await redis.smembers(actualKey)
-          await sendTimeoutCallback(actualKey, proxyIds)
-          // pipeline does not work here with ioredis, so we use Promise.all
-          await Promise.all([redis.del(actualKey), redis.del(key)])
-        }
-      }
-      stream.resume()
+const register = async () => {
+  if (Config.HANDLERS_TIMEOUT_DISABLED) return false
+  try {
+    if (isRegistered) {
+      await stop()
+    }
+    timeoutJob = CronJob.from({
+      start: false,
+      onTick: timeout,
+      cronTime: Config.HANDLERS_TIMEOUT_TIMEXP,
+      timeZone: Config.HANDLERS_TIMEOUT_TIMEZONE
     })
-    .on('end', () => {
-      idx++
-      if (idx < nodes.length) {
-        scanNode(nodes, idx, options)
-        return
-      }
-      options.resolve()
-    })
+    timeoutJob.start()
+    isRegistered = true
+    return true
+  } catch (err) {
+    Logger.isErrorEnabled && Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
 }
 
-const sendTimeoutCallback = async (cacheKey, proxyIds) => {
-  Logger.info(`Timeout callback for ${cacheKey} with proxyIds: ${proxyIds}`)
+const stop = async () => {
+  if (isRegistered) {
+    await timeoutJob.stop()
+    isRegistered = undefined
+  }
 }
 
 module.exports = {
-  timeoutInterschemePartiesLookups
+  timeout,
+  register,
+  stop
 }

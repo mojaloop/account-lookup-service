@@ -28,42 +28,45 @@
  - Steven Oderayi <steven.oderayi@infitx.com>
  --------------
  ******/
+
 'use strict'
 
-const { Command } = require('commander')
-const Logger = require('@mojaloop/central-services-logger')
-const Package = require('../../package.json')
-const Server = require('../server')
-const { HANDLER_TYPES } = require('../constants')
+const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
+const Config = require('./config.js')
 
-const Program = new Command()
+let proxyCache
 
-Program
-  .version(Package.version)
-  .description('CLI to manage Handlers')
+const connect = async () => {
+  return !proxyCache?.isConnected && getCache().connect()
+}
 
-Program.command('handlers')
-  .alias('h')
-  .description('Start specified handler(s)')
-  .option('--timeout', 'Start the Timeout Handler')
-  .action(async (args) => {
-    const handlers = []
+const disconnect = async () => {
+  return proxyCache?.isConnected && proxyCache.disconnect()
+}
 
-    if (args.timeout) {
-      Logger.isDebugEnabled && Logger.debug('CLI: Executing --timeout')
-      handlers.push(HANDLER_TYPES.TIMEOUT)
-    }
+const reset = async () => {
+  await disconnect()
+  proxyCache = null
+}
 
-    if (handlers.length === 0) {
-      Logger.isDebugEnabled && Logger.debug('CLI: No handlers specified')
-      return
-    }
+const getCache = () => {
+  if (!proxyCache) {
+    proxyCache = Object.freeze(
+      createProxyCache(Config.PROXY_CACHE_CONFIG.type, Config.PROXY_CACHE_CONFIG.proxyConfig)
+    )
+  }
+  return proxyCache
+}
 
-    module.exports = Server.initializeHandlers(handlers)
-  })
+const getConnectedCache = async () => {
+  await connect()
+  return proxyCache
+}
 
-if (Array.isArray(process.argv) && process.argv.length > 2) {
-  Program.parse(process.argv)
-} else {
-  Program.help()
+module.exports = {
+  reset, // for testing
+  connect,
+  disconnect,
+  getCache,
+  getConnectedCache
 }

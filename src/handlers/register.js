@@ -26,78 +26,40 @@
 
  * INFITX
  - Steven Oderayi <steven.oderayi@infitx.com>
-
  --------------
  ******/
 'use strict'
 
-const CronJob = require('cron').CronJob
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
-const TimeoutService = require('../../domain/timeout')
-const Config = require('../../lib/config')
+const TimeoutHandler = require('./TimeoutHandler')
+const { HANDLER_TYPES } = require('../constants')
 
-let timeoutJob
-let isRegistered
-let isRunning
-
-const timeout = async () => {
-  if (isRunning) return
-
-  try {
-    isRunning = true
-    Logger.isDebugEnabled && Logger.debug('Timeout handler triggered')
-    await TimeoutService.timeoutInterschemePartiesLookups()
-  } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  } finally {
-    isRunning = false
-  }
-}
-
-const registerTimeoutHandler = async () => {
-  try {
-    if (isRegistered) {
-      await stop()
+const registerHandlers = (handlers) => {
+  handlers.forEach(handler => {
+    switch (handler) {
+      case HANDLER_TYPES.TIMEOUT:
+        Logger.isDebugEnabled && Logger.debug('Registering Timeout Handler')
+        TimeoutHandler.register()
+        break
+      default:
+        Logger.isDebugEnabled && Logger.debug(`Handler ${handler} not found`)
+        break
     }
-    timeoutJob = CronJob.from({
-      start: false,
-      onTick: timeout,
-      cronTime: Config.HANDLERS_TIMEOUT_TIMEXP,
-      timeZone: Config.HANDLERS_TIMEOUT_TIMEZONE
-    })
-    timeoutJob.start()
-    isRegistered = true
-    return true
-  } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
+  })
 }
 
-const registerAllHandlers = async () => {
-  try {
-    if (!Config.HANDLERS_TIMEOUT_DISABLED) {
-      await registerTimeoutHandler()
-    }
-    return true
-  } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
+const registerAllHandlers = () => {
+  Logger.isDebugEnabled && Logger.debug('Registering all handlers')
+  TimeoutHandler.register()
 }
 
-const stop = async () => {
-  if (isRegistered) {
-    await timeoutJob.stop()
-    isRegistered = undefined
-  }
+const stopAllHandlers = () => {
+  Logger.isDebugEnabled && Logger.debug('Stopping all handlers')
+  TimeoutHandler.stop()
 }
 
 module.exports = {
-  timeout,
+  registerHandlers,
   registerAllHandlers,
-  registerTimeoutHandler,
-  stop
+  stopAllHandlers
 }

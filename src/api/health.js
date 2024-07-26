@@ -37,7 +37,7 @@ const getSubServices = (appConfig, isAdmin) => {
   }
 
   const subServices = [getSubServiceHealthDatastore]
-  if (appConfig.proxyCacheConfig.enabled) {
+  if (appConfig.PROXY_CACHE_CONFIG.enabled) {
     subServices.push(getProxyCacheHealth)
   }
   return subServices

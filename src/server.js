@@ -43,6 +43,7 @@ const Handlers = require('./api')
 const Routes = require('./api/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
+const { registerHandlers } = require('./handlers/register')
 
 const connectDatabase = async (dbConfig) => {
   return Db.connect(dbConfig)
@@ -137,7 +138,7 @@ const initializeApi = async (appConfig) => {
     CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG,
     DATABASE,
     API_PORT,
-    proxyCacheConfig
+    PROXY_CACHE_CONFIG
   } = appConfig
 
   if (!INSTRUMENTATION_METRICS_DISABLED) {
@@ -155,7 +156,7 @@ const initializeApi = async (appConfig) => {
     Cache.initCache()
   ])
 
-  return createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
+  return createServer(API_PORT, api, Routes.APIRoutes(api), false, PROXY_CACHE_CONFIG)
 }
 
 const initializeAdmin = async (appConfig) => {
@@ -165,7 +166,7 @@ const initializeAdmin = async (appConfig) => {
     DATABASE,
     RUN_MIGRATIONS,
     ADMIN_PORT,
-    proxyCacheConfig
+    PROXY_CACHE_CONFIG
   } = appConfig
 
   if (!INSTRUMENTATION_METRICS_DISABLED) {
@@ -176,15 +177,11 @@ const initializeAdmin = async (appConfig) => {
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
 
-  return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
+  return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
 }
 
-const initializeHandlers = (handlers, config) => {
-  handlers.forEach(handler => {
-    if (handler.type === 'timeout') {
-      // @todo: start timeout handler
-    }
-  })
+const initializeHandlers = (handlers) => {
+  registerHandlers(handlers)
 }
 
 module.exports = {

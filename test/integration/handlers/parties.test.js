@@ -36,7 +36,7 @@ const proxyClient = new ProxyApiClient() // mock ISPA
 const alsUrl = `http://localhost:${config.API_PORT}`
 
 describe('Parties Endpoints Tests -->', () => {
-  const { type, proxyConfig } = config.proxyCacheConfig
+  const { type, proxyConfig } = config.PROXY_CACHE_CONFIG
   const proxyCache = createProxyCache(type, proxyConfig)
 
   beforeAll(async () => {

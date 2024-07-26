@@ -6,6 +6,11 @@ const ERROR_MESSAGES = Object.freeze({
   failedToCacheSendToProxiesList: 'Failed to cache sendToProxiesList'
 })
 
+const HANDLER_TYPES = Object.freeze({
+  TIMEOUT: 'timeout'
+})
+
 module.exports = {
-  ERROR_MESSAGES
+  ERROR_MESSAGES,
+  HANDLER_TYPES
 }

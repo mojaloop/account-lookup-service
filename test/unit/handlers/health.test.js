@@ -47,7 +47,7 @@ let server
 
 describe('/health', () => {
   beforeEach(async () => {
-    Config.proxyCacheConfig.enabled = false
+    Config.PROXY_CACHE_CONFIG.enabled = false
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     Config.API_PORT = await getPort()
@@ -112,7 +112,7 @@ describe('/health', () => {
 
   it('GET /health should include proxy health', async () => {
     // Arrange
-    Config.proxyCacheConfig.enabled = true
+    Config.PROXY_CACHE_CONFIG.enabled = true
     Config.API_PORT = await getPort()
     let serverWithProxy
     try {
