@@ -79,3 +79,6 @@ devspace*
 
 # General Ignore
 *IGNORE*
+
+# macOS
+.DS_Store
