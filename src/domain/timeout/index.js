@@ -61,17 +61,23 @@ const scanNode = (nodes, idx, options) => {
       stream.pause()
       const proxyCache = await ProxyCache.getConnectedCache()
       const redis = proxyCache.redisClient
-
-      for (const key of keys) {
-        const item = await redis.get(key)
-        if (Number(item) < Date.now()) {
-          const actualKey = key.replace(':expiresAt', '')
-          const proxyIds = await redis.smembers(actualKey)
-          await sendTimeoutCallback(actualKey, proxyIds)
-          // pipeline does not work here with ioredis, so we use Promise.all
-          await Promise.all([redis.del(actualKey), redis.del(key)])
+      try {
+        for (const key of keys) {
+          const item = await redis.get(key)
+          if (Number(item) < Date.now()) {
+            const actualKey = key.replace(':expiresAt', '')
+            const proxyIds = await redis.smembers(actualKey)
+            await sendTimeoutCallback(actualKey, proxyIds)
+            // pipeline does not work here with ioredis, so we use Promise.all
+            await Promise.all([redis.del(actualKey), redis.del(key)])
+          }
         }
+      } catch (err) {
+        Logger.error(err)
+        options.reject(err)
+        return
       }
+
       stream.resume()
     })
     .on('end', () => {
