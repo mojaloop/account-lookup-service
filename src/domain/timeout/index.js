@@ -38,11 +38,7 @@ const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
   const count = 100 // @todo batch size, can be parameterized
   const redis = await ProxyCache.getRedisClient()
-  /**
-   * Since we are using redis cluster, we need to scan all the master nodes
-   * to get all the keys matching the pattern 'als:*:*:*:expiresAt'
-   * We then process the keys
-   */
+ 
   return new Promise((resolve, reject) => {
     processNode(0, redis.nodes('master'), {
       match: alsKeysExpiryPattern,
@@ -97,7 +93,7 @@ const processKeys = async (keys) => {
       try {
         // @todo: we can parallelize this
         await sendTimeoutCallback(actualKey, proxyIds)
-        // pipeline does not work here with in cluster mode with ioredis, so we use Promise.all
+        // pipeline does not work here in cluster mode with ioredis, so we use Promise.all
         await Promise.all([redis.del(actualKey), redis.del(key)])
       } catch (err) {
         /**
