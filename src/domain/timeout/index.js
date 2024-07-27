@@ -36,12 +36,12 @@ const ProxyCache = require('../../lib/proxyCache')
 
 const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
-  // batch size, can be parameterized
+  // @todo batch size, can be parameterized
   const count = 100
   const redis = (await ProxyCache.getConnectedCache()).redisClient
 
   return new Promise((resolve, reject) => {
-    scanNode(redis.nodes('master'), 0, {
+    processNode(0, redis.nodes('master'), {
       match: alsKeysExpiryPattern,
       count,
       resolve,
@@ -50,8 +50,8 @@ const timeoutInterschemePartiesLookups = async () => {
   })
 }
 
-const scanNode = (nodes, idx, options) => {
-  const node = nodes[idx]
+const processNode = (nodeIndex, nodes, options) => {
+  const node = nodes[nodeIndex]
   const stream = node.scanStream({
     match: options.match,
     count: options.count
@@ -59,39 +59,57 @@ const scanNode = (nodes, idx, options) => {
   stream
     .on('data', async (keys) => {
       stream.pause()
-      const proxyCache = await ProxyCache.getConnectedCache()
-      const redis = proxyCache.redisClient
       try {
-        for (const key of keys) {
-          const item = await redis.get(key)
-          if (Number(item) < Date.now()) {
-            const actualKey = key.replace(':expiresAt', '')
-            const proxyIds = await redis.smembers(actualKey)
-            await sendTimeoutCallback(actualKey, proxyIds)
-            // pipeline does not work here with ioredis, so we use Promise.all
-            await Promise.all([redis.del(actualKey), redis.del(key)])
-          }
-        }
+        await processKeys(keys)
       } catch (err) {
-        Logger.error(err)
+        stream.destroy(err)
         options.reject(err)
-        return
       }
-
       stream.resume()
     })
-    .on('end', () => {
-      idx++
-      if (idx < nodes.length) {
-        scanNode(nodes, idx, options)
-        return
+
+  stream.on('end', () => {
+    nodeIndex++
+    if (nodeIndex < nodes.length) {
+      processNode(nodeIndex, nodes, options)
+      return
+    }
+    options.resolve()
+  })
+}
+
+const processKeys = async (keys) => {
+  const proxyCache = await ProxyCache.getConnectedCache()
+  const redis = proxyCache.redisClient
+  /**
+   * We iterate through the keys and check if the expiry time has passed
+   * If it has, we get the actual key and the proxyIds and call the timeout callback
+   * We then remove the actual key and the expiry key
+   */
+  for (const key of keys) {
+    const item = await redis.get(key)
+    if (Number(item) < Date.now()) {
+      const actualKey = key.replace(':expiresAt', '')
+      const proxyIds = await redis.smembers(actualKey)
+      try {
+        // @todo: we can parallelize this
+        await sendTimeoutCallback(actualKey, proxyIds)
+        // pipeline does not work here with in cluster mode with ioredis, so we use Promise.all
+        await Promise.all([redis.del(actualKey), redis.del(key)])
+      } catch (err) {
+        /**
+         * We don't want to throw an error here, as it will stop the whole process
+         * and we want to continue with the next keys
+         * @todo We need to decide on how/when to finally give up on a key and remove it from the cache
+         */
+        Logger.error(err)
       }
-      options.resolve()
-    })
+    }
+  }
 }
 
 const sendTimeoutCallback = async (cacheKey, proxyIds) => {
-  Logger.info(`Timeout callback for ${cacheKey} with proxyIds: ${proxyIds}`)
+  throw new Error('Not implemented')
 }
 
 module.exports = {
