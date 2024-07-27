@@ -38,7 +38,11 @@ const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
   const count = 100 // @todo batch size, can be parameterized
   const redis = await ProxyCache.getRedisClient()
-
+  /**
+   * Since we are using redis cluster, we need to scan all the master nodes
+   * to get all the keys matching the pattern 'als:*:*:*:expiresAt'
+   * We then process the keys
+   */
   return new Promise((resolve, reject) => {
     processNode(0, redis.nodes('master'), {
       match: alsKeysExpiryPattern,
@@ -86,8 +90,8 @@ const processKeys = async (keys) => {
    * We then remove the actual key and the expiry key
    */
   for (const key of keys) {
-    const item = await redis.get(key)
-    if (Number(item) < Date.now()) {
+    const expiresAt = await redis.get(key)
+    if (Number(expiresAt) < Date.now()) {
       const actualKey = key.replace(':expiresAt', '')
       const proxyIds = await redis.smembers(actualKey)
       try {
