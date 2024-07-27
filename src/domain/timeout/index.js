@@ -37,7 +37,7 @@ const ProxyCache = require('../../lib/proxyCache')
 const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
   const count = 100 // @todo batch size, can be parameterized
-  const redis = (await ProxyCache.getConnectedCache()).redisClient
+  const redis = await ProxyCache.getRedisClient()
 
   return new Promise((resolve, reject) => {
     processNode(0, redis.nodes('master'), {
@@ -78,7 +78,7 @@ const processNode = (nodeIndex, nodes, options) => {
 }
 
 const processKeys = async (keys) => {
-  const redis = (await ProxyCache.getConnectedCache()).redisClient
+  const redis = await ProxyCache.getRedisClient()
 
   /**
    * We iterate through the keys and check if the expiry time has passed
