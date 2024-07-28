@@ -38,7 +38,7 @@ const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
   const count = 100 // @todo batch size, can be parameterized
   const redis = await ProxyCache.getRedisClient()
- 
+
   return new Promise((resolve, reject) => {
     processNode(0, redis.nodes('master'), {
       match: alsKeysExpiryPattern,
