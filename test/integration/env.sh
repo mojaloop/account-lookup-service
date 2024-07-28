@@ -1,7 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Retrieve the external IP address of the host machine (on macOS)
+# or the IP address of the docker0 interface (on Linux)
+# to be used for the Redis cluster announce IP
 get_external_ip() {
   if [ "$(uname)" == "Linux" ]; then
     echo "$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)"
@@ -16,9 +19,3 @@ set -a && . $DIR/.env && set +a
 
 # set/override dynamic variables
 export REDIS_CLUSTER_ANNOUNCE_IP=$(get_external_ip)
-
-# if last command failed, exit
-if [ $? -ne 0 ]; then
-  echo "Failed to set REDIS_CLUSTER_ANNOUNCE_IP environment variable"
-  exit 1
-fi
