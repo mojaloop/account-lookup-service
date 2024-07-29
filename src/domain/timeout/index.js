@@ -41,6 +41,23 @@ const Participant = require('../../models/participantEndpoint/facade')
 const ProxyCache = require('../../lib/proxyCache')
 const { ERROR_MESSAGES } = require('../../constants')
 const Config = require('../../lib/config')
+const {
+  [ErrorHandler.Factory.createFSPIOPError]: createFSPIOPError,
+  [ErrorHandler.Factory.reformatFSPIOPError]: reformatFSPIOPError,
+  [ErrorHandler.Enums.FSPIOPErrorCodes]: FSPIOPErrorCodes,
+  [Enum.EndPoints.FspEndpointTypes]: FspEndpointTypes
+} = ErrorHandler
+const {
+  [Enum.Http.Headers.FSPIOP]: FSPIOPHeaders,
+  [Enum.Events.Event.Type]: EventType,
+  [Enum.Events.Event.Action]: EventAction
+} = Enum
+const {
+  Tracer,
+  EventStateMetadata,
+  EventStatusType,
+  AuditEventAction
+} = EventSdk
 
 const timeoutInterschemePartiesLookups = async () => {
   const match = 'als:*:*:*:expiresAt' // als key expiry pattern
@@ -96,7 +113,7 @@ const sendTimeoutCallback = async (cacheKey) => {
     'Egress - Interscheme parties lookup timeout callback',
     ['success']
   ).startTimer()
-  const span = EventSdk.Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: {} })
+  const span = Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: {} })
   // eslint-disable-next-line no-unused-vars
   const [_, destination, partyType, partyId] = cacheKey.split(':')
   const source = Config.HUB_NAME
@@ -105,22 +122,22 @@ const sendTimeoutCallback = async (cacheKey) => {
     if (!destinationParticipant) {
       const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
       Logger.isErrorEnabled && Logger.error(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
+      throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
     }
-    const errorInformation = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.EXPIRED_ERROR).toApiErrorObject(Config.ERROR_HANDLING)
+    const errorInformation = createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR).toApiErrorObject(Config.ERROR_HANDLING)
     const params = { ID: partyId, type: partyType }
-    const headers = { [Enum.Http.Headers.FSPIOP.SOURCE]: source, [Enum.Http.Headers.FSPIOP.DESTINATION]: destination }
-    const endpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
-    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    const headers = { [FSPIOPHeaders.SOURCE]: source, [FSPIOPHeaders.DESTINATION]: destination }
+    const endpointType = FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+    const spanTags = LibUtil.getSpanTags({ headers }, EventType.PARTY, EventAction.PUT)
     span.setTags(spanTags)
-    await span.audit({ headers, errorInformation }, EventSdk.AuditEventAction.start)
+    await span.audit({ headers, errorInformation }, AuditEventAction.start)
     await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
     histTimerEnd({ success: true })
   } catch (err) {
     histTimerEnd({ success: false })
     if (!span.isFinished) {
-      const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-      const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      const fspiopError = reformatFSPIOPError(err)
+      const state = new EventStateMetadata(EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
       await span.error(err, state)
       await span.finish(err.message, state)
     }
