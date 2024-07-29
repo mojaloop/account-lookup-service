@@ -147,6 +147,7 @@ services:
       start_period: 40s
       interval: 30s
 
+  #  To use with proxyCache.type === 'redis-cluster'
   redis-node-0:
     <<: *REDIS_NODE
     environment:
@@ -171,3 +172,14 @@ services:
     <<: *REDIS_NODE
   redis-node-5:
     <<: *REDIS_NODE
+
+##  To use with proxyCache.type === 'redis'
+#  redis:
+#    image: redis:6.2.4-alpine
+#    restart: "unless-stopped"
+#    environment:
+#      - ALLOW_EMPTY_PASSWORD=yes
+#      - REDIS_PORT=6379
+#      - REDIS_REPLICATION_MODE=master
+#    ports:
+#      - "6379:6379"
