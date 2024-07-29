@@ -47,15 +47,29 @@ const timeoutInterschemePartiesLookups = async () => {
   const count = 100 // @todo batch size, can be parameterized
   const redis = await ProxyCache.getClient()
 
+  const callback = async (key) => {
+    const expiresAt = await redis.get(key)
+    if (Number(expiresAt) >= Date.now()) {
+      return
+    }
+    const actualKey = key.replace(':expiresAt', '')
+    try {
+      await sendTimeoutCallback(actualKey)
+      await Promise.all([redis.del(actualKey), redis.del(key)])
+    } catch (err) {
+      /**
+       * We don't want to throw an error here, as it will stop the whole process
+       * and we want to continue with the next keys
+       * @todo We need to decide on how/when to finally give up on a key and remove it from the cache
+       */
+      Logger.error(err)
+    }
+  }
+
   return Promise.all(
     redis.nodes('master').map(async (node) => {
       return new Promise((resolve, reject) => {
-        processNode(node, {
-          match: alsKeysExpiryPattern,
-          count,
-          resolve,
-          reject
-        })
+        processNode(node, { match: alsKeysExpiryPattern, count, resolve, reject, callback })
       })
     })
   )
@@ -71,7 +85,7 @@ const processNode = (node, options) => {
     try {
       await Promise.all(
         keys.map(async (key) => {
-          return processKey(key)
+          return options.callback(key)
         })
       )
     } catch (err) {
@@ -80,30 +94,9 @@ const processNode = (node, options) => {
     }
     stream.resume()
   })
-
-  stream.on('end', () => {
-    options.resolve()
-  })
-}
-
-const processKey = async (key) => {
-  const redis = await ProxyCache.getClient()
-  const expiresAt = await redis.get(key)
-  if (Number(expiresAt) >= Date.now()) {
-    return
-  }
-  const actualKey = key.replace(':expiresAt', '')
-  try {
-    await sendTimeoutCallback(actualKey)
-    await Promise.all([redis.del(actualKey), redis.del(key)])
-  } catch (err) {
-    /**
-     * We don't want to throw an error here, as it will stop the whole process
-     * and we want to continue with the next keys
-     * @todo We need to decide on how/when to finally give up on a key and remove it from the cache
-     */
-    Logger.error(err)
-  }
+    .on('end', () => {
+      options.resolve()
+    })
 }
 
 const sendTimeoutCallback = async (cacheKey) => {
