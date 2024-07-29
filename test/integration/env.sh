@@ -1,7 +1,7 @@
 #!/bin/sh
 
 get_root_dir() {
-  echo "$( dirname -- "$(readlink -f -- "$0")" )"
+  echo "$(dirname -- "$(readlink -f -- "$0")")"
 }
 
 # Retrieve the external IP address of the host machine (on macOS)
