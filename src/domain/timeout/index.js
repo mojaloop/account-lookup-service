@@ -43,60 +43,51 @@ const { ERROR_MESSAGES } = require('../../constants')
 const Config = require('../../lib/config')
 
 const timeoutInterschemePartiesLookups = async () => {
-  const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
+  const match = 'als:*:*:*:expiresAt' // als key expiry pattern
   const count = 100 // @todo batch size, can be parameterized
   const redis = await ProxyCache.getClient()
-
-  const callback = async (key) => {
-    const expiresAt = await redis.get(key)
-    if (Number(expiresAt) >= Date.now()) {
-      return
-    }
-    const actualKey = key.replace(':expiresAt', '')
-    try {
-      await sendTimeoutCallback(actualKey)
-      await Promise.all([redis.del(actualKey), redis.del(key)])
-    } catch (err) {
-      /**
-       * We don't want to throw an error here, as it will stop the whole process
-       * and we want to continue with the next keys
-       * @todo We need to decide on how/when to finally give up on a key and remove it from the cache
-       */
-      Logger.error(err)
-    }
-  }
 
   return Promise.all(
     redis.nodes('master').map(async (node) => {
       return new Promise((resolve, reject) => {
-        processNode(node, { match: alsKeysExpiryPattern, count, resolve, reject, callback })
+        processNode(node, { match, count, resolve, reject })
       })
     })
   )
 }
 
 const processNode = (node, options) => {
-  const stream = node.scanStream({
-    match: options.match,
-    count: options.count
-  })
+  const { match, count, resolve, reject } = options
+  const stream = node.scanStream({ match, count })
   stream.on('data', async (keys) => {
     stream.pause()
     try {
-      await Promise.all(
-        keys.map(async (key) => {
-          return options.callback(key)
-        })
-      )
+      await Promise.all(keys.map(processKey))
     } catch (err) {
       stream.destroy(err)
-      options.reject(err)
+      reject(err)
     }
     stream.resume()
   })
-  stream.on('end', () => {
-    options.resolve()
-  })
+  stream.on('end', resolve)
+}
+
+const processKey = async (key) => {
+  const redis = await ProxyCache.getClient()
+  const expiresAt = await redis.get(key)
+  if (Number(expiresAt) >= Date.now()) return
+  const actualKey = key.replace(':expiresAt', '')
+  try {
+    await sendTimeoutCallback(actualKey)
+    await Promise.all([redis.del(actualKey), redis.del(key)])
+  } catch (err) {
+    /**
+     * We don't want to throw an error here, as it will stop the whole process
+     * and we want to continue with the next keys
+     * @todo We need to decide on how/when to finally give up on a key and remove it from the cache
+     */
+    Logger.error(err)
+  }
 }
 
 const sendTimeoutCallback = async (cacheKey) => {
