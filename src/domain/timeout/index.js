@@ -37,18 +37,20 @@ const ProxyCache = require('../../lib/proxyCache')
 const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
   const count = 100 // @todo batch size, can be parameterized
-  const redis = await ProxyCache.getRedisClient()
+  const redis = await ProxyCache.getClient()
 
-  return Promise.all(redis.nodes('master').map(async (node) => {
-    return new Promise((resolve, reject) => {
-      processNode(node, {
-        match: alsKeysExpiryPattern,
-        count,
-        resolve,
-        reject
+  return Promise.all(
+    redis.nodes('master').map(async (node) => {
+      return new Promise((resolve, reject) => {
+        processNode(node, {
+          match: alsKeysExpiryPattern,
+          count,
+          resolve,
+          reject
+        })
       })
     })
-  }))
+  )
 }
 
 const processNode = (node, options) => {
@@ -56,20 +58,20 @@ const processNode = (node, options) => {
     match: options.match,
     count: options.count
   })
-  stream
-    .on('data', async (keys) => {
-      stream.pause()
-      try {
-        // await processKeys(keys)
-        await Promise.all(keys.map(async (key) => {
+  stream.on('data', async (keys) => {
+    stream.pause()
+    try {
+      await Promise.all(
+        keys.map(async (key) => {
           return processKey(key)
-        }))
-      } catch (err) {
-        stream.destroy(err)
-        options.reject(err)
-      }
-      stream.resume()
-    })
+        })
+      )
+    } catch (err) {
+      stream.destroy(err)
+      options.reject(err)
+    }
+    stream.resume()
+  })
 
   stream.on('end', () => {
     options.resolve()
@@ -77,7 +79,7 @@ const processNode = (node, options) => {
 }
 
 const processKey = async (key) => {
-  const redis = await ProxyCache.getRedisClient()
+  const redis = await ProxyCache.getClient()
 
   const expiresAt = await redis.get(key)
   if (Number(expiresAt) >= Date.now()) {
@@ -86,7 +88,6 @@ const processKey = async (key) => {
   const actualKey = key.replace(':expiresAt', '')
   const proxyIds = await redis.smembers(actualKey)
   try {
-    // @todo: we can parallelize this
     await sendTimeoutCallback(actualKey, proxyIds)
     // pipeline does not work here in cluster mode with ioredis, so we use Promise.all
     await Promise.all([redis.del(actualKey), redis.del(key)])

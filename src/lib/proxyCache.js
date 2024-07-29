@@ -63,8 +63,8 @@ const getConnectedCache = async () => {
   return proxyCache
 }
 
-const getRedisClient = async () => {
-  return (await getConnectedCache()).redisClient
+const getClient = async () => {
+  return (await getConnectedCache()).client
 }
 
 module.exports = {
@@ -73,5 +73,5 @@ module.exports = {
   disconnect,
   getCache,
   getConnectedCache,
-  getRedisClient
+  getClient
 }
