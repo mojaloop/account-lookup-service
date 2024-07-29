@@ -1,9 +1,12 @@
 const axios = require('axios')
+const axiosRetry = require('axios-retry').default
 const { FspEndpointTypes } = require('@mojaloop/central-services-shared').Enum.EndPoints
 const Logger = require('@mojaloop/central-services-logger')
 const config = require('../../src/lib/config')
 const fixtures = require('../fixtures')
 const { CL_PORT, PROXY_HOST, PROXY_PORT, PARTY_ID_TYPE } = require('../integration/constants')
+
+axiosRetry(axios, { retries: 5 })
 
 const alsAdminUrl = `http://localhost:${config.ADMIN_PORT}`
 const clUrl = `http://localhost:${CL_PORT}`
@@ -118,28 +121,6 @@ const createOracle = async ({
   Logger.info('createOracle is finished')
   return oracle
 }
-
-// const deleteAllOracles = async ({
-//   oracleIdType = 'MSISDN',
-//   currency = 'EUR',
-//   endpointValue = `${proxyUrl}/oracle`,
-//   isDefault = false
-// } = {}) => {
-//   const headers = fixtures.participantsCallHeadersDto()
-//   const body = {
-//     oracleIdType,
-//     endpoint: {
-//       value: endpointValue,
-//       endpointType: 'URL'
-//     },
-//     currency,
-//     isDefault
-//   }
-//   const oracle = await axios.post(`${alsAdminUrl}/oracles`, body, { headers })
-//
-//   Logger.info(`createOracle is finished`)
-//   return oracle
-// }
 
 module.exports = {
   createHubAccounts,

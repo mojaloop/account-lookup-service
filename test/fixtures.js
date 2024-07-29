@@ -1,3 +1,4 @@
+const { randomUUID } = require('node:crypto')
 const { Enum } = require('@mojaloop/central-services-shared')
 
 const { Headers } = Enum.Http
@@ -15,6 +16,17 @@ const headersDto = ({
   date,
   accept,
   'content-type': accept
+})
+
+const protocolVersionsDto = () => ({
+  CONTENT: {
+    DEFAULT: '2.1',
+    VALIDATELIST: ['2.1']
+  },
+  ACCEPT: {
+    DEFAULT: '2',
+    VALIDATELIST: ['2', '2.1']
+  }
 })
 
 const partiesCallHeadersDto = ({
@@ -73,10 +85,25 @@ const mockAlsRequestDto = (sourceId, type, partyId) => ({
   partyId
 })
 
+const mockHapiRequestDto = ({ // https://hapi.dev/api/?v=21.3.3#request-properties
+  method = 'GET',
+  traceid = randomUUID(),
+  id = randomUUID()
+} = {}) => ({
+  method,
+  headers: { traceid },
+  info: {
+    id,
+    received: 123456789
+  }
+})
+
 module.exports = {
   partiesCallHeadersDto,
   participantsCallHeadersDto,
   oracleRequestResponseDto,
   errorCallbackResponseDto,
-  mockAlsRequestDto
+  mockAlsRequestDto,
+  protocolVersionsDto,
+  mockHapiRequestDto
 }

@@ -74,6 +74,21 @@ describe('Parties Endpoints Tests -->', () => {
       isExists = await proxyCache.receivedSuccessResponse(alsReq)
       expect(isExists).toBe(true)
     })
+
+    test('should handle PUT /parties/{Type}/{ID}/error without accept-header', async () => {
+      const partyId = `PT-${Date.now()}`
+      const url = `${alsUrl}/parties/${PARTY_ID_TYPE}/${partyId}/error`
+      const body = fixtures.errorCallbackResponseDto()
+
+      const { accept, ...headers } = fixtures.partiesCallHeadersDto({ proxy: 'proxyAB' })
+      expect(headers.accept).toBeUndefined()
+
+      const result = await axios.put(url, body, { headers })
+        .catch(err => {
+          throw err
+        })
+      expect(result.status).toBe(200)
+    })
     // todo: add test of sending PUT /parties callback
   })
 })

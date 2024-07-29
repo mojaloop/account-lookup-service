@@ -5,12 +5,12 @@ const { onboarding } = require('../util')
 const { PROXY_NAME, PAYER_DFSP } = require('../integration/constants')
 
 const pause = async (ms = 1000) => new Promise(resolve => {
-  Logger.info(`pause for ${ms/1000} sec....`)
+  Logger.info(`pause for ${ms / 1000} sec....`)
   setTimeout(resolve, ms)
 })
 
 const prepareTestParticipants = async () => {
-  await pause(5000)
+  await pause(10_000) // sometimes on CircleCI env we have error: socket hang up
   await onboarding.createHubAccounts()
   await pause()
 

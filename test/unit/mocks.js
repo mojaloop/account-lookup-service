@@ -30,7 +30,9 @@ const RedisMock = require('ioredis-mock')
  */
 class MockIoRedis extends RedisMock {
   connected = false
-
+  /**
+     @param opts RedisOptions
+   */
   constructor (opts) {
     super(opts)
     this.lazyConnect = Boolean(opts?.lazyConnect)
@@ -40,6 +42,20 @@ class MockIoRedis extends RedisMock {
     return this.connected ? 'ready' : this.lazyConnect ? 'wait' : 'end'
   }
 }
+
+class IoRedisMockCluster extends MockIoRedis {
+  /**
+      @param nodesList BasicConnectionConfig[]
+      @param redisOptions RedisClusterOptions
+   */
+  constructor (nodesList, redisOptions) {
+    super(redisOptions)
+    this.nodes = []
+    nodesList.forEach((connOpts) => this.nodes.push(new MockIoRedis({ ...connOpts, ...redisOptions })))
+  }
+}
+
+MockIoRedis.Cluster = IoRedisMockCluster
 
 module.exports = {
   MockIoRedis

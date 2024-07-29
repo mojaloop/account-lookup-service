@@ -69,9 +69,9 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
-
   Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::begin - ${stringify({ source, destination, params })}`)
 
+  let sendTo
   try {
     const requesterParticipant = await participant.validateParticipant(source)
     if (!requesterParticipant) {
@@ -82,19 +82,19 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       } else {
         const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
-        // todo: think, if we should throw error if isCached === false?
+        // think,if we should throw error if isCached === false?
         Logger.isDebugEnabled && Logger.debug(`addDfspIdToProxyMapping is done: ${stringify({ source, proxy, isCached })}`)
       }
     }
 
+    // todo: recheck the logic (only if )
     if (proxyEnabled) {
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isExists = await proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
         Logger.isWarnEnabled && Logger.warn(`destination is NOT in scheme, and no cached sendToProxiesList - ${stringify({ destination, alsReq })}`)
-        // todo: think, if we need to throw an error here
+        // think, if we need to throw an error here
       } else {
-        // todo: add unit-tests
         const mappingPayload = {
           fspId: source
         }
@@ -109,18 +109,16 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     }
 
     const destinationParticipant = await participant.validateParticipant(destination)
-    let sentTo
     if (!destinationParticipant) {
-      // todo: add unit-tests
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
         Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
       }
-      sentTo = proxyName
+      sendTo = proxyName
     } else {
-      sentTo = destinationParticipant.name
+      sendTo = destinationParticipant.name
     }
 
     const decodedPayload = decodePayload(dataUri, { asParsed: false })
@@ -130,12 +128,12 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       partyIdentifier: params.ID,
       ...(partySubId && { partySubIdOrType: partySubId })
     }
-    await participant.sendRequest(headers, sentTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
+    await participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
 
-    Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::callback was sent - ${stringify({ sentTo, options })}`)
+    Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::callback was sent - ${stringify({ sentTo: sendTo, options })}`)
     histTimerEnd({ success: true })
   } catch (err) {
-    await utils.handleErrorOnSendingCallback(err, headers, params)
+    await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
     histTimerEnd({ success: false })
   }
 }
@@ -166,7 +164,9 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
 
   const childSpan = span ? span.getChild('putPartiesErrorByTypeAndID') : undefined
 
+  let sendTo
   let fspiopError
+
   try {
     const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
     if (proxy) {
@@ -188,11 +188,10 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       }
     }
 
-    let sentTo
     const destinationParticipant = await participant.validateParticipant(destination)
 
     if (destinationParticipant) {
-      sentTo = destination
+      sendTo = destination
     } else {
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
@@ -200,15 +199,15 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
         Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
       }
-      sentTo = proxyName
+      sendTo = proxyName
     }
     const decodedPayload = decodePayload(dataUri, { asParsed: false })
-    await participant.sendErrorToParticipant(sentTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
+    await participant.sendErrorToParticipant(sendTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
 
-    Logger.isInfoEnabled && Logger.info(`putPartiesErrorByTypeAndID callback was sent to ${sentTo}`)
+    Logger.isInfoEnabled && Logger.info(`putPartiesErrorByTypeAndID callback was sent to ${sendTo}`)
     histTimerEnd({ success: true })
   } catch (err) {
-    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params)
+    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

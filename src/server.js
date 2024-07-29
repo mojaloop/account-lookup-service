@@ -26,13 +26,11 @@
 const { randomUUID } = require('node:crypto')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
-const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
-const ParticipantCache = require('@mojaloop/central-services-shared').Util.Participants
-const proxies = require('@mojaloop/central-services-shared').Util.proxies
-const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
+
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
+const { Endpoints, Participants, proxies, OpenapiBackend } = require('@mojaloop/central-services-shared').Util
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
 const { name, version } = require('../package.json')
@@ -89,6 +87,8 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
       }
     }
   })
+  server.app.isAdmin = isAdmin
+
   server.app.cache = Cache.registerCacheClient({
     id: 'serverGeneralCache',
     preloadCache: async () => Promise.resolve()
@@ -98,12 +98,9 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
     server.app.proxyCache = await createConnectedProxyCache(proxyCacheConfig)
   }
 
-  server.app.isAdmin = isAdmin
-
-  await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
     {
-      type: 'onPostAuth',
+      type: 'onPreHandler',
       method: (request, h) => {
         request.headers.traceid = request.headers.traceid || randomUUID()
         RequestLogger.logRequest(request)
@@ -118,10 +115,13 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
       }
     }
   ])
+  await Plugins.registerPlugins(server, api, isAdmin)
 
   server.route(routes)
   // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
   await server.start()
+
+  Logger.isInfoEnabled && Logger.info(`${name}${isAdmin ? '-admin' : ''}@${version} is running on port ${server.info.port}...`)
   return server
 }
 
@@ -146,14 +146,16 @@ const initializeApi = async (appConfig) => {
   await connectDatabase(DATABASE)
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
-  const server = await createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
-  Logger.isInfoEnabled && Logger.info(`${name}@${version} is running on ${server.info.host}:${server.info.port}`)
-  await ParticipantEndpointCache.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
-  await ParticipantCache.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
-  await proxies.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig)
-  await OracleEndpointCache.initialize()
-  await Cache.initCache()
-  return server
+
+  await Promise.all([
+    Endpoints.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig),
+    Participants.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
+    proxies.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
+    OracleEndpointCache.initialize(),
+    Cache.initCache()
+  ])
+
+  return createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
 }
 
 const initializeAdmin = async (appConfig) => {
@@ -173,9 +175,8 @@ const initializeAdmin = async (appConfig) => {
   RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
-  const server = await createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
-  Logger.isInfoEnabled && Logger.info(`${name}-admin@${version} running on ${server.info.host}:${server.info.port}`)
-  return server
+
+  return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
 }
 
 module.exports = {

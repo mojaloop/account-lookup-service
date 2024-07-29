@@ -99,7 +99,7 @@ const getProtocolVersions = (defaultProtocolVersions, overrideProtocolVersions) 
   return T_PROTOCOL_VERSION
 }
 
-if (!storageTypeValues.includes(RC.PROXY_CACHE.type)) {
+if (RC.PROXY_CACHE?.enabled && !storageTypeValues.includes(RC.PROXY_CACHE.type)) {
   throw new TypeError(`Incorrect proxyCache type: ${RC.PROXY_CACHE.type}`)
 }
 
