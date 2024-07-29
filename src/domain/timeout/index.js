@@ -31,8 +31,16 @@
  ******/
 'use strict'
 
+const Enum = require('@mojaloop/central-services-shared').Enum
+const Metrics = require('@mojaloop/central-services-metrics')
 const Logger = require('@mojaloop/central-services-logger')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../lib/util')
+const Participant = require('../../models/participantEndpoint/facade')
 const ProxyCache = require('../../lib/proxyCache')
+const { ERROR_MESSAGES } = require('../../constants')
+const Config = require('../../lib/config')
 
 const timeoutInterschemePartiesLookups = async () => {
   const alsKeysExpiryPattern = 'als:*:*:*:expiresAt'
@@ -80,16 +88,13 @@ const processNode = (node, options) => {
 
 const processKey = async (key) => {
   const redis = await ProxyCache.getClient()
-
   const expiresAt = await redis.get(key)
   if (Number(expiresAt) >= Date.now()) {
     return
   }
   const actualKey = key.replace(':expiresAt', '')
-  const proxyIds = await redis.smembers(actualKey)
   try {
-    await sendTimeoutCallback(actualKey, proxyIds)
-    // pipeline does not work here in cluster mode with ioredis, so we use Promise.all
+    await sendTimeoutCallback(actualKey)
     await Promise.all([redis.del(actualKey), redis.del(key)])
   } catch (err) {
     /**
@@ -101,8 +106,42 @@ const processKey = async (key) => {
   }
 }
 
-const sendTimeoutCallback = async (cacheKey, proxyIds) => {
-  throw new Error('Not implemented')
+const sendTimeoutCallback = async (cacheKey) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'eg_timeoutInterschemePartiesLookups',
+    'Egress - Interscheme parties lookup timeout callback',
+    ['success']
+  ).startTimer()
+  const span = EventSdk.Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: {} })
+  // eslint-disable-next-line no-unused-vars
+  const [_, destination, partyType, partyId] = cacheKey.split(':')
+  const source = Config.HUB_NAME
+  try {
+    const destinationParticipant = await Participant.validateParticipant(destination)
+    if (!destinationParticipant) {
+      const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
+      Logger.isErrorEnabled && Logger.error(errMessage)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
+    }
+    const errorInformation = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.EXPIRED_ERROR).toApiErrorObject(Config.ERROR_HANDLING)
+    const params = { ID: partyId, type: partyType }
+    const headers = { [Enum.Http.Headers.FSPIOP.SOURCE]: source, [Enum.Http.Headers.FSPIOP.DESTINATION]: destination }
+    const endpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
+    const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    await span.audit({ headers, errorInformation }, EventSdk.AuditEventAction.start)
+    await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
+    histTimerEnd({ success: true })
+  } catch (err) {
+    histTimerEnd({ success: false })
+    if (!span.isFinished) {
+      const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+      const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      await span.error(err, state)
+      await span.finish(err.message, state)
+    }
+    throw err
+  }
 }
 
 module.exports = {
