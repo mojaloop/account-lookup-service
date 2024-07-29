@@ -94,9 +94,9 @@ const processNode = (node, options) => {
     }
     stream.resume()
   })
-    .on('end', () => {
-      options.resolve()
-    })
+  stream.on('end', () => {
+    options.resolve()
+  })
 }
 
 const sendTimeoutCallback = async (cacheKey) => {
