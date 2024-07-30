@@ -1,7 +1,7 @@
 const Server = require('../../../src/server')
 const { HANDLER_TYPES } = require('../../../src/constants')
 
-describe('Index', () => {
+describe('Handlers Index', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.spyOn(Server, 'initializeHandlers').mockImplementation(() => { })

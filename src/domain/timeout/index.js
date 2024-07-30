@@ -31,33 +31,28 @@
  ******/
 'use strict'
 
-const Enum = require('@mojaloop/central-services-shared').Enum
 const Metrics = require('@mojaloop/central-services-metrics')
 const Logger = require('@mojaloop/central-services-logger')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../lib/util')
 const Participant = require('../../models/participantEndpoint/facade')
 const ProxyCache = require('../../lib/proxyCache')
 const { ERROR_MESSAGES } = require('../../constants')
 const Config = require('../../lib/config')
 const {
-  [ErrorHandler.Factory.createFSPIOPError]: createFSPIOPError,
-  [ErrorHandler.Factory.reformatFSPIOPError]: reformatFSPIOPError,
-  [ErrorHandler.Enums.FSPIOPErrorCodes]: FSPIOPErrorCodes,
-  [Enum.EndPoints.FspEndpointTypes]: FspEndpointTypes
-} = ErrorHandler
+  Factory: { createFSPIOPError, reformatFSPIOPError },
+  Enums: { FSPIOPErrorCodes }
+} = require('@mojaloop/central-services-error-handling')
 const {
-  [Enum.Http.Headers.FSPIOP]: FSPIOPHeaders,
-  [Enum.Events.Event.Type]: EventType,
-  [Enum.Events.Event.Action]: EventAction
-} = Enum
+  Http: { Headers: { FSPIOP: FSPIOPHeaders } },
+  Events: { Event: { Type: EventType, Action: EventAction } },
+  EndPoints: { FspEndpointTypes }
+} = require('@mojaloop/central-services-shared').Enum
 const {
   Tracer,
   EventStateMetadata,
   EventStatusType,
   AuditEventAction
-} = EventSdk
+} = require('@mojaloop/event-sdk')
 
 const timeoutInterschemePartiesLookups = async () => {
   const match = 'als:*:*:*:expiresAt' // als key expiry pattern
@@ -114,8 +109,7 @@ const sendTimeoutCallback = async (cacheKey) => {
     ['success']
   ).startTimer()
   const span = Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: {} })
-  // eslint-disable-next-line no-unused-vars
-  const [_, destination, partyType, partyId] = cacheKey.split(':')
+  const [, destination, partyType, partyId] = cacheKey.split(':')
   const source = Config.HUB_NAME
   try {
     const destinationParticipant = await Participant.validateParticipant(destination)
