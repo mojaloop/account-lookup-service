@@ -46,7 +46,7 @@ describe('RegisterHandlers', () => {
   describe('registerHandlers', () => {
     it('should register all handlers', async () => {
       const handlers = [HANDLER_TYPES.TIMEOUT]
-      registerHandlers(handlers)
+      await registerHandlers(handlers)
 
       expect(Logger.debug).toHaveBeenCalledWith('Registering Timeout Handler')
       expect(TimeoutHandler.register).toHaveBeenCalled()
@@ -54,7 +54,7 @@ describe('RegisterHandlers', () => {
 
     it('should not register unknown handlers', async () => {
       const handlers = ['unknown']
-      registerHandlers(handlers)
+      await registerHandlers(handlers)
 
       expect(Logger.debug).toHaveBeenCalledWith('Handler unknown not found')
     })
@@ -62,7 +62,7 @@ describe('RegisterHandlers', () => {
 
   describe('registerAllHandlers', () => {
     it('should register all handlers', async () => {
-      registerAllHandlers()
+      await registerAllHandlers()
 
       expect(Logger.debug).toHaveBeenCalledWith('Registering all handlers')
       expect(TimeoutHandler.register).toHaveBeenCalled()
@@ -73,7 +73,7 @@ describe('RegisterHandlers', () => {
     it('should stop all handlers', async () => {
       jest.spyOn(TimeoutHandler, 'stop')
 
-      stopAllHandlers()
+      await stopAllHandlers()
 
       expect(Logger.debug).toHaveBeenCalledWith('Stopping all handlers')
       expect(TimeoutHandler.stop).toHaveBeenCalled()

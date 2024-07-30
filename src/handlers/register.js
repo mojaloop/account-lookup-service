@@ -33,8 +33,12 @@
 const Logger = require('@mojaloop/central-services-logger')
 const TimeoutHandler = require('./TimeoutHandler')
 const { HANDLER_TYPES } = require('../constants')
+const { Endpoints, Participants } = require('@mojaloop/central-services-shared').Util
+const { CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG } = require('../lib/config')
+const Util = require('../lib/util')
 
-const registerHandlers = (handlers) => {
+const registerHandlers = async (handlers) => {
+  await initCaches()
   handlers.forEach(handler => {
     switch (handler) {
       case HANDLER_TYPES.TIMEOUT:
@@ -48,14 +52,23 @@ const registerHandlers = (handlers) => {
   })
 }
 
-const registerAllHandlers = () => {
+const registerAllHandlers = async () => {
   Logger.isDebugEnabled && Logger.debug('Registering all handlers')
+  await initCaches()
   TimeoutHandler.register()
 }
 
-const stopAllHandlers = () => {
+const stopAllHandlers = async () => {
   Logger.isDebugEnabled && Logger.debug('Stopping all handlers')
-  TimeoutHandler.stop()
+  await TimeoutHandler.stop()
+}
+
+const initCaches = async () => {
+  Logger.isDebugEnabled && Logger.debug('Initializing caches')
+  await Promise.all([
+    Participants.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
+    Endpoints.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
+  ])
 }
 
 module.exports = {

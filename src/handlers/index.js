@@ -59,7 +59,7 @@ Program.command('handlers')
       return
     }
 
-    module.exports = Server.initializeHandlers(handlers)
+    module.exports = await Server.initializeHandlers(handlers)
   })
 
 if (Array.isArray(process.argv) && process.argv.length > 2) {

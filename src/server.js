@@ -180,8 +180,8 @@ const initializeAdmin = async (appConfig) => {
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
 }
 
-const initializeHandlers = (handlers) => {
-  registerHandlers(handlers)
+const initializeHandlers = async (handlers) => {
+  return registerHandlers(handlers)
 }
 
 module.exports = {
