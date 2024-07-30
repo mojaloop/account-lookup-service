@@ -44,11 +44,6 @@ const disconnect = async () => {
   return proxyCache?.isConnected && proxyCache.disconnect()
 }
 
-const reset = async () => {
-  await disconnect()
-  proxyCache = null
-}
-
 const getCache = () => {
   if (!proxyCache) {
     proxyCache = Object.freeze(
@@ -68,7 +63,6 @@ const getClient = async () => {
 }
 
 module.exports = {
-  reset, // for testing
   connect,
   disconnect,
   getCache,
