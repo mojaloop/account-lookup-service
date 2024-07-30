@@ -135,13 +135,13 @@ const sendTimeoutCallback = async (cacheKey) => {
     histTimerEnd({ success: true })
   } catch (err) {
     histTimerEnd({ success: false })
+    const fspiopError = reformatFSPIOPError(err)
     if (!span.isFinished) {
-      const fspiopError = reformatFSPIOPError(err)
       const state = new EventStateMetadata(EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
       await span.error(err, state)
       await span.finish(err.message, state)
     }
-    throw err
+    throw fspiopError
   }
 }
 

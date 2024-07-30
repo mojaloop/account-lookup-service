@@ -69,6 +69,7 @@ const register = async () => {
     })
     timeoutJob.start()
     isRegistered = true
+    Logger.isInfoEnabled && Logger.info('Timeout handler registered')
     return true
   } catch (err) {
     Logger.isErrorEnabled && Logger.error(err)
