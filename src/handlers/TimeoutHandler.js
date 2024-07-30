@@ -42,7 +42,6 @@ let isRunning
 
 const timeout = async () => {
   if (isRunning) return
-
   try {
     isRunning = true
     Logger.isDebugEnabled && Logger.debug('Timeout handler triggered')
