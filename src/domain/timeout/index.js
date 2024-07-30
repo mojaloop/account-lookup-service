@@ -33,22 +33,15 @@
 
 const Metrics = require('@mojaloop/central-services-metrics')
 const Logger = require('@mojaloop/central-services-logger')
-const LibUtil = require('../../lib/util')
 const Participant = require('../../models/participantEndpoint/facade')
 const ProxyCache = require('../../lib/proxyCache')
 const { ERROR_MESSAGES } = require('../../constants')
-const Config = require('../../lib/config')
+const timeoutCallbackDto = require('./dto')
 const {
   Factory: { createFSPIOPError, reformatFSPIOPError },
   Enums: { FSPIOPErrorCodes }
 } = require('@mojaloop/central-services-error-handling')
 const {
-  Http: { Headers: { FSPIOP: FSPIOPHeaders } },
-  Events: { Event: { Type: EventType, Action: EventAction } },
-  EndPoints: { FspEndpointTypes }
-} = require('@mojaloop/central-services-shared').Enum
-const {
-  Tracer,
   EventStateMetadata,
   EventStatusType,
   AuditEventAction
@@ -108,9 +101,10 @@ const sendTimeoutCallback = async (cacheKey) => {
     'Egress - Interscheme parties lookup timeout callback',
     ['success']
   ).startTimer()
-  const span = Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: {} })
+
   const [, destination, partyType, partyId] = cacheKey.split(':')
-  const source = Config.HUB_NAME
+  const { errorInformation, params, headers, endpointType, span } = timeoutCallbackDto({ destination, partyId, partyType })
+
   try {
     const destinationParticipant = await Participant.validateParticipant(destination)
     if (!destinationParticipant) {
@@ -118,12 +112,6 @@ const sendTimeoutCallback = async (cacheKey) => {
       Logger.isErrorEnabled && Logger.error(errMessage)
       throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
     }
-    const errorInformation = createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR).toApiErrorObject(Config.ERROR_HANDLING)
-    const params = { ID: partyId, type: partyType }
-    const headers = { [FSPIOPHeaders.SOURCE]: source, [FSPIOPHeaders.DESTINATION]: destination }
-    const endpointType = FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
-    const spanTags = LibUtil.getSpanTags({ headers }, EventType.PARTY, EventAction.PUT)
-    span.setTags(spanTags)
     await span.audit({ headers, errorInformation }, AuditEventAction.start)
     await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
     histTimerEnd({ success: true })
@@ -131,7 +119,11 @@ const sendTimeoutCallback = async (cacheKey) => {
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
     if (!span.isFinished) {
-      const state = new EventStateMetadata(EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      const state = new EventStateMetadata(
+        EventStatusType.failed,
+        fspiopError.apiErrorCode.code,
+        fspiopError.apiErrorCode.message
+      )
       await span.error(err, state)
       await span.finish(err.message, state)
     }
