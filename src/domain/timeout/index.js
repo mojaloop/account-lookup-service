@@ -36,7 +36,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const Participant = require('../../models/participantEndpoint/facade')
 const ProxyCache = require('../../lib/proxyCache')
 const { ERROR_MESSAGES } = require('../../constants')
-const timeoutCallbackDto = require('./dto')
+const { timeoutCallbackDto } = require('./dto')
 const {
   Factory: { createFSPIOPError, reformatFSPIOPError },
   Enums: { FSPIOPErrorCodes }
@@ -84,7 +84,7 @@ const processKey = async (key) => {
   const actualKey = key.replace(':expiresAt', '')
   try {
     await sendTimeoutCallback(actualKey)
-    await Promise.all([redis.del(actualKey), redis.del(key)])
+    return Promise.all([redis.del(actualKey), redis.del(key)])
   } catch (err) {
     /**
      * We don't want to throw an error here, as it will stop the whole process
