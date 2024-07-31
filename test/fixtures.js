@@ -63,6 +63,25 @@ const oracleRequestResponseDto = ({
   }
 })
 
+const putPartiesSuccessResponseDto = ({
+  partyIdType = 'MSISDN',
+  partyId = `test-party-${randomUUID()}`,
+  fspId = `fspId-${randomUUID()}`,
+  partySubIdOrType = ''
+} = {}) => ({
+  party: {
+    partyIdInfo: {
+      partyIdType,
+      partyIdentifier: partyId,
+      ...(partySubIdOrType && { partySubIdOrType }),
+      ...(fspId && { fspId })
+    },
+    merchantClassificationCode: '32',
+    name: `testPartyName-${partyId}`
+    // personalInfo: { ... }
+  }
+})
+
 const errorCallbackResponseDto = ({
   errorCode = '1234',
   errorDescription = 'Error description',
@@ -102,6 +121,7 @@ module.exports = {
   partiesCallHeadersDto,
   participantsCallHeadersDto,
   oracleRequestResponseDto,
+  putPartiesSuccessResponseDto,
   errorCallbackResponseDto,
   mockAlsRequestDto,
   protocolVersionsDto,

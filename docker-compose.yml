@@ -27,13 +27,16 @@ services:
     ports:
       - "4001:4001"
       - "4002:4002"
+    environment:
+      LOG_LEVEL: debug
     networks:
       - als-mojaloop-net
     depends_on:
       - central-ledger
       - proxy
       - mysql-als
-      - redis-node-0
+      - redis
+#      - redis-node-0
     volumes:
       - ./secrets:/opt/app/secrets
       - ./src:/opt/app/src
@@ -147,39 +150,41 @@ services:
       start_period: 40s
       interval: 30s
 
-  #  To use with proxyCache.type === 'redis-cluster'
-  redis-node-0:
-    <<: *REDIS_NODE
+  #  To use with proxyCache.type === 'redis'
+  redis:
+    image: redis:6.2.4-alpine
+    restart: "unless-stopped"
     environment:
-      <<: *REDIS_ENVS
-      REDIS_CLUSTER_CREATOR: yes
-    depends_on:
-      - redis-node-1
-      - redis-node-2
-      - redis-node-3
-      - redis-node-4
-      - redis-node-5
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT=6379
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - als-mojaloop-net
     ports:
       - "6379:6379"
 
-  redis-node-1:
-    <<: *REDIS_NODE
-  redis-node-2:
-    <<: *REDIS_NODE
-  redis-node-3:
-    <<: *REDIS_NODE
-  redis-node-4:
-    <<: *REDIS_NODE
-  redis-node-5:
-    <<: *REDIS_NODE
-
-##  To use with proxyCache.type === 'redis'
-#  redis:
-#    image: redis:6.2.4-alpine
-#    restart: "unless-stopped"
+#  #  To use with proxyCache.type === 'redis-cluster'
+#  redis-node-0:
+#    <<: *REDIS_NODE
 #    environment:
-#      - ALLOW_EMPTY_PASSWORD=yes
-#      - REDIS_PORT=6379
-#      - REDIS_REPLICATION_MODE=master
+#      <<: *REDIS_ENVS
+#      REDIS_CLUSTER_CREATOR: yes
+#    depends_on:
+#      - redis-node-1
+#      - redis-node-2
+#      - redis-node-3
+#      - redis-node-4
+#      - redis-node-5
 #    ports:
 #      - "6379:6379"
+#
+#  redis-node-1:
+#    <<: *REDIS_NODE
+#  redis-node-2:
+#    <<: *REDIS_NODE
+#  redis-node-3:
+#    <<: *REDIS_NODE
+#  redis-node-4:
+#    <<: *REDIS_NODE
+#  redis-node-5:
+#    <<: *REDIS_NODE
