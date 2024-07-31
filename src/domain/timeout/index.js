@@ -46,10 +46,11 @@ const {
   EventStatusType,
   AuditEventAction
 } = require('@mojaloop/event-sdk')
+const Config = require('../../lib/config')
 
 const timeoutInterschemePartiesLookups = async () => {
   const match = 'als:*:*:*:expiresAt' // als key expiry pattern
-  const count = 100 // @todo batch size, can be parameterized
+  const count = Config.HANDLERS_TIMEOUT_BATCH_SIZE
   const redis = await ProxyCache.getClient()
 
   return Promise.all(

@@ -74,7 +74,8 @@
     "TIMEOUT": {
       "DISABLED": false,
       "TIMEXP": "*/30 * * * * *",
-      "TIMEZONE": "UTC"
+      "TIMEZONE": "UTC",
+      "BATCH_SIZE": 100
     }
   },
   "SWITCH_ENDPOINT": "http://central-ledger:3001",

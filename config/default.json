@@ -73,7 +73,8 @@
     "TIMEOUT": {
       "DISABLED": false,
       "TIMEXP": "*/30 * * * * *",
-      "TIMEZONE": "UTC"
+      "TIMEZONE": "UTC",
+      "BATCH_SIZE": 100
     }
   },
   "SWITCH_ENDPOINT": "http://localhost:3001",
