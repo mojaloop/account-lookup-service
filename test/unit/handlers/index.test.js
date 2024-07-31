@@ -33,17 +33,18 @@
 
 const Server = require('../../../src/server')
 const { HANDLER_TYPES } = require('../../../src/constants')
+const Config = require('../../../src/lib/config')
 
 describe('Handlers Index', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.spyOn(Server, 'initializeHandlers').mockImplementation(() => { })
+    jest.spyOn(Server, 'initializeHandlers').mockImplementation(() => {})
   })
 
   it('should start specified handlers in args', async () => {
     process.argv = ['node', 'index.js', 'handlers', '--timeout']
     require('../../../src/handlers/index')
-    expect(Server.initializeHandlers).toHaveBeenCalledWith([HANDLER_TYPES.TIMEOUT])
+    expect(Server.initializeHandlers).toHaveBeenCalledWith([HANDLER_TYPES.TIMEOUT], Config)
   })
 
   it('should not start any handlers if none are specified', async () => {

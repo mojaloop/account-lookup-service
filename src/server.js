@@ -39,11 +39,12 @@ const Util = require('./lib/util')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
-const Handlers = require('./api')
+const APIHandlers = require('./api')
 const Routes = require('./api/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
-const { registerHandlers } = require('./handlers/register')
+const Handlers = require('./handlers/register')
+const Monitoring = require('./handlers/monitoring')
 
 const connectDatabase = async (dbConfig) => {
   return Db.connect(dbConfig)
@@ -146,7 +147,7 @@ const initializeApi = async (appConfig) => {
   }
   await connectDatabase(DATABASE)
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
-  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.ApiHandlers)
 
   await Promise.all([
     Endpoints.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig),
@@ -175,13 +176,20 @@ const initializeAdmin = async (appConfig) => {
   await connectDatabase(DATABASE)
   RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
-  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.AdminHandlers)
 
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
 }
 
-const initializeHandlers = async (handlers) => {
-  return registerHandlers(handlers)
+const initializeHandlers = async (handlers, appConfig) => {
+  await Promise.all([
+    Handlers.registerHandlers(handlers),
+    Monitoring.start({
+      enabled: !appConfig.INSTRUMENTATION_METRICS_DISABLED,
+      port: appConfig.HANDLERS_MONITORING_PORT,
+      metricsConfig: appConfig.INSTRUMENTATION_METRICS_CONFIG
+    })
+  ])
 }
 
 module.exports = {

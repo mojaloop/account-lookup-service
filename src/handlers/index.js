@@ -35,6 +35,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const Package = require('../../package.json')
 const Server = require('../server')
 const { HANDLER_TYPES } = require('../constants')
+const Config = require('../lib/config')
 
 const Program = new Command()
 
@@ -59,7 +60,7 @@ Program.command('handlers')
       return
     }
 
-    module.exports = await Server.initializeHandlers(handlers)
+    module.exports = await Server.initializeHandlers(handlers, Config)
   })
 
 if (Array.isArray(process.argv) && process.argv.length > 2) {

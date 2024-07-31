@@ -71,6 +71,7 @@
   },
   "HANDLERS": {
     "DISABLED": false,
+    "MONITORING_PORT": 4003,
     "TIMEOUT": {
       "DISABLED": false,
       "TIMEXP": "*/30 * * * * *",

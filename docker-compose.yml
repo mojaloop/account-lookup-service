@@ -59,14 +59,13 @@ services:
       - "node src/handlers/index.js h --timeout"
     depends_on:
      - redis-node-0
-    # Need to add monitoring server for handlers
-    # ports:
-    #   - "4003:4003"
-    # healthcheck:
-    #   test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4003/health"]
-    #   timeout: 20s
-    #   retries: 10
-    #   interval: 30s
+    ports:
+      - "4003:4003"
+    healthcheck:
+      test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4003/health"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
   
   
 
