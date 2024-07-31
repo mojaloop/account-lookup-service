@@ -32,18 +32,18 @@
 const { Headers, RestMethods } = require('@mojaloop/central-services-shared').Enum.Http
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
-const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
-const stringify = require('fast-safe-stringify')
 
 const participantsDomain = require('../../domain/participants') // think, how to avoid such deps on another domain
 const participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
-const utils = require('./utils')
+const { loggerFactory } = require('../../lib')
 const Config = require('../../lib/config')
-
+const utils = require('./utils')
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
+
+const logger = loggerFactory('domain:put-parties')
 
 /**
  * @function putPartiesByTypeAndID
@@ -69,7 +69,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
-  Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::begin - ${stringify({ source, destination, params })}`)
+  logger.info('parties::putPartiesByTypeAndID::begin', { source, destination, params })
 
   let sendTo
   try {
@@ -78,12 +78,11 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
       if (!proxy) {
         const errMessage = ERROR_MESSAGES.partySourceFspNotFound
-        Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       } else {
         const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
         // think,if we should throw error if isCached === false?
-        Logger.isDebugEnabled && Logger.debug(`addDfspIdToProxyMapping is done: ${stringify({ source, proxy, isCached })}`)
+        logger.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
       }
     }
 
@@ -92,7 +91,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isExists = await proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
-        Logger.isWarnEnabled && Logger.warn(`destination is NOT in scheme, and no cached sendToProxiesList - ${stringify({ destination, alsReq })}`)
+        logger.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
         // think, if we need to throw an error here
       } else {
         const mappingPayload = {
@@ -104,7 +103,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
         // Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
         // }
         await participantsDomain.postParticipants(headers, method, params, mappingPayload, null, cache)
-        Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
+        logger.info('oracle was updated with mappingPayload', { mappingPayload, params })
       }
     }
 
@@ -113,7 +112,6 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-        Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
       }
       sendTo = proxyName
@@ -130,7 +128,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     }
     await participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
 
-    Logger.isInfoEnabled && Logger.info(`parties::putPartiesByTypeAndID::callback was sent - ${stringify({ sentTo: sendTo, options })}`)
+    logger.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
     histTimerEnd({ success: true })
   } catch (err) {
     await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
@@ -176,14 +174,14 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
         getPartiesByTypeAndID(swappedHeaders, params, RestMethods.GET, {}, span, cache, proxyCache)
         // todo: - think if we need to send errorCallback?
         //       - or sentCallback after getPartiesByTypeAndID is done
-        Logger.isInfoEnabled && Logger.info(`notValidPayee case - deleted Participants and run getPartiesByTypeAndID ${stringify({ proxy, params, payload })}`)
+        logger.info('notValidPayee case - deleted Participants and run getPartiesByTypeAndID:', { proxy, params, payload })
         return
       }
 
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isLast = await proxyCache.receivedErrorResponse(alsReq, proxy)
       if (!isLast) {
-        Logger.isInfoEnabled && Logger.info(`got NOT last error callback from proxy: ${stringify({ proxy, alsReq })}`)
+        logger.info('got NOT last error callback from proxy:', { proxy, alsReq })
         return
       }
     }
@@ -196,7 +194,6 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-        Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
       }
       sendTo = proxyName
@@ -204,7 +201,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     const decodedPayload = decodePayload(dataUri, { asParsed: false })
     await participant.sendErrorToParticipant(sendTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
 
-    Logger.isInfoEnabled && Logger.info(`putPartiesErrorByTypeAndID callback was sent to ${sendTo}`)
+    logger.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
     histTimerEnd({ success: true })
   } catch (err) {
     fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)

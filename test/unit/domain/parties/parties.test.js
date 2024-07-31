@@ -611,7 +611,7 @@ describe('Parties Tests', () => {
     it('handles error when `participant.validateParticipant()` returns no participant', async () => {
       expect.hasAssertions()
       // Arrange
-      const loggerStub = sandbox.stub(Logger, 'error')
+      const loggerStub = sandbox.stub(logger, 'error')
       participant.sendErrorToParticipant = sandbox.stub().resolves()
 
       const payload = JSON.stringify({ testPayload: true })
@@ -624,32 +624,10 @@ describe('Parties Tests', () => {
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstLoggerCallArgs = loggerStub.getCall(0).args
-      expect(firstLoggerCallArgs[0]).toBe(ERROR_MESSAGES.partySourceFspNotFound)
+      expect(firstLoggerCallArgs[1].message).toBe(ERROR_MESSAGES.partySourceFspNotFound)
       loggerStub.reset()
       participant.sendErrorToParticipant.reset()
     })
-
-    // it('should send request to proxy if source is not in scheme, and there is proxyMapping', async () => {
-    //   participant.validateParticipant = sandbox.stub().resolves(null)
-    //   participant.sendRequest = sandbox.stub().resolves()
-    //   participant.sendErrorToParticipant = sandbox.stub().resolves()
-    //
-    //   const source = `source-${Date.now()}`
-    //   const proxyName = `proxy-${Date.now()}`
-    //   await proxyCache.addDfspIdToProxyMapping(source, proxyName)
-    //
-    //   const headers = fixtures.partiesCallHeadersDto({ source })
-    //   const payload = { test: true }
-    //   const dataUri = encodePayload(JSON.stringify(payload), 'application/json')
-    //   const { params, method } = Helper.putByTypeIdRequest
-    //
-    //   await partiesDomain.putPartiesByTypeAndID(headers, params, method, payload, dataUri, proxyCache)
-    //
-    //   expect(participant.sendErrorToParticipant.callCount).toBe(0)
-    //   expect(participant.sendRequest.callCount).toBe(1)
-    //   const calledProxy = participant.sendRequest.getCall(0).args[1]
-    //   expect(calledProxy).toBe(proxyName)
-    // })
 
     it('should add proxyMapping, if source is not in scheme, and there is fspiop-proxy header', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true

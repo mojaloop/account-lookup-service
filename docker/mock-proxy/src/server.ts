@@ -64,7 +64,7 @@ app.get('/oracle*', (req: Request, res: Response) => {
   const data = {
     partyList: []
   }
-  res.json({ data});
+  res.json({ data });
 });
 
 app.all('/echo', async (req: Request, res: Response) => {

@@ -18,13 +18,16 @@ x-account-lookup-service: &ACCOUNT_LOOKUP_SERVICE
       context: .
       target: builder
     user: root
+    environment:
+      LOG_LEVEL: debug
     networks:
       - als-mojaloop-net
     depends_on:
       - central-ledger
       - proxy
       - mysql-als
-      - redis-node-0
+      - redis
+#      - redis-node-0
     volumes:
       - ./secrets:/opt/app/secrets
       - ./src:/opt/app/src
@@ -67,8 +70,6 @@ services:
       retries: 10
       interval: 30s
   
-  
-
   central-ledger:
 #    image: mojaloop/central-ledger:latest
     image: mojaloop/central-ledger:v17.8.0.160-snapshot.4
@@ -170,6 +171,7 @@ services:
       retries: 10
       start_period: 40s
       interval: 30s
+<<<<<<< HEAD
   
   redis-node-0:
     <<: *REDIS_NODE
@@ -183,9 +185,23 @@ services:
       - redis-node-3
       - redis-node-4
       - redis-node-5
+=======
+
+  #  To use with proxyCache.type === 'redis'
+  redis:
+    image: redis:6.2.4-alpine
+    restart: "unless-stopped"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT=6379
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - als-mojaloop-net
+>>>>>>> 6f5e7b8c24507214d90361667a709e32a4c209b4
     ports:
       - "16379:16379"
 
+<<<<<<< HEAD
   redis-node-1:
     <<: *REDIS_NODE
     environment:
@@ -226,9 +242,34 @@ services:
 #  redis:
 #    image: redis:6.2.4-alpine
 #    restart: "unless-stopped"
+=======
+#  #  To use with proxyCache.type === 'redis-cluster'
+#  redis-node-0:
+#    <<: *REDIS_NODE
+>>>>>>> 6f5e7b8c24507214d90361667a709e32a4c209b4
 #    environment:
-#      - ALLOW_EMPTY_PASSWORD=yes
-#      - REDIS_PORT=6379
-#      - REDIS_REPLICATION_MODE=master
+#      <<: *REDIS_ENVS
+#      REDIS_CLUSTER_CREATOR: yes
+#    depends_on:
+#      - redis-node-1
+#      - redis-node-2
+#      - redis-node-3
+#      - redis-node-4
+#      - redis-node-5
 #    ports:
+<<<<<<< HEAD
 #      - "6379:6379"
+=======
+#      - "6379:6379"
+#
+#  redis-node-1:
+#    <<: *REDIS_NODE
+#  redis-node-2:
+#    <<: *REDIS_NODE
+#  redis-node-3:
+#    <<: *REDIS_NODE
+#  redis-node-4:
+#    <<: *REDIS_NODE
+#  redis-node-5:
+#    <<: *REDIS_NODE
+>>>>>>> 6f5e7b8c24507214d90361667a709e32a4c209b4

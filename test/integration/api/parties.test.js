@@ -23,17 +23,17 @@
  --------------
  **********/
 
-const axios = require('axios')
+const { setTimeout: sleep } = require('node:timers/promises')
+const { randomUUID } = require('node:crypto')
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
 const config = require('../../../src/lib/config')
 const fixtures = require('../../fixtures')
-const { ProxyApiClient } = require('../../util')
+const { AlsApiClient, ProxyApiClient } = require('../../util')
 const { PAYER_DFSP, PARTY_ID_TYPE } = require('../constants')
 
+const alsClient = new AlsApiClient()
 const proxyClient = new ProxyApiClient() // mock ISPA
-
-const alsUrl = `http://localhost:${config.API_PORT}`
 
 describe('Parties Endpoints Tests -->', () => {
   const { type, proxyConfig } = config.PROXY_CACHE_CONFIG
@@ -50,11 +50,6 @@ describe('Parties Endpoints Tests -->', () => {
   describe('GET /parties... endpoints tests -->', () => {
     test('should do GET /parties/{Type}/{ID} call to proxy', async () => {
       const partyId = 'PT123456789'
-      const url = `${alsUrl}/parties/${PARTY_ID_TYPE}/${partyId}`
-      const headers = fixtures.partiesCallHeadersDto({
-        source: PAYER_DFSP,
-        destination: ''
-      })
       const alsReq = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyId)
       let isExists = await proxyCache.receivedSuccessResponse(alsReq)
       expect(isExists).toBe(false)
@@ -62,10 +57,15 @@ describe('Parties Endpoints Tests -->', () => {
       let history = await proxyClient.deleteHistory()
       expect(history).toEqual([])
 
-      const result = await axios.request({ url, headers })
+      const result = await alsClient.getPartyByIdAndType({
+        partyId,
+        partyIdType: PARTY_ID_TYPE,
+        source: PAYER_DFSP,
+        destination: ''
+      })
       expect(result.status).toBe(202)
 
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await sleep(1000)
       history = await proxyClient.getHistory()
       expect(history.length).toBe(2)
       expect(history[0].path).toBe(`/oracle/participants/${PARTY_ID_TYPE}/${partyId}`)
@@ -77,18 +77,61 @@ describe('Parties Endpoints Tests -->', () => {
 
     test('should handle PUT /parties/{Type}/{ID}/error without accept-header', async () => {
       const partyId = `PT-${Date.now()}`
-      const url = `${alsUrl}/parties/${PARTY_ID_TYPE}/${partyId}/error`
       const body = fixtures.errorCallbackResponseDto()
 
       const { accept, ...headers } = fixtures.partiesCallHeadersDto({ proxy: 'proxyAB' })
       expect(headers.accept).toBeUndefined()
 
-      const result = await axios.put(url, body, { headers })
-        .catch(err => {
-          throw err
-        })
+      const result = await alsClient.putPartiesError({
+        partyId,
+        partyIdType: PARTY_ID_TYPE,
+        body,
+        headers
+      })
       expect(result.status).toBe(200)
     })
-    // todo: add test of sending PUT /parties callback
+  })
+
+  describe('PUT /parties... endpoints tests -->', () => {
+    const generatePutPartiesTestDataDto = ({
+      partyId = `party-${randomUUID()}`,
+      partyIdType = PARTY_ID_TYPE,
+      source = `sourceFsp-${Date.now()}`,
+      destination = PAYER_DFSP,
+      proxy = `proxy-${randomUUID()}`
+    } = {}) => ({
+      partyId,
+      partyIdType,
+      source,
+      destination,
+      proxy,
+      body: fixtures.putPartiesSuccessResponseDto({ partyId, partyIdType, fspId: source })
+    })
+
+    test('should add dfspIdToProxyMapping after callback response from proxy', async () => {
+      const testData = generatePutPartiesTestDataDto()
+
+      let cached = await proxyCache.lookupProxyByDfspId(testData.source)
+      expect(cached).toBeNull()
+
+      await alsClient.putPartiesSuccess(testData)
+      await sleep(1000)
+
+      cached = await proxyCache.lookupProxyByDfspId(testData.source)
+      expect(cached).toBe(testData.proxy)
+    })
+
+    test('should update oracle with party details from proxy callback response', async () => {
+      const testData = generatePutPartiesTestDataDto()
+      let history = await proxyClient.deleteHistory()
+      expect(history).toEqual([])
+
+      const result = await alsClient.putPartiesSuccess(testData)
+      expect(result.status).toBe(200)
+      await sleep(1000)
+
+      history = await proxyClient.getHistory()
+      expect(history.length).toBeGreaterThan(0)
+    })
   })
 })

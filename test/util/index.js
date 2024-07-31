@@ -1,7 +1,11 @@
 const onboarding = require('./onboarding')
-const ProxyApiClient = require('./ProxyApiClient')
+const {
+  AlsApiClient,
+  ProxyApiClient
+} = require('./apiClients')
 
 module.exports = {
   onboarding,
+  AlsApiClient,
   ProxyApiClient
 }
