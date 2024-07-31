@@ -41,7 +41,7 @@ describe('Timeout Handler', () => {
     expect(results.includes(false)).toBe(false)
 
     // wait for the timeout handler to process the keys
-    await wait(45_000)
+    await wait(35_000)
 
     // check that the keys are no longer in redis
     const exists = await Promise.all(keys.map(key => redis.exists(key)))
@@ -54,5 +54,5 @@ describe('Timeout Handler', () => {
     const path1 = history.find(h => h.path.includes(partyIds[1])).path
     expect(path0).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[0]}/error`)
     expect(path1).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[1]}/error`)
-  }, 50_000)
+  }, 40_000)
 })
