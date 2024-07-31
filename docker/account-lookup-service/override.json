@@ -3,10 +3,11 @@
     "HOST": "mysql-als"
   },
   "PROXY_CACHE": {
-    "type": "redis",
+    "type": "redis-cluster",
     "proxyConfig": {
-      "host": "redis",
-      "port": 6379
+      "cluster": [
+        { "host": "redis-node-0", "port": 6379 }
+      ]
     }
   },
   "SWITCH_ENDPOINT": "http://central-ledger:3001",

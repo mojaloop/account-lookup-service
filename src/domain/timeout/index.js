@@ -90,7 +90,7 @@ const processKey = async (key) => {
     /**
      * We don't want to throw an error here, as it will stop the whole process
      * and we want to continue with the next keys
-     * We need to decide on how/when to finally give up on a key and remove it from the cache
+     * We, however, need to decide on how/when to finally give up on a key and remove it from the cache
      */
     Logger.error(err)
   }

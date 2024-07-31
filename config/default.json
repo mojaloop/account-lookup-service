@@ -57,10 +57,11 @@
   },
   "PROXY_CACHE": {
     "enabled": true,
-    "type": "redis",
+    "type": "redis-cluster",
     "proxyConfig": {
-      "host": "localhost",
-      "port": 6379
+      "cluster": [
+        { "host": "localhost", "port": 6379 }
+      ]
     }
   },
   "ERROR_HANDLING": {

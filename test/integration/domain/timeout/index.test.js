@@ -17,7 +17,10 @@ describe('Timeout Handler', () => {
   })
 
   afterAll(async () => {
-    return proxyCache.disconnect()
+    return Promise.all([
+      proxyClient.deleteHistory(),
+      proxyCache.disconnect()
+    ])
   })
 
   it('test', async () => {
@@ -48,11 +51,17 @@ describe('Timeout Handler', () => {
     expect(exists.includes(1)).toBe(false)
 
     // check that the callbacks are sent and received at the FSP
-    history = await proxyClient.getHistory()
+    // for test resilience, we will retry the history check a few times
+    let retryCount = 0; const retryMaxCount = 10; const retryInterval = 2000
+    while (history.length < 2 && retryCount < retryMaxCount) {
+      await wait(retryInterval)
+      history = await proxyClient.getHistory()
+      retryCount++
+    }
     expect(history.length).toBe(2)
     const path0 = history.find(h => h.path.includes(partyIds[0])).path
     const path1 = history.find(h => h.path.includes(partyIds[1])).path
     expect(path0).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[0]}/error`)
     expect(path1).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[1]}/error`)
-  }, 40_000)
+  }, 60_000)
 })
