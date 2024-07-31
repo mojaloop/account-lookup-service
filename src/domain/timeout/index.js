@@ -106,28 +106,37 @@ const sendTimeoutCallback = async (cacheKey) => {
   const { errorInformation, params, headers, endpointType, span } = timeoutCallbackDto({ destination, partyId, partyType })
 
   try {
-    const destinationParticipant = await Participant.validateParticipant(destination)
-    if (!destinationParticipant) {
-      const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-      Logger.isErrorEnabled && Logger.error(errMessage)
-      throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
-    }
+    await validateParticipant(destination)
     await span.audit({ headers, errorInformation }, AuditEventAction.start)
     await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
     histTimerEnd({ success: true })
   } catch (err) {
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
-    if (!span.isFinished) {
-      const state = new EventStateMetadata(
-        EventStatusType.failed,
-        fspiopError.apiErrorCode.code,
-        fspiopError.apiErrorCode.message
-      )
-      await span.error(err, state)
-      await span.finish(err.message, state)
-    }
+    finishSpan(span, fspiopError)
     throw fspiopError
+  }
+}
+
+const validateParticipant = async (fspId) => {
+  const participant = await Participant.validateParticipant(fspId)
+  if (!participant) {
+    const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
+    Logger.isErrorEnabled && Logger.error(errMessage)
+    throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
+  }
+  return participant
+}
+
+const finishSpan = async (span, err) => {
+  if (!span.isFinished) {
+    const state = new EventStateMetadata(
+      EventStatusType.failed,
+      err.apiErrorCode.code,
+      err.apiErrorCode.message
+    )
+    await span.error(err, state)
+    await span.finish(err.message, state)
   }
 }
 
