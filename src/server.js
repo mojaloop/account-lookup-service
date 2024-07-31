@@ -44,7 +44,6 @@ const Routes = require('./api/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
 const Handlers = require('./handlers/register')
-const Monitoring = require('./handlers/monitoring')
 
 const connectDatabase = async (dbConfig) => {
   return Db.connect(dbConfig)
@@ -182,14 +181,7 @@ const initializeAdmin = async (appConfig) => {
 }
 
 const initializeHandlers = async (handlers, appConfig) => {
-  await Promise.all([
-    Handlers.registerHandlers(handlers),
-    Monitoring.start({
-      enabled: !appConfig.INSTRUMENTATION_METRICS_DISABLED,
-      port: appConfig.HANDLERS_MONITORING_PORT,
-      metricsConfig: appConfig.INSTRUMENTATION_METRICS_CONFIG
-    })
-  ])
+  await Handlers.registerHandlers(handlers)
 }
 
 module.exports = {

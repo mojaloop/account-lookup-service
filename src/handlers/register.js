@@ -37,6 +37,7 @@ const TimeoutHandler = require('./TimeoutHandler')
 const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
 const Util = require('../lib/util')
+const Monitoring = require('./monitoring')
 
 const registerHandlers = async (handlers) => {
   await init()
@@ -61,7 +62,10 @@ const registerAllHandlers = async () => {
 
 const stopAllHandlers = async () => {
   Logger.isDebugEnabled && Logger.debug('Stopping all handlers')
-  await TimeoutHandler.stop()
+  await Promise.all([
+    TimeoutHandler.stop(),
+    Monitoring.stop()
+  ])
 }
 
 const init = async () => {
@@ -69,7 +73,12 @@ const init = async () => {
   !Config.INSTRUMENTATION_METRICS_DISABLED && Metrics.setup(Config.INSTRUMENTATION_METRICS_CONFIG)
   await Promise.all([
     Participants.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
-    Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig)
+    Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig),
+    Monitoring.start({
+      enabled: !Config.INSTRUMENTATION_METRICS_DISABLED,
+      port: Config.HANDLERS_MONITORING_PORT,
+      metricsConfig: Config.INSTRUMENTATION_METRICS_CONFIG
+    })
   ])
 }
 

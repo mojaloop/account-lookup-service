@@ -35,11 +35,14 @@ const Logger = require('@mojaloop/central-services-logger')
 const TimeoutHandler = require('../../../src/handlers/TimeoutHandler')
 const { HANDLER_TYPES } = require('../../../src/constants')
 const { registerHandlers, registerAllHandlers, stopAllHandlers } = require('../../../src/handlers/register')
+const Monitoring = require('../../../src/handlers/monitoring')
 
 describe('RegisterHandlers', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     TimeoutHandler.register = jest.fn()
+    Monitoring.start = jest.fn()
+    Monitoring.stop = jest.fn()
     jest.spyOn(Logger, 'debug')
   })
 
