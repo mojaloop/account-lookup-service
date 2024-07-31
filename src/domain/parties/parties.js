@@ -43,7 +43,7 @@ const Config = require('../../lib/config')
 const utils = require('./utils')
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
 
-const logger = loggerFactory('domain:parties')
+const logger = loggerFactory('domain:put-parties')
 
 /**
  * @function putPartiesByTypeAndID

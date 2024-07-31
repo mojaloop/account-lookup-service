@@ -24,44 +24,46 @@
  **********/
 
 const { Enum, Util } = require('@mojaloop/central-services-shared')
-const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
-const stringify = require('fast-safe-stringify')
 
 const config = require('../../lib/config')
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const { createCallbackHeaders } = require('../../lib/headers')
 const { ERROR_MESSAGES } = require('../../constants')
-const utils = require('./utils')
+const { loggerFactory } = require('../../lib')
 const Config = require('../../lib/config')
+const utils = require('./utils')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
+
+const logger = loggerFactory('domain:get-parties')
 
 const proxyCacheTtlSec = 40 // todo: make configurable
 
 const validateRequester = async ({ source, proxy, proxyCache }) => {
   const sourceParticipant = await participant.validateParticipant(source)
-  if (sourceParticipant) return source
+  if (sourceParticipant) {
+    logger.debug('source is in scheme', { source })
+    return source
+  }
 
   if (!proxy) {
     const errMessage = ERROR_MESSAGES.partySourceFspNotFound
-    Logger.isErrorEnabled && Logger.error(errMessage)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
   }
 
   const proxyParticipant = await participant.validateParticipant(proxy)
   if (!proxyParticipant) {
     const errMessage = ERROR_MESSAGES.partyProxyNotFound
-    Logger.isErrorEnabled && Logger.error(errMessage)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
   }
 
   const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
   // think, what if isCached !== true?
-  Logger.isInfoEnabled && Logger.info(`source is added to proxyMapping cache: ${stringify({ source, proxy, isCached })}`)
+  logger.info('source is added to proxyMapping cache:', { source, proxy, isCached })
   return proxy
 }
 
@@ -92,7 +94,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const callbackEndpointType = utils.getPartyCbType(partySubId)
 
   const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
-  Logger.isInfoEnabled && Logger.info('parties::getPartiesByTypeAndID::begin')
+  logger.info('parties::getPartiesByTypeAndID::begin', { source, proxy, params })
 
   let requester
   let fspiopError
@@ -117,7 +119,6 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
 
         if (!proxyId) {
           const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-          Logger.isErrorEnabled && Logger.error(errMessage)
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
         }
         destination = proxyId
@@ -126,7 +127,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
       await participant.sendRequest(headers, destination, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
 
       histTimerEnd({ success: true })
-      Logger.isVerboseEnabled && Logger.verbose(`discovery getPartiesByTypeAndID request was sent to destination: ${destination}`)
+      logger.info('discovery getPartiesByTypeAndID request was sent to destination', { destination })
       return
     }
 
@@ -147,40 +148,42 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
 
       if (!Array.isArray(filteredResponsePartyList) || !filteredResponsePartyList.length) {
         const errMessage = 'Requested FSP/Party not found'
-        Logger.isErrorEnabled && Logger.error(errMessage)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       }
 
-      let atLeastOneSent = false // if false after sending, we should restart the whole process
+      let sentCount = 0 // if sentCount === 0 after sending, should we restart the whole process?
       const sending = filteredResponsePartyList.map(async party => {
+        const { fspId } = party
         const clonedHeaders = { ...headers }
         if (!destination) {
-          clonedHeaders[Headers.FSPIOP.DESTINATION] = party.fspId
+          clonedHeaders[Headers.FSPIOP.DESTINATION] = fspId
         }
-        const schemeParticipant = await participant.validateParticipant(party.fspId)
+        const schemeParticipant = await participant.validateParticipant(fspId)
         if (schemeParticipant) {
-          atLeastOneSent = true
-          Logger.isDebugEnabled && Logger.debug(`participant ${party.fspId} is in scheme`)
+          sentCount++
+          logger.debug('participant is in scheme', { fspId })
           return participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
         }
 
         // If the participant is not in the scheme and proxy routing is enabled,
         // we should check if there is a proxy for it and send the request to the proxy
         if (proxyEnabled) {
-          const proxyName = await proxyCache.lookupProxyByDfspId(party.fspId)
+          const proxyName = await proxyCache.lookupProxyByDfspId(fspId)
           if (!proxyName) {
-            Logger.isWarnEnabled && Logger.warn(`no proxyMapping for participant ${party.fspId}!  Deleting reference in oracle...`)
+            logger.warn('no proxyMapping for participant!  TODO: Delete reference in oracle...', { fspId })
             // todo: delete reference in oracle
           } else {
-            atLeastOneSent = true
-            Logger.isDebugEnabled && Logger.debug(`participant ${party.fspId} NOT is in scheme, use proxy ${proxyName}`)
+            sentCount++
+            logger.debug('participant NOT is in scheme, use proxy name', { fspId, proxyName })
             return participant.sendRequest(clonedHeaders, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
           }
         }
       })
       await Promise.all(sending)
-      Logger.isInfoEnabled && Logger.info(`participant.sendRequests are ${atLeastOneSent ? '' : 'NOT '}sent, based on oracle response`)
+      logger.info('participant.sendRequests to filtered oracle partyList are done', { sentCount })
+      // todo: think what if sentCount === 0 here
     } else {
+      logger.info('empty partyList form oracle, getting proxies list...', { proxyEnabled, params })
       let filteredProxyNames = []
 
       if (proxyEnabled) {
@@ -203,7 +206,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
           fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
       } else {
         const alsReq = utils.alsRequestDto(source, params)
-        Logger.isInfoEnabled && Logger.info(`starting setSendToProxiesList flow: ${stringify({ filteredProxyNames, alsReq })}`)
+        logger.info('starting setSendToProxiesList flow: ', { filteredProxyNames, alsReq, proxyCacheTtlSec })
         const isCached = await proxyCache.setSendToProxiesList(alsReq, filteredProxyNames, proxyCacheTtlSec)
         if (!isCached) {
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.failedToCacheSendToProxiesList)
@@ -218,7 +221,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         // If, at least, one request is sent to proxy, we treat the whole flow as successful.
         // Failed requests should be handled by TTL expired/timeout handler
         // todo: - think, if we should handle failed requests here (e.g., by calling receivedErrorResponse)
-        Logger.isInfoEnabled && Logger.info(`setSendToProxiesList flow is done: ${stringify({ isOk, results, filteredProxyNames, alsReq })}`)
+        logger.info('setSendToProxiesList flow is done:', { isOk, results, filteredProxyNames, alsReq })
         if (!isOk) {
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.proxyConnectionError)
         }
