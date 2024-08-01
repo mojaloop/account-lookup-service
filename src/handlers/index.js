@@ -35,7 +35,7 @@ const Package = require('../../package.json')
 const Server = require('../server')
 const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
-const { logger } = require('../lib')
+const logger = require('../lib').loggerFactory('ALS-timeout-handler')
 
 const Program = new Command()
 
@@ -60,7 +60,7 @@ Program.command('handlers')
       return
     }
 
-    module.exports = await Server.initializeHandlers(handlers, Config)
+    module.exports = await Server.initializeHandlers(handlers, Config, logger)
   })
 
 if (Array.isArray(process.argv) && process.argv.length > 2) {

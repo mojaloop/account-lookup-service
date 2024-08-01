@@ -180,8 +180,10 @@ const initializeAdmin = async (appConfig) => {
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
 }
 
-const initializeHandlers = async (handlers, appConfig) => {
-  await Handlers.registerHandlers(handlers)
+const initializeHandlers = async (handlers, appConfig, logger) => {
+  const proxyCache = await createConnectedProxyCache(appConfig.PROXY_CACHE_CONFIG)
+  const options = { proxyCache, batchSize: appConfig.HANDLERS_TIMEOUT_BATCH_SIZE, logger }
+  await Handlers.registerHandlers(handlers, options)
 }
 
 module.exports = {

@@ -44,7 +44,8 @@ describe('Handlers Index', () => {
   it('should start specified handlers in args', async () => {
     process.argv = ['node', 'index.js', 'handlers', '--timeout']
     require('../../../src/handlers/index')
-    expect(Server.initializeHandlers).toHaveBeenCalledWith([HANDLER_TYPES.TIMEOUT], Config)
+    const expectedLogger = { info: expect.any(Function), error: expect.any(Function) }
+    expect(Server.initializeHandlers).toHaveBeenCalledWith([HANDLER_TYPES.TIMEOUT], Config, expect.objectContaining(expectedLogger))
   })
 
   it('should not start any handlers if none are specified', async () => {

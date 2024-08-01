@@ -37,15 +37,21 @@ const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
 const Util = require('../lib/util')
 const Monitoring = require('./monitoring')
-const { logger } = require('../lib')
 
-const registerHandlers = async (handlers) => {
-  await init()
+/**
+ * Register handlers
+ *
+ * @param {*} handlers Array of handlers names
+ * @param {*} options { proxyCache: ProxyCache, batchSize: number, logger: Logger }
+ */
+const registerHandlers = async (handlers, options) => {
+  const { logger } = options
+  await init(options)
   handlers.forEach(handler => {
     switch (handler) {
       case HANDLER_TYPES.TIMEOUT:
         logger.debug('Registering Timeout Handler')
-        TimeoutHandler.register()
+        TimeoutHandler.register(options)
         break
       default:
         logger.warn(`Handler ${handler} not found`)
@@ -54,22 +60,28 @@ const registerHandlers = async (handlers) => {
   })
 }
 
-const registerAllHandlers = async () => {
-  logger.debug('Registering all handlers')
-  await init()
-  TimeoutHandler.register()
+/**
+ * Register all handlers
+ *
+ * @param {*} options { proxyCache: ProxyCache, batchSize: number }
+ */
+
+const registerAllHandlers = async (options) => {
+  options.logger.debug('Registering all handlers')
+  await init(options)
+  TimeoutHandler.register(options)
 }
 
-const stopAllHandlers = async () => {
-  logger.debug('Stopping all handlers')
+const stopAllHandlers = async (options) => {
+  options.logger.debug('Stopping all handlers')
   await Promise.all([
     TimeoutHandler.stop(),
     Monitoring.stop()
   ])
 }
 
-const init = async () => {
-  logger.debug('Initializing caches and metrics')
+const init = async (options) => {
+  options.logger.debug('Initializing caches and metrics')
   !Config.INSTRUMENTATION_METRICS_DISABLED && Metrics.setup(Config.INSTRUMENTATION_METRICS_CONFIG)
   await Promise.all([
     Participants.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
@@ -77,7 +89,8 @@ const init = async () => {
     Monitoring.start({
       enabled: !Config.INSTRUMENTATION_METRICS_DISABLED,
       port: Config.HANDLERS_MONITORING_PORT,
-      metricsConfig: Config.INSTRUMENTATION_METRICS_CONFIG
+      metricsConfig: Config.INSTRUMENTATION_METRICS_CONFIG,
+      proxyCache: options.proxyCache
     })
   ])
 }

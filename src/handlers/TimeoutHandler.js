@@ -34,18 +34,20 @@ const CronJob = require('cron').CronJob
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TimeoutService = require('../domain/timeout')
 const Config = require('../lib/config')
-const { logger } = require('../lib')
 
 let timeoutJob
 let isRegistered
 let isRunning
 
-const timeout = async () => {
+const timeout = async (options) => {
   if (isRunning) return
+
+  const { logger } = options
+
   try {
     isRunning = true
     logger.debug('Timeout handler triggered')
-    await TimeoutService.timeoutInterschemePartiesLookups()
+    await TimeoutService.timeoutInterschemePartiesLookups(options)
   } catch (err) {
     logger.error('error in timeout: ', err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -54,15 +56,18 @@ const timeout = async () => {
   }
 }
 
-const register = async () => {
+const register = async (options) => {
   if (Config.HANDLERS_TIMEOUT_DISABLED) return false
+
+  const { logger } = options
+
   try {
     if (isRegistered) {
       await stop()
     }
     timeoutJob = CronJob.from({
       start: false,
-      onTick: timeout,
+      onTick: () => timeout(options),
       cronTime: Config.HANDLERS_TIMEOUT_TIMEXP,
       timeZone: Config.HANDLERS_TIMEOUT_TIMEZONE
     })

@@ -149,7 +149,7 @@
   "devDependencies": {
     "@types/jest": "29.5.12",
     "audit-ci": "^7.1.0",
-    "axios": "1.7.2",
+    "axios": "1.7.3",
     "axios-retry": "^4.4.2",
     "docdash": "2.0.2",
     "dotenv": "^16.4.5",

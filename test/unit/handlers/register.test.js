@@ -38,19 +38,23 @@ const Monitoring = require('../../../src/handlers/monitoring')
 const { logger } = require('../../../src/lib')
 
 describe('RegisterHandlers', () => {
+  let mockOptions
+
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(logger, 'debug')
+    jest.spyOn(logger, 'warn')
     TimeoutHandler.register = jest.fn()
     Monitoring.start = jest.fn()
     Monitoring.stop = jest.fn()
-    jest.spyOn(logger, 'debug')
-    jest.spyOn(logger, 'warn')
+    const mockProxyCache = { processExpiredAlsKeys: jest.fn() }
+    mockOptions = { proxyCache: mockProxyCache, batchSize: 10, logger }
   })
 
   describe('registerHandlers', () => {
     it('should register all handlers', async () => {
       const handlers = [HANDLER_TYPES.TIMEOUT]
-      await registerHandlers(handlers)
+      await registerHandlers(handlers, mockOptions)
 
       expect(logger.debug).toHaveBeenCalledWith('Registering Timeout Handler')
       expect(TimeoutHandler.register).toHaveBeenCalled()
@@ -58,7 +62,7 @@ describe('RegisterHandlers', () => {
 
     it('should not register unknown handlers', async () => {
       const handlers = ['unknown']
-      await registerHandlers(handlers)
+      await registerHandlers(handlers, mockOptions)
 
       expect(logger.warn).toHaveBeenCalledWith('Handler unknown not found')
     })
@@ -66,7 +70,7 @@ describe('RegisterHandlers', () => {
 
   describe('registerAllHandlers', () => {
     it('should register all handlers', async () => {
-      await registerAllHandlers()
+      await registerAllHandlers(mockOptions)
 
       expect(logger.debug).toHaveBeenCalledWith('Registering all handlers')
       expect(TimeoutHandler.register).toHaveBeenCalled()
@@ -77,7 +81,7 @@ describe('RegisterHandlers', () => {
     it('should stop all handlers', async () => {
       jest.spyOn(TimeoutHandler, 'stop')
 
-      await stopAllHandlers()
+      await stopAllHandlers({ logger })
 
       expect(logger.debug).toHaveBeenCalledWith('Stopping all handlers')
       expect(TimeoutHandler.stop).toHaveBeenCalled()

@@ -43,11 +43,15 @@ const DefaultConfig = { ...Config }
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('TimeoutHandler', () => {
+  let mockOptions
+
   beforeEach(() => {
     jest.spyOn(CronJob, 'from').mockReturnValue({
       start: jest.fn(),
       stop: jest.fn()
     })
+    const mockProxyCache = { processExpiredAlsKeys: jest.fn() }
+    mockOptions = { proxyCache: mockProxyCache, batchSize: 10, logger }
   })
 
   afterEach(async () => {
@@ -57,7 +61,7 @@ describe('TimeoutHandler', () => {
   describe('timeout', () => {
     it('should execute timout service', async () => {
       jest.spyOn(TimeoutService, 'timeoutInterschemePartiesLookups').mockResolvedValue()
-      await expect(TimeoutHandler.timeout()).resolves.toBeUndefined()
+      await expect(TimeoutHandler.timeout(mockOptions)).resolves.toBeUndefined()
       expect(TimeoutService.timeoutInterschemePartiesLookups).toHaveBeenCalled()
     })
 
@@ -66,7 +70,7 @@ describe('TimeoutHandler', () => {
       jest.spyOn(ErrorHandler.Factory, 'reformatFSPIOPError').mockReturnValue(new Error(randomUUID()))
       jest.spyOn(logger, 'error')
 
-      await expect(TimeoutHandler.timeout()).rejects.toThrow(Error)
+      await expect(TimeoutHandler.timeout(mockOptions)).rejects.toThrow(Error)
 
       expect(logger.error).toHaveBeenCalled()
       expect(ErrorHandler.Factory.reformatFSPIOPError).toHaveBeenCalled()
@@ -77,8 +81,8 @@ describe('TimeoutHandler', () => {
         await wait(1000)
       })
       await Promise.all([
-        TimeoutHandler.timeout(),
-        TimeoutHandler.timeout()
+        TimeoutHandler.timeout(mockOptions),
+        TimeoutHandler.timeout(mockOptions)
       ])
       expect(TimeoutService.timeoutInterschemePartiesLookups).toHaveBeenCalledTimes(1)
     })
@@ -87,7 +91,7 @@ describe('TimeoutHandler', () => {
   describe('register', () => {
     it('should register handler', async () => {
       jest.spyOn(TimeoutHandler, 'stop')
-      const result = await TimeoutHandler.register()
+      const result = await TimeoutHandler.register(mockOptions)
 
       expect(result).toBe(true)
       expect(TimeoutHandler.stop).not.toHaveBeenCalled()
@@ -105,7 +109,7 @@ describe('TimeoutHandler', () => {
     it('should not register handler if HANDLERS_TIMEOUT_DISABLED is true', async () => {
       Config.HANDLERS_TIMEOUT_DISABLED = true
 
-      const result = await TimeoutHandler.register()
+      const result = await TimeoutHandler.register(mockOptions)
 
       expect(result).toBe(false)
       expect(CronJob.from).not.toHaveBeenCalled()
@@ -116,7 +120,7 @@ describe('TimeoutHandler', () => {
   describe('stop', () => {
     it('should stop handler', async () => {
       jest.spyOn(TimeoutHandler, 'register')
-      await TimeoutHandler.register()
+      await TimeoutHandler.register(mockOptions)
       await TimeoutHandler.stop()
 
       expect(CronJob.from().stop).toHaveBeenCalled()

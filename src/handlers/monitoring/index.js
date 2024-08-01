@@ -29,15 +29,19 @@ const create = async ({ port, metricsConfig }) => {
   await server.register([HealthPlugin, MetricsPlugin])
 }
 
-const start = async ({ enabled, port, metricsConfig }) => {
+const start = async ({ enabled, port, metricsConfig, proxyCache }) => {
   if (!enabled) return
   if (!server) await create({ port, metricsConfig })
+  server.app.proxyCache = proxyCache
   await server.start()
   logger.info(`Monitoring server running at: ${server.info.uri}`)
 }
 
 const stop = async () => {
-  await server?.stop()
+  await Promise.all([
+    server?.stop(),
+    server.app.proxyCache?.disconnect()
+  ])
   server = null
 }
 

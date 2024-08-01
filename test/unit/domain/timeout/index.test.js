@@ -31,7 +31,6 @@
 
 'use strict'
 
-const ProxyCache = require('../../../../src/lib/proxyCache')
 const Participant = require('../../../../src/models/participantEndpoint/facade')
 const TimeoutDomain = require('../../../../src/domain/timeout')
 
@@ -49,14 +48,9 @@ describe('Timeout Domain', () => {
   describe('timeoutInterschemePartiesLookups', () => {
     describe('timeoutInterschemePartiesLookups', () => {
       it('should process expired ALS keys', async () => {
-        const mockCache = {
-          processExpiredAlsKeys: jest.fn()
-        }
-        jest.spyOn(ProxyCache, 'getConnectedCache').mockResolvedValue(mockCache)
-
-        await TimeoutDomain.timeoutInterschemePartiesLookups()
-
-        expect(mockCache.processExpiredAlsKeys).toHaveBeenCalled()
+        const mockCache = { processExpiredAlsKeys: jest.fn() }
+        await TimeoutDomain.timeoutInterschemePartiesLookups({ proxyCache: mockCache, batchSize: 10 })
+        expect(mockCache.processExpiredAlsKeys).toHaveBeenCalledWith(TimeoutDomain.sendTimeoutCallback, 10)
       })
     })
 

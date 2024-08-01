@@ -1,16 +1,18 @@
-const ProxyCache = require('../../../../src/lib/proxyCache')
+const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const { PAYER_DFSP, PARTY_ID_TYPE, PROXY_NAME } = require('../../constants')
 const fixtures = require('../../../fixtures')
 const { ProxyApiClient } = require('../../../util')
+const config = require('../../../../src/lib/config')
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('Timeout Handler', () => {
-  let proxyCache
+  const { type, proxyConfig } = config.PROXY_CACHE_CONFIG
+  const proxyCache = createProxyCache(type, proxyConfig)
   const proxyClient = new ProxyApiClient()
 
   beforeAll(async () => {
-    proxyCache = await ProxyCache.getConnectedCache()
+    await proxyCache.connect()
     const redisClient = proxyCache.redisClient
     const redisNodes = redisClient.nodes ? redisClient.nodes('master') : [redisClient]
     await Promise.all(redisNodes.map(async node => {
@@ -30,7 +32,6 @@ describe('Timeout Handler', () => {
     expect(history).toEqual([])
 
     // send a couple of keys to redis
-    const redis = await ProxyCache.getClient()
     const partyIds = ['1234567', '7654321']
     const keys = [
       `'als:${PAYER_DFSP}:${PARTY_ID_TYPE}:${partyIds[0]}:expiresAt'`,
@@ -49,7 +50,7 @@ describe('Timeout Handler', () => {
     await wait(35_000)
 
     // check that the keys are no longer in redis
-    const exists = await Promise.all(keys.map(key => redis.exists(key)))
+    const exists = await Promise.all(keys.map(key => proxyCache.redisClient.exists(key)))
     expect(exists.includes(1)).toBe(false)
 
     // check that the callbacks are sent and received at the FSP

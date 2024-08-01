@@ -22,19 +22,19 @@ const { HealthCheck } = require('@mojaloop/central-services-shared').HealthCheck
 const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const packageJson = require('../../../../package.json')
 const { getProxyCacheHealth } = require('../../../lib/healthCheck/subServiceHealth')
-const ProxyCache = require('../../../lib/proxyCache')
 
 let healthCheck
 
-const createHealthCheck = () => {
+const createHealthCheck = ({ proxyCache }) => {
   return new HealthCheck(packageJson, [
-    () => getProxyCacheHealth(ProxyCache.getCache())
+    () => getProxyCacheHealth(proxyCache)
   ])
 }
 
 const handler = {
   get: (request, reply) => {
-    healthCheck = healthCheck || createHealthCheck()
+    const proxyCache = request.server.app.proxyCache
+    healthCheck = healthCheck || createHealthCheck({ proxyCache })
     return defaultHealthHandler(healthCheck)(request, reply)
   }
 }

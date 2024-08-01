@@ -33,7 +33,6 @@
 
 const Metrics = require('@mojaloop/central-services-metrics')
 const Participant = require('../../models/participantEndpoint/facade')
-const ProxyCache = require('../../lib/proxyCache')
 const { ERROR_MESSAGES } = require('../../constants')
 const { timeoutCallbackDto } = require('./dto')
 const {
@@ -45,13 +44,10 @@ const {
   EventStatusType,
   AuditEventAction
 } = require('@mojaloop/event-sdk')
-const Config = require('../../lib/config')
 const { logger } = require('../../lib')
 
-const timeoutInterschemePartiesLookups = async () => {
-  const count = Config.HANDLERS_TIMEOUT_BATCH_SIZE
-  const proxyCache = await ProxyCache.getConnectedCache()
-  return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, count)
+const timeoutInterschemePartiesLookups = async ({ proxyCache, batchSize }) => {
+  return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, batchSize)
 }
 
 const sendTimeoutCallback = async (cacheKey) => {
