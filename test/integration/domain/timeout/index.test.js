@@ -11,7 +11,9 @@ describe('Timeout Handler', () => {
 
   beforeAll(async () => {
     proxyCache = await ProxyCache.getConnectedCache()
-    await Promise.all(proxyCache.client.nodes('master').map(async node => {
+    const redisClient = proxyCache.redisClient
+    const redisNodes = redisClient.nodes ? redisClient.nodes('master') : [redisClient]
+    await Promise.all(redisNodes.map(async node => {
       await node.flushall()
     }))
   })

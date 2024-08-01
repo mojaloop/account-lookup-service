@@ -47,7 +47,7 @@ const timeout = async () => {
     Logger.isDebugEnabled && Logger.debug('Timeout handler triggered')
     await TimeoutService.timeoutInterschemePartiesLookups()
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in timeout: ${err?.stack}`)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   } finally {
     isRunning = false
@@ -71,7 +71,7 @@ const register = async () => {
     Logger.isInfoEnabled && Logger.info('Timeout handler registered')
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in register: ${err?.stack}`)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

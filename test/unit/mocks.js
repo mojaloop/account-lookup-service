@@ -50,8 +50,12 @@ class IoRedisMockCluster extends MockIoRedis {
    */
   constructor (nodesList, redisOptions) {
     super(redisOptions)
-    this.nodes = []
-    nodesList.forEach((connOpts) => this.nodes.push(new MockIoRedis({ ...connOpts, ...redisOptions })))
+    this._nodes = []
+    nodesList.forEach((connOpts) => this._nodes.push(new MockIoRedis({ ...connOpts, ...redisOptions })))
+  }
+
+  nodes (role) {
+    return this._nodes
   }
 }
 

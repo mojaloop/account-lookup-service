@@ -58,14 +58,8 @@ const getConnectedCache = async () => {
   return proxyCache
 }
 
-const getClient = async () => {
-  return (await getConnectedCache()).client
-}
-
 module.exports = {
   connect,
   disconnect,
-  getCache,
-  getConnectedCache,
-  getClient
+  getConnectedCache
 }

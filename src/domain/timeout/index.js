@@ -49,51 +49,9 @@ const {
 const Config = require('../../lib/config')
 
 const timeoutInterschemePartiesLookups = async () => {
-  const match = 'als:*:*:*:expiresAt' // als key expiry pattern
   const count = Config.HANDLERS_TIMEOUT_BATCH_SIZE
-  const redis = await ProxyCache.getClient()
-
-  return Promise.all(
-    redis.nodes('master').map(async (node) => {
-      return new Promise((resolve, reject) => {
-        processNode(node, { match, count, resolve, reject })
-      })
-    })
-  )
-}
-
-const processNode = (node, options) => {
-  const { match, count, resolve, reject } = options
-  const stream = node.scanStream({ match, count })
-  stream.on('data', async (keys) => {
-    stream.pause()
-    try {
-      await Promise.all(keys.map(processKey))
-    } catch (err) {
-      stream.destroy(err)
-      reject(err)
-    }
-    stream.resume()
-  })
-  stream.on('end', resolve)
-}
-
-const processKey = async (key) => {
-  const redis = await ProxyCache.getClient()
-  const expiresAt = await redis.get(key)
-  if (Number(expiresAt) >= Date.now()) return
-  const actualKey = key.replace(':expiresAt', '')
-  try {
-    await sendTimeoutCallback(actualKey)
-    return Promise.all([redis.del(actualKey), redis.del(key)])
-  } catch (err) {
-    /**
-     * We don't want to throw an error here, as it will stop the whole process
-     * and we want to continue with the next keys
-     * We, however, need to decide on how/when to finally give up on a key and remove it from the cache
-     */
-    Logger.error(err)
-  }
+  const proxyCache = await ProxyCache.getConnectedCache()
+  return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, count)
 }
 
 const sendTimeoutCallback = async (cacheKey) => {
@@ -123,7 +81,7 @@ const validateParticipant = async (fspId) => {
   const participant = await Participant.validateParticipant(fspId)
   if (!participant) {
     const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-    Logger.isErrorEnabled && Logger.error(errMessage)
+    Logger.isErrorEnabled && Logger.error(`error in validateParticipant: ${errMessage?.stack}`)
     throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
   }
   return participant
@@ -142,5 +100,6 @@ const finishSpan = async (span, err) => {
 }
 
 module.exports = {
-  timeoutInterschemePartiesLookups
+  timeoutInterschemePartiesLookups,
+  sendTimeoutCallback // Exposed for testing
 }
