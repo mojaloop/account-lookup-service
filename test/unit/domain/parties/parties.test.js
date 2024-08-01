@@ -30,6 +30,8 @@
 
 'use strict'
 
+const { randomUUID } = require('node:crypto')
+const { setTimeout: sleep } = require('node:timers/promises')
 const Sinon = require('sinon')
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const { Enum, Util } = require('@mojaloop/central-services-shared')
@@ -40,9 +42,9 @@ const Config = require('../../../../src/lib/config')
 const Db = require('../../../../src/lib/db')
 const partiesDomain = require('../../../../src/domain/parties/parties')
 const partiesUtils = require('../../../../src/domain/parties/utils')
-const participantsDomain = require('../../../../src/domain/participants')
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
+const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
 const libUtil = require('../../../../src/lib/util')
 const { logger } = require('../../../../src/lib')
 const { ERROR_MESSAGES } = require('../../../../src/constants')
@@ -53,6 +55,7 @@ const fixtures = require('../../../fixtures')
 const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.PROXY_CACHE_CONFIG
 
 const { encodePayload } = Util.StreamingProtocol
+const { RestMethods } = Enum.Http
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -68,7 +71,6 @@ describe('Parties Tests', () => {
     sandbox.stub(Util.Request)
     sandbox.stub(Util.Http, 'SwitchDefaultHeaders').returns(Helper.defaultSwitchHeaders)
     sandbox.stub(Util.proxies)
-    sandbox.stub(participantsDomain)
 
     Db.oracleEndpoint = {
       query: sandbox.stub()
@@ -176,7 +178,7 @@ describe('Parties Tests', () => {
       const { params, method, query } = Helper.getByTypeIdRequest
 
       await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, Helper.mockSpan(), null, proxyCache)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await sleep(1000)
 
       cached = await proxyCache.lookupProxyByDfspId(source)
       expect(cached).toBe(proxy)
@@ -651,6 +653,44 @@ describe('Parties Tests', () => {
       expect(cachedProxy).toBe(proxy)
     })
 
+    it('should update oracle with partyDetails received from proxy, if previous alsReq is cached', async () => {
+      Config.PROXY_CACHE_CONFIG.enabled = true
+      const source = `source-${Date.now()}`
+      const destination = `payer-fsp-${Date.now()}`
+      const proxy = `proxy-${Date.now()}`
+
+      participant.validateParticipant = sandbox.stub()
+        .onFirstCall().resolves(null) // payee
+        .onSecondCall().resolves({ name: destination }) // payer
+      oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
+        { value: 'http://oracle.endpoint' }
+      ])
+      oracle.oracleRequest = sandbox.stub().resolves()
+
+      const headers = fixtures.partiesCallHeadersDto({ source, destination, proxy })
+      const partyId = `testParty-${randomUUID()}`
+      const partyIdType = 'MSISDN'
+      const partyDetails = fixtures.putPartiesSuccessResponseDto({
+        partyId,
+        partyIdType,
+        fspId: source
+      })
+      const dataUri = encodePayload(JSON.stringify(partyDetails), 'application/json')
+      const params = { ID: partyId, Type: partyIdType }
+
+      const alsReq = fixtures.mockAlsRequestDto(destination, partyIdType, partyId)
+      const isSet = await proxyCache.setSendToProxiesList(alsReq, [proxy])
+      expect(isSet).toBe(true)
+
+      await partiesDomain.putPartiesByTypeAndID(headers, params, 'PUT', partyDetails, dataUri, null, proxyCache)
+      await sleep(1000)
+
+      expect(oracle.oracleRequest.callCount).toBe(1)
+      const [, method, , , payload] = oracle.oracleRequest.getCall(0).args
+      expect(payload.fspId).toBe(source)
+      expect(method).toBe(RestMethods.POST)
+    })
+
     it('handles error when SubId is supplied but `participant.validateParticipant()` returns no participant', async () => {
       expect.hasAssertions()
       // Arrange
@@ -871,7 +911,7 @@ describe('Parties Tests', () => {
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should handle notValidPayeeIdentifier case', async () => {
+    it('should handle notValidPayeeIdentifier case, and delete partyId from oracle', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
@@ -881,12 +921,17 @@ describe('Parties Tests', () => {
       const { params } = Helper.putByTypeIdRequest
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
-      participantsDomain.deleteParticipants = sandbox.stub().resolves()
+      oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
+        { value: 'http://oracle.endpoint' }
+      ])
+      oracle.oracleRequest = sandbox.stub().resolves()
 
       await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
 
-      expect(participantsDomain.deleteParticipants.callCount).toBe(1)
       expect(participant.sendRequest.callCount).toBe(0)
+      expect(oracle.oracleRequest.callCount).toBe(1)
+      const [, method] = oracle.oracleRequest.getCall(0).args
+      expect(method).toBe(RestMethods.DELETE)
       // todo: think, how to stub getPartiesByTypeAndID call
       // expect(partiesDomain.getPartiesByTypeAndID.callCount).toBe(1)
       // expect(participant.sendErrorToParticipant.callCount).toBe(0)
