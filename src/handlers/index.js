@@ -31,11 +31,11 @@
 'use strict'
 
 const { Command } = require('commander')
-const Logger = require('@mojaloop/central-services-logger')
 const Package = require('../../package.json')
 const Server = require('../server')
 const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
+const { logger } = require('../lib')
 
 const Program = new Command()
 
@@ -51,12 +51,12 @@ Program.command('handlers')
     const handlers = []
 
     if (args.timeout) {
-      Logger.isDebugEnabled && Logger.debug('CLI: Executing --timeout')
+      logger.debug('CLI: Executing --timeout')
       handlers.push(HANDLER_TYPES.TIMEOUT)
     }
 
     if (handlers.length === 0) {
-      Logger.isDebugEnabled && Logger.debug('CLI: No handlers specified')
+      logger.debug('CLI: No handlers specified')
       return
     }
 

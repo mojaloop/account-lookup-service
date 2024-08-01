@@ -16,10 +16,10 @@
 --------------
 ******/
 const Hapi = require('@hapi/hapi')
-const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
 const { plugin: HealthPlugin } = require('./plugins/health')
 const { plugin: MetricsPlugin } = require('./plugins/metrics')
+const { logger } = require('../../lib')
 
 let server
 
@@ -33,7 +33,7 @@ const start = async ({ enabled, port, metricsConfig }) => {
   if (!enabled) return
   if (!server) await create({ port, metricsConfig })
   await server.start()
-  Logger.info(`Monitoring server running at: ${server.info.uri}`)
+  logger.info(`Monitoring server running at: ${server.info.uri}`)
 }
 
 const stop = async () => {

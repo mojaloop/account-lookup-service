@@ -32,7 +32,6 @@
 'use strict'
 
 const Metrics = require('@mojaloop/central-services-metrics')
-const Logger = require('@mojaloop/central-services-logger')
 const Participant = require('../../models/participantEndpoint/facade')
 const ProxyCache = require('../../lib/proxyCache')
 const { ERROR_MESSAGES } = require('../../constants')
@@ -47,6 +46,7 @@ const {
   AuditEventAction
 } = require('@mojaloop/event-sdk')
 const Config = require('../../lib/config')
+const { logger } = require('../../lib')
 
 const timeoutInterschemePartiesLookups = async () => {
   const count = Config.HANDLERS_TIMEOUT_BATCH_SIZE
@@ -81,7 +81,7 @@ const validateParticipant = async (fspId) => {
   const participant = await Participant.validateParticipant(fspId)
   if (!participant) {
     const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-    Logger.isErrorEnabled && Logger.error(`error in validateParticipant: ${errMessage?.stack}`)
+    logger.error(`error in validateParticipant: ${errMessage}`)
     throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
   }
   return participant

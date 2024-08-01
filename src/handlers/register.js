@@ -30,7 +30,6 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-logger')
 const Metrics = require('@mojaloop/central-services-metrics')
 const { Endpoints, Participants } = require('@mojaloop/central-services-shared').Util
 const TimeoutHandler = require('./TimeoutHandler')
@@ -38,30 +37,31 @@ const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
 const Util = require('../lib/util')
 const Monitoring = require('./monitoring')
+const { logger } = require('../lib')
 
 const registerHandlers = async (handlers) => {
   await init()
   handlers.forEach(handler => {
     switch (handler) {
       case HANDLER_TYPES.TIMEOUT:
-        Logger.isDebugEnabled && Logger.debug('Registering Timeout Handler')
+        logger.debug('Registering Timeout Handler')
         TimeoutHandler.register()
         break
       default:
-        Logger.isDebugEnabled && Logger.debug(`Handler ${handler} not found`)
+        logger.warn(`Handler ${handler} not found`)
         break
     }
   })
 }
 
 const registerAllHandlers = async () => {
-  Logger.isDebugEnabled && Logger.debug('Registering all handlers')
+  logger.debug('Registering all handlers')
   await init()
   TimeoutHandler.register()
 }
 
 const stopAllHandlers = async () => {
-  Logger.isDebugEnabled && Logger.debug('Stopping all handlers')
+  logger.debug('Stopping all handlers')
   await Promise.all([
     TimeoutHandler.stop(),
     Monitoring.stop()
@@ -69,7 +69,7 @@ const stopAllHandlers = async () => {
 }
 
 const init = async () => {
-  Logger.isDebugEnabled && Logger.debug('Initializing caches and metrics')
+  logger.debug('Initializing caches and metrics')
   !Config.INSTRUMENTATION_METRICS_DISABLED && Metrics.setup(Config.INSTRUMENTATION_METRICS_CONFIG)
   await Promise.all([
     Participants.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),

@@ -32,9 +32,9 @@
 
 const CronJob = require('cron').CronJob
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
 const TimeoutService = require('../domain/timeout')
 const Config = require('../lib/config')
+const { logger } = require('../lib')
 
 let timeoutJob
 let isRegistered
@@ -44,10 +44,10 @@ const timeout = async () => {
   if (isRunning) return
   try {
     isRunning = true
-    Logger.isDebugEnabled && Logger.debug('Timeout handler triggered')
+    logger.debug('Timeout handler triggered')
     await TimeoutService.timeoutInterschemePartiesLookups()
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(`error in timeout: ${err?.stack}`)
+    logger.error('error in timeout: ', err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   } finally {
     isRunning = false
@@ -68,10 +68,10 @@ const register = async () => {
     })
     timeoutJob.start()
     isRegistered = true
-    Logger.isInfoEnabled && Logger.info('Timeout handler registered')
+    logger.info('Timeout handler registered')
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(`error in register: ${err?.stack}`)
+    logger.error('error in register:', err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

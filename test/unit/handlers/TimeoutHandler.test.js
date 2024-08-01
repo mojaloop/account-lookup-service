@@ -34,10 +34,10 @@
 const { randomUUID } = require('crypto')
 const CronJob = require('cron').CronJob
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
 const TimeoutHandler = require('../../../src/handlers/TimeoutHandler')
 const TimeoutService = require('../../../src/domain/timeout')
 const Config = require('../../../src/lib/config')
+const { logger } = require('../../../src/lib')
 const DefaultConfig = { ...Config }
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -64,11 +64,11 @@ describe('TimeoutHandler', () => {
     it('should log error and throw reformatFSPIOPError', async () => {
       jest.spyOn(TimeoutService, 'timeoutInterschemePartiesLookups').mockRejectedValue(new Error(randomUUID()))
       jest.spyOn(ErrorHandler.Factory, 'reformatFSPIOPError').mockReturnValue(new Error(randomUUID()))
-      jest.spyOn(Logger, 'error').mockImplementation()
+      jest.spyOn(logger, 'error')
 
       await expect(TimeoutHandler.timeout()).rejects.toThrow(Error)
 
-      expect(Logger.error).toHaveBeenCalled()
+      expect(logger.error).toHaveBeenCalled()
       expect(ErrorHandler.Factory.reformatFSPIOPError).toHaveBeenCalled()
     })
 

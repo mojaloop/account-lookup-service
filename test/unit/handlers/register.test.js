@@ -31,11 +31,11 @@
 
 'use strict'
 
-const Logger = require('@mojaloop/central-services-logger')
 const TimeoutHandler = require('../../../src/handlers/TimeoutHandler')
 const { HANDLER_TYPES } = require('../../../src/constants')
 const { registerHandlers, registerAllHandlers, stopAllHandlers } = require('../../../src/handlers/register')
 const Monitoring = require('../../../src/handlers/monitoring')
+const { logger } = require('../../../src/lib')
 
 describe('RegisterHandlers', () => {
   beforeEach(() => {
@@ -43,7 +43,8 @@ describe('RegisterHandlers', () => {
     TimeoutHandler.register = jest.fn()
     Monitoring.start = jest.fn()
     Monitoring.stop = jest.fn()
-    jest.spyOn(Logger, 'debug')
+    jest.spyOn(logger, 'debug')
+    jest.spyOn(logger, 'warn')
   })
 
   describe('registerHandlers', () => {
@@ -51,7 +52,7 @@ describe('RegisterHandlers', () => {
       const handlers = [HANDLER_TYPES.TIMEOUT]
       await registerHandlers(handlers)
 
-      expect(Logger.debug).toHaveBeenCalledWith('Registering Timeout Handler')
+      expect(logger.debug).toHaveBeenCalledWith('Registering Timeout Handler')
       expect(TimeoutHandler.register).toHaveBeenCalled()
     })
 
@@ -59,7 +60,7 @@ describe('RegisterHandlers', () => {
       const handlers = ['unknown']
       await registerHandlers(handlers)
 
-      expect(Logger.debug).toHaveBeenCalledWith('Handler unknown not found')
+      expect(logger.warn).toHaveBeenCalledWith('Handler unknown not found')
     })
   })
 
@@ -67,7 +68,7 @@ describe('RegisterHandlers', () => {
     it('should register all handlers', async () => {
       await registerAllHandlers()
 
-      expect(Logger.debug).toHaveBeenCalledWith('Registering all handlers')
+      expect(logger.debug).toHaveBeenCalledWith('Registering all handlers')
       expect(TimeoutHandler.register).toHaveBeenCalled()
     })
   })
@@ -78,7 +79,7 @@ describe('RegisterHandlers', () => {
 
       await stopAllHandlers()
 
-      expect(Logger.debug).toHaveBeenCalledWith('Stopping all handlers')
+      expect(logger.debug).toHaveBeenCalledWith('Stopping all handlers')
       expect(TimeoutHandler.stop).toHaveBeenCalled()
     })
   })
