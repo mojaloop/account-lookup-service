@@ -34,8 +34,8 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
 
 const Config = require('../../lib/config')
-const cachedOracleEndpoint = require('../oracle/oracleEndpointCached')
-const hubNameRegex = require('../../lib/util').hubNameConfig.hubNameRegex
+const oracleEndpointCached = require('../oracle/oracleEndpointCached')
+const { hubNameRegex } = require('../../lib/util').hubNameConfig
 
 /**
  * @function oracleRequest
@@ -120,11 +120,10 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       })
     } catch (err) {
       histTimerEnd({ success: false, hit: false })
-      Logger.isErrorEnabled && Logger.error(err)
       throw err
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in oracleRequest: ${err?.stack}`)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
     if (
@@ -157,7 +156,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
  */
 const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier, currency) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -192,7 +191,7 @@ const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier,
  */
 const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByType(partyIdType)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defaultOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -228,7 +227,7 @@ const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
  */
 const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, partySubIdOrType) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByType(partyIdType)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -265,7 +264,7 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
  */
 const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdentifier, currency, partySubIdOrType) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -306,9 +305,9 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
     let oracleEndpointModel
     let url
     if ((requestPayload && requestPayload.currency && requestPayload.currency.length !== 0)) {
-      oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(type, requestPayload.currency)
+      oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(type, requestPayload.currency)
     } else {
-      oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByType(type)
+      oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(type)
     }
     if (oracleEndpointModel.length > 0) {
       if (oracleEndpointModel.length > 1) {
