@@ -35,7 +35,7 @@ const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').E
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
 
-const participantsDomain = require('../../domain/participants') // think, how to avoid such deps on another domain
+const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
 const { loggerFactory } = require('../../lib')
@@ -68,26 +68,24 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
+  const proxy = headers[Headers.FSPIOP.PROXY]
   const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
-  logger.info('parties::putPartiesByTypeAndID::begin', { source, destination, params })
+  logger.info('parties::putPartiesByTypeAndID::begin', { source, destination, proxy, params })
 
   let sendTo
   try {
     const requesterParticipant = await participant.validateParticipant(source)
     if (!requesterParticipant) {
-      const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
-      if (!proxy) {
+      if (!proxyEnabled || !proxy) {
         const errMessage = ERROR_MESSAGES.partySourceFspNotFound
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
-      } else {
-        const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
-        // think,if we should throw error if isCached === false?
-        logger.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
       }
+      const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
+      // think,if we should throw error if isCached === false?
+      logger.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
     }
 
-    // todo: recheck the logic (only if )
-    if (proxyEnabled) {
+    if (proxyEnabled && proxy) {
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isExists = await proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
@@ -97,12 +95,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
         const mappingPayload = {
           fspId: source
         }
-        // todo: discuss these changes with Paul
-        // if (destinationParticipant) {
-        // await postParticipants(headers, method, params, mappingPayload, null, cache)
-        // Logger.isWarnEnabled && Logger.warn(`oracle was updated ${stringify({ mappingPayload })}`)
-        // }
-        await participantsDomain.postParticipants(headers, method, params, mappingPayload, null, cache)
+        await oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload, cache)
         logger.info('oracle was updated with mappingPayload', { mappingPayload, params })
       }
     }
@@ -170,7 +163,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     if (proxy) {
       if (isNotValidPayeeCase(payload)) {
         const swappedHeaders = utils.swapSourceDestinationHeaders(headers)
-        await participantsDomain.deleteParticipants(swappedHeaders, params, RestMethods.DELETE, null, cache)
+        await oracle.oracleRequest(swappedHeaders, RestMethods.DELETE, params, null, null, cache)
         getPartiesByTypeAndID(swappedHeaders, params, RestMethods.GET, {}, span, cache, proxyCache)
         // todo: - think if we need to send errorCallback?
         //       - or sentCallback after getPartiesByTypeAndID is done
