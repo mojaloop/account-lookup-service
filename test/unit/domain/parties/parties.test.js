@@ -55,6 +55,7 @@ const fixtures = require('../../../fixtures')
 const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.proxyCacheConfig
 
 const { encodePayload } = Util.StreamingProtocol
+const { RestMethods } = Enum.Http
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -685,8 +686,9 @@ describe('Parties Tests', () => {
       await sleep(1000)
 
       expect(oracle.oracleRequest.callCount).toBe(1)
-      const payload = oracle.oracleRequest.getCall(0).args[4]
+      const [, method, , , payload] = oracle.oracleRequest.getCall(0).args
       expect(payload.fspId).toBe(source)
+      expect(method).toBe(RestMethods.POST)
     })
 
     it('handles error when SubId is supplied but `participant.validateParticipant()` returns no participant', async () => {
@@ -909,7 +911,7 @@ describe('Parties Tests', () => {
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should handle notValidPayeeIdentifier case', async () => {
+    it('should handle notValidPayeeIdentifier case, and delete partyId from oracle', async () => {
       Config.proxyCacheConfig.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
@@ -926,8 +928,10 @@ describe('Parties Tests', () => {
 
       await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
 
-      expect(oracle.oracleRequest.callCount).toBe(1)
       expect(participant.sendRequest.callCount).toBe(0)
+      expect(oracle.oracleRequest.callCount).toBe(1)
+      const [, method] = oracle.oracleRequest.getCall(0).args
+      expect(method).toBe(RestMethods.DELETE)
       // todo: think, how to stub getPartiesByTypeAndID call
       // expect(partiesDomain.getPartiesByTypeAndID.callCount).toBe(1)
       // expect(participant.sendErrorToParticipant.callCount).toBe(0)

@@ -95,7 +95,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
         const mappingPayload = {
           fspId: source
         }
-        await oracle.oracleRequest(headers, method, params, null, mappingPayload, cache)
+        await oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload, cache)
         logger.info('oracle was updated with mappingPayload', { mappingPayload, params })
       }
     }
