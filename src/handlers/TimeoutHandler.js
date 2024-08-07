@@ -50,7 +50,6 @@ const timeout = async (options) => {
     await TimeoutService.timeoutInterschemePartiesLookups(options)
   } catch (err) {
     logger.error('error in timeout: ', err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   } finally {
     isRunning = false
   }
