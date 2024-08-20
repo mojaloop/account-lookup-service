@@ -31,9 +31,8 @@ const MigrationLockModel = require('../../models/misc/migrationLock')
 /**
  * @function getSubServiceHealthDatastore
  *
- * @description
- *   Gets the health of the Datastore by ensuring the table is currently locked
- *   in a migration state. This implicity checks the connection with the database.
+ * @description Gets the health of the Datastore by ensuring the table is currently locked
+ * in a migration state. This implicity checks the connection with the database.
  *
  * @returns Promise<SubServiceHealth> The SubService health object for the datastore
  */
@@ -59,8 +58,7 @@ const getSubServiceHealthDatastore = async () => {
 /**
  * @function getProxyCacheHealth
  *
- * @description
- *   Gets the health of the proxy cache by checking the connection to the cache.
+ * @description Gets the health of the proxy cache by checking the connection to the cache.
  *
  * @returns Promise<SubServiceHealth> The SubService health object for the proxy cache
  */

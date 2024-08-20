@@ -30,41 +30,65 @@
  ******/
 'use strict'
 
-const { Command } = require('commander')
-const Package = require('../../package.json')
-const Server = require('../server')
-const { HANDLER_TYPES } = require('../constants')
+const CronJob = require('cron').CronJob
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const TimeoutService = require('../domain/timeout')
 const Config = require('../lib/config')
-const logger = require('../lib').loggerFactory('ALS-timeout-handler')
 
-const Program = new Command()
+let timeoutJob
+let isRegistered
+let isRunning
 
-Program
-  .version(Package.version)
-  .description('CLI to manage Handlers')
+const timeout = async (options) => {
+  if (isRunning) return
 
-Program.command('handlers')
-  .alias('h')
-  .description('Start specified handler(s)')
-  .option('--timeout', 'Start the Timeout Handler')
-  .action(async (args) => {
-    const handlers = []
+  const { logger } = options
 
-    if (args.timeout) {
-      logger.debug('CLI: Executing --timeout')
-      handlers.push(HANDLER_TYPES.TIMEOUT)
+  try {
+    isRunning = true
+    logger.debug('Timeout handler triggered')
+    await TimeoutService.timeoutInterschemePartiesLookups(options)
+  } catch (err) {
+    logger.error('error in timeout: ', err)
+  } finally {
+    isRunning = false
+  }
+}
+
+const register = async (options) => {
+  if (Config.HANDLERS_TIMEOUT_DISABLED) return false
+
+  const { logger } = options
+
+  try {
+    if (isRegistered) {
+      await stop()
     }
+    timeoutJob = CronJob.from({
+      start: false,
+      onTick: () => timeout(options),
+      cronTime: Config.HANDLERS_TIMEOUT_TIMEXP,
+      timeZone: Config.HANDLERS_TIMEOUT_TIMEZONE
+    })
+    timeoutJob.start()
+    isRegistered = true
+    logger.info('Timeout handler registered')
+    return true
+  } catch (err) {
+    logger.error('error in register:', err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
 
-    if (handlers.length === 0) {
-      logger.debug('CLI: No handlers specified')
-      return
-    }
+const stop = async () => {
+  if (isRegistered) {
+    await timeoutJob.stop()
+    isRegistered = undefined
+  }
+}
 
-    module.exports = await Server.initializeHandlers(handlers, Config, logger)
-  })
-
-if (Array.isArray(process.argv) && process.argv.length > 2) {
-  Program.parse(process.argv)
-} else {
-  Program.help()
+module.exports = {
+  timeout,
+  register,
+  stop
 }

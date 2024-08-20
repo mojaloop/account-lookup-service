@@ -57,15 +57,26 @@
   },
   "PROXY_CACHE": {
     "enabled": true,
-    "type": "redis",
+    "type": "redis-cluster",
     "proxyConfig": {
-      "host": "localhost",
-      "port": 6379
+      "cluster": [
+        { "host": "localhost", "port": 6379 }
+      ]
     }
   },
   "ERROR_HANDLING": {
     "includeCauseExtension": false,
     "truncateExtensions": true
+  },
+  "HANDLERS": {
+    "DISABLED": false,
+    "MONITORING_PORT": 4003,
+    "TIMEOUT": {
+      "DISABLED": false,
+      "TIMEXP": "*/30 * * * * *",
+      "TIMEZONE": "UTC",
+      "BATCH_SIZE": 100
+    }
   },
   "SWITCH_ENDPOINT": "http://localhost:3001",
   "INSTRUMENTATION": {

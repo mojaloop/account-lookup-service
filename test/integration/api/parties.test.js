@@ -36,7 +36,7 @@ const alsClient = new AlsApiClient()
 const proxyClient = new ProxyApiClient() // mock ISPA
 
 describe('Parties Endpoints Tests -->', () => {
-  const { type, proxyConfig } = config.proxyCacheConfig
+  const { type, proxyConfig } = config.PROXY_CACHE_CONFIG
   const proxyCache = createProxyCache(type, proxyConfig)
 
   beforeAll(async () => {

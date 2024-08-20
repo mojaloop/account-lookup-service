@@ -69,7 +69,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxy = headers[Headers.FSPIOP.PROXY]
-  const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
+  const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   logger.info('parties::putPartiesByTypeAndID::begin', { source, destination, proxy, params })
 
   let sendTo
@@ -151,7 +151,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   const partySubId = params.SubId
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const callbackEndpointType = utils.errorPartyCbType(partySubId)
-  const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
+  const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
 
   const childSpan = span ? span.getChild('putPartiesErrorByTypeAndID') : undefined
 

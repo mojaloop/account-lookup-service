@@ -39,10 +39,11 @@ const Util = require('./lib/util')
 const Plugins = require('./plugins')
 const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
-const Handlers = require('./handlers')
-const Routes = require('./handlers/routes')
+const APIHandlers = require('./api')
+const Routes = require('./api/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
+const Handlers = require('./handlers/register')
 
 const connectDatabase = async (dbConfig) => {
   return Db.connect(dbConfig)
@@ -142,7 +143,7 @@ const initializeApi = async (appConfig) => {
     CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG,
     DATABASE,
     API_PORT,
-    proxyCacheConfig,
+    PROXY_CACHE_CONFIG,
     proxyMap
   } = appConfig
 
@@ -151,7 +152,7 @@ const initializeApi = async (appConfig) => {
   }
   await connectDatabase(DATABASE)
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
-  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.ApiHandlers)
 
   await Promise.all([
     Endpoints.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig),
@@ -161,7 +162,7 @@ const initializeApi = async (appConfig) => {
     Cache.initCache()
   ])
 
-  return createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig, proxyMap)
+  return createServer(API_PORT, api, Routes.APIRoutes(api), false, PROXY_CACHE_CONFIG, proxyMap)
 }
 
 const initializeAdmin = async (appConfig) => {
@@ -171,7 +172,7 @@ const initializeAdmin = async (appConfig) => {
     DATABASE,
     RUN_MIGRATIONS,
     ADMIN_PORT,
-    proxyCacheConfig
+    PROXY_CACHE_CONFIG
   } = appConfig
 
   if (!INSTRUMENTATION_METRICS_DISABLED) {
@@ -180,12 +181,19 @@ const initializeAdmin = async (appConfig) => {
   await connectDatabase(DATABASE)
   RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
-  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.AdminHandlers)
 
-  return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, proxyCacheConfig)
+  return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
+}
+
+const initializeHandlers = async (handlers, appConfig, logger) => {
+  const proxyCache = await createConnectedProxyCache(appConfig.PROXY_CACHE_CONFIG)
+  const options = { proxyCache, batchSize: appConfig.HANDLERS_TIMEOUT_BATCH_SIZE, logger }
+  await Handlers.registerHandlers(handlers, options)
 }
 
 module.exports = {
   initializeApi,
-  initializeAdmin
+  initializeAdmin,
+  initializeHandlers
 }

@@ -18,8 +18,8 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Crosslake
- - Lewis Daly <lewisd@crosslaketech.com>
+ * ModusBox
+ - Steven Oderayi <steven.oderayi@modusbox.com>
 
  --------------
  ******/
@@ -28,17 +28,13 @@
 
 const Sinon = require('sinon')
 const getPort = require('get-port')
-
-const src = '../../../../../../src'
-
-const initServer = require(`${src}/server`).initializeApi
-const Db = require(`${src}/lib/db`)
-const participants = require(`${src}/domain/participants`)
-const ErrHandler = require(`${src}/handlers/participants/{Type}/{ID}/error`)
-const Helper = require('../../../../../util/helper')
-const LibUtil = require(`${src}/lib/util`)
 const Logger = require('@mojaloop/central-services-logger')
-const Config = require(`${src}/lib/config`)
+const initServer = require('../../../../../../../src/server').initializeApi
+const Db = require('../../../../../../../src/lib/db')
+const participants = require('../../../../../../../src/domain/participants')
+const ErrHandler = require('../../../../../../../src/api/participants/{Type}/{ID}/{SubId}/error')
+const Helper = require('../../../../../../util/helper')
+const Config = require('../../../../../../../src/lib/config')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -47,13 +43,12 @@ let server
 let sandbox
 const mockContext = jest.fn()
 
-describe('/participants/{Type}/{ID}/error', () => {
+describe('/participants/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     Config.API_PORT = await getPort()
     server = await initServer(Config)
-    sandbox.stub(LibUtil, 'getSpanTags').returns({})
   })
 
   afterAll(async () => {
@@ -70,23 +65,10 @@ describe('/participants/{Type}/{ID}/error', () => {
       })
     }
 
-    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
-    const setTagsStub = sandbox.stub().returns({})
+    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}/error', 'put')
     sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').resolves({})
-    mock.request = {
-      server: {
-        log: sandbox.stub()
-      },
-      log: sandbox.stub(),
-      method: sandbox.stub(),
-      path: sandbox.stub(),
-      metadata: sandbox.stub(),
-      headers: sandbox.stub(),
-      payload: sandbox.stub(),
-      span: {
-        setTags: setTagsStub,
-        audit: sandbox.stub().returns(Promise.resolve({}))
-      }
+    mock.request.server = {
+      log: sandbox.stub()
     }
 
     // Act
@@ -98,9 +80,12 @@ describe('/participants/{Type}/{ID}/error', () => {
       errors properly. Instead of failing the test on an error, we can inspect the 2nd call
       of the `log` function, and ensure it was as expected.
     */
+
+    expect(participants.putParticipantsErrorByTypeAndID.callCount).toBe(1)
+    expect(participants.putParticipantsErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+    expect(mock.request.server.log.callCount).toEqual(2)
     const secondCallArgs = mock.request.server.log.getCall(1).args
     expect(secondCallArgs[0]).toEqual(['info'])
-    expect(mock.request.server.log.callCount).toEqual(2)
 
     // Cleanup
     participants.putParticipantsErrorByTypeAndID.restore()
@@ -110,44 +95,35 @@ describe('/participants/{Type}/{ID}/error', () => {
     // Arrange
     const codeStub = sandbox.stub()
     const handler = {
-      response: sandbox.stub().returns({
+      response: sandbox.stub().resolves({
         code: codeStub
       })
     }
-
-    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
-    const setTagsStub = sandbox.stub().returns({})
-    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').rejects(new Error('Error in putParticipantsErrorByTypeAndID'))
-    mock.request = {
-      server: {
-        log: sandbox.stub()
-      },
-      log: sandbox.stub(),
-      method: sandbox.stub(),
-      path: sandbox.stub(),
-      metadata: sandbox.stub(),
-      headers: sandbox.stub(),
-      payload: sandbox.stub(),
-      span: {
-        setTags: setTagsStub,
-        audit: sandbox.stub().returns(Promise.resolve({}))
-      }
+    const throwError = new Error('Error in putParticipantsErrorByTypeAndID')
+    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}/error', 'put')
+    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').rejects(throwError)
+    mock.request.server = {
+      log: sandbox.stub()
     }
 
     // Act
-    await ErrHandler.put(mockContext, mock.request, handler)
+    try {
+      await ErrHandler.put(mockContext, mock.request, handler)
+    } catch (err) {
+      // Assert
+      /*
+        Note - since the `put` function always returns a 202 response, we can't catch
+        the error when testing this. Instead, we test this by ensuring the `server.log` method is called with "ERROR"
+      */
 
-    // Assert
-    /*
-      Note - since the `put` function always returns a 202 response, we can't catch
-      the error when testing this. Instead, we test this by ensuring the `server.log` method is called with "ERROR"
-    */
-
-    expect(mock.request.server.log.callCount).toEqual(3)
-    const secondCallArgs = mock.request.server.log.getCall(1).args
-    expect(secondCallArgs[0]).toEqual(['info'])
-    const logCatchCallArgs = mock.request.server.log.getCall(2).args
-    expect(logCatchCallArgs[0]).toEqual(['error'])
+      expect(participants.putParticipantsErrorByTypeAndID.callCount).toBe(1)
+      expect(participants.putParticipantsErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+      expect(mock.request.server.log.callCount).toEqual(3)
+      const secondCallArgs = mock.request.server.log.getCall(1).args
+      expect(secondCallArgs[0]).toEqual(['info'])
+      const logCatchCallArgs = mock.request.server.log.getCall(2).args
+      expect(logCatchCallArgs[0]).toEqual(['error'])
+    }
 
     // Cleanup
     participants.putParticipantsErrorByTypeAndID.restore()

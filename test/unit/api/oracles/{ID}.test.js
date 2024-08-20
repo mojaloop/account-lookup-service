@@ -30,15 +30,15 @@
 'use strict'
 
 const Mockgen = require('../../../util/mockgen.js')
-const helper = require('../../../util/helper')
+const helper = require('../../../util/helper.js')
 const Sinon = require('sinon')
-const oracle = require('../../../../src/domain/oracle')
-const initServer = require('../../../../src/server').initializeAdmin
+const oracle = require('../../../../src/domain/oracle/index.js')
+const initServer = require('../../../../src/server.js').initializeAdmin
 const getPort = require('get-port')
-const Db = require('../../../../src/lib/db')
-const Migrator = require('../../../../src/lib/migrator')
+const Db = require('../../../../src/lib/db.js')
+const Migrator = require('../../../../src/lib/migrator.js')
 const Logger = require('@mojaloop/central-services-logger')
-const Config = require('../../../../src/lib/config')
+const Config = require('../../../../src/lib/config.js')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)

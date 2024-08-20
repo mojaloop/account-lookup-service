@@ -33,8 +33,8 @@ const src = '../../../../../../src'
 
 const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
-const parties = require(`${src}/domain/parties`)
-const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/error`)
+const participants = require(`${src}/domain/participants`)
+const ErrHandler = require(`${src}/api/participants/{Type}/{ID}/error`)
 const Helper = require('../../../../../util/helper')
 const LibUtil = require(`${src}/lib/util`)
 const Logger = require('@mojaloop/central-services-logger')
@@ -47,7 +47,7 @@ let server
 let sandbox
 const mockContext = jest.fn()
 
-describe('/parties/{Type}/{ID}/error', () => {
+describe('/participants/{Type}/{ID}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
@@ -70,39 +70,43 @@ describe('/parties/{Type}/{ID}/error', () => {
       })
     }
 
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
     const setTagsStub = sandbox.stub().returns({})
-
+    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').resolves({})
     mock.request = {
-      log: sandbox.stub(),
       server: {
-        log: sandbox.stub(),
-        app: {}
+        log: sandbox.stub()
       },
+      log: sandbox.stub(),
+      method: sandbox.stub(),
+      path: sandbox.stub(),
+      metadata: sandbox.stub(),
+      headers: sandbox.stub(),
+      payload: sandbox.stub(),
       span: {
         setTags: setTagsStub,
         audit: sandbox.stub().returns(Promise.resolve({}))
       }
     }
 
-    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
-
     // Act
     await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
-    expect(codeStub.calledWith(200)).toBe(true)
-    expect(setTagsStub.calledWith({})).toBe(true)
-    expect(setTagsStub.calledOnce).toBe(true)
-    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
-    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
-    expect(mock.request.server.log.callCount).toEqual(0)
+    /*
+      Note - since the `put` function always returns a 202 response, it doesn't propagate
+      errors properly. Instead of failing the test on an error, we can inspect the 2nd call
+      of the `log` function, and ensure it was as expected.
+    */
+    const secondCallArgs = mock.request.server.log.getCall(1).args
+    expect(secondCallArgs[0]).toEqual(['info'])
+    expect(mock.request.server.log.callCount).toEqual(2)
 
     // Cleanup
-    parties.putPartiesErrorByTypeAndID.restore()
+    participants.putParticipantsErrorByTypeAndID.restore()
   })
 
-  it('handles error when putPartiesErrorByTypeAndID fails', async () => {
+  it('handles error when putParticipantsErrorByTypeAndID fails', async () => {
     // Arrange
     const codeStub = sandbox.stub()
     const handler = {
@@ -111,35 +115,41 @@ describe('/parties/{Type}/{ID}/error', () => {
       })
     }
 
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
     const setTagsStub = sandbox.stub().returns({})
-
+    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').rejects(new Error('Error in putParticipantsErrorByTypeAndID'))
     mock.request = {
-      log: sandbox.stub(),
       server: {
-        log: sandbox.stub(),
-        app: {}
+        log: sandbox.stub()
       },
+      log: sandbox.stub(),
+      method: sandbox.stub(),
+      path: sandbox.stub(),
+      metadata: sandbox.stub(),
+      headers: sandbox.stub(),
+      payload: sandbox.stub(),
       span: {
         setTags: setTagsStub,
         audit: sandbox.stub().returns(Promise.resolve({}))
       }
     }
 
-    const throwError = new Error('Unknown error')
-    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
-
     // Act
     await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
-    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
-    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-    expect(mock.request.server.log.callCount).toEqual(1)
-    const logCatchCallArgs = mock.request.server.log.getCall(0).args
+    /*
+      Note - since the `put` function always returns a 202 response, we can't catch
+      the error when testing this. Instead, we test this by ensuring the `server.log` method is called with "ERROR"
+    */
+
+    expect(mock.request.server.log.callCount).toEqual(3)
+    const secondCallArgs = mock.request.server.log.getCall(1).args
+    expect(secondCallArgs[0]).toEqual(['info'])
+    const logCatchCallArgs = mock.request.server.log.getCall(2).args
     expect(logCatchCallArgs[0]).toEqual(['error'])
 
     // Cleanup
-    parties.putPartiesErrorByTypeAndID.restore()
+    participants.putParticipantsErrorByTypeAndID.restore()
   })
 })

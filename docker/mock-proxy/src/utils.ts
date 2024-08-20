@@ -20,3 +20,10 @@ export const hubCbHeaders = (headers: IncomingHttpHeaders) => {
     [Headers.FSPIOP.PROXY]: PROXY_NAME,
   };
 };
+
+export  const dfspCbHeaders = (headers: IncomingHttpHeaders) => { 
+  const h = hubCbHeaders(headers);
+  delete h[Headers.FSPIOP.PROXY];
+
+  return h;
+}

@@ -52,7 +52,7 @@ const { ERROR_MESSAGES } = require('../../../../src/constants')
 const Helper = require('../../../util/helper')
 const fixtures = require('../../../fixtures')
 
-const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.proxyCacheConfig
+const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.PROXY_CACHE_CONFIG
 
 const { encodePayload } = Util.StreamingProtocol
 const { RestMethods } = Enum.Http
@@ -90,7 +90,7 @@ describe('Parties Tests', () => {
   describe('getPartiesByTypeAndID', () => {
     beforeEach(() => {
       sandbox.stub(participant)
-      Config.proxyCacheConfig.enabled = false
+      Config.PROXY_CACHE_CONFIG.enabled = false
     })
 
     afterEach(() => {
@@ -164,7 +164,7 @@ describe('Parties Tests', () => {
     })
 
     it('should set source proxyMapping if source is not in scheme, and there is proxy-header', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves(null) // source
         .onSecondCall().resolves({}) // proxy
@@ -205,7 +205,7 @@ describe('Parties Tests', () => {
     })
 
     it('should send request to proxy, if destination is not in the scheme, but has proxyMapping', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves({}) // source
         .onSecondCall().resolves(null) // destination
@@ -247,7 +247,7 @@ describe('Parties Tests', () => {
     })
 
     it('should send error callback, if proxy-header is present, but no proxy in the scheme', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       participant.sendRequest = sandbox.stub().resolves()
@@ -463,7 +463,7 @@ describe('Parties Tests', () => {
     })
 
     it('should send request to proxy if oracle returns dfsp NOT from the scheme', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       const proxyName = `proxy-${Date.now()}`
       const fspId = `dfspNotFromScheme-${Date.now()}`
       const oracleResponse = fixtures.oracleRequestResponseDto({
@@ -511,7 +511,7 @@ describe('Parties Tests', () => {
     })
 
     it('should perform sendToProxies alsRequest, if no destination-header and no data in oracle response', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       const proxyNames = ['proxyA', 'proxyB']
       Util.proxies.getAllProxiesNames = sandbox.stub().resolves(proxyNames)
       oracle.oracleRequest = sandbox.stub().resolves(null)
@@ -538,7 +538,7 @@ describe('Parties Tests', () => {
     })
 
     it('should send error callback, if no successful sendToProxiesList requests', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       const proxyNames = ['proxyA', 'proxyB']
       Util.proxies.getAllProxiesNames = sandbox.stub().resolves(proxyNames)
       oracle.oracleRequest = sandbox.stub().resolves(null)
@@ -561,7 +561,7 @@ describe('Parties Tests', () => {
   describe('putPartiesByTypeAndID', () => {
     beforeEach(() => {
       sandbox.stub(participant)
-      Config.proxyCacheConfig.enabled = false
+      Config.PROXY_CACHE_CONFIG.enabled = false
     })
 
     afterEach(() => {
@@ -632,7 +632,7 @@ describe('Parties Tests', () => {
     })
 
     it('should add proxyMapping, if source is not in scheme, and there is fspiop-proxy header', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub().resolves(null)
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
@@ -654,7 +654,7 @@ describe('Parties Tests', () => {
     })
 
     it('should update oracle with partyDetails received from proxy, if previous alsReq is cached', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       const source = `source-${Date.now()}`
       const destination = `payer-fsp-${Date.now()}`
       const proxy = `proxy-${Date.now()}`
@@ -779,7 +779,7 @@ describe('Parties Tests', () => {
     beforeEach(() => {
       sandbox.stub(participant)
       sandbox.stub(partiesDomain, 'getPartiesByTypeAndID')
-      Config.proxyCacheConfig.enabled = false
+      Config.PROXY_CACHE_CONFIG.enabled = false
     })
 
     afterEach(() => {
@@ -912,7 +912,7 @@ describe('Parties Tests', () => {
     })
 
     it('should handle notValidPayeeIdentifier case, and delete partyId from oracle', async () => {
-      Config.proxyCacheConfig.enabled = true
+      Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
       const source = `source-${Date.now()}`

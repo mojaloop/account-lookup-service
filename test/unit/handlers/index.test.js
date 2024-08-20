@@ -28,43 +28,29 @@
  - Steven Oderayi <steven.oderayi@infitx.com>
  --------------
  ******/
+
 'use strict'
 
-const { Command } = require('commander')
-const Package = require('../../package.json')
-const Server = require('../server')
-const { HANDLER_TYPES } = require('../constants')
-const Config = require('../lib/config')
-const logger = require('../lib').loggerFactory('ALS-timeout-handler')
+const Server = require('../../../src/server')
+const { HANDLER_TYPES } = require('../../../src/constants')
+const Config = require('../../../src/lib/config')
 
-const Program = new Command()
-
-Program
-  .version(Package.version)
-  .description('CLI to manage Handlers')
-
-Program.command('handlers')
-  .alias('h')
-  .description('Start specified handler(s)')
-  .option('--timeout', 'Start the Timeout Handler')
-  .action(async (args) => {
-    const handlers = []
-
-    if (args.timeout) {
-      logger.debug('CLI: Executing --timeout')
-      handlers.push(HANDLER_TYPES.TIMEOUT)
-    }
-
-    if (handlers.length === 0) {
-      logger.debug('CLI: No handlers specified')
-      return
-    }
-
-    module.exports = await Server.initializeHandlers(handlers, Config, logger)
+describe('Handlers Index', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    jest.spyOn(Server, 'initializeHandlers').mockImplementation(() => {})
   })
 
-if (Array.isArray(process.argv) && process.argv.length > 2) {
-  Program.parse(process.argv)
-} else {
-  Program.help()
-}
+  it('should start specified handlers in args', async () => {
+    process.argv = ['node', 'index.js', 'handlers', '--timeout']
+    require('../../../src/handlers/index')
+    const expectedLogger = { info: expect.any(Function), error: expect.any(Function) }
+    expect(Server.initializeHandlers).toHaveBeenCalledWith([HANDLER_TYPES.TIMEOUT], Config, expect.objectContaining(expectedLogger))
+  })
+
+  it('should not start any handlers if none are specified', async () => {
+    process.argv = ['node', 'index.js', 'handlers']
+    require('../../../src/handlers/index')
+    expect(Server.initializeHandlers).not.toHaveBeenCalled()
+  })
+})

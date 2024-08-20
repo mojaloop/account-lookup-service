@@ -4,7 +4,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 
 import { PROXY_PORT, PROXY_NAME, ROUTES, CL_HOST, CL_PORT } from './config';
-import { hubCbHeaders } from './utils';
+import { hubCbHeaders, dfspCbHeaders } from './utils';
 
 const app = express();
 app.use(bodyParser.json());
@@ -45,6 +45,17 @@ app.get('/parties/:type/:id', (req: Request, res: Response) => {
   res
     .set(headers)
     .status(202)
+    .json({ success: true });
+});
+
+app.put('/parties/:type/:id/error', (req: Request, res: Response) => {
+  const { type, id } = req.params;
+  const headers = dfspCbHeaders(req.headers);
+  console.log('parties put error request details:', { type, id, headers, CL_HOST, CL_PORT });
+
+  res
+    .set(headers)
+    .status(200)
     .json({ success: true });
 });
 

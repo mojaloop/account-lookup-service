@@ -86,7 +86,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     'Get party by Type and Id',
     ['success']
   ).startTimer()
-  const proxyEnabled = !!(Config.proxyCacheConfig.enabled && proxyCache)
+  const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const type = params.Type
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]

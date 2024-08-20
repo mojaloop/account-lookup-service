@@ -1,32 +1,26 @@
-version: "3.7"
-
 networks:
   als-mojaloop-net:
     name: als-mojaloop-net
-
+ 
+# @see https://uninterrupted.tech/blog/hassle-free-redis-cluster-deployment-using-docker/
 x-redis-node: &REDIS_NODE
   image: docker.io/bitnami/redis-cluster:6.2.14
   environment: &REDIS_ENVS
     ALLOW_EMPTY_PASSWORD: yes
-    REDIS_NODES: redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
-  networks:
-    - als-mojaloop-net
+    REDIS_CLUSTER_DYNAMIC_IPS: no
+    REDIS_CLUSTER_ANNOUNCE_IP: ${REDIS_CLUSTER_ANNOUNCE_IP}
+    REDIS_NODES: localhost:6379 localhost:6380 localhost:6381 localhost:6382 localhost:6383 localhost:6384
+  healthcheck:
+    test: [ "CMD", "redis-cli", "ping" ]
+    timeout: 2s
+  network_mode: host
 
-services:
-  account-lookup-service:
+x-account-lookup-service: &ACCOUNT_LOOKUP_SERVICE
     image: mojaloop/account-lookup-service:local
     build:
       context: .
       target: builder
-    container_name: als_account-lookup-service
     user: root
-    command:
-      - "sh"
-      - "-c"
-      - "sh /opt/wait-for/wait-for-account-lookup-service.sh && node src/index.js server"
-    ports:
-      - "4001:4001"
-      - "4002:4002"
     environment:
       LOG_LEVEL: debug
     networks:
@@ -35,19 +29,50 @@ services:
       - central-ledger
       - proxy
       - mysql-als
-      - redis
-#      - redis-node-0
+      - redis-node-0
+      # - redis
     volumes:
       - ./secrets:/opt/app/secrets
       - ./src:/opt/app/src
       - ./docker/account-lookup-service/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
+    extra_hosts:
+      - "redis-node-0:host-gateway"
+
+services:
+  account-lookup-service:
+    <<: *ACCOUNT_LOOKUP_SERVICE
+    container_name: als_account-lookup-service
+    command:
+      - "sh"
+      - "-c"
+      - "sh /opt/wait-for/wait-for-account-lookup-service.sh && node src/index.js server"
+    ports:
+      - "4001:4001"
+      - "4002:4002"
     healthcheck:
       test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4001/health"]
       timeout: 20s
       retries: 10
       interval: 30s
-
+  
+  account-lookup-service-handlers:
+    <<: *ACCOUNT_LOOKUP_SERVICE
+    container_name: als_account-lookup-service-handlers
+    command:
+      - "sh"
+      - "-c"
+      - "node src/handlers/index.js h --timeout"
+    depends_on:
+     - redis-node-0
+    ports:
+      - "4003:4003"
+    healthcheck:
+      test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4003/health"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
+  
   central-ledger:
 #    image: mojaloop/central-ledger:latest
     image: mojaloop/central-ledger:v17.8.0.160-snapshot.4
@@ -149,23 +174,59 @@ services:
       retries: 10
       start_period: 40s
       interval: 30s
-
-  #  To use with proxyCache.type === 'redis'
-  redis:
-    image: redis:6.2.4-alpine
-    restart: "unless-stopped"
+  
+  redis-node-0:
+    <<: *REDIS_NODE
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_PORT=6379
-      - REDIS_REPLICATION_MODE=master
-    networks:
-      - als-mojaloop-net
+      <<: *REDIS_ENVS
+      REDIS_CLUSTER_CREATOR: yes
+      REDIS_PORT_NUMBER: 6379
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+  redis-node-1:
+    <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6380
     ports:
-      - "6379:6379"
+      - "16380:16380"
+  redis-node-2:
+    <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6381
+    ports:
+      - "16381:16381"
+  redis-node-3:
+    <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6382
+    ports:
+      - "16382:16382"
+  redis-node-4:
+    <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6383
+    ports:
+      - "16383:16383"
+  redis-node-5:
+    <<: *REDIS_NODE
+    environment:
+      <<: *REDIS_ENVS
+      REDIS_PORT_NUMBER: 6384
+    ports:
+      - "16384:16384"
 
-#  #  To use with proxyCache.type === 'redis-cluster'
-#  redis-node-0:
-#    <<: *REDIS_NODE
+##  To be used with proxyCache.type === 'redis'
+#  redis:
+#    image: redis:6.2.4-alpine
+#    restart: "unless-stopped"
 #    environment:
 #      <<: *REDIS_ENVS
 #      REDIS_CLUSTER_CREATOR: yes
@@ -177,14 +238,3 @@ services:
 #      - redis-node-5
 #    ports:
 #      - "6379:6379"
-#
-#  redis-node-1:
-#    <<: *REDIS_NODE
-#  redis-node-2:
-#    <<: *REDIS_NODE
-#  redis-node-3:
-#    <<: *REDIS_NODE
-#  redis-node-4:
-#    <<: *REDIS_NODE
-#  redis-node-5:
-#    <<: *REDIS_NODE

@@ -29,24 +29,31 @@
 const Sinon = require('sinon')
 const getPort = require('get-port')
 
-const src = '../../../../../../../src'
+const src = '../../../../../../src'
+
 const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
-const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)
-const Helper = require('../../../../../../util/helper')
+const ErrHandler = require(`${src}/api/parties/{Type}/{ID}/error`)
+const Helper = require('../../../../../util/helper')
+const LibUtil = require(`${src}/lib/util`)
+const Logger = require('@mojaloop/central-services-logger')
 const Config = require(`${src}/lib/config`)
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 const mockContext = jest.fn()
 
-describe('/parties/{Type}/{ID}/{SubId}/error', () => {
+describe('/parties/{Type}/{ID}/error', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     Config.API_PORT = await getPort()
     server = await initServer(Config)
+    sandbox.stub(LibUtil, 'getSpanTags').returns({})
   })
 
   afterAll(async () => {
@@ -54,88 +61,85 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     sandbox.restore()
   })
 
-  it('handles PUT /error with resolve', async () => {
+  it('handles PUT /error', async () => {
     // Arrange
-    const response = sandbox.stub().returns({
-      code: sandbox.stub()
-    })
+    const codeStub = sandbox.stub()
     const handler = {
-      response
+      response: sandbox.stub().returns({
+        code: codeStub
+      })
     }
 
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
-    mock.request.server = {
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    const setTagsStub = sandbox.stub().returns({})
+
+    mock.request = {
       log: sandbox.stub(),
-      app: {}
+      server: {
+        log: sandbox.stub(),
+        app: {}
+      },
+      span: {
+        setTags: setTagsStub,
+        audit: sandbox.stub().returns(Promise.resolve({}))
+      }
     }
-    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
+
+    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
     // Act
     await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
-    expect(handler.response.calledOnce).toBe(true)
+    expect(codeStub.calledWith(200)).toBe(true)
+    expect(setTagsStub.calledWith({})).toBe(true)
+    expect(setTagsStub.calledOnce).toBe(true)
     expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
     expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
     expect(mock.request.server.log.callCount).toEqual(0)
 
     // Cleanup
-    stub.restore()
+    parties.putPartiesErrorByTypeAndID.restore()
   })
 
-  it('handles PUT /error with reject', async () => {
+  it('handles error when putPartiesErrorByTypeAndID fails', async () => {
     // Arrange
-    const response = sandbox.stub().returns({
-      code: sandbox.stub()
-    })
+    const codeStub = sandbox.stub()
     const handler = {
-      response
+      response: sandbox.stub().returns({
+        code: codeStub
+      })
     }
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
-    mock.request.server = {
+
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/error', 'put')
+    const setTagsStub = sandbox.stub().returns({})
+
+    mock.request = {
       log: sandbox.stub(),
-      app: {}
+      server: {
+        log: sandbox.stub(),
+        app: {}
+      },
+      span: {
+        setTags: setTagsStub,
+        audit: sandbox.stub().returns(Promise.resolve({}))
+      }
     }
+
     const throwError = new Error('Unknown error')
-    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
+    sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
 
     // Act
     await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
-    expect(handler.response.calledOnce).toBe(true)
     expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
     expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-
     expect(mock.request.server.log.callCount).toEqual(1)
     const logCatchCallArgs = mock.request.server.log.getCall(0).args
     expect(logCatchCallArgs[0]).toEqual(['error'])
 
     // Cleanup
-    stub.restore()
-  })
-
-  it('putPartiesSubIdErrorByTypeAndID endpoint', async () => {
-    // Arrange
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
-    const options = {
-      method: 'put',
-      url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties'),
-      payload: mock.request.body
-    }
-
-    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
-
-    // Act
-    const response = await server.inject(options)
-
-    // Assert
-    expect(response.statusCode).toBe(200)
-    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
-    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
-
-    // Cleanup
-    stub.restore()
+    parties.putPartiesErrorByTypeAndID.restore()
   })
 })
