@@ -71,7 +71,7 @@ const createConnectedProxyCache = async (proxyCacheConfig) => {
  * @param {array} routes array of API routes
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
+const createServer = async (port, api, routes, isAdmin, proxyCacheConfig, proxyMap) => {
   const server = await new Hapi.Server({
     port,
     routes: {
@@ -96,6 +96,11 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
 
   if (!isAdmin && proxyCacheConfig.enabled) {
     server.app.proxyCache = await createConnectedProxyCache(proxyCacheConfig)
+    if (proxyMap) {
+      for (const [dfspId, proxyId] of Object.entries(proxyMap)) {
+        await server.app.proxyCache.addDfspIdToProxyMapping(dfspId, proxyId)
+      }
+    }
   }
 
   await server.ext([
@@ -137,7 +142,8 @@ const initializeApi = async (appConfig) => {
     CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG,
     DATABASE,
     API_PORT,
-    proxyCacheConfig
+    proxyCacheConfig,
+    proxyMap
   } = appConfig
 
   if (!INSTRUMENTATION_METRICS_DISABLED) {
@@ -155,7 +161,7 @@ const initializeApi = async (appConfig) => {
     Cache.initCache()
   ])
 
-  return createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig)
+  return createServer(API_PORT, api, Routes.APIRoutes(api), false, proxyCacheConfig, proxyMap)
 }
 
 const initializeAdmin = async (appConfig) => {

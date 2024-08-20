@@ -114,6 +114,7 @@ describe('/health', () => {
     // Arrange
     Config.proxyCacheConfig.enabled = true
     Config.API_PORT = await getPort()
+    Config.proxyMap = { proxied: 'proxy' }
     let serverWithProxy
     try {
       serverWithProxy = await initServer(Config)
