@@ -26,14 +26,15 @@
 'use strict'
 
 const Logger = require('@mojaloop/central-services-logger')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Metrics = require('@mojaloop/central-services-metrics')
+
+const Config = require('../../lib/config')
 const oracleEndpoint = require('../../models/oracle')
+const cachedOracleEndpoint = require('../../models/oracle/oracleEndpointCached')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Config = require('../../lib/config')
-const Metrics = require('@mojaloop/central-services-metrics')
-const cachedOracleEndpoint = require('../../models/oracle/oracleEndpointCached')
 
 /**
  * @function createOracle

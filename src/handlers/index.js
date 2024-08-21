@@ -1,10 +1,15 @@
 /*****
  License
  --------------
- Copyright © 2017 Bill & Melinda Gates Foundation
- The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
- http://www.apache.org/licenses/LICENSE-2.0
- Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ Copyright © 2020-2024 Mojaloop Foundation
+
+ The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0
+ (the "License") and you may not use these files except in compliance with the [License](http://www.apache.org/licenses/LICENSE-2.0).
+
+ You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+ Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the [License](http://www.apache.org/licenses/LICENSE-2.0).
+
  Contributors
  --------------
  This is the official list of the Mojaloop project contributors for this file.
@@ -15,71 +20,51 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
+
  * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
 
- * ModusBox
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
-
+ * INFITX
+ - Steven Oderayi <steven.oderayi@infitx.com>
  --------------
  ******/
-
 'use strict'
 
-const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
+const { Command } = require('commander')
+const Package = require('../../package.json')
+const Server = require('../server')
+const { HANDLER_TYPES } = require('../constants')
+const Config = require('../lib/config')
+const logger = require('../lib').loggerFactory('ALS-timeout-handler')
 
-const participants = require('./participants')
-const participantsId = require('./participants/{ID}')
-const participantsErrorById = require('./participants/{ID}/error')
-const participantsTypeId = require('./participants/{Type}/{ID}')
-const participantsErrorTypeId = require('./participants/{Type}/{ID}/error')
-const participantsTypeIdSubId = require('./participants/{Type}/{ID}/{SubId}')
-const participantsErrorTypeIdSubId = require('./participants/{Type}/{ID}/{SubId}/error')
+const Program = new Command()
 
-const partiesTypeId = require('./parties/{Type}/{ID}')
-const partiesTypeIdSubId = require('./parties/{Type}/{ID}/{SubId}')
-const partiesErrorTypeId = require('./parties/{Type}/{ID}/error')
-const partiesErrorTypeIdSubId = require('./parties/{Type}/{ID}/{SubId}/error')
+Program
+  .version(Package.version)
+  .description('CLI to manage Handlers')
 
-const oracles = require('./oracles')
-const oraclesId = require('./oracles/{ID}')
+Program.command('handlers')
+  .alias('h')
+  .description('Start specified handler(s)')
+  .option('--timeout', 'Start the Timeout Handler')
+  .action(async (args) => {
+    const handlers = []
 
-const endpointCache = require('./endpointcache')
-const health = require('./health')
+    if (args.timeout) {
+      logger.debug('CLI: Executing --timeout')
+      handlers.push(HANDLER_TYPES.TIMEOUT)
+    }
 
-module.exports.ApiHandlers = {
-  HealthGet: health.get,
-  ParticipantsErrorByIDPut: participantsErrorById.put,
-  ParticipantsByIDPut: participantsId.put,
-  ParticipantsErrorByTypeAndIDPut: participantsErrorTypeId.put,
-  ParticipantsErrorBySubIdTypeAndIDPut: participantsErrorTypeIdSubId.put,
-  ParticipantsSubIdByTypeAndIDGet: participantsTypeIdSubId.get,
-  ParticipantsSubIdByTypeAndIDPut: participantsTypeIdSubId.put,
-  ParticipantsSubIdByTypeAndIDPost: participantsTypeIdSubId.post,
-  ParticipantsSubIdByTypeAndIDDelete: participantsTypeIdSubId.delete,
-  ParticipantsByTypeAndIDGet: participantsTypeId.get,
-  ParticipantsByTypeAndIDPut: participantsTypeId.put,
-  ParticipantsByIDAndTypePost: participantsTypeId.post,
-  ParticipantsByTypeAndIDDelete: participantsTypeId.delete,
-  ParticipantsPost: participants.post,
-  PartiesByTypeAndIDGet: partiesTypeId.get,
-  PartiesByTypeAndIDPut: partiesTypeId.put,
-  PartiesErrorByTypeAndIDPut: partiesErrorTypeId.put,
-  PartiesBySubIdTypeAndIDGet: partiesTypeIdSubId.get,
-  PartiesSubIdByTypeAndIDPut: partiesTypeIdSubId.put,
-  PartiesErrorBySubIdTypeAndIDPut: partiesErrorTypeIdSubId.put,
-  EndpointCacheDelete: endpointCache.delete,
-  validationFail: OpenapiBackend.validationFail,
-  notFound: OpenapiBackend.notFound,
-  methodNotAllowed: OpenapiBackend.methodNotAllowed
-}
+    if (handlers.length === 0) {
+      logger.debug('CLI: No handlers specified')
+      return
+    }
 
-module.exports.AdminHandlers = {
-  HealthGet: health.get,
-  OraclesGet: oracles.get,
-  OraclesPost: oracles.post,
-  OraclesByIdPut: oraclesId.put,
-  OraclesByIdDelete: oraclesId.delete,
-  validationFail: OpenapiBackend.validationFail,
-  notFound: OpenapiBackend.notFound,
-  methodNotAllowed: OpenapiBackend.methodNotAllowed
+    module.exports = await Server.initializeHandlers(handlers, Config, logger)
+  })
+
+if (Array.isArray(process.argv) && process.argv.length > 2) {
+  Program.parse(process.argv)
+} else {
+  Program.help()
 }
