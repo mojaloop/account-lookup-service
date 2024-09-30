@@ -624,9 +624,14 @@ paths:
         - $ref: '#/components/parameters/Content-Length'
       requestBody:
         content:
+          application/vnd.interoperability.iso20022.parties+json;version=2.0:
+            schema:
+              $ref: './iso20022-snippets.yaml#/components/schemas/GetParties_IdentificationVerificationReportV03'
+#              $ref: '#/components/schemas/PartiesTypeIDPutResponse'
           application/json:
             schema:
               $ref: '#/components/schemas/PartiesTypeIDPutResponse'
+#              $ref: './iso20022-snippets.yaml#/components/schemas/GetParties_IdentificationVerificationReportV03'
         required: true
       responses:
         200:
