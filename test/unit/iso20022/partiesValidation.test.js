@@ -51,7 +51,7 @@ describe('ISO20022 PUT /parties endpoints validation Tests -->', () => {
     sandbox.stub(participant)
   })
 
-  afterEach( () => {
+  afterEach(() => {
     sandbox.restore()
   })
 
@@ -94,7 +94,7 @@ describe('ISO20022 PUT /parties endpoints validation Tests -->', () => {
       method: 'PUT',
       url: '/parties/MSISDN/123456789',
       headers,
-      payload,
+      payload
     }
     const response = await server.inject(request)
     expect(response.statusCode).toBe(200)
@@ -107,7 +107,7 @@ describe('ISO20022 PUT /parties endpoints validation Tests -->', () => {
       method: 'PUT',
       url: '/parties/MSISDN/123456789',
       headers,
-      payload,
+      payload
     }
     participant.validateParticipant = sandbox.stub().resolves({})
 

@@ -1,6 +1,6 @@
 const idDto = ({
   id = '1234'
-} = {}) => Object.freeze ({
+} = {}) => Object.freeze({
   OrgId: {
     AnyBIC: 'J5BMVH7D',
     Othr: {
@@ -18,7 +18,7 @@ const acctDto = () => Object.freeze({
     Cd: 'BIC',
     Prtry: '123'
   },
-  Issr: 'BIC',
+  Issr: 'BIC'
 })
 
 const agtDto = () => Object.freeze({
@@ -76,7 +76,7 @@ const assgnmtDto = () => ({
   MsgId: '123',
   CreDtTm: '2020-01-01T00:00:00Z',
   Assgnr: party40ChoiceDto(),
-  Assgne: party40ChoiceDto(),
+  Assgne: party40ChoiceDto()
 })
 
 const rptDto = () => Object.freeze({
