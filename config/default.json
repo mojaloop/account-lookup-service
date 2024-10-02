@@ -5,6 +5,7 @@
   },
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
+  "API_TYPE": "fspiop",
   "DATABASE": {
     "DIALECT": "mysql",
     "HOST": "localhost",

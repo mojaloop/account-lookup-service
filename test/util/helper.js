@@ -28,6 +28,7 @@
 const Mustache = require('mustache')
 const Mockgen = require('./mockgen')
 const Enums = require('@mojaloop/central-services-shared').Enum
+const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 const Config = require('../../src/lib/config')
 const payerfsp = 'payerfsp'
 const payeefsp = 'payeefsp'
@@ -72,17 +73,20 @@ const generateMockRequest = async (path, operation, isApi = true) => {
  * @param {string} resource - the flow that is being requested i.e. participants
  * @param {string} source - from who the request is made
  * @param {string} version - the version for the accept and content-type headers
+ * @param {"fspiop"|"iso20022"} apiType - the type of API being called (FSPIP or ISO20022)
  *
  * @returns {object} Returns the default headers
  */
 
-function defaultHeaders (destination, resource, source, version = '1.1') {
+function defaultHeaders (destination, resource, source, version = '1.1', apiType = API_TYPES.fspiop) {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
+  const isoPart = apiType === API_TYPES.iso20022 ? '.iso20022' : ''
+
   return {
-    accept: `application/vnd.interoperability.${resource}+json;version=${version}`,
+    accept: `application/vnd.interoperability${isoPart}.${resource}+json;version=${version}`,
     'fspiop-destination': destination || '',
-    'content-type': `application/vnd.interoperability.${resource}+json;version=${version}`,
+    'content-type': `application/vnd.interoperability${isoPart}.${resource}+json;version=${version}`,
     date: '2019-05-24 08:52:19',
     'fspiop-source': source,
     'fspiop-signature': '{"signature":"iU4GBXSfY8twZMj1zXX1CTe3LDO8Zvgui53icrriBxCUF_wltQmnjgWLWI4ZUEueVeOeTbDPBZazpBWYvBYpl5WJSUoXi14nVlangcsmu2vYkQUPmHtjOW-yb2ng6_aPfwd7oHLWrWzcsjTF-S4dW7GZRPHEbY_qCOhEwmmMOnE1FWF1OLvP0dM0r4y7FlnrZNhmuVIFhk_pMbEC44rtQmMFv4pm4EVGqmIm3eyXz0GkX8q_O1kGBoyIeV_P6RRcZ0nL6YUVMhPFSLJo6CIhL2zPm54Qdl2nVzDFWn_shVyV0Cl5vpcMJxJ--O_Zcbmpv6lxqDdygTC782Ob3CNMvg\\",\\"protectedHeader\\":\\"eyJhbGciOiJSUzI1NiIsIkZTUElPUC1VUkkiOiIvdHJhbnNmZXJzIiwiRlNQSU9QLUhUVFAtTWV0aG9kIjoiUE9TVCIsIkZTUElPUC1Tb3VyY2UiOiJPTUwiLCJGU1BJT1AtRGVzdGluYXRpb24iOiJNVE5Nb2JpbGVNb25leSIsIkRhdGUiOiIifQ"}'
@@ -293,6 +297,13 @@ const mockSpan = () => {
   return new Span()
 }
 
+const partiesHeadersDto = ({
+  source = 'sourceFsp',
+  destination = 'destinationFsp',
+  version = '2.0',
+  apiType
+} = {}) => defaultHeaders(destination, 'parties', source, version, apiType)
+
 module.exports = {
   defaultAdminHeaders,
   validatePayerFspUri,
@@ -313,6 +324,7 @@ module.exports = {
   getOracleResponse,
   getEndPointsResponse,
   fspIdPayload,
+  partiesHeadersDto,
   participantPutEndpointOptions,
   postByTypeIdCurrencyRequest,
   mockSpan

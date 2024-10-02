@@ -112,7 +112,8 @@ const registerPlugins = async (server, openAPIBackend) => {
     return {
       resources,
       supportedProtocolContentVersions,
-      supportedProtocolAcceptVersions
+      supportedProtocolAcceptVersions,
+      apiType: Config.API_TYPE
     }
   }
 

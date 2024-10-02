@@ -1,5 +1,6 @@
 const { randomUUID } = require('node:crypto')
 const { Enum } = require('@mojaloop/central-services-shared')
+const isoFixtures = require('./iso')
 
 const { Headers } = Enum.Http
 
@@ -118,6 +119,7 @@ const mockHapiRequestDto = ({ // https://hapi.dev/api/?v=21.3.3#request-properti
 })
 
 module.exports = {
+  ...isoFixtures,
   partiesCallHeadersDto,
   participantsCallHeadersDto,
   oracleRequestResponseDto,
