@@ -49,7 +49,7 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:unit": "jest --runInBand",
+    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand",
     "test:coverage": "npm test -- --coverage --coverageThreshold='{}'",
     "test:coverage-check": "npm test -- --coverage",
     "test:junit": "npm test -- --reporters=default --reporters=jest-junit",
