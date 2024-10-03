@@ -58,7 +58,7 @@ const sendTimeoutCallback = async (cacheKey) => {
   ).startTimer()
 
   const [, destination, partyType, partyId] = cacheKey.split(':')
-  const { errorInformation, params, headers, endpointType, span } = timeoutCallbackDto({ destination, partyId, partyType })
+  const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
 
   try {
     await validateParticipant(destination)

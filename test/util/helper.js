@@ -30,6 +30,7 @@ const Mockgen = require('./mockgen')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 const Config = require('../../src/lib/config')
+
 const payerfsp = 'payerfsp'
 const payeefsp = 'payeefsp'
 const validatePayerFspUri = Mustache.render(Config.SWITCH_ENDPOINT + Enums.EndPoints.FspEndpointTemplates.PARTICIPANTS_GET, { fsp: payerfsp })
