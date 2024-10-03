@@ -25,4 +25,6 @@ const timeoutCallbackDto = ({ destination, partyId, partyType }) => {
   return { ...dto, span }
 }
 
-module.exports = { timeoutCallbackDto }
+module.exports = {
+  timeoutCallbackDto
+}

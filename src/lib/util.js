@@ -38,7 +38,9 @@ const pathForInterface = ({ isAdmin, isMockInterface }) => {
     if (isMockInterface) {
       apiFile = 'api_swagger.json'
     } else {
-      apiFile = Config.API_TYPE === Hapi.API_TYPES.iso20022 ? 'api-swagger-iso20022-parties.yaml' : 'api-swagger.yaml'
+      apiFile = Config.API_TYPE === Hapi.API_TYPES.iso20022
+        ? 'api-swagger-iso20022-parties.yaml'
+        : 'api-swagger.yaml'
     }
   }
   return Path.resolve(__dirname, pathFolder + apiFile)
