@@ -112,8 +112,8 @@ services:
       dockerfile: Dockerfile
     restart: always
     env_file: ./test/integration/.env
-#    ports:
-#      - "${PROXY_PORT}:${PROXY_PORT}"
+    ports:
+      - "${PROXY_PORT}:${PROXY_PORT}"
     networks:
       - als-mojaloop-net
 
