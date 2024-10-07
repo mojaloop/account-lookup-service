@@ -57,9 +57,9 @@ describe('Timeout Handler', () => {
 
     // check that the callbacks are sent and received at the FSP
     // for test resilience, we will retry the history check a few times
-    const retryMaxCount = 10;
+    const retryMaxCount = 20
     const retryInterval = 2000
-    let retryCount = 0;
+    let retryCount = 0
 
     while (history.length < 2 && retryCount < retryMaxCount) {
       await wait(retryInterval)
