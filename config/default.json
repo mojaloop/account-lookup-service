@@ -5,6 +5,7 @@
   },
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
+  "API_TYPE": "fspiop",
   "DATABASE": {
     "DIALECT": "mysql",
     "HOST": "localhost",
@@ -23,18 +24,21 @@
   },
   "PROTOCOL_VERSIONS": {
     "CONTENT": {
-      "DEFAULT": "1.1",
+      "DEFAULT": "2.0",
       "VALIDATELIST": [
         "1.1",
-        "1.0"
+        "1.0",
+        "2.0"
       ]
     },
     "ACCEPT": {
-      "DEFAULT": "1",
+      "DEFAULT": "2",
       "VALIDATELIST": [
         "1",
         "1.0",
-        "1.1"
+        "1.1",
+        "2",
+        "2.0"
       ]
     }
   },

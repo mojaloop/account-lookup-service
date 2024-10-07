@@ -34,6 +34,7 @@
   "pre-commit": [
     "lint",
     "dep:check",
+    "audit:check",
     "test"
   ],
   "scripts": {
@@ -48,7 +49,7 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:unit": "jest --runInBand",
+    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand",
     "test:coverage": "npm test -- --coverage --coverageThreshold='{}'",
     "test:coverage-check": "npm test -- --coverage",
     "test:junit": "npm test -- --reporters=default --reporters=jest-junit",
@@ -93,11 +94,12 @@
     "@mojaloop/central-services-health": "15.0.0",
     "@mojaloop/central-services-logger": "11.5.1",
     "@mojaloop/central-services-metrics": "12.0.8",
-    "@mojaloop/central-services-shared": "18.7.1",
+    "@mojaloop/central-services-shared": "18.10.0-snapshot.4",
     "@mojaloop/central-services-stream": "11.3.1",
     "@mojaloop/database-lib": "11.0.6",
     "@mojaloop/event-sdk": "14.1.1",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.3.0",
+    "@mojaloop/ml-schema-transformer-lib": "0.1.1-snapshot.17",
     "@mojaloop/sdk-standard-components": "18.4.0",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.17.1",
@@ -116,9 +118,6 @@
     "rc": "1.2.8"
   },
   "overrides": {
-    "@mojaloop/central-services-error-handling": {
-      "@mojaloop/sdk-standard-components": "$@mojaloop/sdk-standard-components"
-    },
     "@mojaloop/central-services-health": {
       "@mojaloop/central-services-logger": ">=11.4.0"
     },

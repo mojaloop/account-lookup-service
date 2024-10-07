@@ -31,10 +31,6 @@
  ******/
 'use strict'
 
-const Metrics = require('@mojaloop/central-services-metrics')
-const Participant = require('../../models/participantEndpoint/facade')
-const { ERROR_MESSAGES } = require('../../constants')
-const { timeoutCallbackDto } = require('./dto')
 const {
   Factory: { createFSPIOPError, reformatFSPIOPError },
   Enums: { FSPIOPErrorCodes }
@@ -44,6 +40,11 @@ const {
   EventStatusType,
   AuditEventAction
 } = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
+
+const Participant = require('../../models/participantEndpoint/facade')
+const { ERROR_MESSAGES } = require('../../constants')
+const { timeoutCallbackDto } = require('./dto')
 const { logger } = require('../../lib')
 
 const timeoutInterschemePartiesLookups = async ({ proxyCache, batchSize }) => {
@@ -58,7 +59,8 @@ const sendTimeoutCallback = async (cacheKey) => {
   ).startTimer()
 
   const [, destination, partyType, partyId] = cacheKey.split(':')
-  const { errorInformation, params, headers, endpointType, span } = timeoutCallbackDto({ destination, partyId, partyType })
+  const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
+  logger.debug('sendTimeoutCallback details:', { destination, partyType, partyId, cacheKey })
 
   try {
     await validateParticipant(destination)
@@ -66,9 +68,10 @@ const sendTimeoutCallback = async (cacheKey) => {
     await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
     histTimerEnd({ success: true })
   } catch (err) {
+    logger.warn('error in sendTimeoutCallback: ', err)
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
-    finishSpan(span, fspiopError)
+    await finishSpan(span, fspiopError)
     throw fspiopError
   }
 }

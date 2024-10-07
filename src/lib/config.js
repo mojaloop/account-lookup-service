@@ -107,6 +107,7 @@ const config = {
   HUB_ID: RC.HUB_PARTICIPANT.ID,
   HUB_NAME: RC.HUB_PARTICIPANT.NAME,
   API_PORT: RC.API_PORT,
+  API_TYPE: RC.API_TYPE, // 'fspiop' or 'iso20022'
   DATABASE: {
     client: RC.DATABASE.DIALECT,
     connection: {
