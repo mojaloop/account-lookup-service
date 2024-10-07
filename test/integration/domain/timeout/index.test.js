@@ -6,6 +6,8 @@ const config = require('../../../../src/lib/config')
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+const CRON_TIMEOUT_MS = 10_000 // see TIMEXP
+
 describe('Timeout Handler', () => {
   const { type, proxyConfig } = config.PROXY_CACHE_CONFIG
   const proxyCache = createProxyCache(type, proxyConfig)
@@ -47,7 +49,7 @@ describe('Timeout Handler', () => {
     expect(results.includes(false)).toBe(false)
 
     // wait for the timeout handler to process the keys
-    await wait(35_000)
+    await wait(CRON_TIMEOUT_MS * 1.5)
 
     // check that the keys are no longer in redis
     const exists = await Promise.all(keys.map(key => proxyCache.redisClient.exists(key)))
@@ -55,7 +57,10 @@ describe('Timeout Handler', () => {
 
     // check that the callbacks are sent and received at the FSP
     // for test resilience, we will retry the history check a few times
-    let retryCount = 0; const retryMaxCount = 10; const retryInterval = 2000
+    const retryMaxCount = 10;
+    const retryInterval = 2000
+    let retryCount = 0;
+
     while (history.length < 2 && retryCount < retryMaxCount) {
       await wait(retryInterval)
       history = await proxyClient.getHistory()
