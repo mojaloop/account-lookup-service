@@ -20,10 +20,12 @@ module.exports = {
     getDecoratedValue: true
   },
   PROXY_CACHE: {
-    type: 'redis',
+    enabled: true,
+    type: 'redis-cluster',
     proxyConfig: {
-      host: 'redis',
-      port: 6379
+      cluster: [
+        { host: 'redis-node-0', port: 6379 }
+      ]
     }
   }
 }
