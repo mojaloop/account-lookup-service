@@ -5,6 +5,8 @@ const {
   CL_PORT
 } = process.env
 
+console.log({ PROXY_HOST, PROXY_PORT, PROXY_NAME, CL_PORT })
+
 const PARTY_ID_TYPE = 'IBAN' // for proxy testing
 const PAYER_DFSP = 'testPayerDfsp'
 
