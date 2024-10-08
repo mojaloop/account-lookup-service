@@ -57,7 +57,7 @@ describe('Timeout Handler', () => {
 
     // check that the callbacks are sent and received at the FSP
     // for test resilience, we will retry the history check a few times
-    const retryMaxCount = 30
+    const retryMaxCount = 20
     const retryIntervalSec = 2
     let retryCount = 0
 
@@ -71,5 +71,5 @@ describe('Timeout Handler', () => {
     const path1 = history.find(h => h.path.includes(partyIds[1])).path
     expect(path0).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[0]}/error`)
     expect(path1).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[1]}/error`)
-  }, 90_000)
+  }, 60_000)
 })
