@@ -6,10 +6,13 @@ const config = require('../../src/lib/config')
 const fixtures = require('../fixtures')
 const { CL_PORT, PROXY_HOST, PROXY_PORT, PARTY_ID_TYPE } = require('../integration/constants')
 
-axiosRetry(axios, { retries: 5 })
+axiosRetry(axios, {
+  retries: 5,
+  retryDelay: retryCount => retryCount * 1000
+})
 
-const alsAdminUrl = `http://127.0.0.1:${config.ADMIN_PORT}`
-const clUrl = `http://127.0.0.1:${CL_PORT}`
+const alsAdminUrl = `http://localhost:${config.ADMIN_PORT}`
+const clUrl = `http://localhost:${CL_PORT}`
 const proxyUrl = `http://${PROXY_HOST}:${PROXY_PORT}`
 
 const headers = {
