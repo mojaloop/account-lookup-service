@@ -58,11 +58,11 @@ describe('Timeout Handler', () => {
     // check that the callbacks are sent and received at the FSP
     // for test resilience, we will retry the history check a few times
     const retryMaxCount = 30
-    const retryInterval = 2000
+    const retryIntervalSec = 2
     let retryCount = 0
 
     while (history.length < 2 && retryCount < retryMaxCount) {
-      await wait(retryInterval)
+      await wait(retryIntervalSec)
       history = await proxyClient.getHistory()
       retryCount++
     }
