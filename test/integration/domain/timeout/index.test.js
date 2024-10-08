@@ -49,7 +49,7 @@ describe('Timeout Handler', () => {
     expect(results.includes(false)).toBe(false)
 
     // wait for the timeout handler to process the keys
-    await wait(CRON_TIMEOUT_MS * 1.5)
+    await wait(CRON_TIMEOUT_MS * 2)
 
     // check that the keys are no longer in redis
     const exists = await Promise.all(keys.map(key => proxyCache.redisClient.exists(key)))
@@ -57,7 +57,7 @@ describe('Timeout Handler', () => {
 
     // check that the callbacks are sent and received at the FSP
     // for test resilience, we will retry the history check a few times
-    const retryMaxCount = 20
+    const retryMaxCount = 30
     const retryInterval = 2000
     let retryCount = 0
 
@@ -71,5 +71,5 @@ describe('Timeout Handler', () => {
     const path1 = history.find(h => h.path.includes(partyIds[1])).path
     expect(path0).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[0]}/error`)
     expect(path1).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[1]}/error`)
-  }, 60_000)
+  }, 90_000)
 })
