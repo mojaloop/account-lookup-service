@@ -115,7 +115,8 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       span,
       jwsSigner,
       protocolVersions,
-      hubNameRegex
+      hubNameRegex,
+      apiType: Config.API_TYPE
     })
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName: requestedParticipant })
     return resp
@@ -225,7 +226,8 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       hubNameRegex,
       span,
       jwsSigner,
-      protocolVersions
+      protocolVersions,
+      apiType: Config.API_TYPE
     })
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName })
   } catch (err) {
