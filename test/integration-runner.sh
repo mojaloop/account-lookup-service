@@ -27,6 +27,7 @@ RESULTS_DIR="${RESULTS_DIR:-"/tmp"}"
 
 function startDocker() {
   npm run dc:up
+  npm run wait-4-docker
   docker-compose \
     -f ${DIR}/../docker-compose.integration.yml \
     up -d
