@@ -26,8 +26,8 @@ JEST_JUNIT_OUTPUT_NAME="${JEST_JUNIT_OUTPUT_NAME:-"junit.xml"}"
 RESULTS_DIR="${RESULTS_DIR:-"/tmp"}"
 
 function startDocker() {
+  npm run dc:up
   docker-compose \
-    -f ${DIR}/../docker-compose.yml \
     -f ${DIR}/../docker-compose.integration.yml \
     up -d
 }
