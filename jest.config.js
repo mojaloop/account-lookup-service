@@ -10,5 +10,7 @@ module.exports = {
       branches: 90,
       lines: 90
     }
-  }
+  },
+  setupFiles: ['<rootDir>/test/unit/setup.js'],
+  testMatch: ['<rootDir>/test/unit/**/*.test.js']
 }

@@ -1,6 +1,7 @@
 const util = require('util')
 const Path = require('path')
 const Enum = require('@mojaloop/central-services-shared').Enum
+const { HeaderValidation } = require('@mojaloop/central-services-shared').Util
 const Config = require('../lib/config')
 
 const getSpanTags = ({ headers }, transactionType, transactionAction) => {
@@ -55,5 +56,9 @@ function getStackOrInspect (err) {
 module.exports = {
   getSpanTags,
   pathForInterface,
-  getStackOrInspect
+  getStackOrInspect,
+  hubNameConfig: {
+    hubName: Config.HUB_NAME,
+    hubNameRegex: HeaderValidation.getHubNameRegex(Config.HUB_NAME)
+  }
 }

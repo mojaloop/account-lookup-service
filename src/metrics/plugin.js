@@ -33,7 +33,7 @@
 'use strict'
 
 /**
- * @module src/handlers/api/plugin
+ * @module src/metrics/plugin
  */
 
 /**
