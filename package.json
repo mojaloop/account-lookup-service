@@ -100,7 +100,7 @@
     "@mojaloop/database-lib": "11.0.6",
     "@mojaloop/event-sdk": "14.1.1",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.3.0",
-    "@mojaloop/ml-schema-transformer-lib": "0.1.1-snapshot.17",
+    "@mojaloop/ml-schema-transformer-lib": "1.1.0",
     "@mojaloop/sdk-standard-components": "19.0.0",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.17.1",
