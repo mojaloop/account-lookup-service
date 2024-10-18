@@ -8,7 +8,7 @@ describe('TransformFacades Tests -->', () => {
     const isoPayload = await TransformFacades.FSPIOP.parties.putError({
       body,
       headers,
-      params: { SubId: '123456789' }
+      params: { Type: 'MSISDN', ID: '123456789' }
     })
     expect(isoPayload.body).toBeTruthy()
     expect(isoPayload.body.Assgnmt).toBeTruthy()

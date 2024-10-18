@@ -222,7 +222,9 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
   ).startTimer()
   try {
     const partySubIdOrType = params.SubId || undefined
-    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+    const callbackEndpointType = partySubIdOrType
+      ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
     if (destinationParticipant) {
       const decodedPayload = decodePayload(dataUri, { asParsed: false })
@@ -231,7 +233,8 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
         callbackEndpointType,
         decodedPayload.body.toString(),
         headers,
-        params)
+        params
+      )
     } else {
       await participant.sendErrorToParticipant(
         headers[Enums.Http.Headers.FSPIOP.SOURCE],
@@ -239,15 +242,21 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(),
         headers,
         params,
-        payload)
+        payload
+      )
     }
     histTimerEnd({ success: true })
   } catch (err) {
     Logger.isErrorEnabled && Logger.error(err)
     try {
       const callbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
-        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(), headers, params)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        callbackEndpointType,
+        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(),
+        headers,
+        params
+      )
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
