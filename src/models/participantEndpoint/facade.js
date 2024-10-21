@@ -102,9 +102,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       content: Config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
-    const jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
-
-    const resp = await Util.Request.sendRequest({
+    const params = {
       url: requestedEndpoint,
       headers,
       source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
@@ -113,11 +111,15 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       payload,
       responseType: Enums.Http.ResponseTypes.JSON,
       span,
-      jwsSigner,
       protocolVersions,
       hubNameRegex,
       apiType: Config.API_TYPE
-    })
+    }
+    Logger.isDebugEnabled && Logger.debug(`participant - sendRequest params: ${JSON.stringify(params)}`)
+
+    params.jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
+
+    const resp = await Util.Request.sendRequest(params)
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName: requestedParticipant })
     return resp
   } catch (err) {
@@ -212,10 +214,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
     }
 
-    Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-    const jwsSigner = defineJwsSigner(Config, clonedHeaders, requesterErrorEndpoint)
-
-    await Util.Request.sendRequest({
+    const params = {
       url: requesterErrorEndpoint,
       headers: clonedHeaders,
       source: clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE],
@@ -225,10 +224,14 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       responseType: Enums.Http.ResponseTypes.JSON,
       hubNameRegex,
       span,
-      jwsSigner,
       protocolVersions,
       apiType: Config.API_TYPE
-    })
+    }
+    Logger.isDebugEnabled && Logger.debug(`participant - sendErrorToParticipant params: ${JSON.stringify(params)}`)
+
+    params.jwsSigner = defineJwsSigner(Config, clonedHeaders, requesterErrorEndpoint)
+
+    await Util.Request.sendRequest(params)
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName })
