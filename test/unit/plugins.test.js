@@ -50,6 +50,7 @@ describe('Plugin Tests', () => {
     // Arrange
     const server = {
       register: sandbox.spy(),
+      ext: sandbox.spy(),
       info: {
         port: '8000'
       }
@@ -72,6 +73,7 @@ describe('Plugin Tests', () => {
     // Arrange
     const server = {
       register: sandbox.spy(),
+      ext: sandbox.spy(),
       info: {
         port: '8000'
       }

@@ -24,16 +24,22 @@
  ******/
 'use strict'
 
-const Config = require('./lib/config')
+const { randomUUID } = require('node:crypto')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
-const CentralServices = require('@mojaloop/central-services-shared')
-const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
-const OpenapiBackendValidator = require('@mojaloop/central-services-shared').Util.Hapi.OpenapiBackendValidator
-const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
+const {
+  APIDocumentation,
+  FSPIOPHeaderValidation,
+  HapiEventPlugin,
+  HapiRawPayload,
+  OpenapiBackendValidator
+} = require('@mojaloop/central-services-shared').Util.Hapi
+
+const Config = require('./lib/config')
 const MetricsPlugin = require('./metrics/plugin')
+const RequestLogger = require('./lib/requestLogger')
 
 const registerPlugins = async (server, openAPIBackend) => {
   await server.register(OpenapiBackendValidator)
@@ -121,10 +127,10 @@ const registerPlugins = async (server, openAPIBackend) => {
     Inert,
     Vision,
     ErrorHandling,
-    RawPayloadToDataUri,
-    CentralServices.Util.Hapi.HapiEventPlugin,
+    HapiRawPayload,
+    HapiEventPlugin,
     {
-      plugin: CentralServices.Util.Hapi.FSPIOPHeaderValidation.plugin,
+      plugin: FSPIOPHeaderValidation.plugin,
       options: getOptionsForFSPIOPHeaderValidation()
     }
   ])
@@ -132,6 +138,24 @@ const registerPlugins = async (server, openAPIBackend) => {
   if (Config.DISPLAY_ROUTES === true) {
     await server.register([Blipp])
   }
+
+  await server.ext([
+    {
+      type: 'onRequest',
+      method: (request, h) => {
+        request.headers.traceid = request.headers.traceid || randomUUID()
+        RequestLogger.logRequest(request)
+        return h.continue
+      }
+    },
+    {
+      type: 'onPreResponse',
+      method: (request, h) => {
+        RequestLogger.logResponse(request)
+        return h.continue
+      }
+    }
+  ])
 }
 
 module.exports = {
