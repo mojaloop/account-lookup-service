@@ -23,7 +23,6 @@
  ******/
 'use strict'
 
-const { randomUUID } = require('node:crypto')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
 
@@ -37,7 +36,6 @@ const { name, version } = require('../package.json')
 const Db = require('./lib/db')
 const Util = require('./lib/util')
 const Plugins = require('./plugins')
-const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
 const APIHandlers = require('./api')
 const Routes = require('./api/routes')
@@ -104,23 +102,6 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig, proxyM
     }
   }
 
-  await server.ext([
-    {
-      type: 'onPreHandler',
-      method: (request, h) => {
-        request.headers.traceid = request.headers.traceid || randomUUID()
-        RequestLogger.logRequest(request)
-        return h.continue
-      }
-    },
-    {
-      type: 'onPreResponse',
-      method: (request, h) => {
-        RequestLogger.logResponse(request)
-        return h.continue
-      }
-    }
-  ])
   await Plugins.registerPlugins(server, api, isAdmin)
 
   server.route(routes)
