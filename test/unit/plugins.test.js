@@ -33,7 +33,7 @@ const OpenapiBackend = require('@mojaloop/central-services-shared').Util.Openapi
 
 const { registerPlugins } = require('../../src/plugins')
 const Config = require('../../src/lib/config')
-const Handlers = require('../../src/handlers')
+const Handlers = require('../../src/api')
 
 let sandbox
 

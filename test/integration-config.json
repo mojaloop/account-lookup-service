@@ -1,4 +1,8 @@
 {
+  "HUB_PARTICIPANT": {
+    "ID": 1,
+    "NAME": "Hub"
+  },
   "TEST_ALS_HOST":"account-lookup-service",
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
@@ -42,6 +46,15 @@
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
+  "PROXY_CACHE": {
+    "enabled": true,
+    "type": "redis-cluster",
+    "proxyConfig": {
+      "cluster": [
+        { "host": "redis-node-0", "port": 6379 }
+      ]
+    }
+  },
   "SWITCH_ENDPOINT": "http://localhost:3001",
   "INSTRUMENTATION": {
     "METRICS": {
@@ -61,7 +74,6 @@
   "ENDPOINT_SECURITY":{
     "JWS": {
       "JWS_SIGN": false,
-      "FSPIOP_SOURCE_TO_SIGN": "switch",
       "JWS_SIGNING_KEY_PATH": "secrets/jwsSigningKey.key"
     }
   },

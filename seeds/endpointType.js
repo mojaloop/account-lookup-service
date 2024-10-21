@@ -23,10 +23,32 @@
  ******/
 'use strict'
 
+const { FspEndpointTypes } = require('@mojaloop/central-services-shared').Enum.EndPoints
+
 const endpointTypes = [
   {
     type: 'URL',
     description: 'REST URLs'
+  },
+  {
+    type: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT,
+    description: 'Participant callback URL to which put participant information can be sent'
+  },
+  {
+    type: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR,
+    description: 'Participant callback URL to which put participant error information can be sent'
+  },
+  {
+    type: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET,
+    description: 'Parties callback URL to which get parties information can be requested'
+  },
+  {
+    type: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT,
+    description: 'Parties callback URL to which put parties information can be sent'
+  },
+  {
+    type: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR,
+    description: 'Parties callback URL to which put participant error information can be sent'
   }
 ]
 

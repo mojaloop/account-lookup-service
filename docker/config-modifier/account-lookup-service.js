@@ -18,5 +18,12 @@ module.exports = {
     expiresIn: 180000,
     generateTimeout: 30000,
     getDecoratedValue: true
+  },
+  PROXY_CACHE: {
+    type: 'redis',
+    proxyConfig: {
+      host: 'redis',
+      port: 6379
+    }
   }
 }

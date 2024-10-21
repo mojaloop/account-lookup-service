@@ -366,12 +366,8 @@ jobs:
       #     command: |
       #       docker-compose pull
       - run:
-          name: Start docker-compose
-          command: |
-            docker-compose up -d
-
-            # Check straight away to see if any containers have exited
-            docker-compose ps
+          name: Start docker compose
+          command: npm run dc:up
       - run:
           name: Wait for Health Services
           command: |
