@@ -9,8 +9,7 @@ describe('timeoutCallbackDto Tests -->', () => {
     config.API_TYPE = realApiType
   })
 
-  // todo: unskip after fixing transformLib SubId issue for parties.putError
-  test.skip('should produce ISO payload', async () => {
+  test('should produce ISO payload', async () => {
     config.API_TYPE = API_TYPES.iso20022
     const destination = 'D1'
     const partyId = 'P1'
