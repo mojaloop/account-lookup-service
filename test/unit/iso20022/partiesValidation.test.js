@@ -98,7 +98,6 @@ describe('ISO20022 PUT /parties endpoints validation Tests -->', () => {
       payload
     }
     const response = await server.inject(request)
-    console.log(response)
     expect(response.statusCode).toBe(200)
   })
 
@@ -114,7 +113,6 @@ describe('ISO20022 PUT /parties endpoints validation Tests -->', () => {
     participant.validateParticipant = sandbox.stub().resolves({})
 
     const response = await server.inject(request)
-    console.log(response)
     expect(response.statusCode).toBe(200)
     await sleep(1000)
 
