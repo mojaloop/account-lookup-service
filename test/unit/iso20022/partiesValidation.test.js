@@ -112,8 +112,8 @@ describe('ISO20022 PUT /parties endpoints validation Tests -->', () => {
     }
     participant.validateParticipant = sandbox.stub().resolves({})
 
-    const response = await server.inject(request)
-    expect(response.statusCode).toBe(200)
+    const { statusCode } = await server.inject(request)
+    expect(statusCode).toBe(200)
     await sleep(1000)
 
     expect(participant.validateParticipant.callCount).toBe(2)
