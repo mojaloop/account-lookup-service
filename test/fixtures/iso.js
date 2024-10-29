@@ -74,7 +74,7 @@ const party40ChoiceDto = ({
 
 const assgnmtDto = () => ({
   MsgId: '123',
-  CreDtTm: '2020-01-01T00:00:00Z',
+  CreDtTm: '2024-10-29T16:25:11.916Z',
   Assgnr: party40ChoiceDto(),
   Assgne: party40ChoiceDto()
 })
