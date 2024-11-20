@@ -54,7 +54,7 @@
     "test:coverage-check": "npm test -- --coverage",
     "test:junit": "npm test -- --reporters=default --reporters=jest-junit",
     "test:xunit": "npm run test:junit",
-    "test:functional": "sh ./scripts/test-functional.sh",
+    "test:functional": "bash ./scripts/test-functional.sh",
     "test:int": "npm run migrate  &&  npm run onboarding  &&  jest --config=./jest-int.config.js --runInBand",
     "test:integration": "npm run dc:up && npm run wait-4-docker && npm run test:int | tee ./test/results/test-int.log",
     "test:integration-runner": "TEST_MODE=rm ./test/integration-runner.sh",
