@@ -8,19 +8,10 @@ const {
   EndPoints: { FspEndpointTypes }
 } = require('@mojaloop/central-services-shared').Enum
 const { Tracer } = require('@mojaloop/event-sdk')
-const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 
-const { TransformFacades } = require('../../lib')
 const LibUtil = require('../../lib/util')
 const Config = require('../../lib/config')
-
-// todo: move to a shared place
-const makeErrorPayload = async (config, fspiopError, headers, params) => {
-  const body = fspiopError.toApiErrorObject(config.ERROR_HANDLING)
-  return config.API_TYPE === API_TYPES.iso20022
-    ? (await TransformFacades.FSPIOP.parties.putError({ body, headers, params })).body
-    : body
-}
+const partiesUtils = require('../parties/utils')
 
 const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
   const headers = {
@@ -34,7 +25,7 @@ const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
   const error = createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR)
 
   const dto = {
-    errorInformation: await makeErrorPayload(Config, error, headers, params),
+    errorInformation: await partiesUtils.makePutPartiesErrorPayload(Config, error, headers, params),
     headers,
     params,
     endpointType: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
@@ -47,6 +38,5 @@ const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
 }
 
 module.exports = {
-  makeErrorPayload,
   timeoutCallbackDto
 }
