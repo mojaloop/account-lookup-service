@@ -3,8 +3,7 @@ const EventSdk = require('@mojaloop/event-sdk')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const participant = require('../../models/participantEndpoint/facade')
-const Config = require('../../lib/config')
-const { logger } = require('../../lib')
+const dto = require('../timeout/dto')
 
 const { FspEndpointTypes } = Enum.EndPoints
 const { Headers } = Enum.Http
@@ -54,13 +53,13 @@ const swapSourceDestinationHeaders = (headers) => {
 }
 
 // change signature to accept object
-const handleErrorOnSendingCallback = async (err, headers, params, requester) => {
+const createErrorHandlerOnSendingCallback = (config, logger) => async (err, headers, params, requester) => {
   try {
     logger.error('error in sending parties callback', err)
     const sendTo = requester || headers[Headers.FSPIOP.SOURCE]
     const errorCallbackEndpointType = errorPartyCbType(params.SubId)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const errInfo = fspiopError.toApiErrorObject(Config.ERROR_HANDLING)
+    const errInfo = await dto.makeErrorPayload(config, fspiopError, headers, params)
 
     await participant.sendErrorToParticipant(sendTo, errorCallbackEndpointType, errInfo, headers, params)
 
@@ -78,7 +77,7 @@ module.exports = {
   putPartyCbType,
   errorPartyCbType,
   finishSpanWithError,
-  handleErrorOnSendingCallback,
+  createErrorHandlerOnSendingCallback,
   alsRequestDto,
   swapSourceDestinationHeaders
 }

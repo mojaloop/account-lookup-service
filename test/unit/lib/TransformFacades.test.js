@@ -5,7 +5,7 @@ describe('TransformFacades Tests -->', () => {
   test('should transform PUT /parties error callback payload to ISO format', async () => {
     const body = errorCallbackResponseDto()
     const headers = partiesCallHeadersDto()
-    TransformFacades.FSPIOP.configure({ logger: console, isTestingMode: true })
+    TransformFacades.FSPIOP.configure({ isTestingMode: true })
     const isoPayload = await TransformFacades.FSPIOP.parties.putError({
       body,
       headers,

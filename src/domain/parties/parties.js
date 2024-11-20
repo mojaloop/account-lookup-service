@@ -44,6 +44,7 @@ const utils = require('./utils')
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
 
 const logger = loggerFactory('domain:put-parties')
+const handleErrorOnSendingCallback = utils.createErrorHandlerOnSendingCallback(Config, logger)
 
 /**
  * @function putPartiesByTypeAndID
@@ -124,7 +125,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     logger.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
     histTimerEnd({ success: true })
   } catch (err) {
-    await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
+    await handleErrorOnSendingCallback(err, headers, params, sendTo)
     histTimerEnd({ success: false })
   }
 }
@@ -197,7 +198,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     logger.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
     histTimerEnd({ success: true })
   } catch (err) {
-    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
+    fspiopError = await handleErrorOnSendingCallback(err, headers, params, sendTo)
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

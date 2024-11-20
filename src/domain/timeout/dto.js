@@ -14,9 +14,10 @@ const { TransformFacades } = require('../../lib')
 const LibUtil = require('../../lib/util')
 const Config = require('../../lib/config')
 
-const makeErrorPayload = async (headers, params) => {
-  const body = createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR).toApiErrorObject(Config.ERROR_HANDLING)
-  return Config.API_TYPE === API_TYPES.iso20022
+// todo: move to a shared place
+const makeErrorPayload = async (config, fspiopError, headers, params) => {
+  const body = fspiopError.toApiErrorObject(config.ERROR_HANDLING)
+  return config.API_TYPE === API_TYPES.iso20022
     ? (await TransformFacades.FSPIOP.parties.putError({ body, headers, params })).body
     : body
 }
@@ -30,8 +31,10 @@ const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
     ID: partyId,
     Type: partyType
   }
+  const error = createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR)
+
   const dto = {
-    errorInformation: await makeErrorPayload(headers, params),
+    errorInformation: await makeErrorPayload(Config, error, headers, params),
     headers,
     params,
     endpointType: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
@@ -44,5 +47,6 @@ const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
 }
 
 module.exports = {
+  makeErrorPayload,
   timeoutCallbackDto
 }
