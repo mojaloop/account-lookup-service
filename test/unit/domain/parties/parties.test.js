@@ -613,7 +613,7 @@ describe('Parties Tests', () => {
     it('handles error when `participant.validateParticipant()` returns no participant', async () => {
       expect.hasAssertions()
       // Arrange
-      const loggerStub = sandbox.stub(logger, 'error')
+      const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.sendErrorToParticipant = sandbox.stub().resolves()
 
       const payload = JSON.stringify({ testPayload: true })
@@ -874,7 +874,7 @@ describe('Parties Tests', () => {
     it('handles error when `validateParticipant()` fails', async () => {
       expect.hasAssertions()
       // Arrange)
-      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
+      const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
@@ -894,7 +894,7 @@ describe('Parties Tests', () => {
       expect.hasAssertions()
       // Arrange
 
-      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
+      const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })

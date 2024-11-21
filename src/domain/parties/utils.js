@@ -1,10 +1,9 @@
-const { Enum } = require('@mojaloop/central-services-shared')
+const { Enum, Util: { Hapi } } = require('@mojaloop/central-services-shared')
 const EventSdk = require('@mojaloop/event-sdk')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const participant = require('../../models/participantEndpoint/facade')
-const Config = require('../../lib/config')
-const { logger } = require('../../lib')
+const { TransformFacades } = require('../../lib')
 
 const { FspEndpointTypes } = Enum.EndPoints
 const { Headers } = Enum.Http
@@ -33,6 +32,13 @@ const finishSpanWithError = async (childSpan, fspiopError) => {
   }
 }
 
+const makePutPartiesErrorPayload = async (config, fspiopError, headers, params) => {
+  const body = fspiopError.toApiErrorObject(config.ERROR_HANDLING)
+  return config.API_TYPE === Hapi.API_TYPES.iso20022
+    ? (await TransformFacades.FSPIOP.parties.putError({ body, headers, params })).body
+    : body
+}
+
 const alsRequestDto = (sourceId, params) => ({
   sourceId,
   type: params.Type,
@@ -54,13 +60,13 @@ const swapSourceDestinationHeaders = (headers) => {
 }
 
 // change signature to accept object
-const handleErrorOnSendingCallback = async (err, headers, params, requester) => {
+const createErrorHandlerOnSendingCallback = (config, logger) => async (err, headers, params, requester) => {
   try {
     logger.error('error in sending parties callback', err)
     const sendTo = requester || headers[Headers.FSPIOP.SOURCE]
     const errorCallbackEndpointType = errorPartyCbType(params.SubId)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const errInfo = fspiopError.toApiErrorObject(Config.ERROR_HANDLING)
+    const errInfo = await makePutPartiesErrorPayload(config, fspiopError, headers, params)
 
     await participant.sendErrorToParticipant(sendTo, errorCallbackEndpointType, errInfo, headers, params)
 
@@ -77,8 +83,9 @@ module.exports = {
   getPartyCbType,
   putPartyCbType,
   errorPartyCbType,
+  makePutPartiesErrorPayload,
   finishSpanWithError,
-  handleErrorOnSendingCallback,
+  createErrorHandlerOnSendingCallback,
   alsRequestDto,
   swapSourceDestinationHeaders
 }

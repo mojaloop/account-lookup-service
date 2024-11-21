@@ -32,21 +32,22 @@ const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const { createCallbackHeaders } = require('../../lib/headers')
 const { ERROR_MESSAGES } = require('../../constants')
-const { loggerFactory } = require('../../lib')
+const { logger } = require('../../lib')
 const Config = require('../../lib/config')
 const utils = require('./utils')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
 
-const logger = loggerFactory('domain:get-parties')
+const log = logger.child('domain:get-parties')
+const handleErrorOnSendingCallback = utils.createErrorHandlerOnSendingCallback(Config, log)
 
 const proxyCacheTtlSec = 40 // todo: make configurable
 
 const validateRequester = async ({ source, proxy, proxyCache }) => {
   const sourceParticipant = await participant.validateParticipant(source)
   if (sourceParticipant) {
-    logger.debug('source is in scheme', { source })
+    log.debug('source is in scheme', { source })
     return source
   }
 
@@ -63,7 +64,7 @@ const validateRequester = async ({ source, proxy, proxyCache }) => {
 
   const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
   // think, what if isCached !== true?
-  logger.info('source is added to proxyMapping cache:', { source, proxy, isCached })
+  log.info('source is added to proxyMapping cache:', { source, proxy, isCached })
   return proxy
 }
 
@@ -94,7 +95,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const callbackEndpointType = utils.getPartyCbType(partySubId)
 
   const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
-  logger.info('parties::getPartiesByTypeAndID::begin', { source, proxy, params })
+  log.info('parties::getPartiesByTypeAndID::begin', { source, proxy, params })
 
   let requester
   let fspiopError
@@ -127,7 +128,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
       await participant.sendRequest(headers, destination, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
 
       histTimerEnd({ success: true })
-      logger.info('discovery getPartiesByTypeAndID request was sent to destination', { destination })
+      log.info('discovery getPartiesByTypeAndID request was sent to destination', { destination })
       return
     }
 
@@ -161,7 +162,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         const schemeParticipant = await participant.validateParticipant(fspId)
         if (schemeParticipant) {
           sentCount++
-          logger.debug('participant is in scheme', { fspId })
+          log.debug('participant is in scheme', { fspId })
           return participant.sendRequest(clonedHeaders, party.fspId, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
         }
 
@@ -170,20 +171,20 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         if (proxyEnabled) {
           const proxyName = await proxyCache.lookupProxyByDfspId(fspId)
           if (!proxyName) {
-            logger.warn('no proxyMapping for participant!  TODO: Delete reference in oracle...', { fspId })
+            log.warn('no proxyMapping for participant!  TODO: Delete reference in oracle...', { fspId })
             // todo: delete reference in oracle
           } else {
             sentCount++
-            logger.debug('participant NOT is in scheme, use proxy name', { fspId, proxyName })
+            log.debug('participant NOT is in scheme, use proxy name', { fspId, proxyName })
             return participant.sendRequest(clonedHeaders, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
           }
         }
       })
       await Promise.all(sending)
-      logger.info('participant.sendRequests to filtered oracle partyList are done', { sentCount })
+      log.info('participant.sendRequests to filtered oracle partyList are done', { sentCount })
       // todo: think what if sentCount === 0 here
     } else {
-      logger.info('empty partyList form oracle, getting proxies list...', { proxyEnabled, params })
+      log.info('empty partyList form oracle, getting proxies list...', { proxyEnabled, params })
       let filteredProxyNames = []
 
       if (proxyEnabled) {
@@ -206,7 +207,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
           fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
       } else {
         const alsReq = utils.alsRequestDto(source, params)
-        logger.info('starting setSendToProxiesList flow: ', { filteredProxyNames, alsReq, proxyCacheTtlSec })
+        log.info('starting setSendToProxiesList flow: ', { filteredProxyNames, alsReq, proxyCacheTtlSec })
         const isCached = await proxyCache.setSendToProxiesList(alsReq, filteredProxyNames, proxyCacheTtlSec)
         if (!isCached) {
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.failedToCacheSendToProxiesList)
@@ -221,7 +222,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         // If, at least, one request is sent to proxy, we treat the whole flow as successful.
         // Failed requests should be handled by TTL expired/timeout handler
         // todo: - think, if we should handle failed requests here (e.g., by calling receivedErrorResponse)
-        logger.info('setSendToProxiesList flow is done:', { isOk, results, filteredProxyNames, alsReq })
+        log.info('setSendToProxiesList flow is done:', { isOk, results, filteredProxyNames, alsReq })
         if (!isOk) {
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.proxyConnectionError)
         }
@@ -229,7 +230,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     }
     histTimerEnd({ success: true })
   } catch (err) {
-    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params, requester)
+    fspiopError = await handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
