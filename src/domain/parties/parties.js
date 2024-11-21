@@ -38,13 +38,13 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
-const { loggerFactory } = require('../../lib')
+const { logger } = require('../../lib')
 const Config = require('../../lib/config')
 const utils = require('./utils')
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
 
-const logger = loggerFactory('domain:put-parties')
-const handleErrorOnSendingCallback = utils.createErrorHandlerOnSendingCallback(Config, logger)
+const log = logger.child('domain:put-parties')
+const handleErrorOnSendingCallback = utils.createErrorHandlerOnSendingCallback(Config, log)
 
 /**
  * @function putPartiesByTypeAndID
@@ -71,7 +71,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxy = headers[Headers.FSPIOP.PROXY]
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
-  logger.info('parties::putPartiesByTypeAndID::begin', { source, destination, proxy, params })
+  log.info('parties::putPartiesByTypeAndID::begin', { source, destination, proxy, params })
 
   let sendTo
   try {
@@ -83,21 +83,21 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       }
       const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
       // think,if we should throw error if isCached === false?
-      logger.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
+      log.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
     }
 
     if (proxyEnabled && proxy) {
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isExists = await proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
-        logger.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
+        log.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
         // think, if we need to throw an error here
       } else {
         const mappingPayload = {
           fspId: source
         }
         await oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload, cache)
-        logger.info('oracle was updated with mappingPayload', { mappingPayload, params })
+        log.info('oracle was updated with mappingPayload', { mappingPayload, params })
       }
     }
 
@@ -122,7 +122,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     }
     await participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
 
-    logger.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
+    log.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
     histTimerEnd({ success: true })
   } catch (err) {
     await handleErrorOnSendingCallback(err, headers, params, sendTo)
@@ -168,14 +168,14 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
         getPartiesByTypeAndID(swappedHeaders, params, RestMethods.GET, {}, span, cache, proxyCache)
         // todo: - think if we need to send errorCallback?
         //       - or sentCallback after getPartiesByTypeAndID is done
-        logger.info('notValidPayee case - deleted Participants and run getPartiesByTypeAndID:', { proxy, params, payload })
+        log.info('notValidPayee case - deleted Participants and run getPartiesByTypeAndID:', { proxy, params, payload })
         return
       }
 
       const alsReq = utils.alsRequestDto(destination, params) // or source?
       const isLast = await proxyCache.receivedErrorResponse(alsReq, proxy)
       if (!isLast) {
-        logger.info('got NOT last error callback from proxy:', { proxy, alsReq })
+        log.info('got NOT last error callback from proxy:', { proxy, alsReq })
         return
       }
     }
@@ -195,7 +195,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     const decodedPayload = decodePayload(dataUri, { asParsed: false })
     await participant.sendErrorToParticipant(sendTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
 
-    logger.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
+    log.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
     histTimerEnd({ success: true })
   } catch (err) {
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, sendTo)
