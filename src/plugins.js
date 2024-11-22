@@ -38,7 +38,7 @@ const {
 } = require('@mojaloop/central-services-shared').Util.Hapi
 
 const Config = require('./lib/config')
-const MetricsPlugin = require('./metrics/plugin')
+const MetricsPlugin = require('@mojaloop/central-services-metrics').plugin
 const RequestLogger = require('./lib/requestLogger')
 
 const registerPlugins = async (server, openAPIBackend) => {
