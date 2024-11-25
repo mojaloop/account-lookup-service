@@ -38,8 +38,11 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const participantsDomain = require('../../../../src/domain/participants/participants')
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')
-const Helper = require('../../../util/helper')
 const Config = require('../../../../src/lib/config')
+const Helper = require('../../../util/helper')
+const fixtures = require('../../../fixtures')
+
+const { Headers } = Enums.Http
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -1318,15 +1321,23 @@ describe('participant Tests', () => {
       const expected = {
         currency: 'USD',
         partyList: [
-          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, undefined, undefined, undefined, [{
-            key: Enums.Accounts.PartyAccountTypes.MSISDN,
-            value: undefined
-          }]).toApiErrorObject(Config.ERROR_HANDLING),
-          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, undefined, undefined, undefined, [{
-            key: 'NOT_A_VALID_PARTY_ID',
-            value: undefined
-          }]).toApiErrorObject(Config.ERROR_HANDLING),
-          { partyId: { currency: undefined } }
+          {
+            ...ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, undefined, undefined, undefined, [{
+              key: Enums.Accounts.PartyAccountTypes.MSISDN,
+              value: undefined
+            }]).toApiErrorObject(Config.ERROR_HANDLING),
+            partyId: payload.partyList[1]
+          },
+          {
+            ...ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, undefined, undefined, undefined, [{
+              key: 'NOT_A_VALID_PARTY_ID',
+              value: undefined
+            }]).toApiErrorObject(Config.ERROR_HANDLING),
+            partyId: payload.partyList[2]
+          },
+          {
+            partyId: { currency: undefined }
+          }
         ]
       }
 
@@ -1446,6 +1457,44 @@ describe('participant Tests', () => {
       expect(firstCallArgs[4].partyList[0].errorInformation).toBeDefined()
       expect(firstCallArgs[4].partyList[1].errorInformation).toBeDefined()
       expect(firstCallArgs[4].partyList[2].errorInformation).toBeDefined()
+    })
+
+    it('should not call oracle if source-header and fspId in payload are different, and no destination [CSI-938]', async () => {
+      const headers = fixtures.participantsCallHeadersDto({ destination: '' })
+      const payload = {
+        requestId: '0e21b07e-3117-46ca-ae22-6ee370895697',
+        currency: 'MWK',
+        partyList: [
+          {
+            fspId: 'test-mwk-dfsp',
+            partyIdType: 'MSISDN',
+            partyIdentifier: '16665551002'
+          }
+        ]
+      }
+      expect(headers.source).not.toBe(payload.partyList[0].fspId)
+      expect(headers.destination).toBeUndefined()
+
+      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.sendRequest = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub().resolves({})
+      oracle.oracleBatchRequest = sandbox.stub().resolves({})
+
+      await participantsDomain.postParticipantsBatch(headers, 'put', payload, Helper.mockSpan())
+
+      expect(oracle.oracleBatchRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(0)
+      expect(participant.sendRequest.callCount).toBe(1)
+
+      const { args } = participant.sendRequest.getCall(0)
+      expect(args[0][Headers.FSPIOP.DESTINATION]).toBe(headers[Headers.FSPIOP.SOURCE])
+      expect(args[0][Headers.FSPIOP.SOURCE]).toBe(Config.HUB_NAME)
+      expect(args[1]).toBe(headers[Headers.FSPIOP.SOURCE])
+
+      const { partyList } = args[4]
+      expect(partyList.length).toBe(1)
+      expect(partyList[0].errorInformation).toBeDefined()
+      expect(partyList[0].partyId).toBe(payload.partyList[0])
     })
   })
 

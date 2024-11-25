@@ -37,6 +37,8 @@ const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const Config = require('../../lib/config')
 
+const { FSPIOPErrorCodes } = ErrorHandler.Enums
+
 /**
  * @function getParticipantsByTypeAndID
  *
@@ -389,85 +391,79 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
   let fspiopError
   try {
     Logger.isInfoEnabled && Logger.info('postParticipantsBatch::begin')
+    const requestId = requestPayload.requestId
     const typeMap = new Map()
     const overallReturnList = []
-    const requestId = requestPayload.requestId
-    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
-    if (requesterParticipantModel) {
-      for (const party of requestPayload.partyList) {
-        if (Object.values(Enums.Accounts.PartyAccountTypes).includes(party.partyIdType)) {
-          party.currency = requestPayload.currency
-          if (party.fspId === headers[Enums.Http.Headers.FSPIOP.SOURCE]) {
-            if (typeMap.get(party.partyIdType)) {
-              const partyList = typeMap.get(party.partyIdType)
-              partyList.push(party)
-              typeMap.set(party.partyIdType, partyList)
-            } else {
-              typeMap.set(party.partyIdType, [party])
-            }
-          } else {
-            overallReturnList.push(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, undefined, undefined, undefined, [{
-              key: party.partyIdType,
-              value: party.partyIdentifier
-            }]).toApiErrorObject(Config.ERROR_HANDLING))
-          }
-        } else {
-          overallReturnList.push(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, undefined, undefined, undefined, [{
-            key: party.partyIdType,
-            value: party.partyIdentifier
-          }]).toApiErrorObject(Config.ERROR_HANDLING))
-        }
-      }
+    const pushPartyError = (party, errCode) => {
+      overallReturnList.push({
+        partyId: party,
+        ...ErrorHandler.Factory.createFSPIOPError(errCode, undefined, undefined, undefined, [{
+          key: party.partyIdType,
+          value: party.partyIdentifier
+        }]).toApiErrorObject(Config.ERROR_HANDLING)
+      })
+    }
 
-      for (const [key, value] of typeMap) {
-        const payload = {
-          requestId,
-          partyList: value
-        }
-        Logger.isInfoEnabled && Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
-        const response = await oracle.oracleBatchRequest(headers, method, requestPayload, key, payload)
-        if (response && (response.data !== null || response.data !== undefined)) {
-          if (Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
-            for (const party of response.data.partyList) {
-              party.partyId.currency = undefined
-              overallReturnList.push(party)
-            }
-          } else {
-            for (const party of value) {
-              overallReturnList.push(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, undefined, undefined, undefined, [{
-                key: party.partyIdType,
-                value: party.partyIdentifier
-              }]).toApiErrorObject(Config.ERROR_HANDLING))
-            }
-          }
-        } else {
-          for (const party of value) {
-            overallReturnList.push(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, undefined, undefined, undefined, [{
-              key: party.partyIdType,
-              value: party.partyIdentifier
-            }]).toApiErrorObject(Config.ERROR_HANDLING))
-          }
-        }
-      }
-      const payload = {
-        partyList: overallReturnList,
-        currency: requestPayload.currency
-      }
-      const clonedHeaders = { ...headers }
-      if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
-        clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.partyList[0].partyId.fspId
-        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
-      }
-      await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId }, childSpan)
-      if (childSpan && !childSpan.isFinished) {
-        await childSpan.finish()
-      }
-      Logger.isInfoEnabled && Logger.info('postParticipantsBatch::end')
-    } else {
+    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
+    if (!requesterParticipantModel) {
       Logger.isErrorEnabled && Logger.error('Requester FSP not found')
-      fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+      fspiopError = ErrorHandler.Factory.createFSPIOPError(FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
       throw fspiopError
     }
+
+    for (const party of requestPayload.partyList) {
+      if (Object.values(Enums.Accounts.PartyAccountTypes).includes(party.partyIdType)) {
+        party.currency = requestPayload.currency
+        if (party.fspId === headers[Enums.Http.Headers.FSPIOP.SOURCE]) {
+          if (typeMap.get(party.partyIdType)) {
+            const partyList = typeMap.get(party.partyIdType)
+            partyList.push(party)
+            typeMap.set(party.partyIdType, partyList)
+          } else {
+            typeMap.set(party.partyIdType, [party])
+          }
+        } else {
+          pushPartyError(party, FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        }
+      } else {
+        pushPartyError(party, FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
+      }
+    }
+
+    for (const [key, value] of typeMap) {
+      const payload = {
+        requestId,
+        partyList: value
+      }
+      Logger.isInfoEnabled && Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
+      const response = await oracle.oracleBatchRequest(headers, method, requestPayload, key, payload)
+      if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
+        for (const party of response.data.partyList) {
+          party.partyId.currency = undefined
+          overallReturnList.push(party)
+        }
+      } else {
+        for (const party of value) {
+          pushPartyError(party, FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
+        }
+      }
+    }
+
+    const payload = {
+      partyList: overallReturnList,
+      currency: requestPayload.currency
+    }
+    const clonedHeaders = { ...headers }
+    if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
+      clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = headers[Enums.Http.Headers.FSPIOP.SOURCE]
+      clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
+    }
+    await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId }, childSpan)
+    if (childSpan && !childSpan.isFinished) {
+      await childSpan.finish()
+    }
+    Logger.isInfoEnabled && Logger.info('postParticipantsBatch::end')
+
     histTimerEnd({ success: true })
   } catch (err) {
     Logger.isErrorEnabled && Logger.error(err)
