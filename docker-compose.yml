@@ -6,9 +6,12 @@ networks:
 
 services:
   account-lookup-service:
+    image: mojaloop/account-lookup-service:local
     build:
       context: .
+      target: builder
     container_name: als_account-lookup-service
+    user: root
     command:
       - "sh"
       - "-c"
@@ -22,8 +25,9 @@ services:
       - mysql-als
       - central-ledger
     volumes:
-      - ./src:/opt/account-lookup-service/src
-      - ./docker/account-lookup-service/default.json:/opt/account-lookup-service/config/default.json
+      - ./secrets:/opt/app/secrets
+      - ./src:/opt/app/src
+      - ./docker/account-lookup-service/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
     healthcheck:
       test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4001/health"]
@@ -34,6 +38,7 @@ services:
   central-ledger:
     image: mojaloop/central-ledger:latest
     container_name: als_central-ledger
+    user: root
     command:
       - "sh"
       - "-c"
@@ -41,7 +46,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-       - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+       - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
     environment:
       - LOG_LEVEL=info
@@ -80,7 +85,7 @@ services:
 
   mysql-als:
     image: mysql/mysql-server
-    container_name: als_mysql_central_ledger
+    container_name: als_mysql
     ports:
       - "3306:3306"
     volumes:
@@ -101,7 +106,7 @@ services:
 
   mysql-cl:
     image: mysql/mysql-server
-    container_name: als_mysql
+    container_name: als_mysql_central_ledger
     ports:
       - "3307:3306"
     volumes:

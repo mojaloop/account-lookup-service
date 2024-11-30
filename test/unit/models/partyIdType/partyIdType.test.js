@@ -33,12 +33,20 @@ const Sinon = require('sinon')
 
 const { getPartyIdTypeByName } = require('../../../../src/models/partyIdType/partyIdType')
 const Db = require('../../../../src/lib/db')
+const Logger = require('@mojaloop/central-services-logger')
+
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 
 describe('partyIdType Model', () => {
   let sandbox
 
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => {
+      return Db[table]
+    }
   })
 
   afterEach(() => {
@@ -75,6 +83,6 @@ describe('partyIdType Model', () => {
     const action = async () => getPartyIdTypeByName('MSISDN')
 
     // Assert
-    await expect(action()).rejects.toThrowError(new RegExp('Error finding partyIdType'))
+    await expect(action()).rejects.toThrowError(/Error finding partyIdType/)
   })
 })

@@ -24,10 +24,11 @@
 
 'use strict'
 
-const oracle = require('../domain/oracle')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../lib/util')
+const oracle = require('../domain/oracle')
 
 /**
  * Operations on /oracles
@@ -40,7 +41,12 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (request, h) => {
+  get: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_getOracle',
+      'Ingress: Get oracles',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
@@ -48,8 +54,15 @@ module.exports = {
       headers: request.headers,
       query: request.query
     }, EventSdk.AuditEventAction.start)
-    const response = await oracle.getOracle(request.query)
-    return h.response(response).code(200)
+    let response
+    try {
+      response = await oracle.getOracle(request.query)
+      histTimerEnd({ success: true })
+      return h.response(response).code(200)
+    } catch (err) {
+      histTimerEnd({ success: false })
+      throw err
+    }
   },
   /**
    * summary: Create Oracles
@@ -58,7 +71,12 @@ module.exports = {
    * produces: application/json
    * responses: 201, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async (request, h) => {
+  post: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_createOracle',
+      'Ingress: Create oracles',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
@@ -66,7 +84,13 @@ module.exports = {
       headers: request.headers,
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
-    await oracle.createOracle(request.payload)
-    return h.response().code(201)
+    try {
+      await oracle.createOracle(request.payload)
+      histTimerEnd({ success: true })
+      return h.response().code(201)
+    } catch (err) {
+      histTimerEnd({ success: false })
+      throw err
+    }
   }
 }

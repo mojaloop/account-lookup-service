@@ -29,7 +29,9 @@
 const Logger = require('@mojaloop/central-services-logger')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventSdk = require('@mojaloop/event-sdk')
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const Metrics = require('@mojaloop/central-services-metrics')
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const Config = require('../../lib/config')
@@ -45,17 +47,24 @@ const Config = require('../../lib/config')
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
  * */
-const getParticipantsByTypeAndID = async (headers, params, method, query, span) => {
+const getParticipantsByTypeAndID = async (headers, params, method, query, span, cache) => {
+  const childSpan = span ? span.getChild('getParticipantsByTypeAndID') : undefined
+  const histTimerEnd = Metrics.getHistogram(
+    'getParticipantsByTypeAndID',
+    'Get participants by ID',
+    ['success']
+  ).startTimer()
+  const type = params.Type
+  const partySubIdOrType = params.SubId || undefined
+  const requesterName = headers[Enums.Http.Headers.FSPIOP.SOURCE]
+  const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
+  const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+  let fspiopError
   try {
-    Logger.info('getParticipantsByTypeAndID::begin')
-    const type = params.Type
-    const partySubIdOrType = params.SubId || undefined
-    const requesterName = headers[Enums.Http.Headers.FSPIOP.SOURCE]
-    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
-    const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
-    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], span)
+    Logger.isInfoEnabled && Logger.info('getParticipantsByTypeAndID::begin')
+    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
     if (requesterParticipantModel) {
-      const response = await oracle.oracleRequest(headers, method, params, query)
+      const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache)
       if (response && response.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
         let options = {
           partyIdType: type,
@@ -67,30 +76,44 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
         }
         const clonedHeaders = { ...headers }
         if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
-          clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
+          clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE]
         }
-        await participant.sendRequest(clonedHeaders, requesterName, callbackEndpointType, Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT, Enums.Http.RestMethods.PUT, payload, options, span)
+        clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
+        await participant.sendRequest(clonedHeaders, requesterName, callbackEndpointType, Enums.Http.RestMethods.PUT, payload, options, childSpan)
       } else {
         await participant.sendErrorToParticipant(requesterName, errorCallbackEndpointType,
-          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(Config.ERROR_HANDLING), headers, params, span)
+          ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND).toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
       }
-      Logger.info('getParticipantsByTypeAndID::end')
+      Logger.isInfoEnabled && Logger.info('getParticipantsByTypeAndID::end')
     } else {
-      Logger.error('Requester FSP not found')
+      Logger.isErrorEnabled && Logger.error('Requester FSP not found')
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
     }
+    if (childSpan && !childSpan.isFinished) {
+      await childSpan.finish()
+    }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
+    fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
     try {
       const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(
         headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
-        ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params, span)
+        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
     } catch (exc) {
+      fspiopError = ErrorHandler.Factory.reformatFSPIOPError(exc)
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
-      Logger.error(exc)
+      Logger.isErrorEnabled && Logger.error(exc)
     }
+  } finally {
+    if (childSpan && !childSpan.isFinished && fspiopError) {
+      const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      await childSpan.error(fspiopError, state)
+      await childSpan.finish(fspiopError.message, state)
+      histTimerEnd({ success: false })
+    }
+    histTimerEnd({ success: true })
   }
 }
 
@@ -107,9 +130,14 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
  * @param {object} payload - payload of the request being sent out
  *
  */
-const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
+const putParticipantsByTypeAndID = async (headers, params, method, payload, cache) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'putParticipantsByTypeAndID',
+    'Put participants by type and ID',
+    ['success']
+  ).startTimer()
   try {
-    Logger.info('putParticipantsByTypeAndID::begin')
+    Logger.isInfoEnabled && Logger.info('putParticipantsByTypeAndID::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
@@ -117,7 +145,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
-        const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
+        const response = await oracle.oracleRequest(headers, method, params, undefined, payload, cache)
         if (response && response.data) {
           const responsePayload = {
             partyList: [
@@ -148,16 +176,17 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
             ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
         }
       } else {
-        Logger.error('Requester FSP not found')
+        Logger.isErrorEnabled && Logger.error('Requester FSP not found')
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
       }
     } else {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
     }
-    Logger.info('putParticipantsByTypeAndID::end')
+    Logger.isInfoEnabled && Logger.info('putParticipantsByTypeAndID::end')
+    histTimerEnd({ success: true })
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     try {
       const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
@@ -165,8 +194,9 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
-      Logger.error(exc)
+      Logger.isErrorEnabled && Logger.error(exc)
     }
+    histTimerEnd({ success: false })
   }
 }
 
@@ -184,19 +214,35 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
  * @param {string} dataUri - encoded payload of the request being sent out
  */
 const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'putParticipantsErrorByTypeAndID',
+    'Put participants error by type and ID',
+    ['success']
+  ).startTimer()
   try {
     const partySubIdOrType = params.SubId || undefined
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     const destinationParticipant = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION])
     if (destinationParticipant) {
       const decodedPayload = decodePayload(dataUri, { asParsed: false })
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, decodedPayload.body.toString(), headers, params)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.DESTINATION],
+        callbackEndpointType,
+        decodedPayload.body.toString(),
+        headers,
+        params)
     } else {
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
-        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(), headers, params, payload)
+      await participant.sendErrorToParticipant(
+        headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        callbackEndpointType,
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR).toApiErrorObject(),
+        headers,
+        params,
+        payload)
     }
+    histTimerEnd({ success: true })
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     try {
       const callbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], callbackEndpointType,
@@ -204,8 +250,9 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
-      Logger.error(exc)
+      Logger.isErrorEnabled && Logger.error(exc)
     }
+    histTimerEnd({ success: false })
   }
 }
 
@@ -220,17 +267,24 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
  * @param {object} payload - payload of the request being sent out
  * @param {object} span
  */
-const postParticipants = async (headers, method, params, payload, span) => {
+const postParticipants = async (headers, method, params, payload, span, cache) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'postParticipants',
+    'Post participants',
+    ['success']
+  ).startTimer()
+  const childSpan = span ? span.getChild('postParticipants') : undefined
+  let fspiopError
   try {
-    Logger.info('postParticipants::begin')
+    Logger.isInfoEnabled && Logger.info('postParticipants::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
     const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
-      const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], span)
+      const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
       if (requesterParticipantModel) {
-        const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
+        const response = await oracle.oracleRequest(headers, method, params, undefined, payload, cache)
         if (response && response.status === Enums.Http.ReturnCodes.CREATED.CODE) {
           const responsePayload = {
             partyList: [
@@ -255,30 +309,45 @@ const postParticipants = async (headers, method, params, payload, span) => {
             clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
             clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
           }
-          await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.PUT, responsePayload, options)
+          await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], callbackEndpointType, Enums.Http.RestMethods.PUT, responsePayload, options, childSpan)
+          if (childSpan && !childSpan.isFinished) {
+            await childSpan.finish()
+          }
         } else {
+          fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
           await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
-            ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params, span)
+            fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
         }
       } else {
-        Logger.error('Requester FSP not found')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+        fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+        Logger.isErrorEnabled && Logger.error('Requester FSP not found')
+        throw fspiopError
       }
     } else {
+      fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
-        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params, span)
+        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
     }
-    Logger.info('postParticipants::end')
+    Logger.isInfoEnabled && Logger.info('postParticipants::end')
+    histTimerEnd({ success: true })
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
+    fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
     try {
       const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
-        ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params, span)
+        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
-      Logger.error(exc)
+      Logger.isErrorEnabled && Logger.error(exc)
+    }
+    histTimerEnd({ success: false })
+  } finally {
+    if (childSpan && !childSpan.isFinished && fspiopError) {
+      const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      await childSpan.error(fspiopError, state)
+      await childSpan.finish(fspiopError.message, state)
     }
   }
 }
@@ -294,12 +363,19 @@ const postParticipants = async (headers, method, params, payload, span) => {
  * @param {object} span
  */
 const postParticipantsBatch = async (headers, method, requestPayload, span) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'postParticipantsBatch',
+    'Post participants batch',
+    ['success']
+  ).startTimer()
+  const childSpan = span ? span.getChild('postParticipantsBatch') : undefined
+  let fspiopError
   try {
-    Logger.info('postParticipantsBatch::begin')
+    Logger.isInfoEnabled && Logger.info('postParticipantsBatch::begin')
     const typeMap = new Map()
     const overallReturnList = []
     const requestId = requestPayload.requestId
-    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], span)
+    const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
     if (requesterParticipantModel) {
       for (const party of requestPayload.partyList) {
         if (Object.values(Enums.Accounts.PartyAccountTypes).includes(party.partyIdType)) {
@@ -328,10 +404,10 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
 
       for (const [key, value] of typeMap) {
         const payload = {
-          requestId: requestId,
+          requestId,
           partyList: value
         }
-        Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
+        Logger.isInfoEnabled && Logger.info(`postParticipantsBatch::oracleBatchRequest::type=${key}`)
         const response = await oracle.oracleBatchRequest(headers, method, requestPayload, key, payload)
         if (response && (response.data !== null || response.data !== undefined)) {
           if (Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
@@ -365,21 +441,34 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
         clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.partyList[0].partyId.fspId
         clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Enums.Http.Headers.FSPIOP.SWITCH.value
       }
-      await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId }, span)
-      Logger.info('postParticipantsBatch::end')
+      await participant.sendRequest(clonedHeaders, clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT, Enums.Http.RestMethods.PUT, payload, { requestId }, childSpan)
+      if (childSpan && !childSpan.isFinished) {
+        await childSpan.finish()
+      }
+      Logger.isInfoEnabled && Logger.info('postParticipantsBatch::end')
     } else {
-      Logger.error('Requester FSP not found')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+      Logger.isErrorEnabled && Logger.error('Requester FSP not found')
+      fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
+      throw fspiopError
     }
+    histTimerEnd({ success: true })
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
+    fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
     try {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
-        ErrorHandler.Factory.reformatFSPIOPError(err).toApiErrorObject(Config.ERROR_HANDLING), headers, undefined, requestPayload)
+        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, undefined, requestPayload)
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
-      Logger.error(exc)
+      Logger.isErrorEnabled && Logger.error(exc)
+    }
+    histTimerEnd({ success: false })
+  } finally {
+    if (childSpan && !childSpan.isFinished && fspiopError) {
+      const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+      await childSpan.error(fspiopError, state)
+      await childSpan.finish(fspiopError.message, state)
     }
   }
 }
@@ -395,9 +484,14 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
  * @param {object} query - uri query parameters of the http request
  *
  */
-const deleteParticipants = async (headers, params, method, query) => {
+const deleteParticipants = async (headers, params, method, query, cache) => {
+  const histTimerEnd = Metrics.getHistogram(
+    'deleteParticipants',
+    'Delete participants',
+    ['success']
+  ).startTimer()
   try {
-    Logger.info('deleteParticipants::begin')
+    Logger.isInfoEnabled && Logger.info('deleteParticipants::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
@@ -405,7 +499,7 @@ const deleteParticipants = async (headers, params, method, query) => {
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
-        const response = await oracle.oracleRequest(headers, method, params, query)
+        const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache)
         if (response) {
           const responsePayload = {
             fspId: headers[Enums.Http.Headers.FSPIOP.SOURCE]
@@ -424,16 +518,17 @@ const deleteParticipants = async (headers, params, method, query) => {
             ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
         }
       } else {
-        Logger.error('Requester FSP not found')
+        Logger.isErrorEnabled && Logger.error('Requester FSP not found')
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, 'Requester FSP not found')
       }
     } else {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR).toApiErrorObject(Config.ERROR_HANDLING), headers, params)
     }
-    Logger.info('deleteParticipants::end')
+    Logger.isInfoEnabled && Logger.info('deleteParticipants::end')
+    histTimerEnd({ success: true })
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     try {
       const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
@@ -441,8 +536,9 @@ const deleteParticipants = async (headers, params, method, query) => {
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
-      Logger.error(exc)
+      Logger.isErrorEnabled && Logger.error(exc)
     }
+    histTimerEnd({ success: false })
   }
 }
 

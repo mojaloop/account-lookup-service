@@ -28,25 +28,27 @@ const Logger = require('@mojaloop/central-services-logger')
 const Util = require('util')
 
 const logRequest = function (request) {
-  Logger.debug(`ALS-Trace - Method: ${request.method} Path: ${request.url.path} Query: ${JSON.stringify(request.query)}`)
-  Logger.debug(`ALS-Trace - Headers: ${JSON.stringify(request.headers)}`)
-  if (request.body) {
-    Logger.debug(`ALS-Trace - Body: ${request.body}`)
+  const traceId = request.headers.traceid
+  Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Method: ${request.method} Path: ${request.path} Query: ${JSON.stringify(request.query)}`)
+  Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Headers: ${JSON.stringify(request.headers, null, 2)}`)
+  if (request.payload) {
+    Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Body: ${JSON.stringify(request.payload, null, 2)}`)
   }
 }
 
 const logResponse = function (request) {
-  if (request.response) {
+  if (Logger.isDebugEnabled && request.response) {
+    const traceId = request.headers.traceid
     let response
     try {
-      response = JSON.stringify(request.response.source)
+      response = JSON.stringify(request.response, null, 2)
     } catch (e) {
-      response = Util.inspect(request.response.source)
+      response = Util.inspect(request.response)
     }
     if (!response) {
-      Logger.info(`ALS-Trace - Response: ${request.response}`)
+      Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Response: ${request.response}`)
     } else {
-      Logger.info(`ALS-Trace - Response: ${response} Status: ${request.response.statusCode}`)
+      Logger.isDebugEnabled && Logger.debug(`ALS-Trace=${traceId} - Response: ${response} Status: ${request.response.statusCode || request.response.httpStatusCode}, Stack: ${request.response.stack}`)
     }
   }
 }

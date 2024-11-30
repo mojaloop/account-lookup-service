@@ -76,7 +76,7 @@ const generateMockRequest = async (path, operation, isApi = true) => {
  * @returns {object} Returns the default headers
  */
 
-function defaultHeaders (destination, resource, source, version = '1.0') {
+function defaultHeaders (destination, resource, source, version = '1.1') {
   // TODO: See API section 3.2.1; what should we do about X-Forwarded-For? Also, should we
   // add/append to this field in all 'queueResponse' calls?
   return {
@@ -107,7 +107,7 @@ const getByTypeIdRequest = {
   headers: {
     accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
     date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
@@ -123,7 +123,7 @@ const getByTypeIdRequestError = {
   headers: {
     accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
     date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
@@ -139,7 +139,7 @@ const putByTypeIdRequest = {
   headers: {
     accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
     date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
@@ -157,7 +157,7 @@ const getByTypeIdCurrencyRequest = {
   headers: {
     accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
     date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
@@ -175,7 +175,7 @@ const postByTypeIdCurrencyRequest = {
   headers: {
     accept: 'application/vnd.interoperability.participants+json;version=1',
     'fspiop-destination': payeefsp,
-    'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+    'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
     date: '2019-05-24 08:52:19',
     'fspiop-source': payerfsp
   },
@@ -251,9 +251,46 @@ const participantPutEndpointOptions = {
 function defaultAdminHeaders () {
   return {
     Accept: 'application/vnd.interoperability.oracles+json;version=1',
-    'Content-Type': 'application/vnd.interoperability.oracles+json;version=1.0',
+    'Content-Type': 'application/vnd.interoperability.oracles+json;version=1.1',
     Date: (new Date()).toUTCString()
   }
+}
+
+/**
+ * Mock Span
+ */
+class Span {
+  constructor () {
+    this.isFinished = false
+  }
+
+  audit () {
+    return jest.fn()
+  }
+
+  error () {
+    return jest.fn()
+  }
+
+  finish () {
+    return jest.fn()
+  }
+
+  debug () {
+    return jest.fn()
+  }
+
+  info () {
+    return jest.fn()
+  }
+
+  getChild () {
+    return new Span()
+  }
+}
+
+const mockSpan = () => {
+  return new Span()
 }
 
 module.exports = {
@@ -277,5 +314,6 @@ module.exports = {
   getEndPointsResponse,
   fspIdPayload,
   participantPutEndpointOptions,
-  postByTypeIdCurrencyRequest
+  postByTypeIdCurrencyRequest,
+  mockSpan
 }

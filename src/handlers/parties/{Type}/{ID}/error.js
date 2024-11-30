@@ -28,8 +28,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
-const Logger = require('@mojaloop/central-services-logger')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /parties/{Type}/{ID}/error
@@ -42,20 +41,23 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async function (req, h) {
-    try {
-      const span = req.span
-      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
-      span.setTags(spanTags)
-      await span.audit({
-        headers: req.headers,
-        payload: req.payload
-      }, EventSdk.AuditEventAction.start)
-      parties.putPartiesErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
-    } catch (err) {
-      Logger.error(err)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+  put: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putPartiesErrorByTypeAndID',
+      'Ingress - Put parties error by Type and Id',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers,
+      payload: request.payload
+    }, EventSdk.AuditEventAction.start)
+    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(200)
   }
 }

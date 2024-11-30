@@ -28,6 +28,15 @@
  --------------
  ******/
 const RC = require('parse-strings-in-object')(require('rc')('ALS', require('../../config/default.json')))
+const fs = require('fs')
+
+function getFileContent (path) {
+  if (!fs.existsSync(path)) {
+    console.log(`File ${path} doesn't exist, can't enable JWS signing`)
+    throw new Error('File doesn\'t exist')
+  }
+  return fs.readFileSync(path)
+}
 
 const getOrDefault = (value, defaultValue) => {
   if (value === undefined) {
@@ -37,7 +46,59 @@ const getOrDefault = (value, defaultValue) => {
   return value
 }
 
-module.exports = {
+const DEFAULT_PROTOCOL_VERSION = {
+  CONTENT: {
+    DEFAULT: '1.1',
+    VALIDATELIST: [
+      '1.0',
+      '1.1'
+    ]
+  },
+  ACCEPT: {
+    DEFAULT: '1',
+    VALIDATELIST: [
+      '1',
+      '1.0',
+      '1.1'
+    ]
+  }
+}
+
+const getProtocolVersions = (defaultProtocolVersions, overrideProtocolVersions) => {
+  const T_PROTOCOL_VERSION = {
+    ...defaultProtocolVersions,
+    ...overrideProtocolVersions
+  }
+
+  if (overrideProtocolVersions && overrideProtocolVersions.CONTENT) {
+    T_PROTOCOL_VERSION.CONTENT = {
+      ...defaultProtocolVersions.CONTENT,
+      ...overrideProtocolVersions.CONTENT
+    }
+  }
+  if (overrideProtocolVersions && overrideProtocolVersions.ACCEPT) {
+    T_PROTOCOL_VERSION.ACCEPT = {
+      ...defaultProtocolVersions.ACCEPT,
+      ...overrideProtocolVersions.ACCEPT
+    }
+  }
+
+  if (T_PROTOCOL_VERSION.CONTENT &&
+    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST &&
+    (typeof T_PROTOCOL_VERSION.CONTENT.VALIDATELIST === 'string' ||
+      T_PROTOCOL_VERSION.CONTENT.VALIDATELIST instanceof String)) {
+    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.CONTENT.VALIDATELIST)
+  }
+  if (T_PROTOCOL_VERSION.ACCEPT &&
+    T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST &&
+    (typeof T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST === 'string' ||
+      T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST instanceof String)) {
+    T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST)
+  }
+  return T_PROTOCOL_VERSION
+}
+
+const config = {
   API_PORT: RC.API_PORT,
   DATABASE: {
     client: RC.DATABASE.DIALECT,
@@ -81,10 +142,24 @@ module.exports = {
   DISPLAY_ROUTES: RC.DISPLAY_ROUTES,
   RUN_MIGRATIONS: RC.RUN_MIGRATIONS,
   ADMIN_PORT: RC.ADMIN_PORT,
-  ENDPOINT_CACHE_CONFIG: RC.ENDPOINT_CACHE_CONFIG,
+  CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG: RC.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG,
+  CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG: RC.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG,
+  GENERAL_CACHE_CONFIG: RC.GENERAL_CACHE_CONFIG,
   ERROR_HANDLING: RC.ERROR_HANDLING,
   SWITCH_ENDPOINT: RC.SWITCH_ENDPOINT,
   INSTRUMENTATION_METRICS_DISABLED: RC.INSTRUMENTATION.METRICS.DISABLED,
   INSTRUMENTATION_METRICS_LABELS: RC.INSTRUMENTATION.METRICS.labels,
-  INSTRUMENTATION_METRICS_CONFIG: RC.INSTRUMENTATION.METRICS.config
+  INSTRUMENTATION_METRICS_CONFIG: RC.INSTRUMENTATION.METRICS.config,
+  JWS_SIGN: RC.ENDPOINT_SECURITY.JWS.JWS_SIGN,
+  FSPIOP_SOURCE_TO_SIGN: RC.ENDPOINT_SECURITY.JWS.FSPIOP_SOURCE_TO_SIGN,
+  JWS_SIGNING_KEY_PATH: RC.ENDPOINT_SECURITY.JWS.JWS_SIGNING_KEY_PATH,
+  API_DOC_ENDPOINTS_ENABLED: RC.API_DOC_ENDPOINTS_ENABLED || false,
+  FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE: RC.FEATURE_ENABLE_EXTENDED_PARTY_ID_TYPE || false,
+  PROTOCOL_VERSIONS: getProtocolVersions(DEFAULT_PROTOCOL_VERSION, RC.PROTOCOL_VERSIONS)
 }
+
+if (config.JWS_SIGN) {
+  config.JWS_SIGNING_KEY = getFileContent(config.JWS_SIGNING_KEY_PATH)
+}
+
+module.exports = config

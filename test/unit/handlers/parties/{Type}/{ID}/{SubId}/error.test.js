@@ -30,7 +30,7 @@ const Sinon = require('sinon')
 const getPort = require('get-port')
 
 const src = '../../../../../../../src'
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const parties = require(`${src}/domain/parties`)
 const ErrHandler = require(`${src}/handlers/parties/{Type}/{ID}/{SubId}/error`)
@@ -38,6 +38,7 @@ const Helper = require('../../../../../../util/helper')
 
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/parties/{Type}/{ID}/{SubId}/error', () => {
   beforeAll(async () => {
@@ -51,19 +52,86 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
     sandbox.restore()
   })
 
-  it('handles PUT /error', async () => {
+  it('handles PUT /error with resolve', async () => {
     // Arrange
+    const response = sandbox.stub().returns({
+      code: sandbox.stub()
+    })
     const handler = {
-      response: sandbox.stub()
+      response
     }
 
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
-    sandbox.stub(parties, 'getPartiesByTypeAndID').returns({})
+    mock.request.server = {
+      log: sandbox.stub()
+    }
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
     // Act
-    ErrHandler.put(mock.request, handler)
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     expect(handler.response.calledOnce).toBe(true)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+    expect(mock.request.server.log.callCount).toEqual(0)
+
+    // Cleanup
+    stub.restore()
+  })
+
+  it('handles PUT /error with reject', async () => {
+    // Arrange
+    const response = sandbox.stub().returns({
+      code: sandbox.stub()
+    })
+    const handler = {
+      response
+    }
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
+    mock.request.server = {
+      log: sandbox.stub()
+    }
+    const throwError = new Error('Unknown error')
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
+
+    // Act
+    await ErrHandler.put(mockContext, mock.request, handler)
+
+    // Assert
+    expect(handler.response.calledOnce).toBe(true)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+    expect(mock.request.server.log.callCount).toEqual(1)
+    const logCatchCallArgs = mock.request.server.log.getCall(0).args
+    expect(logCatchCallArgs[0]).toEqual(['error'])
+
+    // Cleanup
+    stub.restore()
+  })
+
+  it('putPartiesSubIdErrorByTypeAndID endpoint', async () => {
+    // Arrange
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}/error', 'put')
+    const options = {
+      method: 'put',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties'),
+      payload: mock.request.body
+    }
+
+    const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(200)
+    expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
+    expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
+
+    // Cleanup
+    stub.restore()
   })
 })

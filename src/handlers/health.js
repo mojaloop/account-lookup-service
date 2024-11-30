@@ -19,6 +19,7 @@
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  * Steven Oderayi <steven.oderayi@mousbox.com>
+ * Shashikant Hirugade <shashikant.hirugade@mousbox.com>
 
  --------------
  ******/
@@ -26,7 +27,6 @@
 'use strict'
 
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const { getSubServiceHealthDatastore } = require('../lib/healthCheck/subServiceHealth')
 const packageJson = require('../../package.json')
 
@@ -43,5 +43,9 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: defaultHealthHandler(healthCheck)
+  get: async (context, request, h) => {
+    const health = await healthCheck.getHealth()
+    const statusCode = health.status !== 'OK' ? 503 : 200
+    return h.response(health).code(statusCode)
+  }
 }

@@ -19,9 +19,26 @@
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
     "DEBUG": false
   },
+  "PROTOCOL_VERSIONS": {
+    "CONTENT": {
+      "DEFAULT": "1.1",
+      "VALIDATELIST": [
+        "1.1",
+        "1.0"
+      ]
+    },
+    "ACCEPT": {
+      "DEFAULT": "1",
+      "VALIDATELIST": [
+        "1",
+        "1.0",
+        "1.1"
+      ]
+    }
+  },
   "DISPLAY_ROUTES": true,
   "RUN_MIGRATIONS": true,
-  "ENDPOINT_CACHE_CONFIG": {
+  "CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
     "generateTimeout": 30000
   },
@@ -40,5 +57,13 @@
         }
       }
     }
-  }
+  },
+  "ENDPOINT_SECURITY":{
+    "JWS": {
+      "JWS_SIGN": false,
+      "FSPIOP_SOURCE_TO_SIGN": "switch",
+      "JWS_SIGNING_KEY_PATH": "secrets/jwsSigningKey.key"
+    }
+  },
+  "API_DOC_ENDPOINTS_ENABLED": true
 }

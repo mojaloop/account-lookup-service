@@ -24,34 +24,31 @@
 'use strict'
 
 const Hapi = require('@hapi/hapi')
-const HapiOpenAPI = require('hapi-openapi')
-const Path = require('path')
-const Db = require('./lib/db')
-const Config = require('./lib/config.js')
-const Plugins = require('./plugins')
-const RequestLogger = require('./lib/requestLogger')
+const Boom = require('@hapi/boom')
+const Uuid = require('uuid4')
 const ParticipantEndpointCache = require('@mojaloop/central-services-shared').Util.Endpoints
-const HeaderValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
-const Migrator = require('./lib/migrator')
+const ParticipantCache = require('@mojaloop/central-services-shared').Util.Participants
+const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
+const Db = require('./lib/db')
+const Config = require('./lib/config.js')
+const Util = require('./lib/util')
+const Plugins = require('./plugins')
+const RequestLogger = require('./lib/requestLogger')
+const Migrator = require('./lib/migrator')
+const Handlers = require('./handlers')
+const Routes = require('./handlers/routes')
+const Cache = require('./lib/cache')
+const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
 
 const connectDatabase = async () => {
   return Db.connect(Config.DATABASE)
 }
 
-const openAPIOptions = {
-  api: Path.resolve(__dirname, './interface/api_swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
-}
-
-const openAdminAPIOptions = {
-  api: Path.resolve(__dirname, './interface/admin_swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
-}
-
-const migrate = async (isApi) => {
-  return Config.RUN_MIGRATIONS && !isApi ? Migrator.migrate() : {}
+const migrate = async () => {
+  return Config.RUN_MIGRATIONS ? Migrator.migrate() : {}
 }
 
 /**
@@ -60,17 +57,18 @@ const migrate = async (isApi) => {
  * @description Create HTTP Server
  *
  * @param {number} port Port to register the Server against
- * @param {boolean} isApi to check if admin or api server
+ * @param {object} api to check if admin or api server
+ * @param {array} routes array of API routes
  * @returns {Promise<Server>} Returns the Server object
  */
-const createServer = async (port, isApi) => {
+const createServer = async (port, api, routes, isAdmin) => {
   const server = await new Hapi.Server({
     port,
     routes: {
       validate: {
         options: ErrorHandler.validateRoutes(),
         failAction: async (request, h, err) => {
-          throw ErrorHandler.Factory.reformatFSPIOPError(err)
+          throw Boom.boomify(err)
         }
       },
       payload: {
@@ -79,20 +77,16 @@ const createServer = async (port, isApi) => {
       }
     }
   })
-  await Plugins.registerPlugins(server)
-  await server.register([
-    {
-      plugin: HapiOpenAPI,
-      options: isApi ? openAPIOptions : openAdminAPIOptions
-    },
-    {
-      plugin: HeaderValidator
-    }
-  ])
+  server.app.cache = Cache.registerCacheClient({
+    id: 'serverGeneralCache',
+    preloadCache: async () => Promise.resolve()
+  })
+  await Plugins.registerPlugins(server, api, isAdmin)
   await server.ext([
     {
-      type: 'onRequest',
+      type: 'onPostAuth',
       method: (request, h) => {
+        request.headers.traceid = request.headers.traceid || Uuid()
         RequestLogger.logRequest(request)
         return h.continue
       }
@@ -100,27 +94,50 @@ const createServer = async (port, isApi) => {
     {
       type: 'onPreResponse',
       method: (request, h) => {
-        RequestLogger.logResponse(request.response)
+        RequestLogger.logResponse(request)
         return h.continue
       }
     }
   ])
+
+  server.route(routes)
+  // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
   await server.start()
   return server
 }
 
-const initialize = async (port = Config.API_PORT, isApi = true) => {
-  await connectDatabase()
-  await migrate(isApi)
-  const server = await createServer(port, isApi)
-  server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-  Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
-  if (isApi) {
-    await ParticipantEndpointCache.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
+const initializeInstrumentation = () => {
+  if (!Config.INSTRUMENTATION_METRICS_DISABLED) {
+    Metrics.setup(Config.INSTRUMENTATION_METRICS_CONFIG)
   }
+}
+
+const initializeApi = async (port = Config.API_PORT) => {
+  initializeInstrumentation()
+  await connectDatabase()
+  const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.ApiHandlers)
+  const server = await createServer(port, api, Routes.APIRoutes(api), false)
+  Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
+  await ParticipantEndpointCache.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG)
+  await ParticipantCache.initializeCache(Config.CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG)
+  await OracleEndpointCache.initialize()
+  await Cache.initCache()
+  return server
+}
+
+const initializeAdmin = async (port = Config.ADMIN_PORT) => {
+  initializeInstrumentation()
+  await connectDatabase()
+  await migrate()
+  const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, Handlers.AdminHandlers)
+  const server = await createServer(port, api, Routes.AdminRoutes(api), true)
+  Logger.isInfoEnabled && Logger.info(`Server running on ${server.info.host}:${server.info.port}`)
   return server
 }
 
 module.exports = {
-  initialize
+  initializeApi,
+  initializeAdmin
 }

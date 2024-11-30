@@ -20,13 +20,14 @@
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
 
  --------------
  ******/
 
 'use strict'
 
-const request = require('request-promise-native')
+const axios = require('axios').default
 
 const {
   TEST_ALS_HOST,
@@ -35,35 +36,27 @@ const {
 } = require('../util/testConfig')
 
 describe('plugins', () => {
-  describe('hapi-swagger', () => {
+  describe('API documentation - /swagger.json', () => {
     it('loads the swagger file for the admin api', async () => {
       // Arrange
-      const options = {
-        uri: `http://${TEST_ALS_HOST}:${ADMIN_PORT}/swagger.json`,
-        json: true,
-        simple: true
-      }
+      // nothing to do
 
       // Act
-      const result = await request(options)
+      const response = await axios.get(`http://${TEST_ALS_HOST}:${ADMIN_PORT}/swagger.json`)
 
       // Assert
-      expect(result.info.title).toBe('ALS Admin Swagger Documentation')
+      expect(response.data.info.title).toBe('Open API for ALS Admin API')
     })
 
     it('loads the swagger file for the default api', async () => {
       // Arrange
-      const options = {
-        uri: `http://${TEST_ALS_HOST}:${API_PORT}/swagger.json`,
-        json: true,
-        simple: true
-      }
+      // nothing to do
 
       // Act
-      const result = await request(options)
+      const response = await axios.get(`http://${TEST_ALS_HOST}:${API_PORT}/swagger.json`)
 
       // Assert
-      expect(result.info.title).toBe('ALS API Swagger Documentation')
+      expect(response.data.info.title).toBe('Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version)')
     })
   })
 })

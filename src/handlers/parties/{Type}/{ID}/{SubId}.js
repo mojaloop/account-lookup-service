@@ -26,7 +26,9 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}
@@ -39,8 +41,16 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (request, h) {
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query)
+  get: function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_getPartiesByTypeIDAndSubID',
+      'Ingress - Get party by Type, ID and SubId',
+      ['success']
+    ).startTimer()
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
+      request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.ACCEPTED.CODE)
   },
   /**
@@ -50,8 +60,16 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri)
+  put: function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putPartiesByTypeIDAndSubID',
+      'Ingress - Put parties by Type, ID and SubId',
+      ['success']
+    ).startTimer()
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }
 }

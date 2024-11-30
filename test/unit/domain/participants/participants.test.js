@@ -41,7 +41,11 @@ const oracle = require('../../../../src/models/oracle/facade')
 const Helper = require('../../../util/helper')
 const Config = require('../../../../src/lib/config')
 
-describe('Participant Tests', () => {
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
+
+describe('participant Tests', () => {
   describe('getParticipantsByTypeAndID', () => {
     let sandbox
 
@@ -56,6 +60,7 @@ describe('Participant Tests', () => {
     })
 
     it('gets participants and sends callback', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -70,7 +75,8 @@ describe('Participant Tests', () => {
         Helper.getByTypeIdCurrencyRequest.headers,
         Helper.getByTypeIdCurrencyRequest.params,
         Helper.getByTypeIdCurrencyRequest.method,
-        Helper.getByTypeIdCurrencyRequest.query
+        Helper.getByTypeIdCurrencyRequest.query,
+        Helper.mockSpan()
       ]
 
       // Act
@@ -83,6 +89,7 @@ describe('Participant Tests', () => {
     })
 
     it('gets participants and sends callback when SubId is supplied', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -110,10 +117,11 @@ describe('Participant Tests', () => {
       const firstCallArgs = participant.sendRequest.getCall(0).args
       expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('payeefsp')
       expect(firstCallArgs[2]).toBe(expectedCallbackEndpointType)
-      expect(firstCallArgs[6].partySubIdOrType).toBe('subId')
+      expect(firstCallArgs[5].partySubIdOrType).toBe('subId')
     })
 
     it('fails to get participants and sends error callback with appropriate endpoint type when SubId is specified', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
@@ -124,7 +132,8 @@ describe('Participant Tests', () => {
         Helper.getByTypeIdCurrencyRequest.headers,
         params,
         Helper.getByTypeIdCurrencyRequest.method,
-        Helper.getByTypeIdCurrencyRequest.query
+        Helper.getByTypeIdCurrencyRequest.query,
+        Helper.mockSpan()
       ]
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
 
@@ -138,6 +147,7 @@ describe('Participant Tests', () => {
     })
 
     it('gets participants and sends callback when `fspiop-dest` is not set', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -150,7 +160,7 @@ describe('Participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'payerfsp'
       }
@@ -158,7 +168,8 @@ describe('Participant Tests', () => {
         headers,
         Helper.getByTypeIdCurrencyRequest.params,
         Helper.getByTypeIdCurrencyRequest.method,
-        Helper.getByTypeIdCurrencyRequest.query
+        Helper.getByTypeIdCurrencyRequest.query,
+        Helper.mockSpan()
       ]
 
       // Act
@@ -167,10 +178,11 @@ describe('Participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('fsp1')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe(headers['fspiop-source'])
     })
 
     it('fails with `Requester FSP not found` if `validateParticipant` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       const logErrorStub = sandbox.stub(Logger, 'error')
@@ -192,6 +204,7 @@ describe('Participant Tests', () => {
     })
 
     it('fails when `oracleRequest` response is empty', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
@@ -212,6 +225,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles error when `sendRequest` and sendErrorToParticipant` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -240,6 +254,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles error when `sendRequest` and sendErrorToParticipant` fails, but sends callback with a specific endpoint type when SubId is present', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -284,6 +299,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends put request to the participant', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -297,7 +313,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -321,6 +337,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends put request to the participant with SubId', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -335,7 +352,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -362,6 +379,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles put request without fspiop-dest header', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -374,7 +392,7 @@ describe('Participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -398,6 +416,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where `oracleRequest` returns has no response.data', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({})
@@ -405,7 +424,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -429,6 +448,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where SubId is supplied but `oracleRequest` returns has no response.data', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({})
@@ -437,7 +457,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -463,6 +483,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where `validateParticipant` returns null', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
@@ -471,7 +492,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -494,6 +515,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where type is not in `PartyAccountTypes`', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -502,7 +524,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -525,6 +547,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where type is not in `PartyAccountTypes` and `sendErrorToParticipant` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -533,7 +556,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -556,6 +579,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where SubId is supplied but validation fails and an error is thrown while sending error callback', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -564,7 +588,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -601,6 +625,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles PUT /error', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.info = sandbox.stub()
@@ -611,7 +636,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -636,6 +661,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles PUT /error when SubId is supplied', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.info = sandbox.stub()
@@ -647,7 +673,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -673,6 +699,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles PUT /error when SubId supplied but validateParticipant fails to return participant', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.info = sandbox.stub()
@@ -684,7 +711,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -710,6 +737,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles PUT /error when SubId supplied but validateParticipant throws error', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.info = sandbox.stub()
@@ -721,7 +749,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -747,6 +775,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles PUT /error when `sendErrorToParticipant` throws error', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.info = sandbox.stub()
@@ -757,7 +786,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -784,6 +813,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles PUT /error when SubId is supplied and `sendErrorToParticipant` throws error', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.info = sandbox.stub()
@@ -794,7 +824,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': 'payerfsp',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': Enums.Http.Headers.FSPIOP.SWITCH.value
       }
@@ -834,6 +864,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends the request to the participant', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -848,7 +879,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -862,7 +893,7 @@ describe('Participant Tests', () => {
       }
 
       // Act
-      await participantsDomain.postParticipants(headers, 'get', params, payload)
+      await participantsDomain.postParticipants(headers, 'get', params, payload, Helper.mockSpan())
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
@@ -871,6 +902,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends the request to the participant with SubId', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -886,7 +918,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -912,6 +944,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the request without fspiop-dest header', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -925,7 +958,7 @@ describe('Participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -948,6 +981,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where `oracleRequest` returns has no response.data', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({})
@@ -955,7 +989,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -969,7 +1003,7 @@ describe('Participant Tests', () => {
       }
 
       // Act
-      await participantsDomain.postParticipants(headers, 'get', params, payload)
+      await participantsDomain.postParticipants(headers, 'get', params, payload, Helper.mockSpan())
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -978,6 +1012,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where SubId is supplied but `oracleRequest` returns has no response.data', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({})
@@ -986,7 +1021,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1011,6 +1046,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where `validateParticipant` returns null', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
@@ -1019,7 +1055,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1041,6 +1077,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where type is not in `PartyAccountTypes`', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1049,7 +1086,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1071,6 +1108,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where type is not in `PartyAccountTypes` and `sendErrorToParticipant` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1079,7 +1117,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1101,6 +1139,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where SubId is supplied but validation fails and an error is thrown while sending error callback', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1109,7 +1148,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1145,6 +1184,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends a batch request to all oracles, with the given partyList', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1163,7 +1203,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1186,7 +1226,7 @@ describe('Participant Tests', () => {
       }
 
       // Act
-      await participantsDomain.postParticipantsBatch(headers, 'get', payload)
+      await participantsDomain.postParticipantsBatch(headers, 'get', payload, Helper.mockSpan())
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
@@ -1195,6 +1235,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends a batch request to all oracles, when fspiop-dest is missing', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1212,7 +1253,7 @@ describe('Participant Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1244,6 +1285,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends errors when party.fspId does not match the source and partyIdType is invalid', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1260,7 +1302,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1289,7 +1331,7 @@ describe('Participant Tests', () => {
       }
 
       // Act
-      await participantsDomain.postParticipantsBatch(headers, 'get', payload)
+      await participantsDomain.postParticipantsBatch(headers, 'get', payload, Helper.mockSpan())
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
@@ -1298,6 +1340,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles error when `validateParticipant` fails and `sendErrorToParticipant` throws', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1307,7 +1350,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1322,7 +1365,7 @@ describe('Participant Tests', () => {
       }
 
       // Act
-      await participantsDomain.postParticipantsBatch(headers, 'get', payload)
+      await participantsDomain.postParticipantsBatch(headers, 'get', payload, Helper.mockSpan())
 
       // Assert
       const firstCallArgs = Logger.error.getCall(0).args
@@ -1332,6 +1375,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles error when `oracleBatchRequest` returns no result', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves({})
@@ -1340,7 +1384,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1366,6 +1410,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles error when `oracleBatchRequest` returns result but no partyList', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves({})
@@ -1378,7 +1423,7 @@ describe('Participant Tests', () => {
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'fspiop-destination': Enums.Http.Headers.FSPIOP.SWITCH.value,
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1416,6 +1461,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends DELETE request to the participant', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -1428,7 +1474,7 @@ describe('Participant Tests', () => {
       participant.sendRequest = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1451,6 +1497,7 @@ describe('Participant Tests', () => {
     })
 
     it('sends DELETE request to the participant with SubId', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves({
@@ -1464,7 +1511,7 @@ describe('Participant Tests', () => {
       const expectedCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1490,13 +1537,14 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where `oracleRequest` returns has no response', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1519,6 +1567,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where SubId is supplied but `oracleRequest` returns has no response', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves({})
       oracle.oracleRequest = sandbox.stub().resolves(null)
@@ -1526,7 +1575,7 @@ describe('Participant Tests', () => {
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1551,6 +1600,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles the case where `validateParticipant` returns null', async () => {
+      expect.hasAssertions()
       // Arrange
       participant.validateParticipant = sandbox.stub().resolves(null)
       sandbox.stub(Logger)
@@ -1558,7 +1608,7 @@ describe('Participant Tests', () => {
       participant.sendErrorToParticipant = sandbox.stub()
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1580,6 +1630,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where type is not in `PartyAccountTypes`', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1587,7 +1638,7 @@ describe('Participant Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1609,6 +1660,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where type is not in `PartyAccountTypes` and `sendErrorToParticipant` fails', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1616,7 +1668,7 @@ describe('Participant Tests', () => {
 
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }
@@ -1638,6 +1690,7 @@ describe('Participant Tests', () => {
     })
 
     it('handles case where SubId is supplied but validation fails and an error is thrown while sending error callback', async () => {
+      expect.hasAssertions()
       // Arrange
       sandbox.stub(Logger)
       Logger.error = sandbox.stub()
@@ -1645,7 +1698,7 @@ describe('Participant Tests', () => {
       const expectedErrorCallbackEndpointType = Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       const headers = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         date: '2019-05-24 08:52:19',
         'fspiop-source': 'fsp1'
       }

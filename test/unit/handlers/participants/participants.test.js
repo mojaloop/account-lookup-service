@@ -33,9 +33,13 @@ const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
-const initServer = require('../../../../src/server').initialize
+const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 
@@ -50,15 +54,36 @@ describe('/participants', () => {
     await server.stop()
     sandbox.restore()
   })
-
+  const mock = {
+    requestId: '3ede3c17-36aa-42f4-b6db-b0df2e42f31e',
+    partyList: [{
+      partyIdType: 'MSISDN',
+      partyIdentifier: 'MIYCVaNdsLD',
+      partySubIdOrType: 'GNYKQO',
+      fspId: 'ohidNUSaZRGCUViMhXOwyiPKq'
+    },
+    {
+      partyIdType: 'MSISDN',
+      partyIdentifier: 'eEmRAczAyz',
+      partySubIdOrType: 'ki',
+      fspId: 'sYhkSmfUW'
+    },
+    {
+      partyIdType: 'MSISDN',
+      partyIdentifier: 'SNLwBJVZ',
+      partySubIdOrType: 'fBcEvS',
+      fspId: 'lgfJVXYOpsNfY'
+    }
+    ],
+    currency: 'EUR'
+  }
   it('postParticipantsBatch success', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultSwitchHeaders,
-      payload: mock.request.body
+      payload: mock
     }
     sandbox.stub(participants, 'postParticipantsBatch').returns({})
 
@@ -72,12 +97,11 @@ describe('/participants', () => {
 
   it('postParticipantsBatch error', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/participants', 'post')
     const options = {
       method: 'post',
-      url: mock.request.path,
+      url: '/participants',
       headers: Helper.defaultSwitchHeaders,
-      payload: mock.request.body
+      payload: mock
     }
 
     // Act

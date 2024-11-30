@@ -1,31 +1,46 @@
-FROM node:10.15.3-alpine AS builder
+# Arguments
+ARG NODE_VERSION=lts-alpine
 
-WORKDIR /opt/account-lookup-service
+# NOTE: Ensure you set NODE_VERSION Build Argument as follows...
+#
+#  export NODE_VERSION="$(cat .nvmrc)-alpine" \
+#  docker build \
+#    --build-arg NODE_VERSION=$NODE_VERSION \
+#    -t mojaloop/sdk-scheme-adapter:local \
+#    . \
+#
 
-RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
-    && cd $(npm root -g)/npm \
-    && npm config set unsafe-perm true \
-    && npm install -g node-gyp
+# Build Image
+FROM node:${NODE_VERSION} as builder
+WORKDIR /opt/app
 
-COPY package.json package-lock.json* /opt/account-lookup-service/
-RUN npm install
+RUN apk --no-cache add git
+RUN apk add --no-cache -t build-dependencies make gcc g++ python3 libtool openssl-dev autoconf automake bash \
+    && cd $(npm root -g)/npm
 
-COPY config /opt/account-lookup-service/config
-COPY migrations /opt/account-lookup-service/migrations
-COPY seeds /opt/account-lookup-service/seeds
-COPY src /opt/account-lookup-service/src
+COPY package.json package-lock.json* /opt/app/
 
-FROM node:10.15.3-alpine
+RUN npm ci
 
-WORKDIR /opt/account-lookup-service
+COPY src /opt/app/src
+COPY config /opt/app/config
+COPY migrations /opt/app/migrations
+COPY seeds /opt/app/seeds
+COPY test /opt/app/test
 
-COPY --from=builder /opt/account-lookup-service .
-RUN npm prune --production
+FROM node:${NODE_VERSION}
+WORKDIR /opt/app
 
 # Create empty log file & link stdout to the application log file
 RUN mkdir ./logs && touch ./logs/combined.log
 RUN ln -sf /dev/stdout ./logs/combined.log
 
-EXPOSE 4002
-EXPOSE 4001
+# Create a non-root user: ml-user
+RUN adduser -D ml-user 
+USER ml-user
+
+COPY --chown=ml-user --from=builder /opt/app .
+RUN npm prune --production
+
+EXPOSE 3001
 CMD ["npm", "run", "start"]

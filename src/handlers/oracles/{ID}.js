@@ -24,12 +24,13 @@
 
 'use strict'
 
-const oracle = require('../../domain/oracle')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
-const LibUtil = require('../../lib/util')
 const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
+const LibUtil = require('../../lib/util')
+const oracle = require('../../domain/oracle')
 
 /**
  * Operations on /oracles/{ID}
@@ -42,7 +43,12 @@ module.exports = {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (request, h) => {
+  put: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_updateOracle',
+      'Ingress: Update oracle details by Id',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
@@ -53,9 +59,11 @@ module.exports = {
     const metadata = `${request.method} ${request.path}`
     try {
       await oracle.updateOracle(request.params, request.payload)
+      histTimerEnd({ success: true })
       return h.response().code(204)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
@@ -66,7 +74,12 @@ module.exports = {
    * produces: application/json
    * responses: 204, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async (request, h) => {
+  delete: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_deleteOracle',
+      'Ingress: Delete oracle by Id',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.DELETE)
     span.setTags(spanTags)
@@ -76,9 +89,11 @@ module.exports = {
     const metadata = `${request.method} ${request.path}`
     try {
       await oracle.deleteOracle(request.params)
+      histTimerEnd({ success: true })
       return h.response().code(204)
     } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      Logger.isErrorEnabled && Logger.error(`ERROR - ${metadata}: ${err.stack}`)
+      histTimerEnd({ success: false })
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

@@ -27,10 +27,9 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
-const Logger = require('@mojaloop/central-services-logger')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -43,7 +42,12 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async function (request, h) {
+  get: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_getParticipantsByTypeAndID',
+      'Ingress: Get participant by Type and Id',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
@@ -52,12 +56,11 @@ module.exports = {
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span, request.server.app.cache).catch(err => {
+      request.server.log(['error'], `ERROR - getParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
+
     return h.response().code(202)
   },
   /**
@@ -67,14 +70,17 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
+  put: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putParticipantsByTypeAndID',
+      'Ingress: Put participant by Type and Id',
+      ['success']
+    ).startTimer()
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload, request.server.app.cache).catch(err => {
+      request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(200)
   },
   /**
@@ -84,7 +90,12 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async function (request, h) {
+  post: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_postParticipantsbyTypeAndID',
+      'Ingress: Post participant by Type and Id',
+      ['success']
+    ).startTimer()
     const span = request.span
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
@@ -93,12 +104,10 @@ module.exports = {
       payload: request.payload
     }, EventSdk.AuditEventAction.start)
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.postParticipants(request.headers, request.method, request.params, request.payload, span)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, span, request.server.app.cache).catch(err => {
+      request.server.log(['error'], `ERROR - postParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(202)
   },
   /**
@@ -108,14 +117,17 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: function (request, h) {
+  delete: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_deleteParticipantsByTypeAndID',
+      'Ingress: Delete participant by Type and Id',
+      ['success']
+    ).startTimer()
     const metadata = `${request.method} ${request.path}`
-    try {
-      participants.deleteParticipants(request.headers, request.params, request.method, request.query)
-    } catch (err) {
-      Logger.error(`ERROR - ${metadata}: ${err.stack}`)
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query, request.server.app.cache).catch(err => {
+      request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(202)
   }
 }

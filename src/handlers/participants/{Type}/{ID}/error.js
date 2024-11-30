@@ -26,11 +26,11 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
-const EventSdk = require('@mojaloop/event-sdk')
-const LibUtil = require('../../../../lib/util')
-const pp = require('util').inspect
-const participants = require('../../../../domain/participants')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventSdk = require('@mojaloop/event-sdk')
+const Metrics = require('@mojaloop/central-services-metrics')
+const LibUtil = require('../../../../lib/util')
+const participants = require('../../../../domain/participants')
 
 /**
  * Operations on /participants/{Type}/{ID}/error
@@ -43,25 +43,32 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (req, h) {
-    (async function () {
-      const span = req.span
-      const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
-      span.setTags(spanTags)
-      const metadata = `${req.method} ${req.path}`
-      try {
-        await span.audit({
-          headers: req.headers,
-          payload: req.payload
-        }, EventSdk.AuditEventAction.start)
-        req.server.log(['info'], `received: ${metadata}. ${pp(req.params)}`)
-        await participants.putParticipantsErrorByTypeAndID(req.headers, req.params, req.payload, req.dataUri, span)
-        req.server.log(['info'], `success: ${metadata}.`)
-      } catch (err) {
-        req.server.log(['error'], `ERROR - ${metadata}: ${pp(err)}`)
-        throw ErrorHandler.Factory.reformatFSPIOPError(err)
-      }
-    })()
+  put: async (context, request, h) => {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putParticipantsErrorByTypeAndID',
+      'Ingress: Put participant error by Type and Id',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    const metadata = `${request.method} ${request.path}`
+    try {
+      await span.audit({
+        headers: request.headers,
+        payload: request.payload
+      }, EventSdk.AuditEventAction.start)
+      request.server.log(['info'], `received: ${metadata}. ${LibUtil.getStackOrInspect(request.params)}`)
+      participants.putParticipantsErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, span).catch(err => {
+        request.server.log(['error'], `ERROR - putParticipantsErrorByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      })
+      request.server.log(['info'], `success: ${metadata}.`)
+      histTimerEnd({ success: true })
+    } catch (err) {
+      request.server.log(['error'], `ERROR - ${metadata}: ${LibUtil.getStackOrInspect(err)}`)
+      histTimerEnd({ success: false })
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
     return h.response().code(200)
   }
 }

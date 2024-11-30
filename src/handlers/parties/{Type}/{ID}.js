@@ -28,6 +28,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../lib/util')
 const parties = require('../../../domain/parties')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -40,17 +41,25 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async function (req, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
+  get: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_getPartiesByTypeAndID',
+      'Ingress - Get party by Type and Id',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
     await span.audit({
-      headers: req.headers,
-      payload: req.payload
+      headers: request.headers,
+      payload: request.payload
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(req.headers, req.params, req.method, req.query, span)
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, span, request.server.app.cache).catch(err => {
+      request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(202)
   },
 
@@ -61,17 +70,25 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async function (req, h) {
-    const span = req.span
-    const spanTags = LibUtil.getSpanTags(req, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+  put: async function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putPartiesByTypeAndID',
+      'Ingress - Put party by Type and Id',
+      ['success']
+    ).startTimer()
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
     await span.audit({
-      headers: req.headers,
-      payload: req.payload
+      headers: request.headers,
+      payload: request.payload
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
-    // _must_ be handled by getPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(req.headers, req.params, req.method, req.payload, req.dataUri)
+    // _must_ be handled by putPartiesByTypeAndID.
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
     return h.response().code(200)
   }
 }

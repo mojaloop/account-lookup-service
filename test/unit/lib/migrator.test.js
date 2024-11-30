@@ -27,7 +27,7 @@
  ******/
 'use strict'
 
-const Migrations = require('@mojaloop/central-services-database').Migrations
+const Migrations = require('@mojaloop/database-lib').Migrations
 const Migrator = require('../../../src/lib/migrator')
 
 describe('Migrator', () => {

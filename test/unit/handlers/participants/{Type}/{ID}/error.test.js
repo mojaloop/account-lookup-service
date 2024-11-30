@@ -1,4 +1,3 @@
-
 /*****
  License
  --------------
@@ -32,15 +31,20 @@ const getPort = require('get-port')
 
 const src = '../../../../../../src'
 
-const initServer = require(`${src}/server`).initialize
+const initServer = require(`${src}/server`).initializeApi
 const Db = require(`${src}/lib/db`)
 const participants = require(`${src}/domain/participants`)
 const ErrHandler = require(`${src}/handlers/participants/{Type}/{ID}/error`)
 const Helper = require('../../../../../util/helper')
 const LibUtil = require(`${src}/lib/util`)
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
+const mockContext = jest.fn()
 
 describe('/participants/{Type}/{ID}/error', () => {
   beforeAll(async () => {
@@ -66,11 +70,12 @@ describe('/participants/{Type}/{ID}/error', () => {
 
     const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
     const setTagsStub = sandbox.stub().returns({})
-    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').returns({})
+    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').resolves({})
     mock.request = {
       server: {
         log: sandbox.stub()
       },
+      log: sandbox.stub(),
       method: sandbox.stub(),
       path: sandbox.stub(),
       metadata: sandbox.stub(),
@@ -83,7 +88,7 @@ describe('/participants/{Type}/{ID}/error', () => {
     }
 
     // Act
-    await Promise.resolve(await ErrHandler.put(mock.request, handler))
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     /*
@@ -94,6 +99,8 @@ describe('/participants/{Type}/{ID}/error', () => {
     const secondCallArgs = mock.request.server.log.getCall(1).args
     expect(secondCallArgs[0]).toEqual(['info'])
     expect(mock.request.server.log.callCount).toEqual(2)
+
+    // Cleanup
     participants.putParticipantsErrorByTypeAndID.restore()
   })
 
@@ -108,11 +115,12 @@ describe('/participants/{Type}/{ID}/error', () => {
 
     const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
     const setTagsStub = sandbox.stub().returns({})
-    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').throws(new Error('Error in putParticipantsErrorByTypeAndID'))
+    sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').rejects(new Error('Error in putParticipantsErrorByTypeAndID'))
     mock.request = {
       server: {
         log: sandbox.stub()
       },
+      log: sandbox.stub(),
       method: sandbox.stub(),
       path: sandbox.stub(),
       metadata: sandbox.stub(),
@@ -125,7 +133,7 @@ describe('/participants/{Type}/{ID}/error', () => {
     }
 
     // Act
-    await Promise.resolve(await ErrHandler.put(mock.request, handler))
+    await ErrHandler.put(mockContext, mock.request, handler)
 
     // Assert
     /*
@@ -133,8 +141,13 @@ describe('/participants/{Type}/{ID}/error', () => {
       the error when testing this. Instead, we test this by ensuring the `server.log` method is called with "ERROR"
     */
 
+    expect(mock.request.server.log.callCount).toEqual(3)
     const secondCallArgs = mock.request.server.log.getCall(1).args
-    expect(secondCallArgs[0]).toEqual(['error'])
+    expect(secondCallArgs[0]).toEqual(['info'])
+    const logCatchCallArgs = mock.request.server.log.getCall(2).args
+    expect(logCatchCallArgs[0]).toEqual(['error'])
+
+    // Cleanup
     participants.putParticipantsErrorByTypeAndID.restore()
   })
 })

@@ -35,12 +35,18 @@ const oracleEndpoint = require('../../../../src/models/oracle')
 const currency = require('../../../../src/models/currency')
 const partyIdType = require('../../../../src/models/partyIdType')
 const Db = require('../../../../src/lib/db')
+const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
+const Logger = require('@mojaloop/central-services-logger')
+
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 
 const partyIdTypeResponse = {
   partyIdTypeId: 1,
   name: 'MSISDN',
   description: 'A MSISDN (Mobile Station International Subscriber Directory Number, that is, the phone number)',
-  isActive: true,
+  isActive: 1,
   createdDate: '2019-05-24 08:52:19'
 }
 
@@ -48,7 +54,7 @@ const partyIdTypeResponseIBAN = {
   partyIdTypeId: 2,
   name: 'IBAN',
   description: 'An IBAN',
-  isActive: true,
+  isActive: 1,
   createdDate: '2019-05-24 08:52:19'
 }
 
@@ -56,7 +62,7 @@ const endpointTypeResponse = {
   endpointTypeId: 1,
   type: 'URL',
   description: 'REST URLs',
-  isActive: true,
+  isActive: 1,
   createdDate: '2019-05-24 08:52:19'
 }
 
@@ -66,7 +72,18 @@ const getOracleDatabaseResponse = [{
   value: 'http://localhost:8444',
   idType: 'MSISDN',
   currency: 'USD',
-  isDefault: true
+  isDefault: 1,
+  isActive: 1
+}]
+
+const getAllOracleEndpointsByMatchConditionResponse = [{
+  oracleEndpointId: 1,
+  endpointType: 'URL',
+  value: 'http://localhost:8444',
+  idType: 'MSISDN',
+  currency: 'EUR',
+  isDefault: 1,
+  isActive: 1
 }]
 
 let sandbox
@@ -86,11 +103,18 @@ describe('Oracle tests', () => {
       insert: sandbox.stub(),
       query: sandbox.stub()
     }
+    Db.from = (table) => {
+      return Db[table]
+    }
     Db.partyIdType.findOne.returns(partyIdTypeResponse)
     Db.endpointType.findOne.returns(endpointTypeResponse)
     Db.oracleEndpoint.insert.returns(true)
     Db.oracleEndpoint.query.returns(getOracleDatabaseResponse)
     Db.oracleEndpoint.update.returns(true)
+
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByTypeAndCurrency').returns(getOracleDatabaseResponse)
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').returns(getOracleDatabaseResponse)
+    sandbox.stub(oracleEndpointCached, 'getOracleEndpointByCurrency').returns(getOracleDatabaseResponse)
 
     SpanStub = {
       audit: sandbox.stub().callsFake(),
@@ -123,7 +147,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.deleteOracle(undefined)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('Cannot read property \'ID\' of undefined'))
+      await expect(action()).rejects.toThrowError('Cannot read properties of undefined (reading \'ID\')')
     })
   })
 
@@ -132,6 +156,7 @@ describe('Oracle tests', () => {
       // Arrange
       oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
       partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       currency.getCurrencyById = sandbox.stub().resolves({
         currencyId: 'AUD',
         name: 'Australian Dollars',
@@ -142,7 +167,7 @@ describe('Oracle tests', () => {
       const params = { ID: '12345' }
       const payload = {
         oracleIdType: 'IBAN',
-        isDefault: true,
+        isDefault: 1,
         currency: 'AUD',
         endpoint: {
           endpointType: 'CUSTOM_TYPE',
@@ -165,6 +190,37 @@ describe('Oracle tests', () => {
       expect(firstCallArgs[1]).toEqual(expected)
     })
 
+    it('rejects updating an oracle if it is similar to existing active oracle', async () => {
+      // Arrange
+      oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves(getOracleDatabaseResponse)
+      partyIdType.getPartyIdTypeByName = sandbox.stub().resolves(partyIdTypeResponseIBAN)
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves(getAllOracleEndpointsByMatchConditionResponse)
+      currency.getCurrencyById = sandbox.stub().resolves({
+        currencyId: 'EUR',
+        name: 'European Dollars',
+        isActive: true,
+        createdDate: (new Date()).toISOString()
+      })
+      oracleEndpoint.updateOracleEndpointById = sandbox.stub()
+      const params = { ID: '12345' }
+      const payload = {
+        oracleIdType: 'MSISDN',
+        isDefault: 1,
+        currency: 'EUR',
+        endpoint: {
+          endpointType: 'URL',
+          value: 'http://custom_url:8444'
+        }
+      }
+
+      // Act
+      try {
+        await oracleDomain.updateOracle(params, payload)
+      } catch (err) {
+        expect(err.message).toEqual('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
+      }
+    })
+
     it('handles error when oracleEndpointList is empty', async () => {
       // Arrange
       oracleEndpoint.getOracleEndpointById = sandbox.stub().resolves([])
@@ -175,7 +231,7 @@ describe('Oracle tests', () => {
       const action = async () => oracleDomain.updateOracle(params, payload)
 
       // Assert
-      await expect(action()).rejects.toThrowError(new RegExp('Oracle not found'))
+      await expect(action()).rejects.toThrowError(/Oracle not found/)
     })
 
     it('handles error when `getCurrencyById` returns empty result', async () => {
@@ -186,7 +242,7 @@ describe('Oracle tests', () => {
       const params = { ID: '12345' }
       const payload = {
         oracleIdType: 'IBAN',
-        isDefault: true,
+        isDefault: 1,
         currency: 'AUD',
         endpoint: {
           endpointType: 'CUSTOM_TYPE',
@@ -204,6 +260,7 @@ describe('Oracle tests', () => {
 
   describe('createOracle', () => {
     it('should create an oracle when isDefault is true', async () => {
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       // Arrange
       const createPayload = {
         oracleIdType: 'MSISDN',
@@ -211,13 +268,13 @@ describe('Oracle tests', () => {
           value: 'http://localhost:8444',
           endpointType: 'URL'
         },
-        isDefault: true
+        isDefault: 1
       }
       const createHeaders = {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'cache-control': 'no-cache',
         date: '',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         'user-agent': 'PostmanRuntime/7.17.1',
         'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
         host: '127.0.0.1:4003',
@@ -225,6 +282,9 @@ describe('Oracle tests', () => {
         'content-length': 164,
         connection: 'keep-alive'
       }
+
+      // Update mock to be deleted so it passes check
+      getOracleDatabaseResponse[0].isActive = false
 
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
@@ -234,6 +294,7 @@ describe('Oracle tests', () => {
     })
 
     it('should create an oracle isDefault false', async () => {
+      oracleEndpoint.getAllOracleEndpointsByMatchCondition = sandbox.stub().resolves([])
       // Arrange
       const createPayload = {
         oracleIdType: 'MSISDN',
@@ -246,7 +307,7 @@ describe('Oracle tests', () => {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'cache-control': 'no-cache',
         date: '',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         'user-agent': 'PostmanRuntime/7.17.1',
         'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
         host: '127.0.0.1:4003',
@@ -254,6 +315,9 @@ describe('Oracle tests', () => {
         'content-length': 164,
         connection: 'keep-alive'
       }
+
+      // Update mock to be deleted so it passes check
+      getOracleDatabaseResponse[0].isActive = false
 
       // Act
       const response = await oracleDomain.createOracle(createPayload, createHeaders, SpanStub)
@@ -290,7 +354,7 @@ describe('Oracle tests', () => {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'cache-control': 'no-cache',
         date: '',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         'user-agent': 'PostmanRuntime/7.17.1',
         'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
         host: '127.0.0.1:4003',
@@ -305,7 +369,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
@@ -324,7 +388,7 @@ describe('Oracle tests', () => {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'cache-control': 'no-cache',
         date: '',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         'user-agent': 'PostmanRuntime/7.17.1',
         'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
         host: '127.0.0.1:4003',
@@ -339,7 +403,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
@@ -358,7 +422,7 @@ describe('Oracle tests', () => {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'cache-control': 'no-cache',
         date: '',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         'user-agent': 'PostmanRuntime/7.17.1',
         'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
         host: '127.0.0.1:4003',
@@ -373,7 +437,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act
@@ -393,7 +457,7 @@ describe('Oracle tests', () => {
         accept: 'application/vnd.interoperability.participants+json;version=1',
         'cache-control': 'no-cache',
         date: '',
-        'content-type': 'application/vnd.interoperability.participants+json;version=1.0',
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
         'user-agent': 'PostmanRuntime/7.17.1',
         'postman-token': 'fc2ac209-de3e-4851-b6ba-02efde9060fa',
         host: '127.0.0.1:4003',
@@ -408,7 +472,7 @@ describe('Oracle tests', () => {
           endpointType: 'URL'
         },
         currency: 'USD',
-        isDefault: true
+        isDefault: 1
       }]
 
       // Act

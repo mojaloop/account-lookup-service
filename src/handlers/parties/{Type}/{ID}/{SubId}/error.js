@@ -24,7 +24,10 @@
  ******/
 'use strict'
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const LibUtil = require('../../../../../lib/util')
+const parties = require('../../../../../domain/parties')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}/error
@@ -37,7 +40,16 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (request, h) {
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+  put: function (context, request, h) {
+    const histTimerEnd = Metrics.getHistogram(
+      'ing_putPartiesErrorByTypeIDAndSubID',
+      'Ingress - Put parties error by Type, ID and SubId',
+      ['success']
+    ).startTimer()
+    parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span).catch(err => {
+      request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+    })
+    histTimerEnd({ success: true })
+    return h.response().code(Enum.Http.ReturnCodes.OK.CODE)
   }
 }

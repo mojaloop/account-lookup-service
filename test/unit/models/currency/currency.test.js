@@ -30,13 +30,20 @@ const Sinon = require('sinon')
 
 const Db = require('../../../../src/lib/db')
 const { getCurrencyById } = require('../../../../src/models/currency')
+const Logger = require('@mojaloop/central-services-logger')
 
+Logger.isDebugEnabled = jest.fn(() => true)
+Logger.isErrorEnabled = jest.fn(() => true)
+Logger.isInfoEnabled = jest.fn(() => true)
 let sandbox
 
 describe('currency model', () => {
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    Db.from = (table) => {
+      return Db[table]
+    }
   })
 
   afterEach(() => {

@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ##
 # TEST_MODE
-# Options: 
+# Options:
 # - default   runs the tests as usual
 # - wait      sets up the docker-compose environment, but don't do anything (this allows for repeat tests)
 # - rm        same as default, but stops and removes docker-compose containers afterwards
@@ -71,6 +71,10 @@ function tearDown() {
   docker-compose \
     -f ${DIR}/../docker-compose.yml \
     -f ${DIR}/../docker-compose.integration.yml \
+    down -v
+  docker-compose \
+    -f ${DIR}/../docker-compose.yml \
+    -f ${DIR}/../docker-compose.integration.yml \
     rm -f
 }
 
@@ -102,4 +106,3 @@ case ${TEST_MODE} in
     echo "Unsupported TEST_MODE: ${TEST_MODE}"
     exit 1
 esac
-  

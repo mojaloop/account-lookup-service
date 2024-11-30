@@ -20,6 +20,9 @@ coverage
 # nyc test coverage
 .nyc_output
 
+# Integration test output
+junit.xml
+
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 
@@ -69,3 +72,10 @@ typings/
 # VSCode directory
 .vscode
 jsconfig.json
+
+# https://devspace.sh/
+devspace*
+.devspace/**.*
+
+# General Ignore
+*IGNORE*

@@ -1,7 +1,0 @@
-{
-   "reject": [
-      "hapi-swagger",
-      "@hapi/inert",
-      "get-port"
-   ]
-}
