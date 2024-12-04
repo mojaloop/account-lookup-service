@@ -238,7 +238,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
     const extensions = err.extensions || {}
-    errorCounter.inc({ errorCode: err.apiErrorCode, extensions })
+    errorCounter.inc({ errorCode: fspiopError.apiErrorCode, extensions })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
   }
