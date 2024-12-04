@@ -129,6 +129,9 @@ const initializeApi = async (appConfig) => {
   } = appConfig
 
   if (!INSTRUMENTATION_METRICS_DISABLED) {
+    if (INSTRUMENTATION_METRICS_CONFIG.defaultLabels) {
+      INSTRUMENTATION_METRICS_CONFIG.defaultLabels.serviceVersion = version
+    }
     initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
   }
   await connectDatabase(DATABASE)
