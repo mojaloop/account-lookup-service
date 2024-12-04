@@ -85,8 +85,13 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const histTimerEnd = Metrics.getHistogram(
     'getPartiesByTypeAndID',
     'Get party by Type and Id',
-    ['success']
+    ['success', 'context']
   ).startTimer()
+  const errorCounter = Metrics.getCounter(
+    'getPartiesByTypeAndIDErrorCount',
+    'Get party by Type and Id error count',
+    ['errorCode', 'extensions']
+  )
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const type = params.Type
   const partySubId = params.SubId
@@ -232,6 +237,8 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   } catch (err) {
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
+    const extensions = err.extensions || {}
+    errorCounter.inc({ errorCode: err.apiErrorCode, extensions })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
   }
