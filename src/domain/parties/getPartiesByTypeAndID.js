@@ -85,7 +85,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const histTimerEnd = Metrics.getHistogram(
     'getPartiesByTypeAndID',
     'Get party by Type and Id',
-    ['success', 'context']
+    ['success']
   ).startTimer()
   const errorCounter = Metrics.getCounter(
     'getPartiesByTypeAndIDErrorCount',

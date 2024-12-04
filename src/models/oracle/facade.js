@@ -123,10 +123,10 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       throw err
     }
   } catch (err) {
-    const extensions = {
-      subSystems: ['@hapi/catbox-memory', 'http']
-
-    }
+    const extensions = [{
+      key: 'subSystems',
+      value: ['@hapi/catbox-memory', 'http']
+    }]
     Logger.isErrorEnabled && Logger.error(`error in oracleRequest: ${err?.stack}`)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
