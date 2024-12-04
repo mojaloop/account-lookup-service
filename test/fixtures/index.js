@@ -9,14 +9,15 @@ const headersDto = ({
   destination = 'toDfsp',
   proxy = '',
   date = '2024-05-24 08:52:19',
-  accept
+  accept,
+  contentType
 } = {}) => Object.freeze({
   [Headers.FSPIOP.SOURCE]: source,
   ...(destination && { [Headers.FSPIOP.DESTINATION]: destination }),
   ...(proxy && { [Headers.FSPIOP.PROXY]: proxy }),
   date,
   accept,
-  'content-type': accept
+  'content-type': contentType || accept
 })
 
 const protocolVersionsDto = () => ({
@@ -40,21 +41,28 @@ const partiesCallHeadersDto = ({
   destination,
   proxy,
   date,
-  accept: 'application/vnd.interoperability.parties+json;version=1.1'
+  accept: interopHeader('parties', '1'),
+  contentType: interopHeader('parties', '1.1')
 })
 
 const participantsCallHeadersDto = ({
   source,
   destination,
   proxy,
-  date
+  date,
+  acceptVersion = '1',
+  contentTypeVersion = '1.1'
 } = {}) => headersDto({
   source,
   destination,
   proxy,
   date,
-  accept: 'application/vnd.interoperability.participants+json;version=1'
+  accept: interopHeader('participants', acceptVersion),
+  contentType: interopHeader('participants', contentTypeVersion)
 })
+
+// todo: add ISO mode support
+const interopHeader = (resource, version = '1') => `application/vnd.interoperability.${resource}+json;version=${version}`
 
 const oracleRequestResponseDto = ({
   partyList = [{ fspId: 'dfspFromOracle' }]
@@ -81,6 +89,20 @@ const putPartiesSuccessResponseDto = ({
     name: `testPartyName-${partyId}`
     // personalInfo: { ... }
   }
+})
+
+const postParticipantsPayloadDto = ({
+  requestId = randomUUID(), // '01JE8SG3F4WNHY8B9876THQ344',
+  partyList = [{
+    partyIdType: 'MSISDN',
+    partyIdentifier: '123456',
+    fspId: 'fspId123'
+  }],
+  currency = 'XXX'
+} = {}) => Object.freeze({
+  requestId,
+  partyList,
+  ...(currency && { currency })
 })
 
 const errorCallbackResponseDto = ({
@@ -124,8 +146,10 @@ module.exports = {
   participantsCallHeadersDto,
   oracleRequestResponseDto,
   putPartiesSuccessResponseDto,
+  postParticipantsPayloadDto,
   errorCallbackResponseDto,
   mockAlsRequestDto,
   protocolVersionsDto,
-  mockHapiRequestDto
+  mockHapiRequestDto,
+  interopHeader
 }

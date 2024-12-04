@@ -36,6 +36,7 @@ const initServer = require('../../../src/server').initializeApi
 const Helper = require('../../util/helper')
 const Db = require('../../../src/lib/db')
 const Config = require('../../../src/lib/config')
+const fixtures = require('../../fixtures')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -44,14 +45,14 @@ let sandbox
 let server
 
 describe('/participants', () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     Config.API_PORT = await getPort()
     server = await initServer(Config)
   })
 
-  afterEach(async () => {
+  afterAll(async () => {
     await server.stop()
     sandbox.restore()
   })
@@ -103,6 +104,38 @@ describe('/participants', () => {
 
     // Assert
     expect(response.statusCode).toBe(400)
-    await server.stop()
+  })
+
+  it('should validate requestId in UUID format', async () => {
+    const reqOptions = {
+      method: 'post',
+      url: '/participants',
+      headers: fixtures.participantsCallHeadersDto(),
+      payload: fixtures.postParticipantsPayloadDto()
+    }
+    const response = await server.inject(reqOptions)
+    expect(response.statusCode).toBe(200)
+  })
+
+  it('should validate requestId in ULID format', async () => {
+    const reqOptions = {
+      method: 'post',
+      url: '/participants',
+      headers: fixtures.participantsCallHeadersDto(),
+      payload: fixtures.postParticipantsPayloadDto({ requestId: '01JE8SG3F4WNHY8B9876THQ344' })
+    }
+    const response = await server.inject(reqOptions)
+    expect(response.statusCode).toBe(200)
+  })
+
+  it('should fail requestId validation', async () => {
+    const reqOptions = {
+      method: 'post',
+      url: '/participants',
+      headers: fixtures.participantsCallHeadersDto(),
+      payload: fixtures.postParticipantsPayloadDto({ requestId: 'wrong format' })
+    }
+    const response = await server.inject(reqOptions)
+    expect(response.statusCode).toBe(400)
   })
 })
