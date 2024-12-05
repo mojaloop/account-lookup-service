@@ -31,6 +31,10 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const OracleEndpointUncached = require('./oracleEndpoint')
 
 let cacheClient
+const extensions = [{
+  key: 'system',
+  value: '["db","@hapi/catbox-memory"]'
+}]
 
 const getCacheKey = (params) => {
   return cacheClient.createKey(`${Object.values(params).join('__')}`)
@@ -87,7 +91,12 @@ exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency) => {
   try {
     return await getOracleEndpointCached({ partyIdType, currency })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -95,7 +104,12 @@ exports.getOracleEndpointByType = async (partyIdType) => {
   try {
     return await getOracleEndpointCached({ partyIdType })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -103,6 +117,11 @@ exports.getOracleEndpointByCurrency = async (currency) => {
   try {
     return await getOracleEndpointCached({ currency })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }

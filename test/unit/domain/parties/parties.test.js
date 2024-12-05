@@ -37,6 +37,7 @@ const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const { Enum, Util } = require('@mojaloop/central-services-shared')
 const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
 const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 const Config = require('../../../../src/lib/config')
 const Db = require('../../../../src/lib/db')
@@ -64,6 +65,13 @@ let sandbox
 
 describe('Parties Tests', () => {
   let proxyCache
+
+  // Initialize Metrics for testing
+  Metrics.getCounter(
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
+  )
 
   beforeEach(async () => {
     await Util.Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, libUtil.hubNameConfig)
