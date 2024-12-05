@@ -42,6 +42,7 @@ const { Headers, RestMethods } = Enum.Http
 const log = logger.child('domain:get-parties')
 const handleErrorOnSendingCallback = utils.createErrorHandlerOnSendingCallback(Config, log)
 
+const location = { module: 'DomainPartiesGetPartiesByTypeAndID' }
 const proxyCacheTtlSec = 40 // todo: make configurable
 
 const validateRequester = async ({ source, proxy, proxyCache }) => {
@@ -88,9 +89,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     ['success']
   ).startTimer()
   const errorCounter = Metrics.getCounter(
-    'getPartiesByTypeAndIDErrorCount',
-    'Get party by Type and Id error count',
-    ['errorCode', 'extensions']
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
   )
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const type = params.Type
@@ -237,8 +238,14 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   } catch (err) {
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
-    const extensions = err.extensions || {}
-    errorCounter.inc({ errorCode: fspiopError.apiErrorCode, extensions })
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode,
+      system,
+      operation: 'getPartiesByTypeAndID',
+      step: Util.breadcrumb(location, { method: 'getPartiesByTypeAndID' })
+    })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
   }
