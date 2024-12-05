@@ -105,4 +105,11 @@ describe('Config tests', () => {
     expect(isSuccess).toBe(false)
     expect(error.message).toBe('File doesn\'t exist')
   })
+
+  it('should have FSPIOP_SOURCE_TO_SIGN config defined', () => {
+    process.env.ALS_ENDPOINT_SECURITY__JWS__JWS_SIGN = false // to avoid error in config getFileContent()
+    const config = require(configImport)
+    expect(config.FSPIOP_SOURCE_TO_SIGN).toBeDefined()
+    expect(config.FSPIOP_SOURCE_TO_SIGN).toBe(config.HUB_NAME)
+  })
 })
