@@ -10,6 +10,8 @@
 - [Documentation](http://docs.mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/)
 - [API Swagger Reference](/src/interface/api-swagger.yaml)
 - [Admin Swagger Referemce](/src/interface/admin-swagger.yaml)
+- [Discovery flow diagram using proxy](https://github.com/infitx-org/uml_diagrams/blob/main/Proxy/Discovery.md)
+- [Proxy implementation details](https://github.com/infitx-org/uml_diagrams/blob/main/Proxy/Readme.md)
 
 ## Database initialisation
 
