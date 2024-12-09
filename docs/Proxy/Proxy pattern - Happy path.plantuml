@@ -1,0 +1,98 @@
+@startuml
+
+title Proxy Patterns - Happy Path 
+
+participant "Payer DFSP" as payerDFSP
+box "Scheme A"
+    participant "Handler\nScheme A" as schemeA
+    participant "Proxy Cache\nScheme A" as pc_A
+end box
+participant "Proxy AB" as xnp
+box "Scheme B"
+    participant "Handler\nScheme B" as schemeB
+    participant "Proxy Cache\nScheme B" as pc_B
+end box
+participant "Payee DFS" as payeeDFSP
+
+autonumber 1 "<b>[0]"
+
+== POST ==
+payerDFSP ->> schemeA: POST /xxx
+note left
+header
+  source: payerDFSP
+  destination: payeeDFSP
+body
+ {ID: 1234}
+end note
+schemeA -> pc_A: Destination not in scheme:\n payeeDFSP has a proxy mapped\n need to send to 'Proxy AB'
+schemeA ->> xnp: POST /xxx
+xnp->xnp: Add header
+    note left
+    fxpiop-proxy = "Proxy AB"
+    end note
+xnp ->> schemeB: POST /xxx
+note left
+Message if forwarded to schemeB unmodified
+end note
+    
+schemeB -->> xnp: 202 OK
+xnp -->> schemeA: 202 OK
+
+schemeB ->> payeeDFSP: POST /xxx
+
+== GET ==
+payerDFSP -> schemeA: GET /xxx/{ID} \nwithout destination
+note left
+  source: payerDFSP
+end note
+
+schemeA->schemeA: lookup if ID result and triggers put
+
+payerDFSP -> schemeA: GET /xxx/{ID} \nwith destination
+note left
+  source: payerDFSP
+  destination: payeeDFSP
+end note
+
+schemeA -> pc_A: Destination not in scheme:\n payeeDFSP has a proxy mapped\n need to send to 'Proxy AB'
+schemeA ->> xnp: GET /xxx
+xnp->xnp: Add header
+    note left
+    fxpiop-proxy = "Proxy AB"
+    end note
+xnp ->> schemeB: GET /xxx
+note left
+Message if forwarded to schemeB unmodified
+end note
+schemeB -->> xnp: 202 OK
+xnp -->> schemeA: 202 OK
+
+schemeB ->> payeeDFSP: GET /xxx
+
+
+
+== PUT ==
+
+
+payeeDFSP -> schemeB: PUT /xxx
+note right
+    source: payeeDFSP
+    destination: payerDFSP
+end note
+schemeB -> pc_B: Destination not in scheme:\n payerDFSP has a proxy mapped\n need to send to 'Proxy AB'
+schemeB -> xnp: PUT /xxx
+xnp->xnp: Add header
+    note left
+    fxpiop-proxy = "Proxy AB"
+    end note
+xnp -> schemeA: PUT /xxx
+note right
+Message if forwarded to schemeA unmodified
+end note
+schemeA -->> xnp: 200 OK
+xnp -->> schemeB: 200 OK
+
+schemeA -> payerDFSP: PUT /xxx
+
+@enduml

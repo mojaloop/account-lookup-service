@@ -1,0 +1,105 @@
+@startuml
+
+title Lazy Discovery - No Oracles Registered
+
+participant "Payer DFSP" as payerDFSP
+box "Scheme A"
+    participant "ALS\nScheme A" as ALS_A
+    participant "Proxy Cache\nScheme A" as pc_A
+end box
+participant "XN Proxy" as xnp
+participant "other DFSPs" as dfspsA
+box "Scheme B"
+    participant "ALS\nScheme B" as ALS_B
+    participant "Proxy Cache\nScheme B" as pc_B
+end box
+participant "Payee DFS" as payeeDFSP
+participant "other DFSPs" as dfspsB
+
+autonumber 1 "<b>[0]"
+
+== First time Party Identifier is used ==
+payerDFSP ->> ALS_A: GET /parties/{Type}/{ID}
+
+note left
+ header source = payerDFSP
+end note
+ALS_A ->> ALS_A: Lookup if {Type} and {ID} is mapped to dfsp
+alt if not cached
+  loop for all DFSPs in Scheme A and not source    
+  alt if XN Proxy
+    ALS_A ->> xnp: GET /parties/{Type}/{ID}  
+    xnp ->> ALS_B: GET /parties/{Type}/{ID}  
+    ALS_B ->> pc_B: Source not in Scheme: \nAdd 'Payer DFSP' to 'XN Proxy' mapping
+    pc_B -> pc_B: New mapping
+    pc_B -> pc_B: Check JWS signature\n & Add to cache
+note left
+Payer DFSP : XN Proxy
+end note        
+    ALS_B -> ALS_B: Lookup if {Type} and {ID} is mapped to dfsp
+    loop for all DFSPs in Scheme B and not source    
+    alt if Payee DFSP
+        ALS_B ->> payeeDFSP: GET /parties/{Type}/{ID}  
+        payeeDFSP ->> ALS_B: PUT /parties/{ID}
+        note right
+        header desitination = payerDFSP
+        end note
+        ALS_B -> ALS_B: Update cache
+        note left
+        cache [{Type}][{ID}] = payeeDFSP
+        end note
+        ALS_B -> pc_B: Lookup payerDFSP proxy
+        ALS_B ->> xnp: PUT /parties/{ID}
+        xnp ->> ALS_A: PUT /parties/{ID}
+        ALS_A -> pc_A: Source not in Scheme: \nAdd 'Payee DFSP' to 'XN Proxy' mapping
+        pc_A -> pc_A: New mapping\nCheck JWS signature\n & Add to cache
+    note left
+    Payee DFSP : XN Proxy
+    end note        
+        ALS_A -> ALS_A: Update cache 
+        note left
+        cache [{Type}][{ID}] = XN Proxy
+        end note
+        ALS_A ->> payerDFSP: PUT /parties/{ID}
+     else if other DFSPs in Scheme B
+        ALS_B ->> dfspsB: GET /parties/{Type}/{ID}    
+        dfspsB ->> ALS_B: PUT /parties/{ID}/error
+        note right
+        header desitination = payerDFSP
+        end note
+        ALS_B ->> ALS_B: increment Scheme B Failure Count        
+        alt if Failure Count == TotalCalls
+            ALS_B -> pc_B: Lookup payerDFSP proxy
+            ALS_B ->> xnp: PUT /parties/{ID}/error
+            xnp ->> ALS_A: PUT /parties/{ID}/error
+        end
+    end
+    end loop
+  else if other DFSPs in Scheme A
+    ALS_A ->> dfspsA: GET /parties/{Type}/{ID}    
+    dfspsA ->> ALS_A: PUT /parties/{ID}/error
+    ALS_A ->> ALS_A: increment Scheme A Failure Count
+    alt if Failure Count == TotalCalls
+        ALS_A ->> payerDFSP: PUT /parties/{ID}/error
+    end
+  end  
+  end loop
+else
+  ALS_A->ALS_A: Yes, it is mapped to XN Proxy
+  ALS_A ->> xnp: GET /parties/{Type}/{ID}
+  xnp ->> ALS_B: GET /parties/{Type}/{ID}  
+  ALS_B ->> pc_B: Source not in Scheme: \nAdd 'Payer DFSP' to 'XN Proxy' mapping
+  pc_B -> pc_B: Got Mapping
+  ALS_B -> ALS_B: Lookup if {Type} and {ID} is mapped to proxy
+  ALS_B ->> payeeDFSP: GET /parties/{Type}/{ID}
+    payeeDFSP ->> ALS_B: PUT /parties/{ID}
+        note right
+        header desitination = payerDFSP
+        end note
+    ALS_B -> ALS_B: Lookup payerDFSP proxy
+    ALS_B->ALS_B: Got it; it is mapped to XN Proxy
+    ALS_B ->> xnp: PUT /parties/{ID}
+    xnp ->> ALS_A: PUT /parties/{ID}
+    ALS_A ->> payerDFSP: PUT /parties/{ID}
+end
+@enduml
