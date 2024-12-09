@@ -26,3 +26,14 @@ There are certain general patterns that emerge
 
 ## Admin API - defining Proxy Participants
 ![Admin API](SettingUpProxys.png)
+
+### ALS Proxy Timeout flow
+1. If no party info returned from Oracle (see [diagram](./Discovery.md)), and there's some proxies in the hub, we need to send 
+  GET /parties/... requests to each proxy. And wait for the response.
+2. At this moment we add 2 records in cache (redis) using `inter-scheme-proxy-cache-lib`:
+  - key: `als:${sourceId}:${type}:${partyId}` value: `[proxy_1, proxy_2, ...]` (no TTL)
+  - key: `als:${sourceId}:${type}:${partyId}:expiresAt` value: `expiresAt`  (TTL: default 40 seconds)
+3. When we get success/failure callbacks from all proxies within TTL period, we process it, and remove `...:expiresAt` key from cache.
+4. If not all callbacks received within TTL period, redis will expire `...:expiresAt` key, emit appropriate event, and pass _expired cacheKey_.
+5. We subscribe to these events, and provide a [callback](https://github.com/mojaloop/account-lookup-service/blob/feat/fx-impl/src/domain/timeout/index.js#L53) to be executed in case of timeout.
+6. From _expired cacheKey_, we get `destination`, `partyType` and `partyId`, which is used to send error callback to appropriate participant.
