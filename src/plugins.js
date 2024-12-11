@@ -24,22 +24,22 @@
  ******/
 'use strict'
 
-const { randomUUID } = require('node:crypto')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const MetricsPlugin = require('@mojaloop/central-services-metrics').plugin
 const {
   APIDocumentation,
   FSPIOPHeaderValidation,
   HapiEventPlugin,
   HapiRawPayload,
-  OpenapiBackendValidator
+  OpenapiBackendValidator,
+  loggingPlugin
 } = require('@mojaloop/central-services-shared').Util.Hapi
 
+const { logger } = require('./lib')
 const Config = require('./lib/config')
-const MetricsPlugin = require('@mojaloop/central-services-metrics').plugin
-const RequestLogger = require('./lib/requestLogger')
 
 const registerPlugins = async (server, openAPIBackend) => {
   await server.register(OpenapiBackendValidator)
@@ -139,23 +139,10 @@ const registerPlugins = async (server, openAPIBackend) => {
     await server.register([Blipp])
   }
 
-  await server.ext([
-    {
-      type: 'onRequest',
-      method: (request, h) => {
-        request.headers.traceid = request.headers.traceid || randomUUID()
-        RequestLogger.logRequest(request)
-        return h.continue
-      }
-    },
-    {
-      type: 'onPreResponse',
-      method: (request, h) => {
-        RequestLogger.logResponse(request)
-        return h.continue
-      }
-    }
-  ])
+  await server.register({
+    plugin: loggingPlugin,
+    options: { log: logger }
+  })
 }
 
 module.exports = {
