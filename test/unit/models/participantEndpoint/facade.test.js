@@ -27,12 +27,14 @@
 
 'use strict'
 
+const mockHubName = require('../../../util/testConfig').HUB_NAME
+
 const mockGetEndpoint = jest.fn()
 const mockGetParticipant = jest.fn()
 const mockSendRequest = jest.fn()
 const mockEnums = {
   Http: {
-    Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', SWITCH: { value: 'switch' } } },
+    Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', SWITCH: { value: mockHubName } } },
     RestMethods: { PUT: 'PUT' },
     ResponseTypes: { JSON: 'json' },
     HeaderResources: { PARTICIPANTS: 'value' }
@@ -47,11 +49,14 @@ jest.mock('@mojaloop/central-services-shared', () => ({
     Endpoints: { getEndpoint: mockGetEndpoint },
     Participants: { getParticipant: mockGetParticipant },
     Request: { sendRequest: mockSendRequest },
-    Http: { SwitchDefaultHeaders: jest.fn() }
+    Http: { SwitchDefaultHeaders: jest.fn() },
+    HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) }
   },
   Enum: mockEnums
 }))
+
 const Logger = require('@mojaloop/central-services-logger')
+const fixtures = require('../../../fixtures')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -69,22 +74,8 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       const mockedConfig = {
         JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
+        FSPIOP_SOURCE_TO_SIGN: mockHubName,
+        PROTOCOL_VERSIONS: fixtures.protocolVersionsDto()
       }
 
       jest.mock('../../../../src/lib/config', () => (mockedConfig))
@@ -102,7 +93,7 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(result).toBe(true)
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      expect(mockSendRequest.mock.calls[0][0].protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -112,7 +103,7 @@ describe('participantEndpoint Facade', () => {
       // Arrange
       const mockedConfig = {
         JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: mockHubName,
         PROTOCOL_VERSIONS: {
           CONTENT: {
             DEFAULT: '2.1',
@@ -145,7 +136,7 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       await expect(action()).rejects.toThrow('Request failed')
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      expect(mockSendRequest.mock.calls[0][0].protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -154,7 +145,7 @@ describe('participantEndpoint Facade', () => {
     it('should define jwsSigner and add fspiop-signature header', async () => {
       jest.mock('../../../../src/lib/config', () => ({
         JWS_SIGN: true,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
+        FSPIOP_SOURCE_TO_SIGN: mockHubName,
         JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
         JWS_SIGNING_KEY: 'somekey',
         PROTOCOL_VERSIONS: {
@@ -171,16 +162,15 @@ describe('participantEndpoint Facade', () => {
       const participantName = 'fsp1'
       const headers = {
         [mockEnums.Http.Headers.FSPIOP.DESTINATION]: participantName,
-        [mockEnums.Http.Headers.FSPIOP.SOURCE]: 'switch',
-        'fspiop-source': 'switch'
+        [mockEnums.Http.Headers.FSPIOP.SOURCE]: mockHubName,
+        'fspiop-source': mockHubName
       }
       const endpointType = 'URL'
       const method = 'PUT'
       const payload = {}
       await participantFacade.sendRequest(headers, participantName, endpointType, method, payload)
 
-      const jwsSigner = mockSendRequest.mock.lastCall.at(-2) // the last but one argument
-      expect(jwsSigner).toBeTruthy()
+      expect(mockSendRequest.mock.lastCall[0].jwsSigner).toBeTruthy()
     })
   })
 
@@ -200,29 +190,17 @@ describe('participantEndpoint Facade', () => {
   })
 
   describe('sendErrorToParticipant', () => {
+    const mockConfigDto = ({ jwsSign = false } = {}) => ({
+      JWS_SIGN: jwsSign,
+      FSPIOP_SOURCE_TO_SIGN: mockHubName,
+      JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
+      JWS_SIGNING_KEY: 'somekey',
+      PROTOCOL_VERSIONS: fixtures.protocolVersionsDto()
+    })
+
     it('throws an error when the request fails', async () => {
       // Arrange
-      jest.mock('../../../../src/lib/config', () => ({
-        JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
-        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
-      }))
+      jest.mock('../../../../src/lib/config', () => mockConfigDto())
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
       mockSendRequest.mockImplementation(() => { throw new Error('Request failed') })
@@ -246,28 +224,8 @@ describe('participantEndpoint Facade', () => {
 
     it('Success without JWS', async () => {
       // Arrange
-      const mockedConfig = {
-        JWS_SIGN: false,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
-        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
-      }
-      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+      const mockedConfig = mockConfigDto()
+      jest.mock('../../../../src/lib/config', () => mockedConfig)
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
       mockSendRequest.mockImplementation(() => Promise.resolve(true))
@@ -290,8 +248,9 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      expect(mockSendRequest.mock.calls[0][8]).toBe(null)
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      const { jwsSigner, protocolVersions } = mockSendRequest.mock.calls[0][0]
+      expect(jwsSigner).toBe(null)
+      expect(protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
@@ -300,29 +259,8 @@ describe('participantEndpoint Facade', () => {
 
     it('adds jws signature when enabled', async () => {
       // Arrange
-      const mockedConfig = {
-        JWS_SIGN: true,
-        FSPIOP_SOURCE_TO_SIGN: 'switch',
-        JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-        JWS_SIGNING_KEY: 'somekey',
-        PROTOCOL_VERSIONS: {
-          CONTENT: {
-            DEFAULT: '2.1',
-            VALIDATELIST: [
-              '2.1'
-            ]
-          },
-          ACCEPT: {
-            DEFAULT: '2',
-            VALIDATELIST: [
-              '2',
-              '2.1'
-            ]
-          }
-        }
-      }
-
-      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+      const mockedConfig = mockConfigDto({ jwsSign: true })
+      jest.mock('../../../../src/lib/config', () => mockedConfig)
 
       mockGetEndpoint.mockImplementation(() => 'https://example.com/parties/MSISDN12345')
       mockSendRequest.mockImplementation(() => Promise.resolve(true))
@@ -337,7 +275,7 @@ describe('participantEndpoint Facade', () => {
       }
       const headers = {}
       headers[mockEnums.Http.Headers.FSPIOP.DESTINATION] = 'fsp1'
-      headers[mockEnums.Http.Headers.FSPIOP.SOURCE] = 'switch'
+      headers[mockEnums.Http.Headers.FSPIOP.SOURCE] = mockHubName
 
       // Act
       const action = async () => ParticipantFacade.sendErrorToParticipant(participantName, endpointType, errorInformation, headers)
@@ -345,8 +283,9 @@ describe('participantEndpoint Facade', () => {
 
       // Assert
       expect(spy).toHaveBeenCalled()
-      expect(typeof (mockSendRequest.mock.calls[0][8])).toBe('object')
-      expect(mockSendRequest.mock.calls[0][9]).toMatchObject({
+      const { jwsSigner, protocolVersions } = mockSendRequest.mock.calls[0][0]
+      expect(jwsSigner).toBeTruthy()
+      expect(protocolVersions).toMatchObject({
         accept: mockedConfig.PROTOCOL_VERSIONS.ACCEPT.DEFAULT,
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })

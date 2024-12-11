@@ -25,8 +25,6 @@
 
 'use strict'
 
-'use strict'
-
 const parties = require('./parties')
 
 exports.getPartiesByTypeAndID = parties.getPartiesByTypeAndID

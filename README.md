@@ -10,6 +10,8 @@
 - [Documentation](http://docs.mojaloop.io/documentation/mojaloop-technical-overview/account-lookup-service/)
 - [API Swagger Reference](/src/interface/api-swagger.yaml)
 - [Admin Swagger Referemce](/src/interface/admin-swagger.yaml)
+- [Discovery flow diagram using proxy](./docs/Proxy/Discovery.md)
+- [Proxy implementation details](./docs/Proxy/Readme.md)
 
 ## Database initialisation
 
@@ -149,7 +151,7 @@ If you want to run integration tests in a repetitive manner, you can startup the
     Start containers required for Integration Tests
 
     ```bash
-    docker-compose -f docker-compose.yml up -d
+    npm run dc:up
     ```
 
     Run wait script which will report once all required containers are up and running

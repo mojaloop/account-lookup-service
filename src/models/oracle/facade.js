@@ -26,14 +26,16 @@
 
 'use strict'
 
-const request = require('@mojaloop/central-services-shared').Util.Request
 const Mustache = require('mustache')
-const Logger = require('@mojaloop/central-services-logger')
+const request = require('@mojaloop/central-services-shared').Util.Request
 const Enums = require('@mojaloop/central-services-shared').Enum
+const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Config = require('../../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
-const cachedOracleEndpoint = require('../oracle/oracleEndpointCached')
+
+const Config = require('../../lib/config')
+const oracleEndpointCached = require('../oracle/oracleEndpointCached')
+const { hubNameRegex } = require('../../lib/util').hubNameConfig
 
 /**
  * @function oracleRequest
@@ -79,14 +81,15 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         let cachedOracleFspResponse
         cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
         if (!cachedOracleFspResponse) {
-          cachedOracleFspResponse = await request.sendRequest(
+          cachedOracleFspResponse = await request.sendRequest({
             url,
             headers,
-            headers[Enums.Http.Headers.FSPIOP.SOURCE],
-            headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value,
-            method.toUpperCase(),
-            payload || undefined
-          )
+            source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+            destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+            method: method.toUpperCase(),
+            payload,
+            hubNameRegex
+          })
           // Trying to cache the whole response object will fail because it contains circular references
           // so we'll just cache the data property of the response.
           cachedOracleFspResponse = {
@@ -106,21 +109,21 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         return cachedOracleFspResponse
       }
 
-      return await request.sendRequest(
+      return await request.sendRequest({
         url,
         headers,
-        headers[Enums.Http.Headers.FSPIOP.SOURCE],
-        headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value,
-        method.toUpperCase(),
-        payload || undefined
-      )
+        source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+        method: method.toUpperCase(),
+        payload,
+        hubNameRegex
+      })
     } catch (err) {
       histTimerEnd({ success: false, hit: false })
-      Logger.isErrorEnabled && Logger.error(err)
       throw err
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(`error in oracleRequest: ${err?.stack}`)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
     if (
@@ -153,7 +156,7 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
  */
 const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier, currency) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -188,7 +191,7 @@ const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier,
  */
 const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByType(partyIdType)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defaultOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -224,7 +227,7 @@ const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
  */
 const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, partySubIdOrType) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByType(partyIdType)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -261,7 +264,7 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
  */
 const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdentifier, currency, partySubIdOrType) => {
   let url
-  const oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -302,9 +305,9 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
     let oracleEndpointModel
     let url
     if ((requestPayload && requestPayload.currency && requestPayload.currency.length !== 0)) {
-      oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(type, requestPayload.currency)
+      oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(type, requestPayload.currency)
     } else {
-      oracleEndpointModel = await cachedOracleEndpoint.getOracleEndpointByType(type)
+      oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(type)
     }
     if (oracleEndpointModel.length > 0) {
       if (oracleEndpointModel.length > 1) {
@@ -318,7 +321,15 @@ exports.oracleBatchRequest = async (headers, method, requestPayload, type, paylo
         url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
       }
       Logger.isDebugEnabled && Logger.debug(`Oracle endpoints: ${url}`)
-      return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method, payload || undefined)
+      return await request.sendRequest({
+        url,
+        headers,
+        source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+        destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+        method,
+        payload,
+        hubNameRegex
+      })
     } else {
       Logger.isErrorEnabled && Logger.error(`Oracle type:${type} not found`)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
