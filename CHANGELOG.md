@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [16.0.0](https://github.com/mojaloop/account-lookup-service/compare/v15.3.4...v16.0.0) (2024-12-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* fx and interscheme implementation (#492)
+
+### Features
+
+* fx and interscheme implementation ([#492](https://github.com/mojaloop/account-lookup-service/issues/492)) ([c44e5e0](https://github.com/mojaloop/account-lookup-service/commit/c44e5e019fb3092b789cfb07d37dbe087142a37d)), closes [#482](https://github.com/mojaloop/account-lookup-service/issues/482) [#483](https://github.com/mojaloop/account-lookup-service/issues/483)
+
 ### [15.3.4](https://github.com/mojaloop/account-lookup-service/compare/v15.3.3...v15.3.4) (2024-06-11)
 
 
