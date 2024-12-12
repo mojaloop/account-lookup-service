@@ -57,20 +57,31 @@ const sendTimeoutCallback = async (cacheKey) => {
     'Egress - Interscheme parties lookup timeout callback',
     ['success']
   ).startTimer()
-
+  const errorCounter = Metrics.getCounter('errorCount')
+  let step
   const [, destination, partyType, partyId] = cacheKey.split(':')
   const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
   logger.debug('sendTimeoutCallback details:', { destination, partyType, partyId, cacheKey })
 
   try {
+    step = 'validateParticipant-1'
     await validateParticipant(destination)
     await span.audit({ headers, errorInformation }, AuditEventAction.start)
+    step = 'sendErrorToParticipant-2'
     await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
     histTimerEnd({ success: true })
   } catch (err) {
     logger.warn('error in sendTimeoutCallback: ', err)
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode,
+      system,
+      operation: 'sendTimeoutCallback',
+      step
+    })
     await finishSpan(span, fspiopError)
     throw fspiopError
   }

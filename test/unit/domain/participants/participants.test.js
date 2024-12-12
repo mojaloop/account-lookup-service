@@ -34,6 +34,7 @@ const Sinon = require('sinon')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 const participantsDomain = require('../../../../src/domain/participants/participants')
 const participant = require('../../../../src/models/participantEndpoint/facade')
@@ -49,6 +50,12 @@ const { Headers } = Enums.Http
 describe('participant Tests', () => {
   describe('getParticipantsByTypeAndID', () => {
     let sandbox
+    // Initialize Metrics for testing
+    Metrics.getCounter(
+      'errorCount',
+      'Error count',
+      ['code', 'system', 'operation', 'step']
+    )
 
     beforeEach(() => {
       sandbox = Sinon.createSandbox()

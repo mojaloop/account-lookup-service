@@ -87,6 +87,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     'Get party by Type and Id',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const type = params.Type
   const partySubId = params.SubId
@@ -99,7 +100,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
 
   let requester
   let fspiopError
-
+  let step
   try {
     requester = await validateRequester({ source, proxy, proxyCache })
 
@@ -114,8 +115,10 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     // the requester has specified a destination routing header. We should respect that and forward the request directly to the destination
     // without consulting any oracles.
     if (destination) {
+      step = 'validateParticipant-1'
       const destParticipantModel = await participant.validateParticipant(destination)
       if (!destParticipantModel) {
+        step = 'lookupProxyByDfspId-2'
         const proxyId = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
 
         if (!proxyId) {
@@ -125,6 +128,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         destination = proxyId
       }
       // all ok, go ahead and forward the request
+      step = 'sendRequest-3'
       await participant.sendRequest(headers, destination, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
 
       histTimerEnd({ success: true })
@@ -132,6 +136,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
       return
     }
 
+    step = 'oracleRequest-4'
     const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache)
     if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
       // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records. We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
@@ -159,6 +164,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         if (!destination) {
           clonedHeaders[Headers.FSPIOP.DESTINATION] = fspId
         }
+        step = 'validateParticipant-5'
         const schemeParticipant = await participant.validateParticipant(fspId)
         if (schemeParticipant) {
           sentCount++
@@ -169,6 +175,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         // If the participant is not in the scheme and proxy routing is enabled,
         // we should check if there is a proxy for it and send the request to the proxy
         if (proxyEnabled) {
+          step = 'lookupProxyByDfspId-6'
           const proxyName = await proxyCache.lookupProxyByDfspId(fspId)
           if (!proxyName) {
             log.warn('no proxyMapping for participant!  TODO: Delete reference in oracle...', { fspId })
@@ -180,6 +187,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
           }
         }
       })
+      step = 'sendRequests-7'
       await Promise.all(sending)
       log.info('participant.sendRequests to filtered oracle partyList are done', { sentCount })
       // todo: think what if sentCount === 0 here
@@ -188,6 +196,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
       let filteredProxyNames = []
 
       if (proxyEnabled) {
+        step = 'getAllProxiesNames-8'
         const proxyNames = await Util.proxies.getAllProxiesNames(Config.SWITCH_ENDPOINT)
         filteredProxyNames = proxyNames.filter(name => name !== proxy)
       }
@@ -203,16 +212,19 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         })
         fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
         const errorCallbackEndpointType = utils.errorPartyCbType(partySubId)
+        step = 'sendErrorToParticipant-9'
         await participant.sendErrorToParticipant(requester, errorCallbackEndpointType,
           fspiopError.toApiErrorObject(config.ERROR_HANDLING), callbackHeaders, params, childSpan)
       } else {
         const alsReq = utils.alsRequestDto(source, params)
         log.info('starting setSendToProxiesList flow: ', { filteredProxyNames, alsReq, proxyCacheTtlSec })
+        step = 'setSendToProxiesList-10'
         const isCached = await proxyCache.setSendToProxiesList(alsReq, filteredProxyNames, proxyCacheTtlSec)
         if (!isCached) {
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.failedToCacheSendToProxiesList)
         }
 
+        step = 'sending-11'
         const sending = filteredProxyNames.map(
           proxyName => participant.sendRequest(headers, proxyName, callbackEndpointType, RestMethods.GET, undefined, options, childSpan)
             .then(({ status, data } = {}) => ({ status, data }))
@@ -232,6 +244,14 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   } catch (err) {
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode,
+      system,
+      operation: 'getPartiesByTypeAndID',
+      step
+    })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
   }

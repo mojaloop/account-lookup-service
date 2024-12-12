@@ -126,7 +126,16 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName: requestedParticipant })
     logger.warn('error in sendRequest: ', err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -151,7 +160,16 @@ exports.validateParticipant = async (fsp) => {
   } catch (err) {
     histTimerEnd({ success: false })
     logger.warn('error in validateParticipant: ', err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -191,7 +209,16 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName })
     logger.warn('error in getEndpoint: ', err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 
   // Send error to participant
@@ -235,6 +262,15 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName })
     logger.warn('error in sendErrorToParticipant: ', err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }

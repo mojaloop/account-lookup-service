@@ -105,6 +105,14 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig, proxyM
   await Plugins.registerPlugins(server, api, isAdmin)
 
   server.route(routes)
+
+  // Initialize the error count metric
+  Metrics.getCounter(
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
+  )
+
   // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
   await server.start()
 

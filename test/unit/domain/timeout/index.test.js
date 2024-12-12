@@ -33,8 +33,16 @@
 
 const Participant = require('../../../../src/models/participantEndpoint/facade')
 const TimeoutDomain = require('../../../../src/domain/timeout')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 describe('Timeout Domain', () => {
+  // Initialize Metrics for testing
+  Metrics.getCounter(
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
+  )
+
   beforeEach(() => {
     jest.clearAllMocks()
     jest.spyOn(Participant, 'validateParticipant').mockResolvedValue({})

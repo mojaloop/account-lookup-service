@@ -37,6 +37,7 @@ const partyIdType = require('../../../../src/models/partyIdType')
 const Db = require('../../../../src/lib/db')
 const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
 const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -90,6 +91,13 @@ let sandbox
 let SpanStub
 
 describe('Oracle tests', () => {
+  // Initialize Metrics for testing
+  Metrics.getCounter(
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
+  )
+
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
     Db.partyIdType = {

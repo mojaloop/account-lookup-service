@@ -123,6 +123,10 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       throw err
     }
   } catch (err) {
+    const extensions = [{
+      key: 'system',
+      value: '["@hapi/catbox-memory","http"]'
+    }]
     Logger.isErrorEnabled && Logger.error(`error in oracleRequest: ${err?.stack}`)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
@@ -131,15 +135,32 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code
     ) {
       if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        throw ErrorHandler.Factory.createFSPIOPError(
+          ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND,
+          undefined,
+          undefined,
+          undefined,
+          extensions
+        )
         // Added error 404 to cover a special case of the Mowali implementation
         // which uses mojaloop/als-oracle-pathfinder and currently returns 404
         // and in which case the Mowali implementation expects back `DESTINATION_FSP_ERROR`.
       } else if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE))) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
+        throw ErrorHandler.Factory.createFSPIOPError(
+          ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR,
+          undefined,
+          undefined,
+          undefined,
+          extensions
+        )
       }
     }
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 

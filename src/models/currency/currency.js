@@ -39,7 +39,16 @@ const getCurrencyById = async (currencyId) => {
   try {
     return Db.from('currency').findOne({ currencyId, isActive: true })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = [{
+      key: 'system',
+      value: '["db"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
