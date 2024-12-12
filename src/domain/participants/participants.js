@@ -131,7 +131,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'getParticipantsByTypeAndID',
       step
@@ -252,7 +252,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'putParticipantsByTypeAndID',
       step
@@ -328,7 +328,7 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
       const extensions = err.extensions || []
       const system = extensions.find((element) => element.key === 'system')?.value || ''
       errorCounter.inc({
-        code: fspiopError?.apiErrorCode,
+        code: fspiopError?.apiErrorCode?.code,
         system,
         operation: 'putParticipantsErrorByTypeAndID',
         step
@@ -434,7 +434,7 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'postParticipants',
       step
@@ -566,7 +566,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'postParticipantsBatch',
       step
@@ -662,7 +662,7 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
       const extensions = err.extensions || []
       const system = extensions.find((element) => element.key === 'system')?.value || ''
       errorCounter.inc({
-        code: fspiopError?.apiErrorCode,
+        code: fspiopError?.apiErrorCode?.code,
         system,
         operation: 'deleteParticipants',
         step

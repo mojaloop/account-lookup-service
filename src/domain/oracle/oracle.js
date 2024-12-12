@@ -94,7 +94,7 @@ exports.createOracle = async (payload) => {
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'createOracle',
       step
@@ -163,7 +163,7 @@ exports.getOracle = async (query) => {
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'getOracle',
       step
@@ -250,7 +250,7 @@ exports.updateOracle = async (params, payload) => {
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'updateOracle',
       step
@@ -284,7 +284,7 @@ exports.deleteOracle = async (params) => {
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'deleteOracle'
     })
