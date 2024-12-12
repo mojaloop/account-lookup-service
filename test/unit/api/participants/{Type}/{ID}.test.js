@@ -40,7 +40,6 @@ const Db = require('../../../../../src/lib/db')
 const oracleEndpointCached = require('../../../../../src/models/oracle/oracleEndpointCached')
 const participant = require('../../../../../src/models/participantEndpoint/facade')
 const participants = require('../../../../../src/domain/participants')
-const requestLogger = require('../../../../../src/lib/requestLogger')
 const Helper = require('../../../../util/helper')
 const initServer = require('../../../../../src/server').initializeApi
 const Config = require('../../../../../src/lib/config')
@@ -55,8 +54,6 @@ describe('/participants/{Type}/{ID}', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    sandbox.stub(requestLogger, 'logRequest').returns({})
-    sandbox.stub(requestLogger, 'logResponse').returns({})
     Config.API_PORT = await getPort()
     server = await initServer(Config)
     sandbox.stub(Logger)
