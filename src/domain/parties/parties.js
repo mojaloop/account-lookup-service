@@ -137,7 +137,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'putPartiesByTypeAndID',
       step
@@ -223,7 +223,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'putPartiesErrorByTypeAndID',
       step

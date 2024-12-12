@@ -247,7 +247,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     const extensions = err.extensions || []
     const system = extensions.find((element) => element.key === 'system')?.value || ''
     errorCounter.inc({
-      code: fspiopError?.apiErrorCode,
+      code: fspiopError?.apiErrorCode?.code,
       system,
       operation: 'getPartiesByTypeAndID',
       step
