@@ -53,6 +53,10 @@ const partyIdTypes = [
     description: 'A bank account number or FSP account ID is used as reference to a participant. The IBAN identifier can consist of up to 34 alphanumeric characters and should be entered without whitespace.'
   },
   {
+    name: 'MERCHANT_PAYINTOID',
+    description: 'An alias value is used to reference to a checkout counter of a particular merchant. The MERCHANT_PAYINTOID identifier value can be a sequence of code.'
+  },
+  {
     name: 'ALIAS',
     description: 'An alias is used as reference to a participant. The alias should be created in the FSP as an alternative reference to an account owner. Another example of an alias is a username in the FSP system. The ALIAS identifier can be in any format. It is also possible to use the PartySubIdOrType element for identifying an account under an Alias defined by the PartyIdentifier.'
   },
