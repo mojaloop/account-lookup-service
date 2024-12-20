@@ -53,6 +53,7 @@ const getOracleEndpointCached = async (params) => {
   const cacheKey = getCacheKey(params)
   let cachedEndpoints = cacheClient.get(cacheKey)
   if (!cachedEndpoints) {
+    if (params.assertPendingAcquire) OracleEndpointUncached.assertPendingAcquires()
     // No oracleEndpoint in the cache, so fetch from participant API
     let oracleEndpoints
     if (partyIdType && currency) {
@@ -87,9 +88,9 @@ exports.initialize = async () => {
   cacheClient = Cache.registerCacheClient(oracleEndpointCacheClientMeta)
 }
 
-exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency) => {
+exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency, assertPendingAcquire) => {
   try {
-    return await getOracleEndpointCached({ partyIdType, currency })
+    return await getOracleEndpointCached({ partyIdType, currency, assertPendingAcquire })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(
       err,
@@ -100,9 +101,9 @@ exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency) => {
   }
 }
 
-exports.getOracleEndpointByType = async (partyIdType) => {
+exports.getOracleEndpointByType = async (partyIdType, assertPendingAcquire) => {
   try {
-    return await getOracleEndpointCached({ partyIdType })
+    return await getOracleEndpointCached({ partyIdType, assertPendingAcquire })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(
       err,
@@ -113,9 +114,9 @@ exports.getOracleEndpointByType = async (partyIdType) => {
   }
 }
 
-exports.getOracleEndpointByCurrency = async (currency) => {
+exports.getOracleEndpointByCurrency = async (currency, assertPendingAcquire) => {
   try {
-    return await getOracleEndpointCached({ currency })
+    return await getOracleEndpointCached({ currency, assertPendingAcquire })
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(
       err,

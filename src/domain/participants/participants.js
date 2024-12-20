@@ -84,7 +84,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
     }
     step = 'oracleRequest-2'
-    const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache)
+    const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache, true)
     if (response?.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
       const options = {
         partyIdType: type,
