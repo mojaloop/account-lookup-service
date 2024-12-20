@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [16.0.1](https://github.com/mojaloop/account-lookup-service/compare/v16.0.0...v16.0.1) (2024-12-20)
+
+
+### Chore
+
+* dependency and vulnerability updates pi26 ([#513](https://github.com/mojaloop/account-lookup-service/issues/513)) ([46d245a](https://github.com/mojaloop/account-lookup-service/commit/46d245ae04e6305408845ccd32d6abc07be6a5a8))
+
 ## [16.0.0](https://github.com/mojaloop/account-lookup-service/compare/v15.3.4...v16.0.0) (2024-12-11)
 
 
