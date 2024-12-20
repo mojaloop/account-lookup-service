@@ -91,12 +91,16 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const type = params.Type
   const partySubId = params.SubId
+  const callbackEndpointType = utils.getPartyCbType(partySubId)
   const source = headers[Headers.FSPIOP.SOURCE]
   const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
-  const callbackEndpointType = utils.getPartyCbType(partySubId)
+  let destination = headers[Headers.FSPIOP.DESTINATION]
+  // see https://github.com/mojaloop/design-authority/issues/79
+  // the requester has specified a destination routing header. We should respect that and forward the request directly to the destination
+  // without consulting any oracles.
 
   const childSpan = span ? span.getChild('getPartiesByTypeAndID') : undefined
-  log.info('parties::getPartiesByTypeAndID::begin', { source, proxy, params })
+  log.info('parties::getPartiesByTypeAndID::begin', { source, destination, proxy, params })
 
   let requester
   let fspiopError
@@ -110,10 +114,6 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
       ...(partySubId && { partySubIdOrType: partySubId })
     }
 
-    let destination = headers[Headers.FSPIOP.DESTINATION]
-    // see https://github.com/mojaloop/design-authority/issues/79
-    // the requester has specified a destination routing header. We should respect that and forward the request directly to the destination
-    // without consulting any oracles.
     if (destination) {
       step = 'validateParticipant-1'
       const destParticipantModel = await participant.validateParticipant(destination)
@@ -122,6 +122,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
         const proxyId = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
 
         if (!proxyId) {
+          log.warn('no destination participant, and no dfsp-to-proxy mapping', { destination })
           const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
         }
