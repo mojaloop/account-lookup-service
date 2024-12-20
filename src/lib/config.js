@@ -117,6 +117,7 @@ const config = {
       password: RC.DATABASE.PASSWORD,
       database: RC.DATABASE.DATABASE
     },
+    maxPendingAcquire: RC.DATABASE.MAX_PENDING_ACQUIRE,
     pool: {
       // minimum size
       min: getOrDefault(RC.DATABASE.POOL_MIN_SIZE, 2),

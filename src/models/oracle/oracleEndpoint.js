@@ -233,6 +233,7 @@ const destroyOracleEndpointById = async (oracleEndpointId) => {
 }
 
 module.exports = {
+  assertPendingAcquires: Db.assertPendingAcquires,
   getOracleEndpointByType,
   getOracleEndpointByTypeAndCurrency,
   getOracleEndpointByCurrency,
