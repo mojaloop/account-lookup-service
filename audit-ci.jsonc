@@ -3,24 +3,6 @@
   // audit-ci supports reading JSON, JSONC, and JSON5 config files.
   // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
   "moderate": true,
-  "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
-    // The following issues are related to central-services-shared upgrade skip
-    // Issue to resolve this: https://github.com/mojaloop/project/issues/3260
-    "GHSA-hjrf-2m68-5959",
-    "GHSA-qwph-4952-7xr6",
-    "GHSA-4jv9-3563-23j3",
-    "GHSA-h755-8qp9-cq85",
-    "GHSA-f9xv-q969-pqx4",
-    "GHSA-7fh5-64p2-3v2j",
-    "GHSA-rm97-x556-q36h", // https://github.com/advisories/GHSA-rm97-x556-q36h
-    "GHSA-rv95-896h-c2vc", // https://github.com/advisories/GHSA-rv95-896h-c2vc
-    "GHSA-3xgq-45jj-v275", // https://github.com/advisories/GHSA-3xgq-45jj-v275
-    "GHSA-rhx6-c78j-4q9w", // https://github.com/advisories/GHSA-rhx6-c78j-4q9w
-    "GHSA-mjxr-4v3x-q3m4", // https://github.com/advisories/GHSA-mjxr-4v3x-q3m4
-    "GHSA-phwq-j96m-2c2q", // https://github.com/advisories/GHSA-phwq-j96m-2c2q
-    "GHSA-rjqq-98f6-6j3r", // https://github.com/advisories/GHSA-rjqq-98f6-6j3r
-    "GHSA-mwcw-c2x4-8c55", // https://github.com/advisories/GHSA-mwcw-c2x4-8c55
-    // The following issues are related to @mojaloop/event-sdk upgrade skip
-    "GHSA-g954-5hwp-pp24" // https://github.com/advisories/GHSA-g954-5hwp-pp24
-  ]
+  // NOTE: Please add as much information as possible to any items added to the allowList
+  "allowlist": []
 }
