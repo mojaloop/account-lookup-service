@@ -1,0 +1,186 @@
+@startuml
+
+title Proxy Patterns - P2P 
+
+participant "Payer DFSP" as payerDFSP
+box Scheme A
+  participant "Mojaloop\nScheme A" as schemeA
+  participant "Proxy Cache\nScheme A" as pc_A
+end box
+participant "Proxy AB" as xnp
+box Scheme B
+  participant "Mojaloop\nScheme B" as schemeB
+  participant "Proxy Cache\nScheme B" as pc_B
+end box
+participant "Payee DFS" as payeeDFSP
+
+autonumber 1 "<b>[0]"
+
+== Agreement ==
+payerDFSP ->> schemeA: POST /quotes
+note left
+header 
+  source: payerDFSP
+  destination: payeeDFSP
+JWS signed by payerDFSP
+end note
+schemeA -> pc_A: Destination not in Scheme\n Lookup proxy for payeeDFSP = Proxy AB
+schemeA ->> xnp: POST /quotes
+xnp ->> schemeB: POST /quotes\nmessage unmodified
+note left
+header 
+  source: payerDFSP
+  destination: payeeDFSP
+  fxpiop-proxy: proxyAB
+JWS signed by payerDFSP
+end note
+schemeB -->> xnp: 202 OK
+xnp -->> schemeA: 202 OK
+schemeB->>payeeDFSP: POST /quotes
+note right
+Checks JWS signed by payerDFSP
+end note
+payeeDFSP->>schemeB: PUT /quotes
+note right
+header 
+  source: payeeDFSP
+  destination: payerDFSP
+JWS signed by payeeDFSP
+end note
+schemeB -> pc_B: Destination not in Scheme\n Lookup proxy for payerDFSP = Proxy AB
+schemeB->>xnp: PUT /quotes
+xnp->>schemeA: PUT /quotes\nmessage unmodified
+note right
+header 
+  source: payeeDFSP
+  destination: payerDFSP
+  fxpiop-proxy: proxyAB
+JWS signed by payeeDFSP
+end note
+schemeA-->>xnp: 202 OK
+xnp-->>schemeB: 202 OK
+schemeA->>payerDFSP: PUT /quotes
+note left
+Checks JWS signed by payeeDFSP
+end note
+
+== Transfer ==
+
+payerDFSP ->> schemeA: POST /transfers
+note left
+header 
+  source: payerDFSP
+  destination: payeeDFSP
+JWS signed by payerDFSP
+body 
+    transferId: 1234
+end note
+schemeA -> schemeA: Payer DFSP\n - Checks limits\n - Updates position
+schemeA -> pc_A: Destination not in Scheme\nLookup proxy for payeeDFSP = Proxy AB
+schemeA ->> xnp: POST /transfers
+xnp ->> schemeB: POST /transfers
+note left
+header 
+  source: payerDFSP
+  destination: payeeDFSP
+  fxpiop-proxy: proxyAB
+JWS signed by payerDFSP
+body 
+    transferId: 1234
+end note
+schemeB -->> xnp: 202 OK
+xnp -->> schemeA: 202 OK
+schemeA -> schemeA: Disable timeout
+
+schemeB -> schemeB: Proxy AB\n **- No limit check**\n - Updates position
+schemeB->>payeeDFSP: POST /transfers
+note right
+Checks JWS signed by payerDFSP
+end note
+payeeDFSP->>schemeB: PUT /transfers \n{fulfilment: "xyz", transferState: "RESERVED"}
+note right
+header 
+  source: payeeDFSP
+  destination: payerDFSP
+JWS signed by payeeDFSP  
+end note
+schemeB -> schemeB: Payer DFSP\n - Updates position
+schemeB -> pc_B: Lookup proxy for payerDFSP = Proxy AB
+schemeB->>xnp: PUT /transfers
+xnp->>schemeA: PUT /transfers
+note right
+header 
+  source: payeeDFSP
+  destination: payerDFSP
+  fxpiop-proxy: proxyAB
+JWS signed by payeeDFSP  
+end note
+schemeA-->>xnp: 200 OK
+xnp-->>schemeB: 200 OK
+schemeB->>payeeDFSP: PATCH /transfers \n{transferState: "COMMITTED"}
+schemeA -> schemeA: NX Proxy\n - Updates position
+schemeA->>payerDFSP: PUT /transfers
+note left
+Checks JWS signed by payeeDFSP
+end note
+
+== Get Transfers ==
+
+payerDFSP ->> schemeA: GET /transfers/1234
+note left
+header 
+  source: payerDFSP
+  destination: payeeDFSP
+JWS signed by payerDFSP
+end note
+schemeA -> schemeA: Load transfer informtaion\nand check if payeeDFSP is in scheme
+schemeA -> pc_A: Destination not in Scheme\nLookup proxy for payeeDFSP = Proxy AB
+schemeA ->> xnp: GET /transfers/1234
+xnp ->> schemeB: GET /transfers/1234
+note left
+header 
+  source: payerDFSP
+  destination: payeeDFSP
+  fxpiop-proxy: proxyAB
+JWS signed by payerDFSP
+end note
+schemeB -->> xnp: 202 OK
+xnp -->> schemeA: 202 OK
+schemeB->schemeB: lookup transfer information
+schemeB->>xnp: PUT /transfers/1234
+note right
+header 
+  source: schemeB
+  destination: payerDFSP
+JWS signed by schemeB
+end note
+xnp->>schemeA: PUT /transfers/1234
+note right
+header 
+  source: schemeB
+  destination: payerDFSP
+  fxpiop-proxy: proxyAB
+JWS signed by schemeB
+end note
+schemeA-->>xnp: 200 OK
+xnp-->>schemeB: 200 OK
+schemeA->>payerDFSP: PUT /transfers/1234
+
+payeeDFSP->>schemeB: GET /transfers/1234
+note right
+header 
+  source: payeeDFSP
+JWS signed by payeeDFSP
+end note
+schemeB -> schemeB: Load transfer informtaion\nand check if payeeDFSP is in scheme
+schemeB->>payeeDFSP: Yes; return information\nPUT /transfers/1234
+note left
+header 
+  source: schemeB
+  destination: payeeDFSP
+JWS signed by schemeB
+end note
+
+
+
+@enduml

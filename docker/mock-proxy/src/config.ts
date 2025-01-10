@@ -9,6 +9,13 @@ export const {
   CL_PORT = 3001,
 } = process.env;
 
+console.log({
+  PROXY_PORT,
+  PROXY_NAME,
+  CL_HOST,
+  CL_PORT
+})
+
 export const ROUTES = {
   history: '/history',
 } as const;
