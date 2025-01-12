@@ -81,7 +81,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     const requesterParticipant = await participant.validateParticipant(source)
     if (!requesterParticipant) {
       if (!proxyEnabled || !proxy) {
-        const errMessage = ERROR_MESSAGES.partySourceFspNotFound
+        const errMessage = ERROR_MESSAGES.sourceFspNotFound
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       }
       step = 'addDfspIdToProxyMapping-1'

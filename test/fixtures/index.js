@@ -61,7 +61,6 @@ const participantsCallHeadersDto = ({
   contentType: interopHeader('participants', contentTypeVersion)
 })
 
-// todo: add ISO mode support
 const interopHeader = (resource, version = '1') => `application/vnd.interoperability.${resource}+json;version=${version}`
 
 const oracleRequestResponseDto = ({

@@ -251,7 +251,7 @@ describe('Parties Tests', () => {
 
       const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
       expect(errorInformation.errorCode).toBe('3200')
-      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.partySourceFspNotFound)
+      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.sourceFspNotFound)
     })
 
     it('should send error callback, if proxy-header is present, but no proxy in the scheme', async () => {
@@ -634,7 +634,7 @@ describe('Parties Tests', () => {
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstLoggerCallArgs = loggerStub.getCall(0).args
-      expect(firstLoggerCallArgs[1].message).toBe(ERROR_MESSAGES.partySourceFspNotFound)
+      expect(firstLoggerCallArgs[1].message).toBe(ERROR_MESSAGES.sourceFspNotFound)
       loggerStub.reset()
       participant.sendErrorToParticipant.reset()
     })

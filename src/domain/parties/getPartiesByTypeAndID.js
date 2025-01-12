@@ -52,7 +52,7 @@ const validateRequester = async ({ source, proxy, proxyCache }) => {
   }
 
   if (!proxy) {
-    const errMessage = ERROR_MESSAGES.partySourceFspNotFound
+    const errMessage = ERROR_MESSAGES.sourceFspNotFound
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
   }
 

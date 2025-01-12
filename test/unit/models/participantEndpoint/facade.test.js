@@ -50,16 +50,18 @@ jest.mock('@mojaloop/central-services-shared', () => ({
     Participants: { getParticipant: mockGetParticipant },
     Request: { sendRequest: mockSendRequest },
     Http: { SwitchDefaultHeaders: jest.fn() },
-    HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) }
+    HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) },
+    Hapi: jest.requireActual('@mojaloop/central-services-shared').Util.Hapi
   },
   Enum: mockEnums
 }))
 
 const Logger = require('@mojaloop/central-services-logger')
 const fixtures = require('../../../fixtures')
+const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 
 const mockConfigDto = ({
-  apiType = 'fspiop', // todo: use API_TYPES
+  apiType = API_TYPES.fspiop,
   jwsSign = false
 } = {}) => ({
   API_TYPE: apiType,
