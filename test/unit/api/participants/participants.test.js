@@ -35,16 +35,12 @@ const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
 const initServer = require('../../../../src/server').initializeApi
 const getPort = require('get-port')
-const Logger = require('@mojaloop/central-services-logger')
 const Config = require('../../../../src/lib/config')
 
-Logger.isDebugEnabled = jest.fn(() => true)
-Logger.isErrorEnabled = jest.fn(() => true)
-Logger.isInfoEnabled = jest.fn(() => true)
-let server
-let sandbox
-
 describe('/participants', () => {
+  let server
+  let sandbox
+
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
@@ -56,6 +52,7 @@ describe('/participants', () => {
     await server.stop()
     sandbox.restore()
   })
+
   const mock = {
     requestId: '3ede3c17-36aa-42f4-b6db-b0df2e42f31e',
     partyList: [{
@@ -79,6 +76,7 @@ describe('/participants', () => {
     ],
     currency: 'EUR'
   }
+
   it('postParticipantsBatch success', async () => {
     // Arrange
     const options = {

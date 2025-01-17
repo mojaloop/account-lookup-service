@@ -63,7 +63,6 @@ describe('/parties', () => {
 
   afterAll(async () => {
     await server.stop()
-    sandbox.restore()
   })
 
   it('getPartiesByTypeAndID success', async () => {

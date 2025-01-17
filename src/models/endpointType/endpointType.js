@@ -39,7 +39,16 @@ const getEndpointTypeByType = async (type) => {
   try {
     return Db.from('endpointType').findOne({ type, isActive: true })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = [{
+      key: 'system',
+      value: '["db"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 

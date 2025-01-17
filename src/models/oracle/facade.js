@@ -47,10 +47,11 @@ const { hubNameRegex } = require('../../lib/util').hubNameConfig
  * @param {object} params - uri parameters of the http request
  * @param {object} query - the query parameter on the uri of the http request
  * @param {object} payload - payload of the request being sent out
+ * @param {object} assertPendingAcquire - flag to check DB pool pending acquire limit
  *
  * @returns {object} returns the response from the oracle
  */
-exports.oracleRequest = async (headers, method, params = {}, query = {}, payload = undefined, cache) => {
+exports.oracleRequest = async (headers, method, params = {}, query = {}, payload = undefined, cache, assertPendingAcquire) => {
   try {
     let url
     const partyIdType = params.Type
@@ -59,13 +60,13 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const partySubIdOrType = (params && params.SubId) ? params.SubId : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
     const isGetRequest = method.toUpperCase() === Enums.Http.RestMethods.GET
     if (currency && partySubIdOrType && isGetRequest) {
-      url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType)
+      url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType, assertPendingAcquire)
     } else if (currency && isGetRequest) {
-      url = await _getOracleEndpointByTypeAndCurrency(partyIdType, partyIdentifier, currency)
+      url = await _getOracleEndpointByTypeAndCurrency(partyIdType, partyIdentifier, currency, assertPendingAcquire)
     } else if (partySubIdOrType && isGetRequest) {
-      url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType)
+      url = await _getOracleEndpointByTypeAndSubId(partyIdType, partyIdentifier, partySubIdOrType, assertPendingAcquire)
     } else {
-      url = await _getOracleEndpointByType(partyIdType, partyIdentifier)
+      url = await _getOracleEndpointByType(partyIdType, partyIdentifier, assertPendingAcquire)
       if (partySubIdOrType) {
         payload = { ...payload, partySubIdOrType }
       }
@@ -123,6 +124,10 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       throw err
     }
   } catch (err) {
+    const extensions = [{
+      key: 'system',
+      value: '["@hapi/catbox-memory","http"]'
+    }]
     Logger.isErrorEnabled && Logger.error(`error in oracleRequest: ${err?.stack}`)
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.
@@ -131,15 +136,32 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
       err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code
     ) {
       if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        throw ErrorHandler.Factory.createFSPIOPError(
+          ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND,
+          undefined,
+          undefined,
+          undefined,
+          extensions
+        )
         // Added error 404 to cover a special case of the Mowali implementation
         // which uses mojaloop/als-oracle-pathfinder and currently returns 404
         // and in which case the Mowali implementation expects back `DESTINATION_FSP_ERROR`.
       } else if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE))) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
+        throw ErrorHandler.Factory.createFSPIOPError(
+          ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR,
+          undefined,
+          undefined,
+          undefined,
+          extensions
+        )
       }
     }
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -151,12 +173,13 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
  * @param {string} partyIdType - party ID type (e.g MSISDN)
  * @param {string} partyIdentifier - party ID
  * @param {string} currency - currency ID
+ * @param {object} assertPendingAcquire - flag to check DB pool pending acquire limit
  *
  * @returns {string} returns the endpoint to the oracle
  */
-const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier, currency) => {
+const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier, currency, assertPendingAcquire) => {
   let url
-  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency, assertPendingAcquire)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -186,12 +209,13 @@ const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier,
  *
  * @param {string} partyIdType - party ID type (e.g MSISDN)
  * @param {string} partyIdentifier - party ID
+ * @param {object} assertPendingAcquire - flag to check DB pool pending acquire limit
  *
  * @returns {string} returns the endpoint to the oracle
  */
-const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
+const _getOracleEndpointByType = async (partyIdType, partyIdentifier, assertPendingAcquire) => {
   let url
-  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType, assertPendingAcquire)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defaultOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -222,12 +246,13 @@ const _getOracleEndpointByType = async (partyIdType, partyIdentifier) => {
  * @param {string} partyIdType - party ID type (e.g MSISDN)
  * @param {string} partyIdentifier - party ID
  * @param {string} partySubIdOrType - party subId
+ * @param {object} assertPendingAcquire - flag to check DB pool pending acquire limit
  *
  * @returns {string} returns the endpoint to the oracle
  */
-const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, partySubIdOrType) => {
+const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, partySubIdOrType, assertPendingAcquire) => {
   let url
-  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(partyIdType, assertPendingAcquire)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()
@@ -259,12 +284,13 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
  * @param {string} partyIdentifier - party ID
  * @param {string} currency - currency ID
  * @param {string} partySubIdOrType - party subId
+ * @param {object} assertPendingAcquire - flag to check DB pool pending acquire limit
  *
  * @returns {string} returns the endpoint to the oracle
  */
-const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdentifier, currency, partySubIdOrType) => {
+const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdentifier, currency, partySubIdOrType, assertPendingAcquire) => {
   let url
-  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  const oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByTypeAndCurrency(partyIdType, currency, assertPendingAcquire)
   if (oracleEndpointModel.length > 0) {
     if (oracleEndpointModel.length > 1) {
       const defautOracle = oracleEndpointModel.filter(oracle => oracle.isDefault).pop()

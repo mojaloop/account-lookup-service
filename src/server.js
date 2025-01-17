@@ -23,7 +23,6 @@
  ******/
 'use strict'
 
-const { randomUUID } = require('node:crypto')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
 
@@ -37,7 +36,6 @@ const { name, version } = require('../package.json')
 const Db = require('./lib/db')
 const Util = require('./lib/util')
 const Plugins = require('./plugins')
-const RequestLogger = require('./lib/requestLogger')
 const Migrator = require('./lib/migrator')
 const APIHandlers = require('./api')
 const Routes = require('./api/routes')
@@ -104,26 +102,17 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig, proxyM
     }
   }
 
-  await server.ext([
-    {
-      type: 'onPreHandler',
-      method: (request, h) => {
-        request.headers.traceid = request.headers.traceid || randomUUID()
-        RequestLogger.logRequest(request)
-        return h.continue
-      }
-    },
-    {
-      type: 'onPreResponse',
-      method: (request, h) => {
-        RequestLogger.logResponse(request)
-        return h.continue
-      }
-    }
-  ])
   await Plugins.registerPlugins(server, api, isAdmin)
 
   server.route(routes)
+
+  // Initialize the error count metric
+  Metrics.getCounter(
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
+  )
+
   // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
   await server.start()
 
@@ -148,6 +137,9 @@ const initializeApi = async (appConfig) => {
   } = appConfig
 
   if (!INSTRUMENTATION_METRICS_DISABLED) {
+    if (INSTRUMENTATION_METRICS_CONFIG.defaultLabels) {
+      INSTRUMENTATION_METRICS_CONFIG.defaultLabels.serviceVersion = version
+    }
     initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
   }
   await connectDatabase(DATABASE)

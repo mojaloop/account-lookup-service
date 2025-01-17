@@ -35,7 +35,7 @@ const Package = require('../../package.json')
 const Server = require('../server')
 const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
-const logger = require('../lib').loggerFactory('ALS-timeout-handler')
+const log = require('../lib').logger.child('ALS-timeout-handler')
 
 const Program = new Command()
 
@@ -51,16 +51,16 @@ Program.command('handlers')
     const handlers = []
 
     if (args.timeout) {
-      logger.debug('CLI: Executing --timeout')
+      log.debug('CLI: Executing --timeout')
       handlers.push(HANDLER_TYPES.TIMEOUT)
     }
 
     if (handlers.length === 0) {
-      logger.debug('CLI: No handlers specified')
+      log.debug('CLI: No handlers specified')
       return
     }
 
-    module.exports = await Server.initializeHandlers(handlers, Config, logger)
+    module.exports = await Server.initializeHandlers(handlers, Config, log)
   })
 
 if (Array.isArray(process.argv) && process.argv.length > 2) {

@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "16.0.2",
+  "version": "16.1.0-iso.1",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -38,7 +38,7 @@
     "test"
   ],
   "scripts": {
-    "start": "node src/index.js server",
+    "start": "LOG_LEVEL=debug node src/index.js server",
     "start:all": "run-p start:api start:admin start:handlers",
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
@@ -49,14 +49,15 @@
     "lint:fix": "npm run standard:fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
-    "test:unit": "jest --runInBand",
+    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand",
     "test:coverage": "npm test -- --coverage --coverageThreshold='{}'",
     "test:coverage-check": "npm test -- --coverage",
     "test:junit": "npm test -- --reporters=default --reporters=jest-junit",
     "test:xunit": "npm run test:junit",
-    "test:functional": "sh ./scripts/test-functional.sh",
+    "test:functional": "bash ./scripts/test-functional.sh",
     "test:int": "npm run migrate  &&  npm run onboarding  &&  jest --config=./jest-int.config.js --runInBand",
-    "test:integration": "TEST_MODE=rm ./test/integration-runner.sh",
+    "test:integration": "npm run dc:up && npm run wait-4-docker && npm run test:int | tee ./test/results/test-int.log",
+    "test:integration-runner": "TEST_MODE=rm ./test/integration-runner.sh",
     "onboarding": "node test/integration/prepareTestParticipants.js",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
     "migrate": "run-s migrate:latest seed:run",
@@ -88,24 +89,24 @@
     "@hapi/good": "9.0.1",
     "@hapi/hapi": "21.3.12",
     "@hapi/inert": "7.1.0",
-    "@hapi/joi": "17.1.1",
     "@hapi/vision": "7.0.3",
-    "@mojaloop/central-services-error-handling": "13.0.2",
+    "@mojaloop/central-services-error-handling": "13.0.3",
     "@mojaloop/central-services-health": "15.0.0",
-    "@mojaloop/central-services-logger": "11.5.1",
-    "@mojaloop/central-services-metrics": "12.4.2",
-    "@mojaloop/central-services-shared": "18.7.1",
-    "@mojaloop/central-services-stream": "11.4.1",
-    "@mojaloop/database-lib": "11.1.0",
-    "@mojaloop/event-sdk": "14.1.1",
+    "@mojaloop/central-services-logger": "11.5.2",
+    "@mojaloop/central-services-metrics": "12.4.3",
+    "@mojaloop/central-services-shared": "18.15.1",
+    "@mojaloop/central-services-stream": "11.4.2",
+    "@mojaloop/database-lib": "11.1.1",
+    "@mojaloop/event-sdk": "14.1.2",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.3.1",
-    "@mojaloop/sdk-standard-components": "18.4.0",
+    "@mojaloop/ml-schema-transformer-lib": "2.5.1",
+    "@mojaloop/sdk-standard-components": "19.6.3",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.17.1",
     "ajv-keywords": "5.1.0",
     "blipp": "4.0.2",
     "commander": "13.0.0",
-    "cron": "3.3.2",
+    "cron": "3.5.0",
     "fast-safe-stringify": "^2.1.1",
     "hapi-auth-bearer-token": "8.0.0",
     "joi": "17.13.3",
@@ -117,8 +118,8 @@
     "rc": "1.2.8"
   },
   "overrides": {
-    "@mojaloop/central-services-error-handling": {
-      "@mojaloop/sdk-standard-components": "$@mojaloop/sdk-standard-components"
+    "postcss": {
+      "nanoid": "^3.3.8"
     },
     "@mojaloop/central-services-health": {
       "@mojaloop/central-services-logger": ">=11.4.0"
@@ -134,14 +135,12 @@
       "ejs": "3.1.10",
       "sanitize-html": "2.12.1",
       "yargs-parser": "18.1.1",
-      "markdown-it": "12.3.2",
-      "yaml": "2.7.0"
+      "markdown-it": "12.3.2"
     },
     "widdershins": {
       "swagger2openapi": "7.0.8",
       "yargs-parser": "13.1.2",
-      "markdown-it": "12.3.2",
-      "yaml": "2.7.0"
+      "markdown-it": "12.3.2"
     },
     "swagger2openapi": {
       "yaml": "2.7.0"

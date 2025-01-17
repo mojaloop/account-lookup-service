@@ -31,6 +31,10 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const OracleEndpointUncached = require('./oracleEndpoint')
 
 let cacheClient
+const extensions = [{
+  key: 'system',
+  value: '["db","@hapi/catbox-memory"]'
+}]
 
 const getCacheKey = (params) => {
   return cacheClient.createKey(`${Object.values(params).join('__')}`)
@@ -49,6 +53,7 @@ const getOracleEndpointCached = async (params) => {
   const cacheKey = getCacheKey(params)
   let cachedEndpoints = cacheClient.get(cacheKey)
   if (!cachedEndpoints) {
+    if (params.assertPendingAcquire) OracleEndpointUncached.assertPendingAcquires()
     // No oracleEndpoint in the cache, so fetch from participant API
     let oracleEndpoints
     if (partyIdType && currency) {
@@ -83,26 +88,41 @@ exports.initialize = async () => {
   cacheClient = Cache.registerCacheClient(oracleEndpointCacheClientMeta)
 }
 
-exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency) => {
+exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency, assertPendingAcquire) => {
   try {
-    return await getOracleEndpointCached({ partyIdType, currency })
+    return await getOracleEndpointCached({ partyIdType, currency, assertPendingAcquire })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
-exports.getOracleEndpointByType = async (partyIdType) => {
+exports.getOracleEndpointByType = async (partyIdType, assertPendingAcquire) => {
   try {
-    return await getOracleEndpointCached({ partyIdType })
+    return await getOracleEndpointCached({ partyIdType, assertPendingAcquire })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
-exports.getOracleEndpointByCurrency = async (currency) => {
+exports.getOracleEndpointByCurrency = async (currency, assertPendingAcquire) => {
   try {
-    return await getOracleEndpointCached({ currency })
+    return await getOracleEndpointCached({ currency, assertPendingAcquire })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }

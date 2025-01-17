@@ -18,7 +18,7 @@
 const Hapi = require('@hapi/hapi')
 const Metrics = require('@mojaloop/central-services-metrics')
 const { plugin: HealthPlugin } = require('./plugins/health')
-const { plugin: MetricsPlugin } = require('./plugins/metrics')
+const MetricsPlugin = require('@mojaloop/central-services-metrics').plugin
 const { logger } = require('../../lib')
 
 let server

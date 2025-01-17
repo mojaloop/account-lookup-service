@@ -24,16 +24,22 @@
  ******/
 'use strict'
 
-const Config = require('./lib/config')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
-const CentralServices = require('@mojaloop/central-services-shared')
-const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
-const OpenapiBackendValidator = require('@mojaloop/central-services-shared').Util.Hapi.OpenapiBackendValidator
-const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
-const MetricsPlugin = require('./metrics/plugin')
+const MetricsPlugin = require('@mojaloop/central-services-metrics').plugin
+const {
+  APIDocumentation,
+  FSPIOPHeaderValidation,
+  HapiEventPlugin,
+  HapiRawPayload,
+  OpenapiBackendValidator,
+  loggingPlugin
+} = require('@mojaloop/central-services-shared').Util.Hapi
+
+const { logger } = require('./lib')
+const Config = require('./lib/config')
 
 const registerPlugins = async (server, openAPIBackend) => {
   await server.register(OpenapiBackendValidator)
@@ -112,7 +118,8 @@ const registerPlugins = async (server, openAPIBackend) => {
     return {
       resources,
       supportedProtocolContentVersions,
-      supportedProtocolAcceptVersions
+      supportedProtocolAcceptVersions,
+      apiType: Config.API_TYPE
     }
   }
 
@@ -120,10 +127,10 @@ const registerPlugins = async (server, openAPIBackend) => {
     Inert,
     Vision,
     ErrorHandling,
-    RawPayloadToDataUri,
-    CentralServices.Util.Hapi.HapiEventPlugin,
+    HapiRawPayload,
+    HapiEventPlugin,
     {
-      plugin: CentralServices.Util.Hapi.FSPIOPHeaderValidation.plugin,
+      plugin: FSPIOPHeaderValidation.plugin,
       options: getOptionsForFSPIOPHeaderValidation()
     }
   ])
@@ -131,6 +138,11 @@ const registerPlugins = async (server, openAPIBackend) => {
   if (Config.DISPLAY_ROUTES === true) {
     await server.register([Blipp])
   }
+
+  await server.register({
+    plugin: loggingPlugin,
+    options: { log: logger }
+  })
 }
 
 module.exports = {

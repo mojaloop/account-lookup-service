@@ -1,5 +1,5 @@
 const ERROR_MESSAGES = Object.freeze({
-  partySourceFspNotFound: 'Requester FSP not found',
+  sourceFspNotFound: 'Requester FSP not found',
   partyDestinationFspNotFound: 'Destination FSP not found',
   partyProxyNotFound: 'Proxy not found',
   proxyConnectionError: 'Proxy connection error',

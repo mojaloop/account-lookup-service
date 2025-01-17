@@ -4,7 +4,9 @@ const fixtures = require('../../../fixtures')
 const { ProxyApiClient } = require('../../../util')
 const config = require('../../../../src/lib/config')
 
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+const wait = (sec) => new Promise(resolve => setTimeout(resolve, sec * 1000))
+
+const CRON_TIMEOUT_SEC = 10 // see TIMEXP
 
 describe('Timeout Handler', () => {
   const { type, proxyConfig } = config.PROXY_CACHE_CONFIG
@@ -41,13 +43,13 @@ describe('Timeout Handler', () => {
     const alsReq1 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyIds[0])
     const alsReq2 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyIds[1])
     const results = await Promise.all([
-      proxyCache.setSendToProxiesList(alsReq1, proxies),
-      proxyCache.setSendToProxiesList(alsReq2, proxies)
+      proxyCache.setSendToProxiesList(alsReq1, proxies, CRON_TIMEOUT_SEC),
+      proxyCache.setSendToProxiesList(alsReq2, proxies, CRON_TIMEOUT_SEC)
     ])
     expect(results.includes(false)).toBe(false)
 
     // wait for the timeout handler to process the keys
-    await wait(35_000)
+    await wait(CRON_TIMEOUT_SEC * 1.5)
 
     // check that the keys are no longer in redis
     const exists = await Promise.all(keys.map(key => proxyCache.redisClient.exists(key)))
@@ -55,9 +57,12 @@ describe('Timeout Handler', () => {
 
     // check that the callbacks are sent and received at the FSP
     // for test resilience, we will retry the history check a few times
-    let retryCount = 0; const retryMaxCount = 10; const retryInterval = 2000
+    const retryMaxCount = 20
+    const retryIntervalSec = 2
+    let retryCount = 0
+
     while (history.length < 2 && retryCount < retryMaxCount) {
-      await wait(retryInterval)
+      await wait(retryIntervalSec)
       history = await proxyClient.getHistory()
       retryCount++
     }

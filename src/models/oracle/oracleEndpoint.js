@@ -27,6 +27,10 @@
 
 const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const extensions = [{
+  key: 'system',
+  value: '["db"]'
+}]
 
 const getOracleEndpointByType = async (type) => {
   try {
@@ -43,7 +47,12 @@ const getOracleEndpointByType = async (type) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -64,7 +73,12 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -84,7 +98,12 @@ const getOracleEndpointByCurrency = async (currencyId) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -104,7 +123,12 @@ const getOracleEndpointById = async (oracleEndpointId) => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -122,7 +146,12 @@ const getAllOracleEndpoint = async () => {
           'pt.name as idType', 'oracleEndpoint.currencyId as currency', 'oracleEndpoint.isDefault')
     })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -142,7 +171,12 @@ const getAllOracleEndpointsByMatchCondition = async (oracleEndpointModel, partyI
           'oracleEndpoint.isActive', 'oracleEndpoint.partyIdTypeId', 'oracleEndpoint.endpointTypeId', 'oracleEndpoint.currencyId')
     })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -150,7 +184,12 @@ const createOracleEndpoint = async (oracleEndpointModel) => {
   try {
     return await Db.from('oracleEndpoint').insert(oracleEndpointModel)
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -158,7 +197,12 @@ const updateOracleEndpointById = async (id, oracleEndpointModel) => {
   try {
     return await Db.from('oracleEndpoint').update({ oracleEndpointId: id }, oracleEndpointModel)
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -166,7 +210,12 @@ const setIsActiveOracleEndpoint = async (oracleType, isActive) => {
   try {
     return await Db.from('oracleEndpoint').update({ oracleType }, { isActive })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -174,11 +223,17 @@ const destroyOracleEndpointById = async (oracleEndpointId) => {
   try {
     return await Db.from('oracleEndpoint').update({ oracleEndpointId }, { isActive: false })
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
 module.exports = {
+  assertPendingAcquires: Db.assertPendingAcquires,
   getOracleEndpointByType,
   getOracleEndpointByTypeAndCurrency,
   getOracleEndpointByCurrency,

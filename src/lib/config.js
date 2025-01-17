@@ -107,6 +107,7 @@ const config = {
   HUB_ID: RC.HUB_PARTICIPANT.ID,
   HUB_NAME: RC.HUB_PARTICIPANT.NAME,
   API_PORT: RC.API_PORT,
+  API_TYPE: RC.API_TYPE, // 'fspiop' or 'iso20022'
   DATABASE: {
     client: RC.DATABASE.DIALECT,
     connection: {
@@ -116,6 +117,7 @@ const config = {
       password: RC.DATABASE.PASSWORD,
       database: RC.DATABASE.DATABASE
     },
+    maxPendingAcquire: RC.DATABASE.MAX_PENDING_ACQUIRE,
     pool: {
       // minimum size
       min: getOrDefault(RC.DATABASE.POOL_MIN_SIZE, 2),

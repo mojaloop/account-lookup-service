@@ -38,12 +38,13 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
-const { loggerFactory } = require('../../lib')
+const { logger } = require('../../lib')
 const Config = require('../../lib/config')
 const utils = require('./utils')
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
 
-const logger = loggerFactory('domain:put-parties')
+const log = logger.child('domain:put-parties')
+const handleErrorOnSendingCallback = utils.createErrorHandlerOnSendingCallback(Config, log)
 
 /**
  * @function putPartiesByTypeAndID
@@ -64,44 +65,51 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     'Put parties by type and id',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
   const type = params.Type
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxy = headers[Headers.FSPIOP.PROXY]
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
-  logger.info('parties::putPartiesByTypeAndID::begin', { source, destination, proxy, params })
+  log.info('parties::putPartiesByTypeAndID::begin', { source, destination, proxy, params })
 
   let sendTo
+  let step
   try {
+    step = 'validateParticipant-1'
     const requesterParticipant = await participant.validateParticipant(source)
     if (!requesterParticipant) {
       if (!proxyEnabled || !proxy) {
-        const errMessage = ERROR_MESSAGES.partySourceFspNotFound
+        const errMessage = ERROR_MESSAGES.sourceFspNotFound
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       }
+      step = 'addDfspIdToProxyMapping-1'
       const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
       // think,if we should throw error if isCached === false?
-      logger.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
+      log.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
     }
 
     if (proxyEnabled && proxy) {
       const alsReq = utils.alsRequestDto(destination, params) // or source?
+      step = 'receivedSuccessResponse-2'
       const isExists = await proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
-        logger.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
+        log.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
         // think, if we need to throw an error here
       } else {
         const mappingPayload = {
           fspId: source
         }
+        step = 'oracleRequest-3'
         await oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload, cache)
-        logger.info('oracle was updated with mappingPayload', { mappingPayload, params })
+        log.info('oracle was updated with mappingPayload', { mappingPayload, params })
       }
     }
-
+    step = 'validateParticipant-4'
     const destinationParticipant = await participant.validateParticipant(destination)
     if (!destinationParticipant) {
+      step = 'lookupProxyByDfspId-5'
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
@@ -119,12 +127,21 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
       partyIdentifier: params.ID,
       ...(partySubId && { partySubIdOrType: partySubId })
     }
+    step = 'sendRequest-6'
     await participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
 
-    logger.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
+    log.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
     histTimerEnd({ success: true })
   } catch (err) {
-    await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
+    const fspiopError = await handleErrorOnSendingCallback(err, headers, params, sendTo)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode?.code,
+      system,
+      operation: 'putPartiesByTypeAndID',
+      step
+    })
     histTimerEnd({ success: false })
   }
 }
@@ -148,6 +165,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     'Put parties error by type and id',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
   const partySubId = params.SubId
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const callbackEndpointType = utils.errorPartyCbType(partySubId)
@@ -157,33 +175,37 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
 
   let sendTo
   let fspiopError
+  let step
 
   try {
     const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
     if (proxy) {
       if (isNotValidPayeeCase(payload)) {
         const swappedHeaders = utils.swapSourceDestinationHeaders(headers)
+        step = 'oracleRequest-1'
         await oracle.oracleRequest(swappedHeaders, RestMethods.DELETE, params, null, null, cache)
         getPartiesByTypeAndID(swappedHeaders, params, RestMethods.GET, {}, span, cache, proxyCache)
         // todo: - think if we need to send errorCallback?
         //       - or sentCallback after getPartiesByTypeAndID is done
-        logger.info('notValidPayee case - deleted Participants and run getPartiesByTypeAndID:', { proxy, params, payload })
+        log.info('notValidPayee case - deleted Participants and run getPartiesByTypeAndID:', { proxy, params, payload })
         return
       }
 
       const alsReq = utils.alsRequestDto(destination, params) // or source?
+      step = 'receivedErrorResponse-2'
       const isLast = await proxyCache.receivedErrorResponse(alsReq, proxy)
       if (!isLast) {
-        logger.info('got NOT last error callback from proxy:', { proxy, alsReq })
+        log.info('got NOT last error callback from proxy:', { proxy, alsReq })
         return
       }
     }
-
+    step = 'validateParticipant-3'
     const destinationParticipant = await participant.validateParticipant(destination)
 
     if (destinationParticipant) {
       sendTo = destination
     } else {
+      step = 'lookupProxyByDfspId-4'
       const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
       if (!proxyName) {
         const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
@@ -194,10 +216,18 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     const decodedPayload = decodePayload(dataUri, { asParsed: false })
     await participant.sendErrorToParticipant(sendTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
 
-    logger.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
+    log.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
     histTimerEnd({ success: true })
   } catch (err) {
-    fspiopError = await utils.handleErrorOnSendingCallback(err, headers, params, sendTo)
+    fspiopError = await handleErrorOnSendingCallback(err, headers, params, sendTo)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode?.code,
+      system,
+      operation: 'putPartiesErrorByTypeAndID',
+      step
+    })
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

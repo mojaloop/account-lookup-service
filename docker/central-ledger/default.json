@@ -18,6 +18,15 @@
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
     "DEBUG": false
   },
+  "PROXY_CACHE": {
+    "enabled": true,
+    "type": "redis-cluster",
+    "proxyConfig": {
+      "cluster": [
+        { "host": "redis-node-0", "port": 6379 }
+      ]
+    }
+  },
   "MIGRATIONS": {
     "DISABLED": false,
     "RUN_DATA_MIGRATIONS": true

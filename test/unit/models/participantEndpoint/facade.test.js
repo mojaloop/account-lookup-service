@@ -50,13 +50,27 @@ jest.mock('@mojaloop/central-services-shared', () => ({
     Participants: { getParticipant: mockGetParticipant },
     Request: { sendRequest: mockSendRequest },
     Http: { SwitchDefaultHeaders: jest.fn() },
-    HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) }
+    HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) },
+    Hapi: jest.requireActual('@mojaloop/central-services-shared').Util.Hapi
   },
   Enum: mockEnums
 }))
 
 const Logger = require('@mojaloop/central-services-logger')
 const fixtures = require('../../../fixtures')
+const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
+
+const mockConfigDto = ({
+  apiType = API_TYPES.fspiop,
+  jwsSign = false
+} = {}) => ({
+  API_TYPE: apiType,
+  JWS_SIGN: jwsSign,
+  FSPIOP_SOURCE_TO_SIGN: mockHubName,
+  JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
+  JWS_SIGNING_KEY: 'somekey',
+  PROTOCOL_VERSIONS: fixtures.protocolVersionsDto()
+})
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -190,14 +204,6 @@ describe('participantEndpoint Facade', () => {
   })
 
   describe('sendErrorToParticipant', () => {
-    const mockConfigDto = ({ jwsSign = false } = {}) => ({
-      JWS_SIGN: jwsSign,
-      FSPIOP_SOURCE_TO_SIGN: mockHubName,
-      JWS_SIGNING_KEY_PATH: 'secrets/jwsSigningKey.key',
-      JWS_SIGNING_KEY: 'somekey',
-      PROTOCOL_VERSIONS: fixtures.protocolVersionsDto()
-    })
-
     it('throws an error when the request fails', async () => {
       // Arrange
       jest.mock('../../../../src/lib/config', () => mockConfigDto())
@@ -290,6 +296,19 @@ describe('participantEndpoint Facade', () => {
         content: mockedConfig.PROTOCOL_VERSIONS.CONTENT.DEFAULT
       })
       spy.mockRestore()
+    })
+
+    it('should send error response with apiType from config [ISO20022]', async () => {
+      const apiType = 'iso20022'
+      jest.mock('../../../../src/lib/config', () => mockConfigDto({ apiType }))
+      mockGetEndpoint.mockImplementation(() => 'http://example.com/12345')
+
+      const { sendErrorToParticipant } = require(`${src}/models/participantEndpoint/facade`)
+      await sendErrorToParticipant('participantName', 'URL', fixtures.errorCallbackResponseDto(), {})
+
+      expect(mockSendRequest).toHaveBeenCalledTimes(1)
+      const args = mockSendRequest.mock.calls[0][0]
+      expect(args.apiType).toBe(apiType)
     })
   })
 })

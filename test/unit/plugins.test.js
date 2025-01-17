@@ -50,6 +50,7 @@ describe('Plugin Tests', () => {
     // Arrange
     const server = {
       register: sandbox.spy(),
+      ext: sandbox.spy(),
       info: {
         port: '8000'
       }
@@ -63,7 +64,7 @@ describe('Plugin Tests', () => {
     await registerPlugins(server, api)
 
     // Assert
-    expect(server.register.callCount).toBe(10)
+    expect(server.register.callCount).toBe(11)
     const firstCallArgs = server.register.getCall(1).args
     expect(firstCallArgs[0].options.document.info.title.includes('Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version)')).toBe(true)
   })
@@ -72,6 +73,7 @@ describe('Plugin Tests', () => {
     // Arrange
     const server = {
       register: sandbox.spy(),
+      ext: sandbox.spy(),
       info: {
         port: '8000'
       }
@@ -84,6 +86,6 @@ describe('Plugin Tests', () => {
     await registerPlugins(server, api)
 
     // Assert
-    expect(server.register.callCount).toBe(9)
+    expect(server.register.callCount).toBe(10)
   })
 })

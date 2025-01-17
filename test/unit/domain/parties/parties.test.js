@@ -37,6 +37,7 @@ const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const { Enum, Util } = require('@mojaloop/central-services-shared')
 const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
 const Logger = require('@mojaloop/central-services-logger')
+const Metrics = require('@mojaloop/central-services-metrics')
 
 const Config = require('../../../../src/lib/config')
 const Db = require('../../../../src/lib/db')
@@ -64,6 +65,13 @@ let sandbox
 
 describe('Parties Tests', () => {
   let proxyCache
+
+  // Initialize Metrics for testing
+  Metrics.getCounter(
+    'errorCount',
+    'Error count',
+    ['code', 'system', 'operation', 'step']
+  )
 
   beforeEach(async () => {
     await Util.Endpoints.initializeCache(Config.CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, libUtil.hubNameConfig)
@@ -243,7 +251,7 @@ describe('Parties Tests', () => {
 
       const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
       expect(errorInformation.errorCode).toBe('3200')
-      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.partySourceFspNotFound)
+      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.sourceFspNotFound)
     })
 
     it('should send error callback, if proxy-header is present, but no proxy in the scheme', async () => {
@@ -613,7 +621,7 @@ describe('Parties Tests', () => {
     it('handles error when `participant.validateParticipant()` returns no participant', async () => {
       expect.hasAssertions()
       // Arrange
-      const loggerStub = sandbox.stub(logger, 'error')
+      const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.sendErrorToParticipant = sandbox.stub().resolves()
 
       const payload = JSON.stringify({ testPayload: true })
@@ -626,7 +634,7 @@ describe('Parties Tests', () => {
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstLoggerCallArgs = loggerStub.getCall(0).args
-      expect(firstLoggerCallArgs[1].message).toBe(ERROR_MESSAGES.partySourceFspNotFound)
+      expect(firstLoggerCallArgs[1].message).toBe(ERROR_MESSAGES.sourceFspNotFound)
       loggerStub.reset()
       participant.sendErrorToParticipant.reset()
     })
@@ -874,7 +882,7 @@ describe('Parties Tests', () => {
     it('handles error when `validateParticipant()` fails', async () => {
       expect.hasAssertions()
       // Arrange)
-      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
+      const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
@@ -894,7 +902,7 @@ describe('Parties Tests', () => {
       expect.hasAssertions()
       // Arrange
 
-      const loggerStub = sandbox.stub(logger.mlLogger, 'error')
+      const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })

@@ -9,6 +9,7 @@ info:
   version: "1.1"
 servers:
   - url: /
+
 paths:
   /participants/{ID}/error:
     put:
@@ -626,7 +627,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartiesTypeIDPutResponse'
+              $ref: 'fspiop-rest-v2.0-ISO20022_parties.yaml#/components/schemas/GetParties_IdentificationVerificationReportV03'
         required: true
       responses:
         200:
@@ -675,7 +676,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ErrorInformationObject'
+              $ref: 'fspiop-rest-v2.0-ISO20022_parties.yaml#/components/schemas/GetPartiesError_IdentificationVerificationReportV03'
         required: true
       responses:
         200:
@@ -757,7 +758,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartiesTypeIDPutResponse'
+              $ref: 'fspiop-rest-v2.0-ISO20022_parties.yaml#/components/schemas/GetParties_IdentificationVerificationReportV03'
         required: true
       responses:
         200:
@@ -807,7 +808,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ErrorInformationObject'
+              $ref: 'fspiop-rest-v2.0-ISO20022_parties.yaml#/components/schemas/GetPartiesError_IdentificationVerificationReportV03'
         required: true
       responses:
         200:

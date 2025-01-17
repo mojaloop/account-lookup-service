@@ -33,7 +33,9 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const JwsSigner = require('@mojaloop/sdk-standard-components').Jws.signer
 const Metrics = require('@mojaloop/central-services-metrics')
 const Config = require('../../lib/config')
+const { logger } = require('../../lib')
 const { hubNameRegex } = require('../../lib/util').hubNameConfig
+
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
 
 /**
@@ -47,7 +49,7 @@ const defineJwsSigner = (config, headers, requestedEndpoint) => {
     // We need below 2 headers for JWS
     headers[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = headers[Enums.Http.Headers.FSPIOP.HTTP_METHOD] || Enums.Http.RestMethods.PUT
     headers[Enums.Http.Headers.FSPIOP.URI] = headers[Enums.Http.Headers.FSPIOP.URI] || uriRegex.exec(requestedEndpoint)[1]
-    Logger.isDebugEnabled && Logger.debug('JWS is enabled, getting JwsSigner')
+    logger.debug('JWS is enabled, getting JwsSigner')
     jwsSigner = new JwsSigner({
       logger: Logger,
       signingKey: config.JWS_SIGNING_KEY
@@ -83,10 +85,10 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
   try {
     requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
     histTimerEndGetParticipantEndpoint({ success: true, endpointType, participantName: requestedParticipant })
-    Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requestedEndpoint} for endpoint type ${endpointType}`)
+    logger.debug('participant requestedEndpoint and endpointType: ', { requestedEndpoint, endpointType })
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName: requestedParticipant })
-    Logger.isErrorEnabled && Logger.error(`error in getEndpoint: ${err?.stack}`)
+    logger.warn('error in getEndpoint: ', err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 
@@ -102,9 +104,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       content: Config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
       accept: Config.PROTOCOL_VERSIONS.ACCEPT.DEFAULT.toString()
     }
-    const jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
-
-    const resp = await Util.Request.sendRequest({
+    const params = {
       url: requestedEndpoint,
       headers,
       source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
@@ -113,17 +113,29 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       payload,
       responseType: Enums.Http.ResponseTypes.JSON,
       span,
-      jwsSigner,
       protocolVersions,
-      hubNameRegex
-    })
+      hubNameRegex,
+      apiType: Config.API_TYPE
+    }
+    logger.debug('participant - sendRequest params:', { params })
+    params.jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
+
+    const resp = await Util.Request.sendRequest(params)
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName: requestedParticipant })
     return resp
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName: requestedParticipant })
-    Logger.isErrorEnabled && Logger.error(`error in sendRequest: ${err?.stack}`)
-
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    logger.warn('error in sendRequest: ', err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -147,8 +159,17 @@ exports.validateParticipant = async (fsp) => {
     return resp
   } catch (err) {
     histTimerEnd({ success: false })
-    Logger.isErrorEnabled && Logger.error(`error in validateParticipant: ${err?.stack}`)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    logger.warn('error in validateParticipant: ', err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }
 
@@ -187,8 +208,17 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
     histTimerEndGetParticipantEndpoint({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndGetParticipantEndpoint({ success: false, endpointType, participantName })
-    Logger.isWarnEnabled && Logger.warn(`error in getEndpoint: ${err?.message}`)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    logger.warn('error in getEndpoint: ', err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 
   // Send error to participant
@@ -211,10 +241,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
     }
 
-    Logger.isDebugEnabled && Logger.debug(`participant endpoint url: ${requesterErrorEndpoint} for endpoint type ${endpointType}`)
-    const jwsSigner = defineJwsSigner(Config, clonedHeaders, requesterErrorEndpoint)
-
-    await Util.Request.sendRequest({
+    const params = {
       url: requesterErrorEndpoint,
       headers: clonedHeaders,
       source: clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE],
@@ -224,13 +251,26 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       responseType: Enums.Http.ResponseTypes.JSON,
       hubNameRegex,
       span,
-      jwsSigner,
-      protocolVersions
-    })
+      protocolVersions,
+      apiType: Config.API_TYPE
+    }
+    logger.debug('participant - sendErrorToParticipant params: ', { params })
+    params.jwsSigner = defineJwsSigner(Config, clonedHeaders, requesterErrorEndpoint)
+
+    await Util.Request.sendRequest(params)
     histTimerEndSendRequestToParticipant({ success: true, endpointType, participantName })
   } catch (err) {
     histTimerEndSendRequestToParticipant({ success: false, endpointType, participantName })
-    Logger.isWarnEnabled && Logger.warn(`error in sendErrorToParticipant: ${err?.message}`)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    logger.warn('error in sendErrorToParticipant: ', err)
+    const extensions = [{
+      key: 'system',
+      value: '["http"]'
+    }]
+    throw ErrorHandler.Factory.reformatFSPIOPError(
+      err,
+      undefined,
+      undefined,
+      extensions
+    )
   }
 }

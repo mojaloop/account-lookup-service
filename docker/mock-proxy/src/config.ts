@@ -1,5 +1,7 @@
 import process from 'node:process';
 
+console.log('process.env:', process.env);
+
 export const {
   PROXY_PORT = 14200,
   PROXY_NAME = 'proxyAB',

@@ -1,5 +1,3 @@
-const LibUtil = require('../../lib/util')
-const Config = require('../../lib/config')
 const {
   Factory: { createFSPIOPError },
   Enums: { FSPIOPErrorCodes }
@@ -11,11 +9,25 @@ const {
 } = require('@mojaloop/central-services-shared').Enum
 const { Tracer } = require('@mojaloop/event-sdk')
 
-const timeoutCallbackDto = ({ destination, partyId, partyType }) => {
+const LibUtil = require('../../lib/util')
+const Config = require('../../lib/config')
+const partiesUtils = require('../parties/utils')
+
+const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
+  const headers = {
+    [FSPIOPHeaders.SOURCE]: Config.HUB_NAME,
+    [FSPIOPHeaders.DESTINATION]: destination
+  }
+  const params = {
+    ID: partyId,
+    Type: partyType
+  }
+  const error = createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR)
+
   const dto = {
-    errorInformation: createFSPIOPError(FSPIOPErrorCodes.EXPIRED_ERROR).toApiErrorObject(Config.ERROR_HANDLING),
-    params: { ID: partyId, Type: partyType },
-    headers: { [FSPIOPHeaders.SOURCE]: Config.HUB_NAME, [FSPIOPHeaders.DESTINATION]: destination },
+    errorInformation: await partiesUtils.makePutPartiesErrorPayload(Config, error, headers, params),
+    headers,
+    params,
     endpointType: FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
   }
   const span = Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: dto.headers })
@@ -25,4 +37,6 @@ const timeoutCallbackDto = ({ destination, partyId, partyType }) => {
   return { ...dto, span }
 }
 
-module.exports = { timeoutCallbackDto }
+module.exports = {
+  timeoutCallbackDto
+}

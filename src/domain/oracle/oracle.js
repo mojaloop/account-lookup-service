@@ -49,9 +49,15 @@ exports.createOracle = async (payload) => {
     'Create Oracle',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
+  let step
+
   try {
+    step = 'getPartyIdTypeByName-1'
     const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+    step = 'getEndpointTypeByType-2'
     const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+    step = 'getAllOracleEndpointsByMatchCondition-3'
     const existingActiveOracle = await oracleEndpoint.getAllOracleEndpointsByMatchCondition(
       payload,
       partyIdTypeModel.partyIdTypeId,
@@ -77,13 +83,23 @@ exports.createOracle = async (payload) => {
     oracleEntity.createdBy = 'Admin'
     oracleEntity.partyIdTypeId = partyIdTypeModel.partyIdTypeId
     oracleEntity.endpointTypeId = endpointTypeModel.endpointTypeId
+    step = 'createOracleEndpoint-4'
     await oracleEndpoint.createOracleEndpoint(oracleEntity)
     histTimerEnd({ success: true })
     return true
   } catch (err) {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode?.code,
+      system,
+      operation: 'createOracle',
+      step
+    })
+    throw fspiopError
   }
 }
 
@@ -100,6 +116,8 @@ exports.getOracle = async (query) => {
     'Get Oracle',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
+  let step
   try {
     let oracleEndpointModelList
     let isCurrency; let isType = false
@@ -111,12 +129,16 @@ exports.getOracle = async (query) => {
       isType = true
     }
     if (isCurrency && isType) {
+      step = 'getOracleEndpointByTypeAndCurrency-1'
       oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByTypeAndCurrency(query.type, query.currency)
     } else if (isCurrency && !isType) {
+      step = 'getOracleEndpointByCurrency-2'
       oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByCurrency(query.currency)
     } else if (isType && !isCurrency) {
+      step = 'getOracleEndpointByType-3'
       oracleEndpointModelList = await cachedOracleEndpoint.getOracleEndpointByType(query.type)
     } else {
+      step = 'getAllOracleEndpoint-4'
       oracleEndpointModelList = await oracleEndpoint.getAllOracleEndpoint()
     }
     for (const oracleEndpointModel of oracleEndpointModelList) {
@@ -137,7 +159,16 @@ exports.getOracle = async (query) => {
   } catch (err) {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode?.code,
+      system,
+      operation: 'getOracle',
+      step
+    })
+    throw fspiopError
   }
 }
 
@@ -155,11 +186,17 @@ exports.updateOracle = async (params, payload) => {
     'Update Oracle',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
+  let step
   try {
+    step = 'getOracleEndpointById-1'
     const currentOracleEndpointList = await oracleEndpoint.getOracleEndpointById(params.ID)
     if (currentOracleEndpointList.length > 0) {
+      step = 'getPartyIdTypeByName-2'
       const partyIdTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
+      step = 'getEndpointTypeByType-3'
       const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
+      step = 'getAllOracleEndpointsByMatchCondition-4'
       const existingActiveOracle = await oracleEndpoint.getAllOracleEndpointsByMatchCondition(
         payload,
         partyIdTypeModel.partyIdTypeId,
@@ -175,6 +212,7 @@ exports.updateOracle = async (params, payload) => {
       const currentOracleEndpoint = currentOracleEndpointList[0]
       const newOracleEntry = {}
       if (payload.oracleIdType && payload.oracleIdType !== currentOracleEndpoint.idType) {
+        step = 'getPartyIdTypeByName-5'
         const partyTypeModel = await partyIdType.getPartyIdTypeByName(payload.oracleIdType)
         newOracleEntry.partyIdTypeId = partyTypeModel.partyIdTypeId
       }
@@ -182,10 +220,12 @@ exports.updateOracle = async (params, payload) => {
         newOracleEntry.value = payload.endpoint.value
       }
       if (payload.endpoint && payload.endpoint.endpointType && payload.endpoint.endpointType !== currentOracleEndpoint.endpointType) {
+        step = 'getEndpointTypeByType-6'
         const endpointTypeModel = await endpointType.getEndpointTypeByType(payload.endpoint.endpointType)
         newOracleEntry.endpointTypeId = endpointTypeModel.endpointTypeId
       }
       if (payload.currency && payload.currency !== currentOracleEndpoint.currency) {
+        step = 'getCurrencyById-7'
         const currencyModel = await currency.getCurrencyById(payload.currency)
         if (currencyModel) {
           newOracleEntry.currencyId = payload.currency
@@ -196,6 +236,7 @@ exports.updateOracle = async (params, payload) => {
       if (payload.isDefault && payload.isDefault !== currentOracleEndpoint.isDefault) {
         newOracleEntry.isDefault = payload.isDefault
       }
+      step = 'updateOracleEndpointById-8'
       await oracleEndpoint.updateOracleEndpointById(params.ID, newOracleEntry)
       histTimerEnd({ success: true })
       return true
@@ -205,7 +246,16 @@ exports.updateOracle = async (params, payload) => {
   } catch (err) {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode?.code,
+      system,
+      operation: 'updateOracle',
+      step
+    })
+    throw fspiopError
   }
 }
 
@@ -222,6 +272,7 @@ exports.deleteOracle = async (params) => {
     'Delete Oracle',
     ['success']
   ).startTimer()
+  const errorCounter = Metrics.getCounter('errorCount')
   try {
     await oracleEndpoint.destroyOracleEndpointById(params.ID)
     histTimerEnd({ success: true })
@@ -229,6 +280,14 @@ exports.deleteOracle = async (params) => {
   } catch (err) {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+    const extensions = err.extensions || []
+    const system = extensions.find((element) => element.key === 'system')?.value || ''
+    errorCounter.inc({
+      code: fspiopError?.apiErrorCode?.code,
+      system,
+      operation: 'deleteOracle'
+    })
+    throw fspiopError
   }
 }

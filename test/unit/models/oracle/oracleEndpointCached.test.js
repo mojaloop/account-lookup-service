@@ -58,6 +58,7 @@ describe('ParticipantCurrency cached model', () => {
     sandbox.stub(OracleEndpointUncached, 'getOracleEndpointByTypeAndCurrency').returns(oracleEndpoints)
     sandbox.stub(OracleEndpointUncached, 'getOracleEndpointByCurrency').returns(oracleEndpoints)
     sandbox.stub(OracleEndpointUncached, 'getOracleEndpointByType').returns(oracleEndpoints)
+    sandbox.stub(OracleEndpointUncached, 'assertPendingAcquires').returns()
   })
 
   afterEach(() => {
@@ -149,5 +150,36 @@ describe('ParticipantCurrency cached model', () => {
 
     await Model.getOracleEndpointByTypeAndCurrency('MSISDN', 'USD')
     expect(cacheClient.get.called).toBeTruthy()
+  })
+  it('getOracleEndpointCached calls assertPendingAcquire when assertPendingAcquire is true', async () => {
+    let cache = null
+    const cacheClient = {
+      createKey: sandbox.stub().returns({}),
+      get: () => cache,
+      set: (key, x) => {
+        cache = { item: x } // the cache returns {item: <data>} structure
+      }
+    }
+    Cache.registerCacheClient.returns(cacheClient)
+    await Model.initialize()
+
+    await Model.getOracleEndpointByTypeAndCurrency('MSISDN', 'USD', true)
+    expect(OracleEndpointUncached.assertPendingAcquires.calledOnce).toBeTruthy()
+  })
+
+  it('getOracleEndpointCached does not call assertPendingAcquire when assertPendingAcquire is false', async () => {
+    let cache = null
+    const cacheClient = {
+      createKey: sandbox.stub().returns({}),
+      get: () => cache,
+      set: (key, x) => {
+        cache = { item: x } // the cache returns {item: <data>} structure
+      }
+    }
+    Cache.registerCacheClient.returns(cacheClient)
+    await Model.initialize()
+
+    await Model.getOracleEndpointByTypeAndCurrency('MSISDN', 'USD', false)
+    expect(OracleEndpointUncached.assertPendingAcquires.called).toBeFalsy()
   })
 })

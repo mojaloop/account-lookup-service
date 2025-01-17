@@ -1,12 +1,12 @@
 const axiosLib = require('axios')
-const { loggerFactory } = require('../../../src/lib')
+const lib = require('../../../src/lib')
 const fixtures = require('../../fixtures')
 
 class BasicApiClient {
   constructor ({
     baseURL,
     axios = axiosLib.create({ baseURL }),
-    logger = loggerFactory(this.constructor.name)
+    logger = lib.logger.child(this.constructor.name)
   } = {}) {
     this.baseURL = baseURL
     this.axios = axios
