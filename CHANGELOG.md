@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.0.0](https://github.com/mojaloop/account-lookup-service/compare/v16.0.2...v17.0.0) (2025-01-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* add iso20022 compatibility (#518)
+
+### Features
+
+* add iso20022 compatibility ([#518](https://github.com/mojaloop/account-lookup-service/issues/518)) ([1eaaff1](https://github.com/mojaloop/account-lookup-service/commit/1eaaff13048af5bc34cd55fcd85b2152e6413963)), closes [#482](https://github.com/mojaloop/account-lookup-service/issues/482) [#483](https://github.com/mojaloop/account-lookup-service/issues/483)
+
 ### [16.0.2](https://github.com/mojaloop/account-lookup-service/compare/v16.0.1...v16.0.2) (2025-01-07)
 
 
