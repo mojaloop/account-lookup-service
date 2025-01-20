@@ -8,7 +8,7 @@ const headersDto = ({
   source = 'fromDfsp',
   destination = 'toDfsp',
   proxy = '',
-  date = '2024-05-24 08:52:19',
+  date = new Date().toUTCString(),
   accept,
   contentType
 } = {}) => Object.freeze({

@@ -252,3 +252,7 @@ push a release triggering another subsequent build that also publishes a docker 
 ## Additional Notes
 
 - For all put parties callbacks `FSPIOP-Destination` header is considered to be mandatory.
+- Since the first pass ISO20022 support doesn't cover all resources at this time
+  `api-swagger-iso20022-parties.yaml` still uses fspiop for resources that
+  weren't in the iso scope on the first pass example `/participants`.
+  This is to ensure no regression for resources that aren't yet covered.
