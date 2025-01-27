@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.0.2](https://github.com/mojaloop/account-lookup-service/compare/v17.0.1...v17.0.2) (2025-01-27)
+
+
+### Chore
+
+* maintenance updates ([#520](https://github.com/mojaloop/account-lookup-service/issues/520)) ([2e91f4a](https://github.com/mojaloop/account-lookup-service/commit/2e91f4a21239158c9f4a4bb72f0eb09206f4e292))
+
 ### [17.0.1](https://github.com/mojaloop/account-lookup-service/compare/v17.0.0...v17.0.1) (2025-01-20)
 
 
