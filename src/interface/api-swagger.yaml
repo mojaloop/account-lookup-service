@@ -1171,6 +1171,7 @@ components:
         - DEVICE
         - ACCOUNT_ID
         - IBAN
+        - MERCHANT_PAYINTOID
         - ALIAS
     ErrorInformation:
       title: ErrorInformation
@@ -1725,6 +1726,7 @@ components:
           - DEVICE
           - ACCOUNT_ID
           - IBAN
+          - MERCHANT_PAYINTOID
           - ALIAS
     SubId:
       name: SubId
