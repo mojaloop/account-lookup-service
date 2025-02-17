@@ -26,6 +26,8 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
+const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
 const Metrics = require('@mojaloop/central-services-metrics')
@@ -41,13 +43,36 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: function (context, request, h) {
+  get: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'ing_getPartiesByTypeIDAndSubID',
       'Ingress - Get party by Type, ID and SubId',
       ['success']
     ).startTimer()
     const { cache, proxyCache } = request.server.app
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.GET)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.transactionFlow,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.getPartiesByTypeIDAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
@@ -61,13 +86,36 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (context, request, h) {
+  put: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'ing_putPartiesByTypeIDAndSubID',
       'Ingress - Put parties by Type, ID and SubId',
       ['success']
     ).startTimer()
     const { cache, proxyCache } = request.server.app
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.transactionFlow,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.putPartiesByTypeIDAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri, cache, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })

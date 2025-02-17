@@ -25,6 +25,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../lib/util')
@@ -47,9 +48,22 @@ module.exports = {
       'Ingress: Get oracles',
       ['success']
     ).startTimer()
-    const span = request.span
-    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.LOOKUP)
+    const { query, path, method, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.GET)
     span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupServiceAdmin,
+      Enum.Tags.QueryTags.auditType.oracleAdmin,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.getOracle,
+      {
+        httpMethod: method,
+        httpPath: path,
+        httpQuery: query,
+        partyIdType: query.type
+      }
+    )
+    span.setTags(queryTags)
     await span.audit({
       headers: request.headers,
       query: request.query
@@ -77,9 +91,21 @@ module.exports = {
       'Ingress: Create oracles',
       ['success']
     ).startTimer()
-    const span = request.span
+    const { payload, method, path, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupServiceAdmin,
+      Enum.Tags.QueryTags.auditType.oracleAdmin,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.createOracle,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: payload.oracleIdType
+      }
+    )
+    span.setTags(queryTags)
     await span.audit({
       headers: request.headers,
       payload: request.payload

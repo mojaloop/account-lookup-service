@@ -25,6 +25,7 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventSdk = require('@mojaloop/event-sdk')
 const Logger = require('@mojaloop/central-services-logger')
@@ -49,9 +50,21 @@ module.exports = {
       'Ingress: Update oracle details by Id',
       ['success']
     ).startTimer()
-    const span = request.span
+    const { params, method, path, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupServiceAdmin,
+      Enum.Tags.QueryTags.auditType.oracleAdmin,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.updateOracle,
+      {
+        httpMethod: method,
+        httpPath: path,
+        oracleId: params.ID
+      }
+    )
+    span.setTags(queryTags)
     await span.audit({
       headers: request.headers,
       payload: request.payload
@@ -80,9 +93,21 @@ module.exports = {
       'Ingress: Delete oracle by Id',
       ['success']
     ).startTimer()
-    const span = request.span
+    const { params, method, path, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.ORACLE, Enum.Events.Event.Action.DELETE)
     span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupServiceAdmin,
+      Enum.Tags.QueryTags.auditType.oracleAdmin,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.deleteOracle,
+      {
+        httpMethod: method,
+        httpPath: path,
+        oracleId: params.ID
+      }
+    )
+    span.setTags(queryTags)
     await span.audit({
       headers: request.headers
     }, EventSdk.AuditEventAction.start)

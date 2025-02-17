@@ -25,6 +25,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
@@ -47,11 +48,24 @@ module.exports = {
       'Ingress - Put parties error by Type and Id',
       ['success']
     ).startTimer()
-    const { headers, payload, params, dataUri, span } = request
+    const { headers, payload, method, path, params, dataUri, span } = request
     const { cache, proxyCache } = request.server.app
 
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.transactionFlow,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.putPartiesErrorByTypeAndID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID
+      }
+    )
+    span.setTags(queryTags)
     await span.audit({
       headers,
       payload

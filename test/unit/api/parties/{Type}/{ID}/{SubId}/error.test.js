@@ -68,6 +68,11 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
       log: sandbox.stub(),
       app: {}
     }
+    mock.request.span = {
+      setTags: sandbox.stub().returns({}),
+      audit: sandbox.stub().returns(Promise.resolve({}))
+    }
+    mock.request.params = {}
     const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').resolves({})
 
     // Act
@@ -96,6 +101,11 @@ describe('/parties/{Type}/{ID}/{SubId}/error', () => {
       log: sandbox.stub(),
       app: {}
     }
+    mock.request.span = {
+      setTags: sandbox.stub().returns({}),
+      audit: sandbox.stub().returns(Promise.resolve({}))
+    }
+    mock.request.params = {}
     const throwError = new Error('Unknown error')
     const stub = sandbox.stub(parties, 'putPartiesErrorByTypeAndID').rejects(throwError)
 

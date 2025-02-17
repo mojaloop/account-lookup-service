@@ -25,6 +25,8 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
+const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../../lib/util')
 const parties = require('../../../../../domain/parties')
 const Metrics = require('@mojaloop/central-services-metrics')
@@ -40,15 +42,38 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: function (context, request, h) {
+  put: async function (context, request, h) {
     const histTimerEnd = Metrics.getHistogram(
       'ing_putPartiesErrorByTypeIDAndSubID',
       'Ingress - Put parties error by Type, ID and SubId',
       ['success']
     ).startTimer()
     const { cache, proxyCache } = request.server.app
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.transactionFlow,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.putPartiesErrorByTypeIDAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     parties.putPartiesErrorByTypeAndID(request.headers, request.params, request.payload, request.dataUri, request.span, cache, proxyCache).catch(err => {
-      request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
+      request.server.log(['error'], `ERROR - putPartiesErrorByTypeIDAndSubID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
     return h.response().code(Enum.Http.ReturnCodes.OK.CODE)

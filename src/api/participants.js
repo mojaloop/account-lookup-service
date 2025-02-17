@@ -25,6 +25,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../lib/util')
 const participants = require('../domain/participants')
@@ -47,9 +48,21 @@ module.exports = {
       'Ingress: Post participants batch',
       ['success']
     ).startTimer()
-    const span = request.span
+    const { payload, method, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.partyOnboarding,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.postParticipantsBatch,
+      {
+        httpMethod: method,
+        httpPath: request.path,
+        requestId: payload.requestId
+      }
+    )
+    span.setTags(queryTags)
     await span.audit({
       headers: request.headers,
       payload: request.payload
