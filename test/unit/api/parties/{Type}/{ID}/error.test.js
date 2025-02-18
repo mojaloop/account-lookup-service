@@ -79,6 +79,7 @@ describe('/parties/{Type}/{ID}/error', () => {
         log: sandbox.stub(),
         app: {}
       },
+      params: sandbox.stub(),
       span: {
         setTags: setTagsStub,
         audit: sandbox.stub().returns(Promise.resolve({}))
@@ -93,7 +94,7 @@ describe('/parties/{Type}/{ID}/error', () => {
     // Assert
     expect(codeStub.calledWith(200)).toBe(true)
     expect(setTagsStub.calledWith({})).toBe(true)
-    expect(setTagsStub.calledOnce).toBe(true)
+    expect(setTagsStub.calledTwice).toBe(true)
     expect(parties.putPartiesErrorByTypeAndID.callCount).toBe(1)
     expect(parties.putPartiesErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
     expect(mock.request.server.log.callCount).toEqual(0)
@@ -120,6 +121,7 @@ describe('/parties/{Type}/{ID}/error', () => {
         log: sandbox.stub(),
         app: {}
       },
+      params: sandbox.stub(),
       span: {
         setTags: setTagsStub,
         audit: sandbox.stub().returns(Promise.resolve({}))

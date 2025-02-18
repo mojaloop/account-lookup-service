@@ -83,6 +83,7 @@ describe('/participants/{Type}/{ID}/error', () => {
       metadata: sandbox.stub(),
       headers: sandbox.stub(),
       payload: sandbox.stub(),
+      params: sandbox.stub(),
       span: {
         setTags: setTagsStub,
         audit: sandbox.stub().returns(Promise.resolve({}))
@@ -128,6 +129,7 @@ describe('/participants/{Type}/{ID}/error', () => {
       metadata: sandbox.stub(),
       headers: sandbox.stub(),
       payload: sandbox.stub(),
+      params: sandbox.stub(),
       span: {
         setTags: setTagsStub,
         audit: sandbox.stub().returns(Promise.resolve({}))

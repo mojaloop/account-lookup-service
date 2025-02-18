@@ -26,6 +26,7 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
@@ -49,9 +50,24 @@ module.exports = {
       'Ingress: Put participant error by Type and Id',
       ['success']
     ).startTimer()
-    const span = request.span
+    const { method, path, params, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
+
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.partyOnboarding,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.putParticipantsErrorByTypeAndID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID
+      }
+    )
+    span.setTags(queryTags)
+
     const metadata = `${request.method} ${request.path}`
     try {
       await span.audit({

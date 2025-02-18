@@ -5,9 +5,11 @@ const {
 const {
   Http: { Headers: { FSPIOP: FSPIOPHeaders } },
   Events: { Event: { Type: EventType, Action: EventAction } },
-  EndPoints: { FspEndpointTypes }
+  EndPoints: { FspEndpointTypes },
+  Tags: { QueryTags: QueryTagsEnum }
 } = require('@mojaloop/central-services-shared').Enum
 const { Tracer } = require('@mojaloop/event-sdk')
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 
 const LibUtil = require('../../lib/util')
 const Config = require('../../lib/config')
@@ -33,7 +35,17 @@ const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
   const span = Tracer.createSpan('timeoutInterschemePartiesLookups', { headers: dto.headers })
   const spanTags = LibUtil.getSpanTags({ headers: dto.headers }, EventType.PARTY, EventAction.PUT)
   span.setTags(spanTags)
-
+  const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+    QueryTagsEnum.serviceName.accountLookupService,
+    QueryTagsEnum.auditType.transactionFlow,
+    QueryTagsEnum.contentType.httpRequest,
+    QueryTagsEnum.operation.timeoutInterschemePartiesLookups,
+    {
+      partyIdType: params.Type,
+      partyIdentifier: params.ID
+    }
+  )
+  span.setTags(queryTags)
   return { ...dto, span }
 }
 

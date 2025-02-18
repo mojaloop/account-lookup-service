@@ -26,7 +26,9 @@
 'use strict'
 
 const Enum = require('@mojaloop/central-services-shared').Enum
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 const LibUtil = require('../../../../lib/util')
+const EventSdk = require('@mojaloop/event-sdk')
 const participants = require('../../../../domain/participants')
 const Metrics = require('@mojaloop/central-services-metrics')
 
@@ -47,6 +49,29 @@ module.exports = {
       'Ingress: Get participant by Type, ID and SubId',
       ['success']
     ).startTimer()
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.GET)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.partyOnboarding,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.getParticipantsByTypeIdAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
@@ -66,6 +91,29 @@ module.exports = {
       'Ingress: Put participant by Type, ID and SubId',
       ['success']
     ).startTimer()
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.PUT)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.partyOnboarding,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.putParticipantsByTypeIDAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
@@ -85,6 +133,29 @@ module.exports = {
       'Ingress: Post participant by Type, ID and SubId',
       ['success']
     ).startTimer()
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.partyOnboarding,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.postParticipantsByTypeIDAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
@@ -104,6 +175,29 @@ module.exports = {
       'Ingress: Delete participant by Type, ID and SubId',
       ['success']
     ).startTimer()
+
+    const { headers, payload, method, path, params, span } = request
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.DELETE)
+    span.setTags(spanTags)
+    const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+      Enum.Tags.QueryTags.serviceName.accountLookupService,
+      Enum.Tags.QueryTags.auditType.partyOnboarding,
+      Enum.Tags.QueryTags.contentType.httpRequest,
+      Enum.Tags.QueryTags.operation.deleteParticipantsByTypeIDAndSubID,
+      {
+        httpMethod: method,
+        httpPath: path,
+        partyIdType: params.Type,
+        partyIdentifier: params.ID,
+        partySubIdOrType: params.SubId
+      }
+    )
+    span.setTags(queryTags)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+
     participants.deleteParticipants(request.headers, request.params, request.method, request.query, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
