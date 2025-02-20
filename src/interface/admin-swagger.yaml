@@ -539,6 +539,8 @@ components:
         Another example of an alias is a username in the FSP system. The ALIAS identifier
         can be in any format. It is also possible to use the PartySubIdOrType element
         for identifying an account under an Alias defined by the PartyIdentifier.
+        - CONSENT - Third party CONSENT oracle
+        - THIRD_PARTY_LINK - Third party link        
       enum:
         - MSISDN
         - EMAIL
@@ -548,6 +550,8 @@ components:
         - ACCOUNT_ID
         - IBAN
         - ALIAS
+        - CONSENT
+        - THIRD_PARTY_LINK
     Status:
       title: Status
       type: object
