@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.1.0](https://github.com/mojaloop/account-lookup-service/compare/v17.0.3...v17.1.0) (2025-02-20)
+
+
+### Features
+
+* refactor audits ([#524](https://github.com/mojaloop/account-lookup-service/issues/524)) ([b02d396](https://github.com/mojaloop/account-lookup-service/commit/b02d396dd914c00bb3f0db7f046c5978a0d522b4))
+
+
+### Bug Fixes
+
+* add consent oracle and update license ([#525](https://github.com/mojaloop/account-lookup-service/issues/525)) ([18128dc](https://github.com/mojaloop/account-lookup-service/commit/18128dc8586fcb384b5505ab6ab7383c53a95488))
+
+
+### Chore
+
+* update build orb to version 1.0.50 and add context to workflow ([#523](https://github.com/mojaloop/account-lookup-service/issues/523)) ([868c9b3](https://github.com/mojaloop/account-lookup-service/commit/868c9b32a3ca222a7cb46b1ed4fdd8bff839cd89))
+
 ### [17.0.3](https://github.com/mojaloop/account-lookup-service/compare/v17.0.2...v17.0.3) (2025-01-28)
 
 
