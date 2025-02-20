@@ -13,6 +13,7 @@ module.exports = {
       lines: 90
     }
   },
+  maxWorkers: '50%',
   setupFiles: ['<rootDir>/test/unit/setup.js'],
   testMatch: ['<rootDir>/test/unit/**/*.test.js']
 }
