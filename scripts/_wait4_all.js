@@ -12,7 +12,9 @@ const expectedContainers = [
   'als_mysql',
   'als_kafka',
   'als_mysql_central_ledger',
-  'als_central-ledger'
+  'als_central-ledger',
+  'als_account-lookup-service',
+  'als_account-lookup-service-handlers'
   // ## NOTE: These are not needed for Integration Tests
   // 'kowl'
 ]

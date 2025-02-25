@@ -46,10 +46,15 @@ services:
     command:
       - "sh"
       - "-c"
-      - "sh /opt/wait-for/wait-for-account-lookup-service.sh && npm run start:apiAndAdmin"
+      - "npm run start:apiAndAdmin"
     ports:
       - "4001:4001"
       - "4002:4002"
+    depends_on:
+      mysql-als:
+        condition: service_healthy
+      central-ledger:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", ";", "curl", "http://localhost:4001/health"]
       timeout: 20s
@@ -64,7 +69,8 @@ services:
       - "-c"
       - "node src/handlers/index.js h --timeout"
     depends_on:
-     - redis-node-0
+      account-lookup-service:
+        condition: service_healthy
     ports:
       - "4003:4003"
     healthcheck:
