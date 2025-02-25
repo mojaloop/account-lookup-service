@@ -132,7 +132,7 @@ const getAllOracleEndpointsByMatchCondition = async (oracleEndpointModel, partyI
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
-          'oracleEndpoint.currencyId': oracleEndpointModel.currency,
+          'oracleEndpoint.currencyId': oracleEndpointModel?.currency || null,
           'et.endpointTypeId': endpointTypeId,
           'pt.partyIdTypeId': partyIdTypeId,
           'oracleEndpoint.isActive': 1

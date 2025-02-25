@@ -167,7 +167,10 @@ const initializeAdmin = async (appConfig) => {
   RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.AdminHandlers)
-
+  await Promise.all([
+    OracleEndpointCache.initialize(),
+    Cache.initCache()
+  ])
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
 }
 
