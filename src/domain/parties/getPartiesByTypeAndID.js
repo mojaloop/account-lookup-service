@@ -35,6 +35,7 @@ const { ERROR_MESSAGES } = require('../../constants')
 const { logger } = require('../../lib')
 const Config = require('../../lib/config')
 const utils = require('./utils')
+const util = require('../../lib/util')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
@@ -87,7 +88,6 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     'Get party by Type and Id',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const type = params.Type
   const partySubId = params.SubId
@@ -245,14 +245,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   } catch (err) {
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, requester)
     histTimerEnd({ success: false })
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'getPartiesByTypeAndID',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'getPartiesByTypeAndID', step })
+    }
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)
   }

@@ -26,7 +26,7 @@
 'use strict'
 
 const Db = require('../../lib/db')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const util = require('../../lib/util')
 
 /**
  * @function getCurrencyById
@@ -39,16 +39,7 @@ const getCurrencyById = async (currencyId) => {
   try {
     return Db.from('currency').findOne({ currencyId, isActive: true })
   } catch (err) {
-    const extensions = [{
-      key: 'system',
-      value: '["db"]'
-    }]
-    throw ErrorHandler.Factory.reformatFSPIOPError(
-      err,
-      undefined,
-      undefined,
-      extensions
-    )
+    util.rethrowDatabaseError(err)
   }
 }
 

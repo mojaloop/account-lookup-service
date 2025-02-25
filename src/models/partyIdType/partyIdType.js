@@ -26,22 +26,13 @@
 'use strict'
 
 const Db = require('../../lib/db')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const util = require('../../lib/util')
 
 const getPartyIdTypeByName = async (name) => {
   try {
     return Db.from('partyIdType').findOne({ name, isActive: true })
   } catch (err) {
-    const extensions = [{
-      key: 'system',
-      value: '["db"]'
-    }]
-    throw ErrorHandler.Factory.reformatFSPIOPError(
-      err,
-      undefined,
-      undefined,
-      extensions
-    )
+    util.rethrowDatabaseError(err)
   }
 }
 

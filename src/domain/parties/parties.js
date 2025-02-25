@@ -41,6 +41,7 @@ const { ERROR_MESSAGES } = require('../../constants')
 const { logger } = require('../../lib')
 const Config = require('../../lib/config')
 const utils = require('./utils')
+const util = require('../../lib/util')
 const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
 
 const log = logger.child('domain:put-parties')
@@ -65,7 +66,6 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     'Put parties by type and id',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const type = params.Type
   const partySubId = params.SubId
   const source = headers[Headers.FSPIOP.SOURCE]
@@ -134,14 +134,9 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     histTimerEnd({ success: true })
   } catch (err) {
     const fspiopError = await handleErrorOnSendingCallback(err, headers, params, sendTo)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'putPartiesByTypeAndID',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'putPartiesByTypeAndID', step })
+    }
     histTimerEnd({ success: false })
   }
 }
@@ -165,7 +160,6 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     'Put parties error by type and id',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const partySubId = params.SubId
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const callbackEndpointType = utils.errorPartyCbType(partySubId)
@@ -220,14 +214,9 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     histTimerEnd({ success: true })
   } catch (err) {
     fspiopError = await handleErrorOnSendingCallback(err, headers, params, sendTo)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'putPartiesErrorByTypeAndID',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'putPartiesErrorByTypeAndID', step })
+    }
     histTimerEnd({ success: false })
   } finally {
     await utils.finishSpanWithError(childSpan, fspiopError)

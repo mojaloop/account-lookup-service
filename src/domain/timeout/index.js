@@ -46,6 +46,7 @@ const Participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
 const { timeoutCallbackDto } = require('./dto')
 const { logger } = require('../../lib')
+const util = require('../../lib/util')
 
 const timeoutInterschemePartiesLookups = async ({ proxyCache, batchSize }) => {
   return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, batchSize)
@@ -57,7 +58,6 @@ const sendTimeoutCallback = async (cacheKey) => {
     'Egress - Interscheme parties lookup timeout callback',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   let step
   const [, destination, partyType, partyId] = cacheKey.split(':')
   const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
@@ -74,14 +74,8 @@ const sendTimeoutCallback = async (cacheKey) => {
     logger.warn('error in sendTimeoutCallback: ', err)
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'sendTimeoutCallback',
-      step
-    })
+    util.countFspiopError(fspiopError, { operation: 'sendTimeoutCallback', step })
+
     await finishSpan(span, fspiopError)
     throw fspiopError
   }

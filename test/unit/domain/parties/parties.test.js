@@ -246,7 +246,7 @@ describe('Parties Tests', () => {
       await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
 
       // Assert
-      expect(loggerStub.callCount).toBe(1)
+      expect(loggerStub.callCount).toBe(2)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
       const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
@@ -893,7 +893,7 @@ describe('Parties Tests', () => {
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
-      expect(loggerStub.callCount).toBe(1)
+      expect(loggerStub.callCount).toBe(2)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
@@ -914,7 +914,7 @@ describe('Parties Tests', () => {
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
-      expect(loggerStub.callCount).toBe(1)
+      expect(loggerStub.callCount).toBe(2)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
