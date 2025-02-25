@@ -40,6 +40,7 @@
   "scripts": {
     "start": "LOG_LEVEL=debug node src/index.js server",
     "start:all": "run-p start:api start:admin start:handlers",
+    "start:apiAndAdmin": "run-p start:api start:admin",
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
     "start:handlers": "node src/handlers/index.js handlers --timeout",

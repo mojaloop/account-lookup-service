@@ -46,7 +46,7 @@ services:
     command:
       - "sh"
       - "-c"
-      - "sh /opt/wait-for/wait-for-account-lookup-service.sh && node src/index.js server"
+      - "sh /opt/wait-for/wait-for-account-lookup-service.sh && npm run start:apiAndAdmin"
     ports:
       - "4001:4001"
       - "4002:4002"
