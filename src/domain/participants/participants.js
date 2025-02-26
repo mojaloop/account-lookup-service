@@ -37,6 +37,7 @@ const participant = require('../../models/participantEndpoint/facade')
 const Config = require('../../lib/config')
 const { logger } = require('../../lib')
 const { ERROR_MESSAGES } = require('../../constants')
+const util = require('../../lib/util')
 
 const { FSPIOPErrorCodes } = ErrorHandler.Enums
 
@@ -58,7 +59,6 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
     'Get participants by ID',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const log = logger.child('getParticipantsByTypeAndID')
   const type = params.Type
   const partySubIdOrType = params.SubId
@@ -128,14 +128,9 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
   } catch (err) {
     log.warn('error in getParticipantsByTypeAndID', err)
     fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'getParticipantsByTypeAndID',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'getParticipantsByTypeAndID', step })
+    }
     try {
       await participant.sendErrorToParticipant(
         headers[Enums.Http.Headers.FSPIOP.SOURCE],
@@ -180,7 +175,6 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
     'Put participants by type and ID',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   let step
   try {
     logger.info('putParticipantsByTypeAndID::begin')
@@ -249,14 +243,9 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
       // we've already sent a sync response- we cannot throw.
       logger.error('error in participant.sendErrorToParticipant:', exc)
     }
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'putParticipantsByTypeAndID',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'putParticipantsByTypeAndID', step })
+    }
     histTimerEnd({ success: false })
   }
 }
@@ -280,7 +269,6 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
     'Put participants error by type and ID',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   let step
   try {
     const partySubIdOrType = params.SubId || undefined
@@ -325,14 +313,7 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
         headers,
         params
       )
-      const extensions = err.extensions || []
-      const system = extensions.find((element) => element.key === 'system')?.value || ''
-      errorCounter.inc({
-        code: fspiopError?.apiErrorCode?.code,
-        system,
-        operation: 'putParticipantsErrorByTypeAndID',
-        step
-      })
+      util.countFspiopError(fspiopError, { operation: 'putParticipantsErrorByTypeAndID', step })
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.
@@ -359,7 +340,6 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
     'Post participants',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const childSpan = span ? span.getChild('postParticipants') : undefined
   let fspiopError
   let step
@@ -431,14 +411,9 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
   } catch (err) {
     logger.error('error in postParticipants:', err)
     fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'postParticipants',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'postParticipants', step })
+    }
     try {
       const errorCallbackEndpointType = params.SubId
         ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
@@ -476,7 +451,6 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
     'Post participants batch',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const requestId = requestPayload.requestId
   const log = logger.child({ context: 'postParticipantsBatch', requestId })
   const childSpan = span ? span.getChild('postParticipantsBatch') : undefined
@@ -563,14 +537,9 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
   } catch (err) {
     log.error('error in postParticipantsBatch', err)
     fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'postParticipantsBatch',
-      step
-    })
+    if (fspiopError) {
+      util.countFspiopError(fspiopError, { operation: 'postParticipantsBatch', step })
+    }
     try {
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_BATCH_PUT_ERROR,
         fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, undefined, requestPayload)
@@ -606,7 +575,6 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
     'Delete participants',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   const log = logger.child('deleteParticipants')
   let step
   try {
@@ -659,14 +627,7 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
       const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params)
-      const extensions = err.extensions || []
-      const system = extensions.find((element) => element.key === 'system')?.value || ''
-      errorCounter.inc({
-        code: fspiopError?.apiErrorCode?.code,
-        system,
-        operation: 'deleteParticipants',
-        step
-      })
+      util.countFspiopError(fspiopError, { operation: 'deleteParticipants', step })
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
       // we've already sent a sync response- we cannot throw.

@@ -6,7 +6,7 @@ const config = require('../../../../src/lib/config')
 
 const wait = (sec) => new Promise(resolve => setTimeout(resolve, sec * 1000))
 
-const CRON_TIMEOUT_SEC = 10 // see TIMEXP
+const CRON_TIMEOUT_SEC = 15 // see TIMEXP
 
 describe('Timeout Handler', () => {
   const { type, proxyConfig } = config.PROXY_CACHE_CONFIG

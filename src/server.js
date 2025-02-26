@@ -106,13 +106,6 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig, proxyM
 
   server.route(routes)
 
-  // Initialize the error count metric
-  Metrics.getCounter(
-    'errorCount',
-    'Error count',
-    ['code', 'system', 'operation', 'step']
-  )
-
   // TODO: follow instructions https://github.com/anttiviljami/openapi-backend/blob/master/DOCS.md#postresponsehandler-handler
   await server.start()
 
@@ -174,7 +167,10 @@ const initializeAdmin = async (appConfig) => {
   RUN_MIGRATIONS && await migrate()
   const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
   const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.AdminHandlers)
-
+  await Promise.all([
+    OracleEndpointCache.initialize(),
+    Cache.initCache()
+  ])
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)
 }
 

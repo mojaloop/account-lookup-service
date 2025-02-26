@@ -1,8 +1,9 @@
 const util = require('util')
 const Path = require('path')
 const Enum = require('@mojaloop/central-services-shared').Enum
-const { HeaderValidation, Hapi } = require('@mojaloop/central-services-shared').Util
+const { HeaderValidation, Hapi, rethrow } = require('@mojaloop/central-services-shared').Util
 const Config = require('../lib/config')
+const { logger } = require('./index')
 
 const getSpanTags = ({ headers }, transactionType, transactionAction) => {
   const tags = {
@@ -55,6 +56,20 @@ function getStackOrInspect (err) {
   return err?.stack || util.inspect(err)
 }
 
+const rethrowAndCountFspiopError = (error, options) => {
+  options.loggerOverride = logger
+  rethrow.rethrowAndCountFspiopError(error, options)
+}
+
+const rethrowDatabaseError = (error) => {
+  rethrow.rethrowDatabaseError(error, { loggerOverride: logger })
+}
+
+const countFspiopError = (error, options) => {
+  options.loggerOverride = logger
+  rethrow.countFspiopError(error, options)
+}
+
 module.exports = {
   getSpanTags,
   pathForInterface,
@@ -62,5 +77,8 @@ module.exports = {
   hubNameConfig: {
     hubName: Config.HUB_NAME,
     hubNameRegex: HeaderValidation.getHubNameRegex(Config.HUB_NAME)
-  }
+  },
+  rethrowAndCountFspiopError,
+  rethrowDatabaseError,
+  countFspiopError
 }

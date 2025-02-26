@@ -35,6 +35,7 @@ const cachedOracleEndpoint = require('../../models/oracle/oracleEndpointCached')
 const partyIdType = require('../../models/partyIdType')
 const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
+const util = require('../../lib/util')
 
 /**
  * @function createOracle
@@ -49,7 +50,6 @@ exports.createOracle = async (payload) => {
     'Create Oracle',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   let step
 
   try {
@@ -91,15 +91,7 @@ exports.createOracle = async (payload) => {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'createOracle',
-      step
-    })
-    throw fspiopError
+    util.rethrowAndCountFspiopError(fspiopError, { operation: 'createOracle', step })
   }
 }
 
@@ -116,7 +108,6 @@ exports.getOracle = async (query) => {
     'Get Oracle',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   let step
   try {
     let oracleEndpointModelList
@@ -160,15 +151,7 @@ exports.getOracle = async (query) => {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'getOracle',
-      step
-    })
-    throw fspiopError
+    util.rethrowAndCountFspiopError(fspiopError, { operation: 'getOracle', step })
   }
 }
 
@@ -186,7 +169,6 @@ exports.updateOracle = async (params, payload) => {
     'Update Oracle',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   let step
   try {
     step = 'getOracleEndpointById-1'
@@ -247,15 +229,7 @@ exports.updateOracle = async (params, payload) => {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'updateOracle',
-      step
-    })
-    throw fspiopError
+    util.rethrowAndCountFspiopError(fspiopError, { operation: 'updateOracle', step })
   }
 }
 
@@ -272,7 +246,6 @@ exports.deleteOracle = async (params) => {
     'Delete Oracle',
     ['success']
   ).startTimer()
-  const errorCounter = Metrics.getCounter('errorCount')
   try {
     await oracleEndpoint.destroyOracleEndpointById(params.ID)
     histTimerEnd({ success: true })
@@ -281,13 +254,6 @@ exports.deleteOracle = async (params) => {
     histTimerEnd({ success: false })
     Logger.isErrorEnabled && Logger.error(err)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const extensions = err.extensions || []
-    const system = extensions.find((element) => element.key === 'system')?.value || ''
-    errorCounter.inc({
-      code: fspiopError?.apiErrorCode?.code,
-      system,
-      operation: 'deleteOracle'
-    })
-    throw fspiopError
+    util.rethrowAndCountFspiopError(fspiopError, { operation: 'deleteOracle' })
   }
 }

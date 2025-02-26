@@ -82,6 +82,15 @@ describe('Oracle', () => {
     }
   }
 
+  const oracleUsdMsisdnNoCurrencyUrlPayload = {
+    isDefault: true,
+    oracleIdType: 'MSISDN',
+    endpoint: {
+      value: 'http://localhost:8444',
+      endpointType: 'URL'
+    }
+  }
+
   describe('Create', () => {
     it('creates an oracle', async () => {
       const result = await Oracle.createOracle(oracleAuhMsisdnUrlPayload, createHeaders, testSpan)
@@ -121,6 +130,15 @@ describe('Oracle', () => {
       } catch (error) {
         expect(error.message).toBe('Active oracle with matching partyIdTypeId, endpointTypeId, currencyId already exists')
       }
+
+      const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
+      const createdId = oracleEndpointResult[0].oracleEndpointId
+      await Db.from('oracleEndpoint').destroy({ oracleEndpointId: createdId })
+    })
+
+    it('creates an oracle without a currency', async () => {
+      const result = await Oracle.createOracle(oracleUsdMsisdnNoCurrencyUrlPayload, createHeaders, testSpan)
+      expect(result).toBe(true)
 
       const oracleEndpointResult = await OracleModel.getOracleEndpointByType('MSISDN')
       const createdId = oracleEndpointResult[0].oracleEndpointId
