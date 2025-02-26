@@ -1,10 +1,9 @@
 const util = require('util')
 const Path = require('path')
 const Enum = require('@mojaloop/central-services-shared').Enum
-const { HeaderValidation, Hapi } = require('@mojaloop/central-services-shared').Util
+const { HeaderValidation, Hapi, rethrow } = require('@mojaloop/central-services-shared').Util
 const Config = require('../lib/config')
 const { logger } = require('./index')
-const { rethrow } = require('@mojaloop/central-services-shared').Util
 
 const getSpanTags = ({ headers }, transactionType, transactionAction) => {
   const tags = {
