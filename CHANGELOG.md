@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.2.0](https://github.com/mojaloop/account-lookup-service/compare/v17.1.0...v17.2.0) (2025-02-26)
+
+
+### Features
+
+* update count metrics, fix int, update oracle code null currency ([#526](https://github.com/mojaloop/account-lookup-service/issues/526)) ([62167a5](https://github.com/mojaloop/account-lookup-service/commit/62167a5357b800af93bc0c4d950c0efbc6850a82))
+
 ## [17.1.0](https://github.com/mojaloop/account-lookup-service/compare/v17.0.3...v17.1.0) (2025-02-20)
 
 
