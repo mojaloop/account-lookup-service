@@ -99,7 +99,7 @@
     "@mojaloop/central-services-stream": "11.5.1",
     "@mojaloop/database-lib": "11.1.3",
     "@mojaloop/event-sdk": "14.1.5",
-    "@mojaloop/inter-scheme-proxy-cache-lib": "2.3.3",
+    "@mojaloop/inter-scheme-proxy-cache-lib": "2.3.3-snapshot.0",
     "@mojaloop/ml-schema-transformer-lib": "2.5.4",
     "@mojaloop/sdk-standard-components": "19.7.0",
     "@now-ims/hapi-now-auth": "2.1.0",
