@@ -33,6 +33,7 @@ const { Endpoints, Participants, proxies, OpenapiBackend } = require('@mojaloop/
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 
 const { name, version } = require('../package.json')
+const { logger } = require('./lib')
 const Db = require('./lib/db')
 const Util = require('./lib/util')
 const Plugins = require('./plugins')
@@ -56,7 +57,8 @@ const createConnectedProxyCache = async (proxyCacheConfig) => {
     proxyCacheConfig.type,
     proxyCacheConfig.proxyConfig
   )
-  await proxyCache.connect()
+  const connStatus = await proxyCache.connect()
+  logger.info('proxyCache connected', { connStatus, proxyCacheConfig })
   return proxyCache
 }
 
@@ -176,7 +178,7 @@ const initializeAdmin = async (appConfig) => {
 
 const initializeHandlers = async (handlers, appConfig, logger) => {
   const proxyCache = await createConnectedProxyCache(appConfig.PROXY_CACHE_CONFIG)
-  const options = { proxyCache, batchSize: appConfig.HANDLERS_TIMEOUT_BATCH_SIZE, logger }
+  const options = { proxyCache, logger, batchSize: appConfig.HANDLERS_TIMEOUT_BATCH_SIZE }
   await Handlers.registerHandlers(handlers, options)
 }
 
