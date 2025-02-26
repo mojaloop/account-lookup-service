@@ -17,8 +17,7 @@
 ******/
 const Hapi = require('@hapi/hapi')
 const Metrics = require('@mojaloop/central-services-metrics')
-const { plugin: HealthPlugin } = require('./plugins/health')
-const MetricsPlugin = require('@mojaloop/central-services-metrics').plugin
+const healthPlugin = require('./plugins/health').plugin
 const { logger } = require('../../lib')
 
 let server
@@ -26,7 +25,7 @@ let server
 const create = async ({ port, metricsConfig }) => {
   Metrics.setup(metricsConfig)
   server = new Hapi.Server({ port })
-  await server.register([HealthPlugin, MetricsPlugin])
+  await server.register([healthPlugin, Metrics.plugin])
 }
 
 const start = async ({ enabled, port, metricsConfig, proxyCache }) => {
@@ -39,7 +38,7 @@ const start = async ({ enabled, port, metricsConfig, proxyCache }) => {
 
 const stop = async () => {
   await Promise.all([
-    server?.stop(),
+    server.stop(),
     server.app.proxyCache?.disconnect()
   ])
   server = null

@@ -24,8 +24,7 @@
 'use strict'
 
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
-const Logger = require('@mojaloop/central-services-logger')
-
+const { logger } = require('../../lib')
 const MigrationLockModel = require('../../models/misc/migrationLock')
 
 /**
@@ -45,7 +44,7 @@ const getSubServiceHealthDatastore = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.isDebugEnabled && Logger.debug(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    logger.warn(`error in getSubServiceHealthDatastore: ${err?.message}`, err)
     status = statusEnum.DOWN
   }
 
@@ -63,12 +62,12 @@ const getSubServiceHealthDatastore = async () => {
  * @returns Promise<SubServiceHealth> The SubService health object for the proxy cache
  */
 const getProxyCacheHealth = async (proxyCache) => {
-  let status = statusEnum.OK
+  let status
 
   try {
     status = await proxyCache.healthCheck() ? statusEnum.OK : statusEnum.DOWN
   } catch (err) {
-    Logger.isDebugEnabled && Logger.debug(`getProxyCacheHealth failed with error ${err.message}.`)
+    logger.warn(`error in getProxyCacheHealth: ${err?.message}`, err)
     status = statusEnum.DOWN
   }
 

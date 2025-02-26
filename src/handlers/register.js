@@ -47,17 +47,18 @@ const Monitoring = require('./monitoring')
 const registerHandlers = async (handlers, options) => {
   const { logger } = options
   await init(options)
-  handlers.forEach(handler => {
+
+  for (const handler of handlers) {
     switch (handler) {
       case HANDLER_TYPES.TIMEOUT:
         logger.debug('Registering Timeout Handler')
-        TimeoutHandler.register(options)
+        await TimeoutHandler.register(options)
         break
       default:
         logger.warn(`Handler ${handler} not found`)
         break
     }
-  })
+  }
 }
 
 /**

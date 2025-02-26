@@ -30,12 +30,22 @@
  ******/
 'use strict'
 
+const process = require('node:process')
 const { Command } = require('commander')
 const Package = require('../../package.json')
 const Server = require('../server')
 const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
 const log = require('../lib').logger.child('ALS-timeout-handler')
+
+process.on('uncaughtExceptionMonitor', (err) => {
+  log.error(`uncaughtException: ${err?.message}`, err)
+  process.exit(2)
+})
+process.on('unhandledRejection', (err) => {
+  log.error(`unhandledRejection: ${err?.message}`, err)
+  process.exit(3)
+})
 
 const Program = new Command()
 
@@ -51,12 +61,12 @@ Program.command('handlers')
     const handlers = []
 
     if (args.timeout) {
-      log.debug('CLI: Executing --timeout')
+      log.verbose('CLI: Executing --timeout')
       handlers.push(HANDLER_TYPES.TIMEOUT)
     }
 
     if (handlers.length === 0) {
-      log.debug('CLI: No handlers specified')
+      log.info('CLI: No handlers specified')
       return
     }
 
