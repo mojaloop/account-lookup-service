@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.2.1](https://github.com/mojaloop/account-lookup-service/compare/v17.2.0...v17.2.1) (2025-03-05)
+
+
+### Bug Fixes
+
+* **csi-1247:** added logs and process.on('uncaughtException') ([#527](https://github.com/mojaloop/account-lookup-service/issues/527)) ([c4b5e7d](https://github.com/mojaloop/account-lookup-service/commit/c4b5e7d834a76f78114863555f115a872eb2da0f))
+
 ## [17.2.0](https://github.com/mojaloop/account-lookup-service/compare/v17.1.0...v17.2.0) (2025-02-26)
 
 
