@@ -38,7 +38,7 @@
     "test"
   ],
   "scripts": {
-    "start": "LOG_LEVEL=debug node src/index.js server",
+    "start": "node src/index.js server",
     "start:all": "run-p start:api start:admin start:handlers",
     "start:apiAndAdmin": "run-p start:api start:admin",
     "start:api": "node src/index.js server --api",
@@ -95,10 +95,10 @@
     "@mojaloop/central-services-health": "15.0.4",
     "@mojaloop/central-services-logger": "11.5.5",
     "@mojaloop/central-services-metrics": "12.4.5",
-    "@mojaloop/central-services-shared": "18.21.0",
+    "@mojaloop/central-services-shared": "18.22.0",
     "@mojaloop/central-services-stream": "11.5.1",
     "@mojaloop/database-lib": "11.1.3",
-    "@mojaloop/event-sdk": "14.1.5",
+    "@mojaloop/event-sdk": "14.2.0",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.3.7",
     "@mojaloop/ml-schema-transformer-lib": "2.5.6",
     "@mojaloop/sdk-standard-components": "19.9.0",
