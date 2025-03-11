@@ -131,7 +131,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     step = 'sendRequest-6'
     await participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
 
-    log.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo, options })
+    log.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo })
     histTimerEnd({ success: true })
   } catch (err) {
     const fspiopError = await utils.createErrorHandlerOnSendingCallback(Config, log)(err, headers, params, sendTo)
