@@ -1,7 +1,7 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "17.4.0-csi-1233.0",
+  "version": "17.4.0-csi-1233.1",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -93,7 +93,7 @@
     "@hapi/vision": "7.0.3",
     "@mojaloop/central-services-error-handling": "13.0.7",
     "@mojaloop/central-services-health": "15.0.4",
-    "@mojaloop/central-services-logger": "11.5.5",
+    "@mojaloop/central-services-logger": "11.6.1",
     "@mojaloop/central-services-metrics": "12.4.5",
     "@mojaloop/central-services-shared": "18.22.2-snapshot.2",
     "@mojaloop/central-services-stream": "11.5.1",
@@ -119,7 +119,6 @@
     "rc": "1.2.8"
   },
   "overrides": {
-    "@mojaloop/central-services-logger": "11.5.5",
     "postcss": {
       "nanoid": "^3.3.8"
     },

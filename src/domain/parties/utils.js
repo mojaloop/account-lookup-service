@@ -75,7 +75,7 @@ const createErrorHandlerOnSendingCallback = (config, logger) => async (err, head
   } catch (exc) {
     // We can't do anything else here- we _must_ handle all errors _within_ this function because
     // we've already sent a sync response- we cannot throw.
-    logger.error('failed to handleErrorOnSendingCallback', exc)
+    logger.error('failed to handleErrorOnSendingCallback. No further processing!', exc)
   }
 }
 
