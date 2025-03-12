@@ -5,6 +5,6 @@
   "moderate": true,
   // NOTE: Please add as much information as possible to any items added to the allowList
   "allowlist": [
-    "GHSA-jr5f-v2jv-69x6" // https://github.com/advisories/GHSA-jr5f-v2jv-69x6
+    "GHSA-968p-4wvh-cqc8" // https://github.com/advisories/GHSA-968p-4wvh-cqc8
   ]
 }
