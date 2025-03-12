@@ -70,7 +70,17 @@ const countFspiopError = (error, options) => {
   rethrow.countFspiopError(error, options)
 }
 
+// todo: think better name
+const initStepState = (initStep = 'start') => {
+  let step = initStep
+  return Object.freeze({
+    get step () { return step }, // or rename to current ?
+    inProgress (nextStep) { step = nextStep }
+  })
+}
+
 module.exports = {
+  initStepState,
   getSpanTags,
   pathForInterface,
   getStackOrInspect,

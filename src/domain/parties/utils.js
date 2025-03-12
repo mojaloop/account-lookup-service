@@ -62,7 +62,7 @@ const swapSourceDestinationHeaders = (headers) => {
 // change signature to accept object
 const createErrorHandlerOnSendingCallback = (config, logger) => async (err, headers, params, requester) => {
   try {
-    logger.error('error in sending parties callback', err)
+    logger.error('error in sending parties callback: ', err)
     const sendTo = requester || headers[Headers.FSPIOP.SOURCE]
     const errorCallbackEndpointType = errorPartyCbType(params.SubId)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
@@ -75,7 +75,7 @@ const createErrorHandlerOnSendingCallback = (config, logger) => async (err, head
   } catch (exc) {
     // We can't do anything else here- we _must_ handle all errors _within_ this function because
     // we've already sent a sync response- we cannot throw.
-    logger.error('failed to handleErrorOnSendingCallback. No further processing!', exc)
+    logger.error('failed to handleErrorOnSendingCallback. No further processing! ', exc)
   }
 }
 

@@ -41,7 +41,7 @@ const Metrics = require('@mojaloop/central-services-metrics')
 
 const Config = require('../../../../src/lib/config')
 const Db = require('../../../../src/lib/db')
-const partiesDomain = require('../../../../src/domain/parties/parties')
+const partiesDomain = require('../../../../src/domain/parties')
 const partiesUtils = require('../../../../src/domain/parties/utils')
 const participant = require('../../../../src/models/participantEndpoint/facade')
 const oracle = require('../../../../src/models/oracle/facade')

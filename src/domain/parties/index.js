@@ -25,8 +25,11 @@
 
 'use strict'
 
-const parties = require('./parties')
+const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
+const { putPartiesByTypeAndID, putPartiesErrorByTypeAndID } = require('./putParties')
 
-exports.getPartiesByTypeAndID = parties.getPartiesByTypeAndID
-exports.putPartiesByTypeAndID = parties.putPartiesByTypeAndID
-exports.putPartiesErrorByTypeAndID = parties.putPartiesErrorByTypeAndID
+module.exports = {
+  getPartiesByTypeAndID,
+  putPartiesByTypeAndID,
+  putPartiesErrorByTypeAndID
+}
