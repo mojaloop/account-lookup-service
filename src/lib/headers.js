@@ -46,7 +46,8 @@ exports.createCallbackHeaders = (params) => {
   callbackHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = params.requestHeaders[Enums.Http.Headers.FSPIOP.SOURCE]
   callbackHeaders[Enums.Http.Headers.FSPIOP.HTTP_METHOD] = Enums.Http.RestMethods.PUT
   callbackHeaders[Enums.Http.Headers.FSPIOP.URI] = Mustache.render(params.endpointTemplate, {
-    partyIdType: params.partyIdType, partyIdentifier: params.partyIdentifier
+    partyIdType: params.partyIdType,
+    partyIdentifier: params.partyIdentifier
   })
 
   return callbackHeaders

@@ -65,4 +65,29 @@ describe('Util', () => {
     const expectedApiExtendedAdminMockPath = path.join('interface', 'thirdparty', 'admin_swagger.json')
     expect(apiExtendedAdminMockPath).toContain(expectedApiExtendedAdminMockPath)
   })
+
+  describe('stepState Tests -->', () => {
+    it('should initiate stepState with default step', async () => {
+      const stepState = Util.initStepState()
+      expect(stepState.step).toBe('start')
+    })
+
+    it('should initiate stepState with custom step', async () => {
+      const step = 'customStep'
+      const stepState = Util.initStepState(step)
+      expect(stepState.step).toBe(step)
+    })
+
+    it('should set ongoing step using inProgress() method', async () => {
+      const step = 'nextStep'
+      const stepState = Util.initStepState()
+      stepState.inProgress(step)
+      expect(stepState.step).toBe(step)
+    })
+
+    it('should not be able to change internal state directly', async () => {
+      const stepState = Util.initStepState()
+      expect(() => { stepState.step = 'impossible' }).toThrowError()
+    })
+  })
 })
