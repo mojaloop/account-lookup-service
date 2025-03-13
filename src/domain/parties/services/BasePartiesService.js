@@ -26,6 +26,7 @@
  ******/
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const { Enum } = require('@mojaloop/central-services-shared')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
@@ -73,6 +74,11 @@ class BasePartiesService {
 
   async sendDeleteOracleRequest (headers, params) {
     return this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
+  }
+
+  static decodeDataUriPayload (dataUri) {
+    const decoded = decodePayload(dataUri, { asParsed: false })
+    return decoded.body.toString()
   }
 
   static enums () {

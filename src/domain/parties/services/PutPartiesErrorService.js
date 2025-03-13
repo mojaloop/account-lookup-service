@@ -26,7 +26,6 @@
  ******/
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
@@ -70,11 +69,11 @@ class PutPartiesErrorService extends BasePartiesService {
 
   async sendErrorCallbackToParticipant ({ sendTo, headers, params, dataUri }) {
     this.deps.stepState.inProgress('sendErrorToParticipant-5')
-    const decodedPayload = decodePayload(dataUri, { asParsed: false })
-    const errorInfo = decodedPayload.body.toString()
-    return super.sendErrorCallback({
+    const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
+    await super.sendErrorCallback({
       sendTo, errorInfo, headers, params
     })
+    this.log.verbose('sendErrorCallbackToParticipant is done', { sendTo, errorInfo })
   }
 }
 

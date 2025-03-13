@@ -29,19 +29,13 @@
 
 'use strict'
 
-const { Headers, RestMethods } = require('@mojaloop/central-services-shared').Enum.Http
-const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const { Headers } = require('@mojaloop/central-services-shared').Enum.Http
 const Metrics = require('@mojaloop/central-services-metrics')
 
-const oracle = require('../../models/oracle/facade')
-const participant = require('../../models/participantEndpoint/facade')
 const libUtil = require('../../lib/util')
 const Config = require('../../lib/config')
 const { logger } = require('../../lib')
-const { ERROR_MESSAGES } = require('../../constants')
 
-const partiesUtils = require('./partiesUtils')
 const services = require('./services')
 const { createDeps } = require('./deps')
 
@@ -59,80 +53,44 @@ const { createDeps } = require('./deps')
  * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
 const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, cache, proxyCache = undefined) => {
-  const components = putPartiesByTypeAndID.name
+  // todo: think, if we need to pass span here
+  const component = putPartiesByTypeAndID.name
   const histTimerEnd = Metrics.getHistogram(
-    components,
+    component,
     'Put parties by type and id',
     ['success']
   ).startTimer()
-  const log = logger.child({ params, components })
+  // const childSpan = span ? span.getChild(component) : undefined
+  const log = logger.child({ component, params })
+  const stepState = libUtil.initStepState()
+
+  const deps = createDeps({ cache, proxyCache, log, stepState })
+  const service = new services.PutPartiesService(deps)
+  const results = {}
+
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxy = headers[Headers.FSPIOP.PROXY]
-  const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   log.info('parties::putPartiesByTypeAndID start', { source, destination, proxy })
 
-  let sendTo
-  let step
-
   try {
-    step = 'validateParticipant-1'
-    const requesterParticipant = await participant.validateParticipant(source)
-    if (!requesterParticipant) {
-      if (!proxyEnabled || !proxy) {
-        const errMessage = ERROR_MESSAGES.sourceFspNotFound
-        log.warn(`${errMessage} and no proxy`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
-      }
-      step = 'addDfspIdToProxyMapping-1'
-      const isCached = await proxyCache.addDfspIdToProxyMapping(source, proxy)
-      // think,if we should throw error if isCached === false?
-      log.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
+    await service.validateSourceParticipant({ source, proxy })
+
+    if (proxy) {
+      await service.checkProxySuccessResponse({ destination, source, headers, params })
     }
 
-    if (proxyEnabled && proxy) {
-      const alsReq = partiesUtils.alsRequestDto(destination, params)
-      step = 'receivedSuccessResponse-2'
-      const isExists = await proxyCache.receivedSuccessResponse(alsReq)
-      if (!isExists) {
-        log.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
-        // todo: think, if we need to throw an error here
-      } else {
-        const mappingPayload = {
-          fspId: source
-        }
-        step = 'oracleRequest-3'
-        await oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload, cache)
-        log.info('oracle was updated with mappingPayload', { mappingPayload })
-      }
-    }
-    step = 'validateParticipant-4'
-    const destinationParticipant = await participant.validateParticipant(destination)
-    if (!destinationParticipant) {
-      step = 'lookupProxyByDfspId-5'
-      const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
-      if (!proxyName) {
-        const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-        log.warn(errMessage)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
-      }
-      sendTo = proxyName
-    } else {
-      sendTo = destinationParticipant.name
-    }
+    const sendTo = await service.identifyDestinationForSuccessCallback(destination)
+    results.requester = sendTo
+    await service.sendSuccessCallback({ sendTo, headers, params, dataUri })
 
-    const decodedPayload = decodePayload(dataUri, { asParsed: false })
-    const callbackEndpointType = partiesUtils.putPartyCbType(params.SubId)
-    const options = partiesUtils.partiesRequestOptionsDto(params)
-    step = 'sendRequest-6'
-    await participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.PUT, decodedPayload.body.toString(), options)
-
-    log.info('parties::putPartiesByTypeAndID::callback was sent', { sendTo })
+    log.info('putPartiesByTypeAndID callback was sent', { sendTo })
     histTimerEnd({ success: true })
-  } catch (err) {
-    const fspiopError = await partiesUtils.createErrorHandlerOnSendingCallback(Config, log)(err, headers, params, sendTo)
-    if (fspiopError) {
-      libUtil.countFspiopError(fspiopError, { operation: components, step })
+  } catch (error) {
+    const { requester } = results
+    results.fspiopError = await service.handleError({ error, requester, headers, params })
+    if (results.fspiopError) {
+      libUtil.countFspiopError(results.fspiopError, { operation: component, step: stepState.step })
     }
     histTimerEnd({ success: false })
   }

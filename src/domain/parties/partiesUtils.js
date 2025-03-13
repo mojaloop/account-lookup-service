@@ -81,7 +81,7 @@ const swapSourceDestinationHeaders = (headers) => {
   }
 }
 
-// change signature to accept object
+// todo: check if we need this function
 const createErrorHandlerOnSendingCallback = (config, logger) => async (err, headers, params, requester) => {
   try {
     logger.error('error in sending parties callback: ', err)
