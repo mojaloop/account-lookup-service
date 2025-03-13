@@ -176,7 +176,10 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       const notValid = await service.checkPayee({ headers, params, payload, proxy })
       if (notValid) {
         const getPartiesService = new services.GetPartiesService(deps)
+        // todo: think, if we need to remove destination header before starting new discovery
         await getPartiesService.handleRequest({ headers, params, results })
+        log.info('putPartiesErrorByTypeAndID triggered new discovery flow')
+        histTimerEnd({ success: true })
         return
       }
 
