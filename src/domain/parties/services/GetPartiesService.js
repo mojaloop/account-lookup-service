@@ -75,7 +75,7 @@ class GetPartiesService extends BasePartiesService {
 
   async validateRequester ({ source, proxy }) {
     this.deps.stepState.inProgress('validateRequester-0')
-    const log = this.log.child({ source, method: 'validateRequester' })
+    const log = this.log.child({ source, proxy, method: 'validateRequester' })
 
     const sourceParticipant = await this.validateParticipant(source)
     if (sourceParticipant) {
@@ -92,12 +92,17 @@ class GetPartiesService extends BasePartiesService {
     const proxyParticipant = await this.validateParticipant(proxy)
     if (!proxyParticipant) {
       const errMessage = ERROR_MESSAGES.partyProxyNotFound
-      log.warn(errMessage, { proxy })
+      log.warn(errMessage)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
     }
 
     const isCached = await this.deps.proxyCache.addDfspIdToProxyMapping(source, proxy)
-    // think, what if isCached !== true?
+    if (!isCached) {
+      const errMessage = 'failed to addDfspIdToProxyMapping'
+      log.warn(errMessage)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+    }
+
     log.info('source is added to proxyMapping cache:', { proxy, isCached })
     return proxy
   }

@@ -47,8 +47,13 @@ class PutPartiesService extends BasePartiesService {
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
       }
       const isCached = await this.deps.proxyCache.addDfspIdToProxyMapping(source, proxy)
-      // todo: think,if we should throw error if isCached === false?
-      this.log.info('addDfspIdToProxyMapping is done', { source, proxy, isCached })
+      if (!isCached) {
+        const errMessage = 'failed to addDfspIdToProxyMapping'
+        this.log.warn(errMessage, { source, proxy })
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+      }
+
+      this.log.info('addDfspIdToProxyMapping is done', { source, proxy })
     }
   }
 
