@@ -61,8 +61,9 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     await service.handleRequest({ headers, params, query, results })
     log.info('getPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
-  } catch (err) {
-    results.fspiopError = await deps.partiesUtils.createErrorHandlerOnSendingCallback(deps.config, log)(err, headers, params, results.requester)
+  } catch (error) {
+    const { requester } = results
+    results.fspiopError = await service.handleError({ error, requester, headers, params })
     histTimerEnd({ success: false })
     if (results.fspiopError) {
       libUtil.countFspiopError(results.fspiopError, { operation: component, step: stepState.step })

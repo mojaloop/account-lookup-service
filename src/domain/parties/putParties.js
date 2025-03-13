@@ -31,7 +31,6 @@
 
 const { Headers, RestMethods } = require('@mojaloop/central-services-shared').Enum.Http
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
-const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Metrics = require('@mojaloop/central-services-metrics')
 
@@ -43,7 +42,8 @@ const { logger } = require('../../lib')
 const { ERROR_MESSAGES } = require('../../constants')
 
 const partiesUtils = require('./partiesUtils')
-const getPartiesByTypeAndID = require('./getPartiesByTypeAndID')
+const services = require('./services')
+const { createDeps } = require('./deps')
 
 /**
  * @function putPartiesByTypeAndID
@@ -158,101 +158,52 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     'Put parties error by type and id',
     ['success']
   ).startTimer()
-  const log = logger.child({ params, component })
+  const childSpan = span ? span.getChild(component) : undefined
+  const log = logger.child({ component, params })
+  const stepState = libUtil.initStepState()
+
+  const deps = createDeps({ cache, proxyCache, childSpan, log, stepState })
+  const service = new services.PutPartiesErrorService(deps)
+  const results = {}
+
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
   const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
-
-  const childSpan = span ? span.getChild(component) : undefined
-  const stepState = libUtil.initStepState()
   log.info('parties::putPartiesErrorByTypeAndID start', { destination, proxy })
-
-  let sendTo
-  let fspiopError
 
   try {
     if (proxy) {
-      const isDone = await processProxyErrorCallback({
-        headers, params, payload, childSpan, cache, proxyCache, log, proxy, destination, stepState
-      })
-      if (isDone) {
+      const notValid = await service.checkPayee({ headers, params, payload, proxy })
+      if (notValid) {
+        const getPartiesService = new services.GetPartiesService(deps)
+        await getPartiesService.handleRequest({ headers, params, results })
+        return
+      }
+
+      const isLast = await service.checkLastProxyCallback({ destination, proxy, params })
+      if (!isLast) {
         log.info('putPartiesErrorByTypeAndID proxy callback was processed', { proxy })
         histTimerEnd({ success: true })
         return
       }
     }
 
-    sendTo = await identifyDestinationForErrorCallback({
-      destination, proxyCache, proxyEnabled, log, stepState
-    })
-
-    await sendErrorCallbackToParticipant({
-      sendTo, headers, params, dataUri, childSpan, stepState
-    })
+    const sendTo = await service.identifyDestinationForErrorCallback(destination)
+    results.requester = sendTo
+    await service.sendErrorCallbackToParticipant({ sendTo, headers, params, dataUri })
 
     log.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
     histTimerEnd({ success: true })
-  } catch (err) {
-    fspiopError = await partiesUtils.createErrorHandlerOnSendingCallback(Config, log)(err, headers, params, sendTo)
-    if (fspiopError) {
-      libUtil.countFspiopError(fspiopError, { operation: component, step: stepState.step })
+  } catch (error) {
+    const { requester } = results
+    results.fspiopError = await service.handleError({ error, requester, headers, params })
+    if (results.fspiopError) {
+      libUtil.countFspiopError(results.fspiopError, { operation: component, step: stepState.step })
     }
     histTimerEnd({ success: false })
   } finally {
-    await libUtil.finishSpanWithError(childSpan, fspiopError)
+    await libUtil.finishSpanWithError(childSpan, results.fspiopError)
   }
-}
-
-const processProxyErrorCallback = async ({
-  headers, params, payload, childSpan, cache, proxyCache, log, proxy, destination, stepState
-}) => {
-  log.verbose('processProxyErrorCallback...')
-  let isDone // whether or not to continue putPartiesErrorByTypeAndID
-
-  if (isNotValidPayeeCase(payload)) {
-    stepState.inProgress('notValidPayeeCase-1')
-    log.info('notValidPayee case - deleted Participants and run getPartiesByTypeAndID', { proxy, payload })
-    const swappedHeaders = partiesUtils.swapSourceDestinationHeaders(headers)
-    await oracle.oracleRequest(swappedHeaders, RestMethods.DELETE, params, null, null, cache)
-    getPartiesByTypeAndID(swappedHeaders, params, RestMethods.GET, {}, childSpan, cache, proxyCache)
-    isDone = true
-  } else {
-    stepState.inProgress('receivedErrorResponse-2')
-    const alsReq = partiesUtils.alsRequestDto(destination, params) // or source?
-    const isLast = await proxyCache.receivedErrorResponse(alsReq, proxy)
-    log.info(`got${isLast ? '' : 'NOT'} last error callback from proxy`, { proxy, alsReq, isLast })
-    isDone = !isLast
-  }
-  return isDone
-}
-
-const identifyDestinationForErrorCallback = async ({
-  destination, proxyCache, proxyEnabled, log, stepState
-}) => {
-  stepState.inProgress('validateParticipant-3')
-  const destinationParticipant = await participant.validateParticipant(destination)
-  if (destinationParticipant) return destination
-
-  stepState.inProgress('lookupProxyDestination-4')
-  const proxyName = proxyEnabled && await proxyCache.lookupProxyByDfspId(destination)
-  if (proxyName) return proxyName
-
-  const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-  log.warn(errMessage)
-  throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
-}
-
-const sendErrorCallbackToParticipant = async ({
-  sendTo, headers, params, dataUri, childSpan, stepState
-}) => {
-  stepState.inProgress('sendErrorToParticipant-5')
-  const decodedPayload = decodePayload(dataUri, { asParsed: false })
-  const callbackEndpointType = partiesUtils.errorPartyCbType(params.SubId)
-  await participant.sendErrorToParticipant(sendTo, callbackEndpointType, decodedPayload.body.toString(), headers, params, childSpan)
-}
-
-function isNotValidPayeeCase (payload) {
-  return payload?.errorInformation?.errorCode === MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
 }
 
 module.exports = {

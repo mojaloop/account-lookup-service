@@ -26,7 +26,9 @@
  ******/
 
 const GetPartiesService = require('./GetPartiesService')
+const PutPartiesErrorService = require('./PutPartiesErrorService')
 
 module.exports = {
-  GetPartiesService
+  GetPartiesService,
+  PutPartiesErrorService
 }

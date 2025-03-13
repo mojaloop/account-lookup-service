@@ -26,6 +26,8 @@
  ******/
 
 const { Enum, Util: { Hapi } } = require('@mojaloop/central-services-shared')
+const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
+// todo: check why do we need sdk-standard-components deps here !!!
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const participant = require('../../models/participantEndpoint/facade')
@@ -99,6 +101,10 @@ const createErrorHandlerOnSendingCallback = (config, logger) => async (err, head
   }
 }
 
+function isNotValidPayeeCase (payload) {
+  return payload?.errorInformation?.errorCode === MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
+}
+
 module.exports = {
   getPartyCbType,
   putPartyCbType,
@@ -107,5 +113,6 @@ module.exports = {
   createErrorHandlerOnSendingCallback,
   alsRequestDto,
   partiesRequestOptionsDto,
-  swapSourceDestinationHeaders
+  swapSourceDestinationHeaders,
+  isNotValidPayeeCase
 }
