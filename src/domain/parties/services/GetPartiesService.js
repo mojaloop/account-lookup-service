@@ -44,8 +44,38 @@ class GetPartiesService {
     this.proxyEnabled = !!(deps.config.PROXY_CACHE_CONFIG?.enabled && deps.proxyCache)
   }
 
-  async handleRequest () {
-    // todo: add logic
+  async handleRequest ({ headers, params, query, results }) {
+    const source = headers[Headers.FSPIOP.SOURCE]
+    const proxy = headers[Headers.FSPIOP.PROXY]
+    const destination = headers[Headers.FSPIOP.DESTINATION]
+    // see https://github.com/mojaloop/design-authority/issues/79
+    // the requester has specified a destination routing header. We should respect that and forward the request directly to the destination
+    // without consulting any oracles.
+    this.log.info('handling getParties request', { source, destination, proxy })
+
+    const requester = await this.validateRequester({ source, proxy })
+    results.requester = requester
+
+    if (destination) {
+      await this.forwardRequestToDestination({ destination, headers, params })
+      return
+    }
+    const response = await this.sendOracleDiscoveryRequest({ headers, params, query })
+
+    if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
+      const partyList = this.filterOraclePartyList({ response, params })
+      await this.processOraclePartyList({ partyList, headers, params, destination })
+      return
+    }
+
+    this.log.info('empty partyList form oracle, getting proxyList...', { params })
+    const proxyNames = await this.getFilteredProxyList(proxy)
+
+    if (proxyNames.length) {
+      return this.triggerSendToProxiesFlow({ proxyNames, headers, params, source })
+    }
+
+    results.fspiopError = await this.sendErrorCallback({ requester, headers, params })
   }
 
   async validateRequester ({ source, proxy }) {
@@ -58,7 +88,7 @@ class GetPartiesService {
       return source
     }
 
-    if (!proxy) {
+    if (!this.proxyEnabled || !proxy) {
       const errMessage = ERROR_MESSAGES.sourceFspNotFound
       log.warn(errMessage)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
@@ -173,7 +203,10 @@ class GetPartiesService {
 
   async getFilteredProxyList (proxy) {
     this.#deps.stepState.inProgress('getAllProxies-8')
-    if (!this.proxyEnabled) return []
+    if (!this.proxyEnabled) {
+      this.log.warn('proxyCache is not enabled')
+      return []
+    }
 
     const proxyNames = await this.#deps.proxies.getAllProxiesNames(this.#deps.config.SWITCH_ENDPOINT)
     this.log.debug('getAllProxiesNames is done', { proxyNames })
