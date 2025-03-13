@@ -30,9 +30,9 @@ const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
 class PutPartiesErrorService extends BasePartiesService {
-  async handleRequest () {
-    // todo: add impl.
-  }
+  // async handleRequest () {
+  //   // todo: add impl.
+  // }
 
   async checkPayee ({ headers, params, payload, proxy }) {
     const notValid = this.deps.partiesUtils.isNotValidPayeeCase(payload)
@@ -70,10 +70,9 @@ class PutPartiesErrorService extends BasePartiesService {
   async sendErrorCallbackToParticipant ({ sendTo, headers, params, dataUri }) {
     this.deps.stepState.inProgress('sendErrorToParticipant-5')
     const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
-    await super.sendErrorCallback({
+    return super.sendErrorCallback({
       sendTo, errorInfo, headers, params
     })
-    this.log.verbose('sendErrorCallbackToParticipant is done', { sendTo, errorInfo })
   }
 }
 

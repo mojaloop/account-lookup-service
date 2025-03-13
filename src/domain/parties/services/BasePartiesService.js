@@ -39,9 +39,9 @@ class BasePartiesService {
     this.proxyEnabled = !!(deps.config.PROXY_CACHE_CONFIG?.enabled && deps.proxyCache)
   }
 
-  async handleRequest () {
-    throw new Error('handleRequest must be implemented by subclass')
-  }
+  // async handleRequest () {
+  //   throw new Error('handleRequest must be implemented by subclass')
+  // }
 
   async handleError ({ error, requester, headers, params }) {
     const log = this.log.child({ method: 'handleError' })
@@ -67,9 +67,10 @@ class BasePartiesService {
 
   async sendErrorCallback ({ sendTo, errorInfo, headers, params, payload = undefined }) {
     const endpointType = this.deps.partiesUtils.errorPartyCbType(params.SubId)
-    return this.deps.participant.sendErrorToParticipant(
+    await this.deps.participant.sendErrorToParticipant(
       sendTo, endpointType, errorInfo, headers, params, payload, this.deps.childSpan
     )
+    this.log.verbose('sendErrorCallback is done', { sendTo, errorInfo })
   }
 
   async sendDeleteOracleRequest (headers, params) {

@@ -31,13 +31,10 @@
 
 const { Headers } = require('@mojaloop/central-services-shared').Enum.Http
 const Metrics = require('@mojaloop/central-services-metrics')
-
 const libUtil = require('../../lib/util')
-const Config = require('../../lib/config')
 const { logger } = require('../../lib')
-
-const services = require('./services')
 const { createDeps } = require('./deps')
+const services = require('./services')
 
 /**
  * @function putPartiesByTypeAndID
@@ -71,7 +68,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   const source = headers[Headers.FSPIOP.SOURCE]
   const destination = headers[Headers.FSPIOP.DESTINATION]
   const proxy = headers[Headers.FSPIOP.PROXY]
-  log.info('parties::putPartiesByTypeAndID start', { source, destination, proxy })
+  log.info('putPartiesByTypeAndID start', { source, destination, proxy })
 
   try {
     await service.validateSourceParticipant({ source, proxy })
@@ -125,12 +122,12 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   const results = {}
 
   const destination = headers[Headers.FSPIOP.DESTINATION]
-  const proxyEnabled = !!(Config.PROXY_CACHE_CONFIG.enabled && proxyCache)
-  const proxy = proxyEnabled && headers[Headers.FSPIOP.PROXY]
-  log.info('parties::putPartiesErrorByTypeAndID start', { destination, proxy })
+  const proxy = headers[Headers.FSPIOP.PROXY]
+  const proxyEnabled = !!(deps.config.PROXY_CACHE_CONFIG.enabled && proxyCache)
+  log.info('putPartiesErrorByTypeAndID start', { destination, proxy, proxyEnabled })
 
   try {
-    if (proxy) {
+    if (proxyEnabled && proxy) {
       const notValid = await service.checkPayee({ headers, params, payload, proxy })
       if (notValid) {
         const getPartiesService = new services.GetPartiesService(deps)

@@ -26,8 +26,8 @@
 const Metrics = require('@mojaloop/central-services-metrics')
 const libUtil = require('../../lib/util')
 const { logger } = require('../../lib')
-const { GetPartiesService } = require('./services')
 const { createDeps } = require('./deps')
+const { GetPartiesService } = require('./services')
 
 /**
  * @function getPartiesByTypeAndID

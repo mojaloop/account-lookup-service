@@ -32,9 +32,9 @@ const BasePartiesService = require('./BasePartiesService')
 const { RestMethods } = BasePartiesService.enums()
 
 class PutPartiesService extends BasePartiesService {
-  async handleRequest () {
-    // todo: add impl.
-  }
+  // async handleRequest () {
+  //   // todo: add impl.
+  // }
 
   async validateSourceParticipant ({ source, proxy }) {
     this.deps.stepState.inProgress('validateSourceParticipant-1')
