@@ -13,7 +13,7 @@ const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.Eve
 
 const LibUtil = require('../../lib/util')
 const Config = require('../../lib/config')
-const partiesUtils = require('../parties/utils')
+const partiesUtils = require('../parties/partiesUtils')
 
 const timeoutCallbackDto = async ({ destination, partyId, partyType }) => {
   const headers = {

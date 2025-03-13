@@ -5,7 +5,6 @@ const logger = loggerFactory('ALS') // global logger without context
 
 module.exports = {
   logger,
-  loggerFactory,
   asyncStorage,
   TransformFacades
 }

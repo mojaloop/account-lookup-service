@@ -36,7 +36,7 @@ jest.mock('@mojaloop/central-services-shared', () => ({
 
 const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 const { logger } = require('../../../../src/lib')
-const utils = require('../../../../src/domain/parties/utils')
+const partiesUtils = require('../../../../src/domain/parties/partiesUtils')
 const config = require('../../../../src/lib/config')
 const fixtures = require('../../../fixtures')
 
@@ -48,7 +48,7 @@ describe('parties utils Tests -->', () => {
     const headers = fixtures.partiesCallHeadersDto({ source })
     const params = { ID: '1234', Type: 'MSISDN' }
 
-    const handleError = utils.createErrorHandlerOnSendingCallback(isoConfig, logger)
+    const handleError = partiesUtils.createErrorHandlerOnSendingCallback(isoConfig, logger)
     await handleError(err, headers, params, source)
 
     expect(mockSendRequest).toHaveBeenCalledTimes(1)
