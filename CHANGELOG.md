@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.4.1](https://github.com/mojaloop/account-lookup-service/compare/v17.3.2...v17.4.1) (2025-03-14)
+
+
+### Chore
+
+* **csi-1300:** refactor get/put parties code to add new functionality easier ([#535](https://github.com/mojaloop/account-lookup-service/issues/535)) ([80a17df](https://github.com/mojaloop/account-lookup-service/commit/80a17df55419368e36a2c8acc3c4a5d1059c30f0))
+* remove proxy map onboarding ([#538](https://github.com/mojaloop/account-lookup-service/issues/538)) ([560b42d](https://github.com/mojaloop/account-lookup-service/commit/560b42d37a266f635609d18e04aa7ea99688cebd))
+
 ### [17.3.2](https://github.com/mojaloop/account-lookup-service/compare/v17.3.1...v17.3.2) (2025-03-13)
 
 
