@@ -116,7 +116,6 @@ describe('/health', () => {
     // Arrange
     Config.PROXY_CACHE_CONFIG.enabled = true
     Config.API_PORT = await getPort()
-    Config.proxyMap = { proxied: 'proxy' }
     let serverWithProxy
     try {
       Metrics.getDefaultRegister().clear()
