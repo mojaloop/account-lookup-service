@@ -29,7 +29,9 @@ const util = require('node:util')
 const Path = require('node:path')
 const EventSdk = require('@mojaloop/event-sdk')
 const Enum = require('@mojaloop/central-services-shared').Enum
-const { HeaderValidation, Hapi, rethrow } = require('@mojaloop/central-services-shared').Util
+const { HeaderValidation, Hapi } = require('@mojaloop/central-services-shared').Util
+const rethrow = require('@mojaloop/central-services-shared').Util.rethrow.with('ALS')
+
 const Config = require('../lib/config')
 const { logger } = require('./index')
 
