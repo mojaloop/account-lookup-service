@@ -59,6 +59,8 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
     const currency = (payload && payload.currency) ? payload.currency : (query && query.currency) ? query.currency : undefined
     const partySubIdOrType = (params && params.SubId) ? params.SubId : (query && query.partySubIdOrType) ? query.partySubIdOrType : undefined
     const isGetRequest = method.toUpperCase() === Enums.Http.RestMethods.GET
+    const isDeleteRequest = method.toUpperCase() === Enums.Http.RestMethods.DELETE
+
     if (currency && partySubIdOrType && isGetRequest) {
       url = await _getOracleEndpointByTypeCurrencyAndSubId(partyIdType, partyIdentifier, currency, partySubIdOrType, assertPendingAcquire)
     } else if (currency && isGetRequest) {
@@ -108,6 +110,41 @@ exports.oracleRequest = async (headers, method, params = {}, query = {}, payload
         }
 
         return cachedOracleFspResponse
+      }
+
+      if (isDeleteRequest && Config.DELETE_PARTICIPANT_VALIDATION_ENABLED) {
+        // If the request is a DELETE request, we need to ensure that the participant belongs to the requesting FSP
+        const getOracleResponse = await request.sendRequest({
+          url,
+          headers,
+          source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+          destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+          method: Enums.Http.RestMethods.GET,
+          payload,
+          hubNameRegex
+        })
+
+        if (getOracleResponse.status === Enums.Http.ReturnCodes.OK.CODE) {
+          const participant = getOracleResponse.data
+          if (participant?.partyList?.length > 0) {
+            const party = participant.partyList[0]
+            if (party.fspId === headers[Enums.Http.Headers.FSPIOP.SOURCE]) {
+              return await request.sendRequest({
+                url,
+                headers,
+                source: headers[Enums.Http.Headers.FSPIOP.SOURCE],
+                destination: headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+                method: method.toUpperCase(),
+                payload,
+                hubNameRegex
+              })
+            } else {
+              throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR, `The party ${partyIdType}:${partyIdentifier} does not belong to the requesting FSP`)
+            }
+          }
+        }
+
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
       }
 
       return await request.sendRequest({
