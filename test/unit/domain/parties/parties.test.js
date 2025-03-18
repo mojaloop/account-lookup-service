@@ -192,24 +192,26 @@ describe('Parties Tests', () => {
       expect(cached).toBe(proxy)
     })
 
-    it('should send error callback if destination is not in the scheme, and not in proxyCache', async () => {
+    it('should cleanup oracle and trigger discovery flow, if destination is not in scheme and no dfsp-to-proxy mapping', async () => {
+      Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves({}) // source
         .onSecondCall().resolves(null) // destination
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       sandbox.stub(oracle, 'oracleRequest')
+      const proxy = 'some-proxy'
+      Util.proxies.getAllProxiesNames = sandbox.stub().resolves([proxy])
       const headers = fixtures.partiesCallHeadersDto()
 
       await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
 
-      expect(participant.sendRequest.callCount).toBe(0)
-      expect(oracle.oracleRequest.callCount).toBe(0)
-      expect(participant.sendErrorToParticipant.callCount).toBe(1)
-
-      const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
-      expect(errorInformation.errorCode).toBe('3200')
-      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.partyDestinationFspNotFound)
+      expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
+      expect(participant.sendErrorToParticipant.callCount).toBe(0)
+      expect(participant.sendRequest.callCount).toBe(1)
+      // eslint-disable-next-line no-unused-vars
+      const [_, sendTo] = participant.sendRequest.lastCall.args
+      expect(sendTo).toBe(proxy)
     })
 
     it('should send request to proxy, if destination is not in the scheme, but has proxyMapping', async () => {
@@ -554,13 +556,14 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().rejects(new Error('Some network issue'))
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const params = fixtures.partiesParamsDto()
 
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
 
       expect(participant.sendRequest.callCount).toBe(proxyNames.length)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
-      const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
+      const { errorInformation } = participant.sendErrorToParticipant.lastCall.args[2]
       expect(errorInformation.errorCode).toBe('3200')
       expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.proxyConnectionError)
     })

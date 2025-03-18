@@ -37,9 +37,7 @@ const { createDeps } = require('./deps')
 const services = require('./services')
 
 /**
- * @function putPartiesByTypeAndID
- *
- * @description This sends a callback to inform participant of successful lookup
+ * Sends a callback to inform participant of successful lookup
  *
  * @param {object} headers - incoming http request headers
  * @param {object} params - uri parameters of the http request
@@ -94,9 +92,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
 }
 
 /**
- * @function putPartiesErrorByTypeAndID
- *
- * @description This populates the cache of endpoints
+ * Sends error callback to inform participant of failed lookup
  *
  * @param {object} headers - incoming http request headers
  * @param {object} params - uri parameters of the http request

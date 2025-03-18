@@ -44,10 +44,8 @@
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
     "start:handlers": "node src/handlers/index.js handlers --timeout",
-    "standard": "standard",
-    "standard:fix": "standard --fix",
-    "lint": "npm run standard",
-    "lint:fix": "npm run standard:fix",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
     "test:unit": "NODE_OPTIONS='--experimental-vm-modules --max-old-space-size=8192' jest --runInBand",
@@ -190,5 +188,9 @@
     "scripts": {
       "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
     }
+  },
+  "imports": {
+    "#src/*": "./src/*.js",
+    "#test/*": "./test/*.js"
   }
 }

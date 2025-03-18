@@ -70,16 +70,26 @@ class BasePartiesService {
     await this.deps.participant.sendErrorToParticipant(
       sendTo, endpointType, errorInfo, headers, params, payload, this.deps.childSpan
     )
-    this.log.verbose('sendErrorCallback is done', { sendTo, errorInfo })
+    this.log.info('sendErrorCallback is done', { sendTo, errorInfo })
   }
 
   async sendDeleteOracleRequest (headers, params) {
     return this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
   }
 
+  createFspiopIdNotFoundError (errMessage, log = this.log) {
+    log.warn(errMessage)
+    return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+  }
+
   static decodeDataUriPayload (dataUri) {
     const decoded = decodePayload(dataUri, { asParsed: false })
     return decoded.body.toString()
+  }
+
+  static headersWithoutDestination (headers) {
+    const { [Headers.FSPIOP.DESTINATION]: _, ...restHeaders } = headers || {}
+    return restHeaders
   }
 
   static enums () {

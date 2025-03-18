@@ -25,21 +25,22 @@
  --------------
  ******/
 
-const ERROR_MESSAGES = Object.freeze({
-  emptyFilteredPartyList: 'Empty oracle partyList, filtered based on callbackEndpointType',
-  failedToCacheSendToProxiesList: 'Failed to cache sendToProxiesList',
-  noDiscoveryRequestsForwarded: 'No discovery requests forwarded to participants',
-  sourceFspNotFound: 'Requester FSP not found',
-  partyDestinationFspNotFound: 'Destination FSP not found',
-  partyProxyNotFound: 'Proxy not found',
-  proxyConnectionError: 'Proxy connection error - no successful requests sent to proxies'
-})
-
-const HANDLER_TYPES = Object.freeze({
-  TIMEOUT: 'timeout'
+const createProxyCacheMock = ({
+  addDfspIdToProxyMapping = jest.fn(async () => true),
+  lookupProxyByDfspId = jest.fn(async () => null),
+  receivedErrorResponse = jest.fn(async () => false),
+  receivedSuccessResponse = jest.fn(async () => true),
+  removeDfspIdFromProxyMapping = jest.fn(async () => true),
+  setSendToProxiesList = jest.fn(async () => true)
+} = {}) => Object.freeze({
+  addDfspIdToProxyMapping,
+  lookupProxyByDfspId,
+  receivedErrorResponse,
+  receivedSuccessResponse,
+  removeDfspIdFromProxyMapping,
+  setSendToProxiesList
 })
 
 module.exports = {
-  ERROR_MESSAGES,
-  HANDLER_TYPES
+  createProxyCacheMock
 }

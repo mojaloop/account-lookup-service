@@ -25,7 +25,6 @@
  --------------
  ******/
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const { ERROR_MESSAGES } = require('../../../constants')
 const { createCallbackHeaders } = require('../../../lib/headers')
 const BasePartiesService = require('./BasePartiesService')
@@ -48,10 +47,13 @@ class GetPartiesService extends BasePartiesService {
     this.log.info('handling getParties request', { source, destination, proxy })
 
     const requester = await this.validateRequester({ source, proxy })
+    // dfsp in scheme  OR  proxy
     results.requester = requester
 
     if (destination) {
-      await this.forwardRequestToDestination({ destination, headers, params })
+      await this.forwardRequestToDestination({
+        destination, proxy, source, requester, headers, params
+      })
       return
     }
     const response = await this.sendOracleDiscoveryRequest({ headers, params, query })
@@ -62,15 +64,13 @@ class GetPartiesService extends BasePartiesService {
       return
     }
 
-    this.log.info('empty partyList form oracle, getting proxyList...', { params })
-    const proxyNames = await this.getFilteredProxyList(proxy)
-
-    if (proxyNames.length) {
-      await this.triggerSendToProxiesFlow({ proxyNames, headers, params, source })
-      return
+    this.log.info('empty partyList form oracle, checking inter-scheme discovery flow...')
+    const fspiopError = await this.triggerSendToProxiesFlow({
+      proxy, source, requester, headers, params
+    })
+    if (fspiopError) {
+      results.fspiopError = fspiopError
     }
-
-    results.fspiopError = await this.sendPartyNotFoundErrorCallback({ requester, headers, params })
   }
 
   async validateRequester ({ source, proxy }) {
@@ -84,30 +84,26 @@ class GetPartiesService extends BasePartiesService {
     }
 
     if (!this.proxyEnabled || !proxy) {
-      const errMessage = ERROR_MESSAGES.sourceFspNotFound
-      log.warn(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.sourceFspNotFound, log)
     }
 
     const proxyParticipant = await this.validateParticipant(proxy)
     if (!proxyParticipant) {
-      const errMessage = ERROR_MESSAGES.partyProxyNotFound
-      log.warn(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.partyProxyNotFound, log)
     }
 
     const isCached = await this.deps.proxyCache.addDfspIdToProxyMapping(source, proxy)
     if (!isCached) {
-      const errMessage = 'failed to addDfspIdToProxyMapping'
-      log.warn(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+      throw super.createFspiopIdNotFoundError('failed to addDfspIdToProxyMapping', log)
     }
 
     log.info('source is added to proxyMapping cache:', { proxy, isCached })
     return proxy
   }
 
-  async forwardRequestToDestination ({ destination, headers, params }) {
+  async forwardRequestToDestination ({
+    destination, proxy, source, requester, headers, params
+  }) {
     this.deps.stepState.inProgress('validateDestination-1')
     const log = this.log.child({ method: 'forwardRequestToDestination' })
     let sendTo = destination
@@ -118,41 +114,44 @@ class GetPartiesService extends BasePartiesService {
       const proxyId = this.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
 
       if (!proxyId) {
-        log.warn('no destination participant, and no dfsp-to-proxy mapping', { destination })
-        const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+        log.warn('destination participant is not in scheme, and no dfsp-to-proxy mapping', { destination })
+        this.deps.stepState.inProgress('deleteFromOracleAndRestartDiscovery')
+        await super.sendDeleteOracleRequest(headers, params)
+        return this.triggerSendToProxiesFlow({
+          proxy, source, requester, params, headers: GetPartiesService.headersWithoutDestination(headers)
+        })
+        // think, if we need to remove proxy-header from the call above  ↑↑
       }
       sendTo = proxyId
     }
-    // all ok, go ahead and forward the request
+
     await this.#forwardGetPartiesRequest({ sendTo, headers, params })
     log.info('discovery getPartiesByTypeAndID request was sent', { sendTo })
   }
 
   filterOraclePartyList ({ response, params }) {
-    // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records. We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
+    // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records.
+    // We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
     this.deps.stepState.inProgress('filterOraclePartyList-5')
     const callbackEndpointType = this.deps.partiesUtils.getPartyCbType(params.SubId)
-    let filteredResponsePartyList
+    let filteredPartyList
 
     switch (callbackEndpointType) {
       case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET:
-        filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
+        filteredPartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
         break
       case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET:
-        filteredResponsePartyList = response.data.partyList.filter(party => party.partySubIdOrType === params.SubId) // Filter records that match partySubIdOrType
+        filteredPartyList = response.data.partyList.filter(party => party.partySubIdOrType === params.SubId) // Filter records that match partySubIdOrType
         break
       default:
-        filteredResponsePartyList = response // Fallback to providing the standard list
+        filteredPartyList = response // Fallback to providing the standard list
     }
 
-    if (!Array.isArray(filteredResponsePartyList) || !filteredResponsePartyList.length) {
-      const errMessage = 'Requested FSP/Party not found'
-      this.log.warn(errMessage)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+    if (!Array.isArray(filteredPartyList) || !filteredPartyList.length) {
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.emptyFilteredPartyList)
     }
 
-    return filteredResponsePartyList
+    return filteredPartyList
   }
 
   async processOraclePartyList ({ partyList, headers, params, destination }) {
@@ -183,8 +182,8 @@ class GetPartiesService extends BasePartiesService {
         this.deps.stepState.inProgress('lookupProxyByDfspId-7')
         const proxyName = await this.deps.proxyCache.lookupProxyByDfspId(fspId)
         if (!proxyName) {
-          log.warn('no proxyMapping for participant!  TODO: Delete reference in oracle...', { fspId })
-          // todo: delete reference in oracle
+          log.warn('no proxyMapping for participant!  Deleting reference in oracle...', { fspId })
+          return super.sendDeleteOracleRequest(clonedHeaders, params)
         } else {
           sentCount++
           log.info('participant is NOT in scheme, use proxy name', { fspId, proxyName })
@@ -198,7 +197,8 @@ class GetPartiesService extends BasePartiesService {
     })
     await Promise.all(sending)
     log.verbose('processOraclePartyList is done', { sentCount })
-    // todo: think what if sentCount === 0 here
+
+    if (sentCount === 0) throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded)
   }
 
   async getFilteredProxyList (proxy) {
@@ -213,16 +213,22 @@ class GetPartiesService extends BasePartiesService {
     return proxyNames.filter(name => name !== proxy)
   }
 
-  async triggerSendToProxiesFlow ({ proxyNames, headers, params, source }) {
+  async triggerSendToProxiesFlow ({ proxy, source, requester, headers, params }) {
     const log = this.log.child({ method: 'triggerSendToProxiesFlow' })
+    log.verbose('triggerSendToProxiesFlow start...', { proxy, source, requester })
+
+    const proxyNames = await this.getFilteredProxyList(proxy)
+    if (!proxyNames.length) {
+      return this.sendPartyNotFoundErrorCallback({ requester, headers, params })
+    }
+
     this.deps.stepState.inProgress('setSendToProxiesList-10')
     const alsReq = this.deps.partiesUtils.alsRequestDto(source, params)
-    log.info('starting setSendToProxiesList flow: ', { proxyNames, alsReq, proxyCacheTtlSec })
+    log.verbose('starting setSendToProxiesList flow: ', { proxyNames, alsReq, proxyCacheTtlSec })
 
     const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, proxyCacheTtlSec)
     if (!isCached) {
-      log.warn('failed to setSendToProxiesList')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.failedToCacheSendToProxiesList)
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.failedToCacheSendToProxiesList, log)
     }
 
     this.deps.stepState.inProgress('sendingProxyRequests-11')
@@ -237,14 +243,15 @@ class GetPartiesService extends BasePartiesService {
     // todo: - think, if we should handle failed requests here (e.g., by calling receivedErrorResponse)
     log.info('triggerSendToProxiesFlow is done:', { isOk, results, proxyNames, alsReq })
     this.deps.stepState.inProgress('allSent-12')
+
     if (!isOk) {
-      log.warn('no successful requests sent to proxies')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, ERROR_MESSAGES.proxyConnectionError)
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.proxyConnectionError, log)
     }
   }
 
   async sendPartyNotFoundErrorCallback ({ requester, headers, params }) {
-    this.deps.stepState.inProgress('sendErrorCallback-9')
+    this.deps.stepState.inProgress('sendPartyNotFoundErrorCallback')
+    const fspiopError = super.createFspiopIdNotFoundError('No proxy found to start inter-scheme discovery flow')
     const callbackHeaders = createCallbackHeaders({
       requestHeaders: headers,
       partyIdType: params.Type,
@@ -253,7 +260,6 @@ class GetPartiesService extends BasePartiesService {
         ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
         : FspEndpointTemplates.PARTIES_PUT_ERROR
     })
-    const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
 
     await this.sendErrorCallback({
       sendTo: requester,
