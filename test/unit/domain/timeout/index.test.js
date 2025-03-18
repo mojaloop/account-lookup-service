@@ -40,7 +40,7 @@ describe('Timeout Domain', () => {
   Metrics.getCounter(
     'errorCount',
     'Error count',
-    ['code', 'system', 'operation', 'step']
+    ['code', 'system', 'operation', 'step', 'context', 'expected']
   )
 
   beforeEach(() => {
