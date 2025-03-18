@@ -51,6 +51,7 @@ jest.mock('@mojaloop/central-services-shared', () => ({
     Request: { sendRequest: mockSendRequest },
     Http: { SwitchDefaultHeaders: jest.fn() },
     HeaderValidation: { getHubNameRegex: jest.fn().mockReturnValue(new RegExp(mockHubName)) },
+    rethrow: jest.requireActual('@mojaloop/central-services-shared').Util.rethrow,
     Hapi: jest.requireActual('@mojaloop/central-services-shared').Util.Hapi
   },
   Enum: mockEnums
