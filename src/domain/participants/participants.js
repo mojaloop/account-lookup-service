@@ -625,8 +625,7 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
     try {
       const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR)
       const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
-      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
-        fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params)
+      await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType, fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params)
       util.countFspiopError(fspiopError, { operation: 'deleteParticipants', step })
     } catch (exc) {
       // We can't do anything else here- we _must_ handle all errors _within_ this function because
