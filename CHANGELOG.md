@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.6.0](https://github.com/mojaloop/account-lookup-service/compare/v17.5.0...v17.6.0) (2025-03-19)
+
+
+### Features
+
+* **csi-1244:** add DELETE participants validation ([#539](https://github.com/mojaloop/account-lookup-service/issues/539)) ([773baa1](https://github.com/mojaloop/account-lookup-service/commit/773baa154acd38051c61b10201d6fca6a33e614e))
+
 ## [17.5.0](https://github.com/mojaloop/account-lookup-service/compare/v17.4.1...v17.5.0) (2025-03-18)
 
 
