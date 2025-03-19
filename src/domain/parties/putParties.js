@@ -29,7 +29,6 @@
 
 'use strict'
 
-const { Headers } = require('@mojaloop/central-services-shared').Enum.Http
 const Metrics = require('@mojaloop/central-services-metrics')
 const libUtil = require('../../lib/util')
 const { logger } = require('../../lib')
@@ -57,35 +56,19 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   ).startTimer()
   // const childSpan = span ? span.getChild(component) : undefined
   const log = logger.child({ component, params })
-  const stepState = libUtil.initStepState()
 
-  const deps = createDeps({ cache, proxyCache, log, stepState })
-  const service = new services.PutPartiesService(deps)
-  const results = {}
-
-  const source = headers[Headers.FSPIOP.SOURCE]
-  const destination = headers[Headers.FSPIOP.DESTINATION]
-  const proxy = headers[Headers.FSPIOP.PROXY]
-  log.info('putPartiesByTypeAndID start', { source, destination, proxy })
+  const deps = createDeps({ cache, proxyCache, log })
+  const service = new services.PutPartiesService(deps, { headers, params, payload, dataUri })
+  let fspiopError
 
   try {
-    await service.validateSourceParticipant({ source, proxy })
-
-    if (proxy) {
-      await service.checkProxySuccessResponse({ destination, source, headers, params })
-    }
-
-    const sendTo = await service.identifyDestinationForSuccessCallback(destination)
-    results.requester = sendTo
-    await service.sendSuccessCallback({ sendTo, headers, params, dataUri })
-
-    log.info('putPartiesByTypeAndID callback was sent', { sendTo })
+    await service.handleRequest()
+    log.info('putPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
-    const { requester } = results
-    results.fspiopError = await service.handleError({ error, requester, headers, params })
-    if (results.fspiopError) {
-      libUtil.countFspiopError(results.fspiopError, { operation: component, step: stepState.step })
+    fspiopError = await service.handleError(error)
+    if (fspiopError) {
+      libUtil.countFspiopError(fspiopError, { operation: component, step: service.currenStep })
     }
     histTimerEnd({ success: false })
   }
@@ -111,52 +94,32 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   ).startTimer()
   const childSpan = span ? span.getChild(component) : undefined
   const log = logger.child({ component, params })
-  const stepState = libUtil.initStepState()
 
-  const deps = createDeps({ cache, proxyCache, childSpan, log, stepState })
-  const service = new services.PutPartiesErrorService(deps)
-  const results = {}
-
-  const destination = headers[Headers.FSPIOP.DESTINATION]
-  const proxy = headers[Headers.FSPIOP.PROXY]
-  const proxyEnabled = !!(deps.config.PROXY_CACHE_CONFIG.enabled && proxyCache)
-  log.info('putPartiesErrorByTypeAndID start', { destination, proxy, proxyEnabled })
+  const deps = createDeps({ cache, proxyCache, childSpan, log })
+  const inputs = { headers, params, payload, dataUri }
+  const service = new services.PutPartiesErrorService(deps, inputs)
+  let fspiopError
 
   try {
-    if (proxyEnabled && proxy) {
-      const notValid = await service.checkPayee({ headers, params, payload, proxy })
-      if (notValid) {
-        const getPartiesService = new services.GetPartiesService(deps)
-        // todo: think, if we need to remove destination header before starting new discovery
-        await getPartiesService.handleRequest({ headers, params, results })
-        log.info('putPartiesErrorByTypeAndID triggered new discovery flow')
-        histTimerEnd({ success: true })
-        return
-      }
-
-      const isLast = await service.checkLastProxyCallback({ destination, proxy, params })
-      if (!isLast) {
-        log.info('putPartiesErrorByTypeAndID proxy callback was processed', { proxy })
-        histTimerEnd({ success: true })
-        return
-      }
+    const needDiscovery = await service.handleRequest()
+    if (needDiscovery) {
+      const getPartiesService = new services.GetPartiesService(deps, inputs)
+      await getPartiesService.triggerInterSchemeDiscoveryFlow(
+        services.GetPartiesService.headersWithoutDestination(headers)
+      )
+      // think, if we need to start the whole processing with getPartiesService.handleRequest() ?
     }
 
-    const sendTo = await service.identifyDestinationForErrorCallback(destination)
-    results.requester = sendTo
-    await service.sendErrorCallbackToParticipant({ sendTo, headers, params, dataUri })
-
-    log.info('putPartiesErrorByTypeAndID callback was sent', { sendTo })
+    log.info('putPartiesErrorByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
-    const { requester } = results
-    results.fspiopError = await service.handleError({ error, requester, headers, params })
-    if (results.fspiopError) {
-      libUtil.countFspiopError(results.fspiopError, { operation: component, step: stepState.step })
+    fspiopError = await service.handleError(error)
+    if (fspiopError) {
+      libUtil.countFspiopError(fspiopError, { operation: component, step: service.currenStep })
     }
     histTimerEnd({ success: false })
   } finally {
-    await libUtil.finishSpanWithError(childSpan, results.fspiopError)
+    await libUtil.finishSpanWithError(childSpan, fspiopError)
   }
 }
 

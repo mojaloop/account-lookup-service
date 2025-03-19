@@ -31,7 +31,6 @@ jest.mock('#src/models/participantEndpoint/facade')
 const { GetPartiesService } = require('#src/domain/parties/services/index')
 const { createDeps } = require('#src/domain/parties/deps')
 const { logger } = require('#src/lib/index')
-const { initStepState } = require('#src/lib/util')
 const oracle = require('#src/models/oracle/facade')
 const participant = require('#src/models/participantEndpoint/facade')
 // const { ERROR_MESSAGES } = require('#src/constants')
@@ -42,9 +41,8 @@ const { RestMethods, Headers } = GetPartiesService.enums()
 
 const createMockDeps = ({
   proxyCache = mockDeps.createProxyCacheMock(),
-  log = logger.child({ test: true }),
-  stepState = initStepState()
-} = {}) => createDeps({ proxyCache, log, stepState })
+  log = logger.child({ test: true })
+} = {}) => createDeps({ proxyCache, log })
 
 describe('GetPartiesService Tests -->', () => {
   beforeEach(() => {
@@ -58,13 +56,14 @@ describe('GetPartiesService Tests -->', () => {
         lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(null)
       })
       const deps = createMockDeps({ proxyCache })
-      const service = new GetPartiesService(deps)
-      service.triggerSendToProxiesFlow = jest.fn()
 
       const destination = 'dfsp'
       const headers = fixtures.partiesCallHeadersDto({ destination, proxy: 'proxy' })
       const params = fixtures.partiesParamsDto()
-      await service.forwardRequestToDestination({ destination, headers, params })
+      const service = new GetPartiesService(deps, { headers, params })
+      service.triggerInterSchemeDiscoveryFlow = jest.fn()
+
+      await service.forwardRequestToDestination()
 
       expect(oracle.oracleRequest.mock.calls.length).toBe(1)
       const [sentHeaders, method, sentParams] = oracle.oracleRequest.mock.lastCall
@@ -72,8 +71,11 @@ describe('GetPartiesService Tests -->', () => {
       expect(sentHeaders).toEqual(headers)
       expect(sentParams).toEqual(params)
 
-      expect(service.triggerSendToProxiesFlow.mock.calls.length).toBe(1)
-      expect(service.triggerSendToProxiesFlow.mock.lastCall[0].headers[Headers.DESTINATION]).toBeUndefined()
+      expect(service.triggerInterSchemeDiscoveryFlow.mock.calls.length).toBe(1)
+      expect(service.triggerInterSchemeDiscoveryFlow.mock.lastCall[0]).toEqual({
+        ...headers,
+        [Headers.FSPIOP.DESTINATION]: undefined
+      })
     })
   })
 })

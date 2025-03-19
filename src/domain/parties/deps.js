@@ -31,12 +31,11 @@ const participant = require('../../models/participantEndpoint/facade')
 const config = require('../../lib/config')
 const partiesUtils = require('./partiesUtils')
 
-const createDeps = ({ cache, proxyCache, childSpan, log, stepState }) => Object.freeze({
+const createDeps = ({ cache, proxyCache, childSpan, log }) => Object.freeze({
   cache,
   proxyCache,
   childSpan,
   log,
-  stepState,
   config,
   oracle,
   participant,

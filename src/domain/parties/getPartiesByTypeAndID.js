@@ -51,25 +51,23 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
   ).startTimer()
   const childSpan = span ? span.getChild(component) : undefined
   const log = logger.child({ component, params })
-  const stepState = libUtil.initStepState()
 
-  const deps = createDeps({ cache, proxyCache, childSpan, log, stepState })
-  const service = new GetPartiesService(deps)
-  const results = {}
+  const deps = createDeps({ cache, proxyCache, childSpan, log })
+  const service = new GetPartiesService(deps, { headers, params, query })
+  let fspiopError
 
   try {
-    await service.handleRequest({ headers, params, query, results })
+    await service.handleRequest()
     log.info('getPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
-    const { requester } = results
-    results.fspiopError = await service.handleError({ error, requester, headers, params })
+    fspiopError = await service.handleError(error)
     histTimerEnd({ success: false })
-    if (results.fspiopError) {
-      libUtil.countFspiopError(results.fspiopError, { operation: component, step: stepState.step })
+    if (fspiopError) {
+      libUtil.countFspiopError(fspiopError, { operation: component, step: service.currenStep })
     }
   } finally {
-    await libUtil.finishSpanWithError(childSpan, results.fspiopError)
+    await libUtil.finishSpanWithError(childSpan, fspiopError)
   }
 }
 

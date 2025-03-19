@@ -30,49 +30,72 @@ const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
 class PutPartiesErrorService extends BasePartiesService {
-  // async handleRequest () {
-  //   // todo: add impl.
-  // }
+  async handleRequest () {
+    if (this.state.proxyEnabled && this.state.proxy) {
+      const notValid = await this.checkPayee()
+      if (notValid) {
+        this.log.info('putPartiesErrorByTypeAndID needs to triggered new discovery flow')
+        return true
+      }
 
-  async checkPayee ({ headers, params, payload, proxy }) {
+      const isLast = await this.checkLastProxyCallback()
+      if (!isLast) {
+        this.log.verbose('putPartiesErrorByTypeAndID proxy callback was processed')
+        return
+      }
+    }
+
+    await this.identifyDestinationForErrorCallback()
+    await this.sendErrorCallbackToParticipant()
+    this.log.info('putPartiesByTypeAndID is done')
+  }
+
+  async checkPayee () {
+    const { headers, params, payload } = this.inputs
     const notValid = this.deps.partiesUtils.isNotValidPayeeCase(payload)
     if (notValid) {
-      this.deps.stepState.inProgress('notValidPayeeCase-1')
-      this.log.warn('notValidPayee case - deleting Participants and run getPartiesByTypeAndID', { proxy, payload })
+      this.stepInProgress('notValidPayeeCase-1')
+      this.log.warn('notValidPayee case - deleting Participants...', { payload })
       const swappedHeaders = this.deps.partiesUtils.swapSourceDestinationHeaders(headers)
       await super.sendDeleteOracleRequest(swappedHeaders, params)
     }
     return notValid
   }
 
-  async checkLastProxyCallback ({ destination, proxy, params }) {
-    this.deps.stepState.inProgress('checkLastProxyCallback-2')
-    const alsReq = this.deps.partiesUtils.alsRequestDto(destination, params) // or source?
+  async checkLastProxyCallback () {
+    const { destination, proxy } = this.state
+    this.stepInProgress('checkLastProxyCallback')
+    const alsReq = this.deps.partiesUtils.alsRequestDto(destination, this.inputs.params) // or source?
     const isLast = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
     this.log.info(`got${isLast ? '' : 'NOT'} last error callback from proxy`, { proxy, alsReq, isLast })
     return isLast
   }
 
-  async identifyDestinationForErrorCallback (destination) {
-    this.deps.stepState.inProgress('validateParticipant-3')
+  async identifyDestinationForErrorCallback () {
+    const { destination } = this.state
+    this.stepInProgress('identifyDestinationForErrorCallback')
     const destinationParticipant = await super.validateParticipant(destination)
-    if (destinationParticipant) return destination
+    if (destinationParticipant) {
+      this.state.requester = destination
+      return
+    }
 
-    this.deps.stepState.inProgress('lookupProxyDestination-4')
-    const proxyName = this.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
-    if (proxyName) return proxyName
+    this.stepInProgress('lookupProxyDestination-4')
+    const proxyName = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
+    if (proxyName) {
+      this.state.requester = proxyName
+      return
+    }
 
     const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
     this.log.warn(errMessage, { destination })
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
   }
 
-  async sendErrorCallbackToParticipant ({ sendTo, headers, params, dataUri }) {
-    this.deps.stepState.inProgress('sendErrorToParticipant-5')
+  async sendErrorCallbackToParticipant () {
+    const { headers, params, dataUri } = this.inputs
     const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
-    return super.sendErrorCallback({
-      sendTo, errorInfo, headers, params
-    })
+    return super.sendErrorCallback({ errorInfo, headers, params })
   }
 }
 
