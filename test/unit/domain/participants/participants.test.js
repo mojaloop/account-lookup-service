@@ -1369,7 +1369,7 @@ describe('participant Tests', () => {
 
       // Assert
       expect(logStub.getCall(0).firstArg).toBe(ERROR_MESSAGES.sourceFspNotFound)
-      expect(logStub.getCall(3).lastArg).toEqual(cbError)
+      expect(logStub.getCall(2).lastArg).toEqual(cbError)
     })
 
     it('handles error when `oracleBatchRequest` returns no result', async () => {

@@ -31,9 +31,9 @@ jest.mock('#src/models/participantEndpoint/facade')
 const { GetPartiesService } = require('#src/domain/parties/services/index')
 const { createDeps } = require('#src/domain/parties/deps')
 const { logger } = require('#src/lib/index')
+const { ERROR_MESSAGES } = require('#src/constants')
 const oracle = require('#src/models/oracle/facade')
 const participant = require('#src/models/participantEndpoint/facade')
-// const { ERROR_MESSAGES } = require('#src/constants')
 const fixtures = require('#test/fixtures/index')
 const mockDeps = require('#test/util/mockDeps')
 
@@ -76,6 +76,56 @@ describe('GetPartiesService Tests -->', () => {
         ...headers,
         [Headers.FSPIOP.DESTINATION]: undefined
       })
+    })
+  })
+
+  describe('processOraclePartyList for external participants', () => {
+    const DFSP_ID = 'externalFsp'
+    const PROXY_ID = 'externalProxy'
+    let deps
+
+    beforeEach(async () => {
+      oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
+        fixtures.oracleRequestResponseDto({ partyList: [{ fspId: DFSP_ID }] })
+      )
+      participant.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // source
+        .mockResolvedValueOnce({}) // proxy
+
+      const proxyCache = mockDeps.createProxyCacheMock({
+        addDfspIdToProxyMapping: jest.fn().mockResolvedValueOnce(true),
+        lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(PROXY_ID)
+      })
+      deps = createMockDeps({ proxyCache })
+    })
+
+    test('should throw ID_NOT_FOUND error, during interScheme discovery (no destination header) ', async () => {
+      expect.hasAssertions()
+      const headers = fixtures.partiesCallHeadersDto({
+        destination: '', proxy: 'proxyA'
+      })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+        .catch((err) => {
+          expect(err).toEqual(service.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded))
+        })
+    })
+
+    test('should throw ID_NOT_FOUND error, if destination header is passed during discovery', async () => {
+      const headers = fixtures.partiesCallHeadersDto({
+        destination: 'destFsp', proxy: 'proxyA'
+      })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+      expect(participant.sendRequest.mock.calls.length).toBe(1)
+      const [sentHeaders, sendTo] = participant.sendRequest.mock.lastCall
+      expect(sendTo).toEqual(PROXY_ID)
+      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(headers[Headers.FSPIOP.DESTINATION])
+      // todo: clarify which headers are supposed to be here
     })
   })
 })

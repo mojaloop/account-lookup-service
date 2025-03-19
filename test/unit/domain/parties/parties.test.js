@@ -56,7 +56,7 @@ const fixtures = require('../../../fixtures')
 const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.PROXY_CACHE_CONFIG
 
 const { encodePayload } = Util.StreamingProtocol
-const { RestMethods } = Enum.Http
+const { RestMethods, Headers } = Enum.Http
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -248,7 +248,7 @@ describe('Parties Tests', () => {
       await partiesDomain.getPartiesByTypeAndID(Helper.getByTypeIdRequest.headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query)
 
       // Assert
-      expect(loggerStub.callCount).toBe(2)
+      expect(loggerStub.callCount).toBe(1)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
       const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
@@ -472,7 +472,7 @@ describe('Parties Tests', () => {
       expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should send request to proxy if oracle returns dfsp NOT from the scheme', async () => {
+    it('should send errorCallback if oracle returns dfsp NOT from scheme, and no destination-header', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const proxyName = `proxy-${Date.now()}`
       const fspId = `dfspNotFromScheme-${Date.now()}`
@@ -489,15 +489,20 @@ describe('Parties Tests', () => {
       const isAdded = await proxyCache.addDfspIdToProxyMapping(fspId, proxyName)
       expect(isAdded).toBe(true)
 
-      const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const source = `fromDfsp-${Date.now()}`
+      const headers = fixtures.partiesCallHeadersDto({ destination: '', source })
       const { params, method, query } = Helper.getByTypeIdRequest
 
       await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, null, null, proxyCache)
 
-      expect(participant.sendErrorToParticipant.callCount).toBe(0)
-      expect(participant.sendRequest.callCount).toBe(1)
-      const calledProxy = participant.sendRequest.getCall(0).args[1]
-      expect(calledProxy).toBe(proxyName)
+      expect(participant.sendRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      // eslint-disable-next-line no-unused-vars
+      const [sentTo, _, payload, sentHeaders] = participant.sendErrorToParticipant.lastCall.args
+      expect(sentTo).toBe(source)
+      expect(payload.errorInformation.errorCode).toBe('3200')
+      expect(sentHeaders[Headers.FSPIOP.SOURCE]).toBe(source)
+      // todo: clarify which source/destination headers we must have here
     })
 
     it('handles error when `oracleRequest` returns no result', async () => {
@@ -896,7 +901,7 @@ describe('Parties Tests', () => {
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
-      expect(loggerStub.callCount).toBe(2)
+      expect(loggerStub.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
@@ -917,7 +922,7 @@ describe('Parties Tests', () => {
 
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
-      expect(loggerStub.callCount).toBe(2)
+      expect(loggerStub.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })

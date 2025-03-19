@@ -101,8 +101,8 @@ class GetPartiesService extends BasePartiesService {
     const log = this.log.child({ method: 'forwardRequestToDestination' })
     let sendTo = destination
 
-    const destParticipantModel = await this.validateParticipant(destination)
-    if (!destParticipantModel) {
+    const destParticipant = await this.validateParticipant(destination)
+    if (!destParticipant) {
       this.stepInProgress('lookupProxyDestination-2')
       const proxyId = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
 
@@ -147,48 +147,42 @@ class GetPartiesService extends BasePartiesService {
 
   async processOraclePartyList (partyList) {
     const { headers, params } = this.inputs
-    const log = this.log.child({ method: 'processOraclePartyList' })
+    this.stepInProgress('processOraclePartyList')
 
-    let sentCount = 0 // if sentCount === 0 after sending, should we restart the whole process?
+    let sentCount = 0 // if sentCount === 0 after sending, should we send idNotFound error
     const sending = partyList.map(async party => {
       const { fspId } = party
-      const clonedHeaders = { ...headers }
-      if (!this.state.destination) {
-        clonedHeaders[Headers.FSPIOP.DESTINATION] = fspId
-      }
-      this.stepInProgress('validateParticipant-6')
+      // const clonedHeaders = { ...headers }
+      // if (!this.state.destination) {
+      //   clonedHeaders[Headers.FSPIOP.DESTINATION] = fspId
+      // }
       const schemeParticipant = await this.validateParticipant(fspId)
       if (schemeParticipant) {
         sentCount++
-        log.info('participant is in scheme', { fspId })
-        return this.#forwardGetPartiesRequest({
-          sendTo: fspId,
-          headers: clonedHeaders,
-          params
-        })
+        return this.#forwardRequestToSchemeParticipant(fspId)
       }
 
-      // If the participant is not in the scheme and proxy routing is enabled,
-      // we should check if there is a proxy for it and send the request to the proxy
       if (this.state.proxyEnabled) {
-        this.stepInProgress('lookupProxyByDfspId-7')
         const proxyName = await this.deps.proxyCache.lookupProxyByDfspId(fspId)
         if (!proxyName) {
-          log.warn('no proxyMapping for participant!  Deleting reference in oracle...', { fspId })
-          return super.sendDeleteOracleRequest(clonedHeaders, params)
-        } else {
+          this.log.warn('no proxyMapping for participant!  Deleting reference in oracle...', { fspId })
+          return super.sendDeleteOracleRequest(headers, params)
+        }
+
+        // if no destination header, it means we're in initial inter-scheme discovery phase. So only local participants matter
+        if (this.state.destination) {
           sentCount++
-          log.info('participant is NOT in scheme, use proxy name', { fspId, proxyName })
+          this.log.info('participant is NOT in scheme, use proxy name', { fspId, proxyName })
           return this.#forwardGetPartiesRequest({
             sendTo: proxyName,
-            headers: clonedHeaders,
+            headers, // todo: think, if we need to override destination header with fspId
             params
           })
         }
       }
     })
     await Promise.all(sending)
-    log.verbose('processOraclePartyList is done', { sentCount })
+    this.log.verbose('processOraclePartyList is done', { sentCount })
 
     if (sentCount === 0) throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded)
   }
@@ -266,6 +260,20 @@ class GetPartiesService extends BasePartiesService {
     this.stepInProgress('sendOracleDiscoveryRequest')
     const { headers, params, query } = this.inputs
     return this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+  }
+
+  async #forwardRequestToSchemeParticipant (fspId) {
+    const { headers, params } = this.inputs
+    const clonedHeaders = {
+      ...headers,
+      [Headers.FSPIOP.DESTINATION]: this.state.destination || fspId // todo: clarify if we need just to use fspId
+    }
+    this.log.info('participant is in scheme', { fspId })
+    return this.#forwardGetPartiesRequest({
+      sendTo: fspId,
+      headers: clonedHeaders,
+      params
+    })
   }
 
   async #forwardGetPartiesRequest ({ sendTo, headers, params }) {
