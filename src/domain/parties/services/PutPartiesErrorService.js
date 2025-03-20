@@ -32,13 +32,17 @@ const BasePartiesService = require('./BasePartiesService')
 class PutPartiesErrorService extends BasePartiesService {
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
-      const notValid = await this.checkPayee()
-      if (notValid) {
-        this.log.info('putPartiesErrorByTypeAndID needs to triggered new discovery flow')
-        return true
+      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
+      const isPending = await this.deps.proxyCache.isPendingCallback(alsReq)
+
+      if (!isPending) {
+        // not initial inter-scheme discovery case. Cleanup oracle and trigger inter-scheme discovery
+        this.log.warn('Need to cleanup oracle and trigger new inter-scheme discovery flow')
+        await this.cleanupOracle()
+        return true // need to trigger inter-scheme discovery
       }
 
-      const isLast = await this.checkLastProxyCallback()
+      const isLast = await this.checkLastProxyCallback(alsReq)
       if (!isLast) {
         this.log.verbose('putPartiesErrorByTypeAndID proxy callback was processed')
         return
@@ -50,32 +54,27 @@ class PutPartiesErrorService extends BasePartiesService {
     this.log.info('putPartiesByTypeAndID is done')
   }
 
-  async checkPayee () {
+  async cleanupOracle () {
+    this.stepInProgress('cleanupOracle')
     const { headers, params, payload } = this.inputs
-    const notValid = this.deps.partiesUtils.isNotValidPayeeCase(payload)
-    if (notValid) {
-      this.stepInProgress('notValidPayeeCase-1')
-      this.log.warn('notValidPayee case - deleting Participants...', { payload })
-      const swappedHeaders = this.deps.partiesUtils.swapSourceDestinationHeaders(headers)
-      await super.sendDeleteOracleRequest(swappedHeaders, params)
-    }
-    return notValid
+    this.log.info('cleanupOracle due to error callback...', { payload })
+    const swappedHeaders = this.deps.partiesUtils.swapSourceDestinationHeaders(headers)
+    await super.sendDeleteOracleRequest(swappedHeaders, params)
   }
 
-  async checkLastProxyCallback () {
-    const { destination, proxy } = this.state
+  async checkLastProxyCallback (alsReq) {
     this.stepInProgress('checkLastProxyCallback')
-    const alsReq = this.deps.partiesUtils.alsRequestDto(destination, this.inputs.params) // or source?
+    const { proxy } = this.state
     const isLast = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
     this.log.info(`got${isLast ? '' : 'NOT'} last error callback from proxy`, { proxy, alsReq, isLast })
     return isLast
   }
 
   async identifyDestinationForErrorCallback () {
-    const { destination } = this.state
     this.stepInProgress('identifyDestinationForErrorCallback')
-    const destinationParticipant = await super.validateParticipant(destination)
-    if (destinationParticipant) {
+    const { destination } = this.state
+    const schemeParticipant = await super.validateParticipant(destination)
+    if (schemeParticipant) {
       this.state.requester = destination
       return
     }

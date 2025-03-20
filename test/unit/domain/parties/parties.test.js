@@ -501,8 +501,8 @@ describe('Parties Tests', () => {
       const [sentTo, _, payload, sentHeaders] = participant.sendErrorToParticipant.lastCall.args
       expect(sentTo).toBe(source)
       expect(payload.errorInformation.errorCode).toBe('3200')
-      expect(sentHeaders[Headers.FSPIOP.SOURCE]).toBe(source)
-      // todo: clarify which source/destination headers we must have here
+      expect(sentHeaders[Headers.FSPIOP.SOURCE]).toBe(Config.HUB_NAME)
+      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(headers[Headers.FSPIOP.SOURCE])
     })
 
     it('handles error when `oracleRequest` returns no result', async () => {

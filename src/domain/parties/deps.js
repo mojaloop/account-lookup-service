@@ -26,12 +26,13 @@
  ******/
 
 const { proxies } = require('@mojaloop/central-services-shared').Util
+const { logger } = require('../../lib')
+const config = require('../../lib/config')
 const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
-const config = require('../../lib/config')
 const partiesUtils = require('./partiesUtils')
 
-const createDeps = ({ cache, proxyCache, childSpan, log }) => Object.freeze({
+const createDeps = ({ cache, proxyCache, childSpan, log = logger }) => Object.freeze({
   cache,
   proxyCache,
   childSpan,

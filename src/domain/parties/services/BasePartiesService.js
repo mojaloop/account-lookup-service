@@ -29,6 +29,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const { Enum } = require('@mojaloop/central-services-shared')
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const { initStepState } = require('../../../lib/util')
+const { createCallbackHeaders } = require('../../../lib/headers')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
@@ -56,7 +57,10 @@ class BasePartiesService {
     this.#deps = Object.freeze(deps)
     this.#inputs = Object.freeze(inputs)
     this.#state = this.#initiateState()
-    this.log = this.deps.log.child({ component: this.constructor.name })
+    this.log = this.deps.log.child({
+      component: this.constructor.name,
+      params: this.inputs.params
+    })
   }
 
   get deps () { return this.#deps }
@@ -71,7 +75,11 @@ class BasePartiesService {
       const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(error)
       const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, fspiopError, headers, params)
 
-      await this.sendErrorCallback({ errorInfo, headers, params })
+      await this.sendErrorCallback({
+        errorInfo,
+        headers: BasePartiesService.createErrorCallbackHeaders(headers, params),
+        params
+      })
       log.info('handleError in done')
       return fspiopError
     } catch (exc) {
@@ -88,7 +96,7 @@ class BasePartiesService {
 
   async sendErrorCallback ({ errorInfo, headers, params }) {
     this.stepInProgress('sendErrorCallback')
-    const sendTo = this.state.requester || headers[Headers.FSPIOP.SOURCE]
+    const sendTo = this.state.requester || this.state.source
     const endpointType = this.deps.partiesUtils.errorPartyCbType(params.SubId)
 
     await this.deps.participant.sendErrorToParticipant(
@@ -135,6 +143,25 @@ class BasePartiesService {
   static headersWithoutDestination (headers) {
     const { [Headers.FSPIOP.DESTINATION]: _, ...restHeaders } = headers || {}
     return restHeaders
+  }
+
+  static overrideDestinationHeader (headers, destination) {
+    const { [Headers.FSPIOP.DESTINATION]: _, ...restHeaders } = headers || {}
+    return {
+      ...restHeaders,
+      ...(destination && { [Headers.FSPIOP.DESTINATION]: destination })
+    }
+  }
+
+  static createErrorCallbackHeaders (headers, params) {
+    return createCallbackHeaders({
+      requestHeaders: headers,
+      partyIdType: params.Type,
+      partyIdentifier: params.ID,
+      endpointTemplate: params.SubId
+        ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
+        : FspEndpointTemplates.PARTIES_PUT_ERROR
+    })
   }
 
   static enums () {

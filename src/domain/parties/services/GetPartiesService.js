@@ -26,14 +26,9 @@
  ******/
 
 const { ERROR_MESSAGES } = require('../../../constants')
-const { createCallbackHeaders } = require('../../../lib/headers')
 const BasePartiesService = require('./BasePartiesService')
 
-const {
-  FspEndpointTypes, FspEndpointTemplates,
-  Headers, RestMethods
-} = BasePartiesService.enums()
-
+const { FspEndpointTypes, RestMethods } = BasePartiesService.enums()
 const proxyCacheTtlSec = 40 // todo: make configurable
 
 class GetPartiesService extends BasePartiesService {
@@ -42,8 +37,7 @@ class GetPartiesService extends BasePartiesService {
     // see https://github.com/mojaloop/design-authority/issues/79
     // the requester has specified a destination routing header. We should respect that and forward the request directly to the destination
     // without consulting any oracles.
-    this.log.info('handling getParties request', { source, destination, proxy })
-
+    this.log.info('handling getParties request...', { source, destination, proxy })
     this.state.requester = await this.validateRequester()
     // dfsp in scheme  OR  proxy
 
@@ -51,8 +45,8 @@ class GetPartiesService extends BasePartiesService {
       await this.forwardRequestToDestination()
       return
     }
-    const response = await this.sendOracleDiscoveryRequest()
 
+    const response = await this.sendOracleDiscoveryRequest()
     if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
       const partyList = this.filterOraclePartyList(response)
       await this.processOraclePartyList(partyList)
@@ -71,9 +65,9 @@ class GetPartiesService extends BasePartiesService {
     const log = this.log.child({ source, proxy, method: 'validateRequester' })
     this.stepInProgress('validateRequester-0')
 
-    const sourceParticipant = await this.validateParticipant(source)
-    if (sourceParticipant) {
-      log.debug('source is in scheme')
+    const schemeSource = await this.validateParticipant(source)
+    if (schemeSource) {
+      log.debug('source participant is in scheme')
       return source
     }
 
@@ -81,8 +75,8 @@ class GetPartiesService extends BasePartiesService {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.sourceFspNotFound, log)
     }
 
-    const proxyParticipant = await this.validateParticipant(proxy)
-    if (!proxyParticipant) {
+    const schemeProxy = await this.validateParticipant(proxy)
+    if (!schemeProxy) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.partyProxyNotFound, log)
     }
 
@@ -101,16 +95,16 @@ class GetPartiesService extends BasePartiesService {
     const log = this.log.child({ method: 'forwardRequestToDestination' })
     let sendTo = destination
 
-    const destParticipant = await this.validateParticipant(destination)
-    if (!destParticipant) {
+    const schemeParticipant = await this.validateParticipant(destination)
+    if (!schemeParticipant) {
       this.stepInProgress('lookupProxyDestination-2')
       const proxyId = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
 
       if (!proxyId) {
         log.warn('destination participant is not in scheme, and no dfsp-to-proxy mapping', { destination })
         await super.sendDeleteOracleRequest(headers, params)
-        return this.triggerInterSchemeDiscoveryFlow(GetPartiesService.headersWithoutDestination(headers))
-        // think, if we need to remove proxy-header from the call above  ↑↑
+        await this.triggerInterSchemeDiscoveryFlow(GetPartiesService.headersWithoutDestination(headers))
+        return
       }
       sendTo = proxyId
     }
@@ -146,20 +140,22 @@ class GetPartiesService extends BasePartiesService {
   }
 
   async processOraclePartyList (partyList) {
-    const { headers, params } = this.inputs
     this.stepInProgress('processOraclePartyList')
+    const { headers, params } = this.inputs
 
-    let sentCount = 0 // if sentCount === 0 after sending, should we send idNotFound error
+    let sentCount = 0 // if sentCount === 0 after sending, we send idNotFound error
     const sending = partyList.map(async party => {
       const { fspId } = party
-      // const clonedHeaders = { ...headers }
-      // if (!this.state.destination) {
-      //   clonedHeaders[Headers.FSPIOP.DESTINATION] = fspId
-      // }
+
       const schemeParticipant = await this.validateParticipant(fspId)
       if (schemeParticipant) {
         sentCount++
-        return this.#forwardRequestToSchemeParticipant(fspId)
+        this.log.info('participant is in scheme, so forwarding to it...', { fspId })
+        return this.#forwardGetPartiesRequest({
+          sendTo: fspId,
+          headers: GetPartiesService.overrideDestinationHeader(headers, fspId),
+          params
+        })
       }
 
       if (this.state.proxyEnabled) {
@@ -167,15 +163,18 @@ class GetPartiesService extends BasePartiesService {
         if (!proxyName) {
           this.log.warn('no proxyMapping for participant!  Deleting reference in oracle...', { fspId })
           return super.sendDeleteOracleRequest(headers, params)
+          // todo: check if it won't delete all parties
         }
 
-        // if no destination header, it means we're in initial inter-scheme discovery phase. So only local participants matter
-        if (this.state.destination) {
+        // Coz there's no destination header, it means we're inside initial inter-scheme discovery phase.
+        // So we should proceed only if source is in scheme (local participant)
+        const schemeSource = await this.validateParticipant(this.state.source)
+        if (schemeSource) {
           sentCount++
-          this.log.info('participant is NOT in scheme, use proxy name', { fspId, proxyName })
+          this.log.info('participant is NOT in scheme and source is in, so forwarding to proxy...', { fspId, proxyName })
           return this.#forwardGetPartiesRequest({
             sendTo: proxyName,
-            headers, // todo: think, if we need to override destination header with fspId
+            headers: GetPartiesService.overrideDestinationHeader(headers, fspId),
             params
           })
         }
@@ -188,7 +187,7 @@ class GetPartiesService extends BasePartiesService {
   }
 
   async getFilteredProxyList (proxy) {
-    this.stepInProgress('getAllProxies-8')
+    this.stepInProgress('getFilteredProxyList')
     if (!this.state.proxyEnabled) {
       this.log.warn('proxyCache is not enabled')
       return []
@@ -239,18 +238,10 @@ class GetPartiesService extends BasePartiesService {
   async sendPartyNotFoundErrorCallback (headers) {
     const { params } = this.inputs
     const fspiopError = super.createFspiopIdNotFoundError('No proxy found to start inter-scheme discovery flow')
-    const callbackHeaders = createCallbackHeaders({
-      requestHeaders: headers,
-      partyIdType: params.Type,
-      partyIdentifier: params.ID,
-      endpointTemplate: params.SubId
-        ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
-        : FspEndpointTemplates.PARTIES_PUT_ERROR
-    })
 
     await this.sendErrorCallback({
       errorInfo: fspiopError.toApiErrorObject(this.deps.config.ERROR_HANDLING),
-      headers: callbackHeaders,
+      headers: GetPartiesService.createErrorCallbackHeaders(headers, params),
       params
     })
     return fspiopError
@@ -260,20 +251,6 @@ class GetPartiesService extends BasePartiesService {
     this.stepInProgress('sendOracleDiscoveryRequest')
     const { headers, params, query } = this.inputs
     return this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
-  }
-
-  async #forwardRequestToSchemeParticipant (fspId) {
-    const { headers, params } = this.inputs
-    const clonedHeaders = {
-      ...headers,
-      [Headers.FSPIOP.DESTINATION]: this.state.destination || fspId // todo: clarify if we need just to use fspId
-    }
-    this.log.info('participant is in scheme', { fspId })
-    return this.#forwardGetPartiesRequest({
-      sendTo: fspId,
-      headers: clonedHeaders,
-      params
-    })
   }
 
   async #forwardGetPartiesRequest ({ sendTo, headers, params }) {

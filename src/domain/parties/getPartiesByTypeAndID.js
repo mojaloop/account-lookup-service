@@ -50,15 +50,13 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     ['success']
   ).startTimer()
   const childSpan = span ? span.getChild(component) : undefined
-  const log = logger.child({ component, params })
-
-  const deps = createDeps({ cache, proxyCache, childSpan, log })
+  const deps = createDeps({ cache, proxyCache, childSpan })
   const service = new GetPartiesService(deps, { headers, params, query })
   let fspiopError
 
   try {
     await service.handleRequest()
-    log.info('getPartiesByTypeAndID is done')
+    logger.info('getPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
     fspiopError = await service.handleError(error)

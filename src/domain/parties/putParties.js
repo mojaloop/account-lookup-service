@@ -55,15 +55,13 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     ['success']
   ).startTimer()
   // const childSpan = span ? span.getChild(component) : undefined
-  const log = logger.child({ component, params })
-
-  const deps = createDeps({ cache, proxyCache, log })
+  const deps = createDeps({ cache, proxyCache })
   const service = new services.PutPartiesService(deps, { headers, params, payload, dataUri })
   let fspiopError
 
   try {
     await service.handleRequest()
-    log.info('putPartiesByTypeAndID is done')
+    logger.info('putPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
     fspiopError = await service.handleError(error)
@@ -93,9 +91,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     ['success']
   ).startTimer()
   const childSpan = span ? span.getChild(component) : undefined
-  const log = logger.child({ component, params })
-
-  const deps = createDeps({ cache, proxyCache, childSpan, log })
+  const deps = createDeps({ cache, proxyCache, childSpan })
   const inputs = { headers, params, payload, dataUri }
   const service = new services.PutPartiesErrorService(deps, inputs)
   let fspiopError
@@ -110,7 +106,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
       // think, if we need to start the whole processing with getPartiesService.handleRequest() ?
     }
 
-    log.info('putPartiesErrorByTypeAndID is done')
+    logger.info('putPartiesErrorByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
     fspiopError = await service.handleError(error)
