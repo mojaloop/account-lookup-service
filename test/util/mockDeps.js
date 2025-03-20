@@ -32,7 +32,7 @@ const createProxyCacheMock = ({
   receivedSuccessResponse = jest.fn(async () => true),
   removeDfspIdFromProxyMapping = jest.fn(async () => true),
   setSendToProxiesList = jest.fn(async () => true)
-} = {}) => Object.freeze({
+} = {}) => ({
   addDfspIdToProxyMapping,
   lookupProxyByDfspId,
   receivedErrorResponse,

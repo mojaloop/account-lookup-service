@@ -161,7 +161,7 @@ class GetPartiesService extends BasePartiesService {
       if (this.state.proxyEnabled) {
         const proxyName = await this.deps.proxyCache.lookupProxyByDfspId(fspId)
         if (!proxyName) {
-          this.log.warn('no proxyMapping for participant!  Deleting reference in oracle...', { fspId })
+          this.log.warn('no proxyMapping for external DFSP!  Deleting reference in oracle...', { fspId })
           return super.sendDeleteOracleRequest(headers, params)
           // todo: check if it won't delete all parties
         }
@@ -171,7 +171,7 @@ class GetPartiesService extends BasePartiesService {
         const schemeSource = await this.validateParticipant(this.state.source)
         if (schemeSource) {
           sentCount++
-          this.log.info('participant is NOT in scheme and source is in, so forwarding to proxy...', { fspId, proxyName })
+          this.log.info('participant is NOT in scheme, but source is. So forwarding to proxy...', { fspId, proxyName })
           return this.#forwardGetPartiesRequest({
             sendTo: proxyName,
             headers: GetPartiesService.overrideDestinationHeader(headers, fspId),

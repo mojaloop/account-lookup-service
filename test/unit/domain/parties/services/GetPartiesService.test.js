@@ -80,26 +80,44 @@ describe('GetPartiesService Tests -->', () => {
   })
 
   describe('processOraclePartyList for external participants', () => {
-    const DFSP_ID = 'externalFsp'
+    const EXTERNAL_DFSP_ID = 'externalFsp'
     const PROXY_ID = 'externalProxy'
     let deps
+    let proxyCache
 
     beforeEach(async () => {
       oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
-        fixtures.oracleRequestResponseDto({ partyList: [{ fspId: DFSP_ID }] })
+        fixtures.oracleRequestResponseDto({ partyList: [{ fspId: EXTERNAL_DFSP_ID }] })
       )
       participant.validateParticipant = jest.fn()
         .mockResolvedValueOnce(null) // source
         .mockResolvedValueOnce({}) // proxy
 
-      const proxyCache = mockDeps.createProxyCacheMock({
+      proxyCache = mockDeps.createProxyCacheMock({
         addDfspIdToProxyMapping: jest.fn().mockResolvedValueOnce(true),
         lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(PROXY_ID)
       })
       deps = createMockDeps({ proxyCache })
     })
 
-    test('should throw ID_NOT_FOUND error, during interScheme discovery (no destination header) ', async () => {
+    test('should throw ID_NOT_FOUND error and cleanup oracle, if no proxyMapping for external dfsp', async () => {
+      expect.hasAssertions()
+      proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(null)
+      const headers = fixtures.partiesCallHeadersDto({
+        destination: '', proxy: 'proxyA'
+      })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+        .catch((err) => {
+          expect(err).toEqual(service.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded))
+        })
+      expect(oracle.oracleRequest.mock.calls.length).toBe(2) // GET + DELETE
+      expect(oracle.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+    })
+
+    test('should throw ID_NOT_FOUND error, if source is external', async () => {
       expect.hasAssertions()
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'
@@ -113,9 +131,10 @@ describe('GetPartiesService Tests -->', () => {
         })
     })
 
-    test('should throw ID_NOT_FOUND error, if destination header is passed during discovery', async () => {
+    test('should forward request, if source is in scheme', async () => {
+      participant.validateParticipant = jest.fn(async (fsp) => (fsp === EXTERNAL_DFSP_ID ? null : {}))
       const headers = fixtures.partiesCallHeadersDto({
-        destination: 'destFsp', proxy: 'proxyA'
+        destination: '', proxy: 'proxyA'
       })
       const params = fixtures.partiesParamsDto()
       const service = new GetPartiesService(deps, { headers, params })
@@ -124,8 +143,7 @@ describe('GetPartiesService Tests -->', () => {
       expect(participant.sendRequest.mock.calls.length).toBe(1)
       const [sentHeaders, sendTo] = participant.sendRequest.mock.lastCall
       expect(sendTo).toEqual(PROXY_ID)
-      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(headers[Headers.FSPIOP.DESTINATION])
-      // todo: clarify which headers are supposed to be here
+      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(EXTERNAL_DFSP_ID)
     })
   })
 })

@@ -472,7 +472,7 @@ describe('Parties Tests', () => {
       expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should send errorCallback if oracle returns dfsp NOT from scheme, and no destination-header', async () => {
+    it('should send errorCallback if oracle returns external dfsp, and source is external', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const proxyName = `proxy-${Date.now()}`
       const fspId = `dfspNotFromScheme-${Date.now()}`
