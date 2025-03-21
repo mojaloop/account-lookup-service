@@ -29,20 +29,13 @@ jest.mock('#src/models/oracle/facade')
 jest.mock('#src/models/participantEndpoint/facade')
 
 const { GetPartiesService } = require('#src/domain/parties/services/index')
-const { createDeps } = require('#src/domain/parties/deps')
-const { logger } = require('#src/lib/index')
 const { ERROR_MESSAGES } = require('#src/constants')
 const oracle = require('#src/models/oracle/facade')
 const participant = require('#src/models/participantEndpoint/facade')
 const fixtures = require('#test/fixtures/index')
-const mockDeps = require('#test/util/mockDeps')
+const { createMockDeps, createProxyCacheMock } = require('./deps')
 
 const { RestMethods, Headers } = GetPartiesService.enums()
-
-const createMockDeps = ({
-  proxyCache = mockDeps.createProxyCacheMock(),
-  log = logger.child({ test: true })
-} = {}) => createDeps({ proxyCache, log })
 
 describe('GetPartiesService Tests -->', () => {
   beforeEach(() => {
@@ -52,7 +45,7 @@ describe('GetPartiesService Tests -->', () => {
   describe('forwardRequestToDestination method', () => {
     test('should delete party info from oracle, if no destination DFSP in proxy mapping', async () => {
       participant.validateParticipant = jest.fn().mockResolvedValueOnce(false)
-      const proxyCache = mockDeps.createProxyCacheMock({
+      const proxyCache = createProxyCacheMock({
         lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(null)
       })
       const deps = createMockDeps({ proxyCache })
@@ -93,7 +86,7 @@ describe('GetPartiesService Tests -->', () => {
         .mockResolvedValueOnce(null) // source
         .mockResolvedValueOnce({}) // proxy
 
-      proxyCache = mockDeps.createProxyCacheMock({
+      proxyCache = createProxyCacheMock({
         addDfspIdToProxyMapping: jest.fn().mockResolvedValueOnce(true),
         lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(PROXY_ID)
       })

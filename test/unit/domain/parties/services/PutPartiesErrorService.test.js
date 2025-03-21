@@ -25,24 +25,29 @@
  --------------
  ******/
 
-const createProxyCacheMock = ({
-  addDfspIdToProxyMapping = jest.fn(async () => true),
-  isPendingCallback = jest.fn(async () => false),
-  lookupProxyByDfspId = jest.fn(async () => null),
-  receivedErrorResponse = jest.fn(async () => false),
-  receivedSuccessResponse = jest.fn(async () => true),
-  removeDfspIdFromProxyMapping = jest.fn(async () => true),
-  setSendToProxiesList = jest.fn(async () => true)
-} = {}) => ({
-  addDfspIdToProxyMapping,
-  isPendingCallback,
-  lookupProxyByDfspId,
-  receivedErrorResponse,
-  receivedSuccessResponse,
-  removeDfspIdFromProxyMapping,
-  setSendToProxiesList
-})
+jest.mock('#src/models/oracle/facade')
+jest.mock('#src/models/participantEndpoint/facade')
 
-module.exports = {
-  createProxyCacheMock
-}
+const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
+const oracle = require('#src/models/oracle/facade')
+const fixtures = require('#test/fixtures/index')
+const { createMockDeps } = require('./deps')
+
+const { RestMethods } = PutPartiesErrorService.enums()
+
+describe('PutPartiesErrorService Tests -->', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('should cleanup oracle and trigger discovery flow for party from external dfsp', async () => {
+    const headers = fixtures.partiesCallHeadersDto({ proxy: 'proxyA' })
+    const params = fixtures.partiesParamsDto()
+    const service = new PutPartiesErrorService(createMockDeps(), { headers, params })
+
+    const needDiscovery = await service.handleRequest()
+    expect(needDiscovery).toBe(true)
+    expect(oracle.oracleRequest.mock.calls.length).toBe(1)
+    expect(oracle.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+  })
+})
