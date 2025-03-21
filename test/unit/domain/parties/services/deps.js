@@ -25,25 +25,16 @@
  --------------
  ******/
 
-const { proxies } = require('@mojaloop/central-services-shared').Util
-const { logger } = require('../../lib')
-const config = require('../../lib/config')
-const oracle = require('../../models/oracle/facade')
-const participant = require('../../models/participantEndpoint/facade')
-const partiesUtils = require('./partiesUtils')
+const { createDeps } = require('#src/domain/parties/deps')
+const { logger } = require('#src/lib/index')
+const { createProxyCacheMock } = require('#test/util/mockDeps')
 
-const createDeps = ({ cache, proxyCache, childSpan, log = logger }) => Object.freeze({
-  cache,
-  proxyCache,
-  childSpan,
-  log,
-  config,
-  oracle,
-  participant,
-  proxies,
-  partiesUtils
-})
+const createMockDeps = ({
+  proxyCache = createProxyCacheMock(),
+  log = logger.child({ test: true })
+} = {}) => createDeps({ proxyCache, log })
 
 module.exports = {
-  createDeps
+  createMockDeps,
+  createProxyCacheMock
 }

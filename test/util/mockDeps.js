@@ -25,25 +25,24 @@
  --------------
  ******/
 
-const { proxies } = require('@mojaloop/central-services-shared').Util
-const { logger } = require('../../lib')
-const config = require('../../lib/config')
-const oracle = require('../../models/oracle/facade')
-const participant = require('../../models/participantEndpoint/facade')
-const partiesUtils = require('./partiesUtils')
-
-const createDeps = ({ cache, proxyCache, childSpan, log = logger }) => Object.freeze({
-  cache,
-  proxyCache,
-  childSpan,
-  log,
-  config,
-  oracle,
-  participant,
-  proxies,
-  partiesUtils
+const createProxyCacheMock = ({
+  addDfspIdToProxyMapping = jest.fn(async () => true),
+  isPendingCallback = jest.fn(async () => false),
+  lookupProxyByDfspId = jest.fn(async () => null),
+  receivedErrorResponse = jest.fn(async () => false),
+  receivedSuccessResponse = jest.fn(async () => true),
+  removeDfspIdFromProxyMapping = jest.fn(async () => true),
+  setSendToProxiesList = jest.fn(async () => true)
+} = {}) => ({
+  addDfspIdToProxyMapping,
+  isPendingCallback,
+  lookupProxyByDfspId,
+  receivedErrorResponse,
+  receivedSuccessResponse,
+  removeDfspIdFromProxyMapping,
+  setSendToProxiesList
 })
 
 module.exports = {
-  createDeps
+  createProxyCacheMock
 }
