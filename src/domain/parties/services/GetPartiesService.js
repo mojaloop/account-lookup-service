@@ -47,8 +47,7 @@ class GetPartiesService extends BasePartiesService {
 
     const response = await this.sendOracleDiscoveryRequest()
     if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
-      const partyList = this.filterOraclePartyList(response)
-      await this.processOraclePartyList(partyList)
+      await this.processOraclePartyListResponse(response)
       return
     }
 
@@ -112,10 +111,67 @@ class GetPartiesService extends BasePartiesService {
     log.info('discovery getPartiesByTypeAndID request was sent', { sendTo })
   }
 
-  filterOraclePartyList (response) {
+  async sendOracleDiscoveryRequest () {
+    this.stepInProgress('#sendOracleDiscoveryRequest')
+    const { headers, params, query } = this.inputs
+    return this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+  }
+
+  async processOraclePartyListResponse (response) {
+    this.stepInProgress('processOraclePartyList')
+    const partyList = this.#filterOraclePartyList(response)
+
+    let sentCount = 0 // if sentCount === 0 after sending, we send idNotFound error
+    await Promise.all(partyList.map(async party => {
+      const isSent = await this.#processSingleOracleParty(party)
+      if (isSent) sentCount++
+    }))
+    this.log.verbose('processOraclePartyList is done', { sentCount })
+
+    if (sentCount === 0) throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded)
+  }
+
+  async triggerInterSchemeDiscoveryFlow (headers) {
+    const { params } = this.inputs
+    const { proxy, source } = this.state
+    const log = this.log.child({ method: 'triggerInterSchemeDiscoveryFlow' })
+    log.verbose('triggerInterSchemeDiscoveryFlow start...', { proxy, source })
+
+    const proxyNames = await this.#getFilteredProxyList(proxy)
+    if (!proxyNames.length) {
+      return this.#sendPartyNotFoundErrorCallback(headers)
+    }
+
+    this.stepInProgress('setSendToProxiesList-10')
+    const alsReq = this.deps.partiesUtils.alsRequestDto(source, params)
+    log.verbose('starting setSendToProxiesList flow: ', { proxyNames, alsReq, proxyCacheTtlSec })
+
+    const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, proxyCacheTtlSec)
+    if (!isCached) {
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.failedToCacheSendToProxiesList, log)
+    }
+
+    this.stepInProgress('sendingProxyRequests')
+    const sending = proxyNames.map(
+      sendTo => this.#forwardGetPartiesRequest({ sendTo, headers, params })
+        .then(({ status, data } = {}) => ({ status, data }))
+    )
+    const results = await Promise.allSettled(sending)
+    const isOk = results.some(result => result.status === 'fulfilled')
+    // If, at least, one request is sent to proxy, we treat the whole flow as successful.
+    // Failed requests should be handled by TTL expired/timeout handler
+    log.info('triggerInterSchemeDiscoveryFlow is done:', { isOk, results, proxyNames, alsReq })
+    this.stepInProgress('allSent-12')
+
+    if (!isOk) {
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.proxyConnectionError, log)
+    }
+  }
+
+  #filterOraclePartyList (response) {
     // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records.
     // We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
-    this.stepInProgress('filterOraclePartyList-5')
+    this.stepInProgress('filterOraclePartyList')
     const { params } = this.inputs
     const callbackEndpointType = this.deps.partiesUtils.getPartyCbType(params.SubId)
     let filteredPartyList
@@ -138,103 +194,53 @@ class GetPartiesService extends BasePartiesService {
     return filteredPartyList
   }
 
-  async processOraclePartyList (partyList) {
-    this.stepInProgress('processOraclePartyList')
+  /** @returns {Promise<boolean>} - is request forwarded to participant */
+  async #processSingleOracleParty (party) {
     const { headers, params } = this.inputs
+    const { fspId } = party
 
-    let sentCount = 0 // if sentCount === 0 after sending, we send idNotFound error
-    const sending = partyList.map(async party => {
-      const { fspId } = party
+    const schemeParticipant = await this.validateParticipant(fspId)
+    if (schemeParticipant) {
+      this.log.info('participant is in scheme, so forwarding to it...', { fspId })
+      await this.#forwardGetPartiesRequest({
+        sendTo: fspId,
+        headers: GetPartiesService.overrideDestinationHeader(headers, fspId),
+        params
+      })
+      return true
+    }
 
-      const schemeParticipant = await this.validateParticipant(fspId)
-      if (schemeParticipant) {
-        sentCount++
-        this.log.info('participant is in scheme, so forwarding to it...', { fspId })
-        return this.#forwardGetPartiesRequest({
-          sendTo: fspId,
+    if (this.state.proxyEnabled) {
+      const proxyName = await this.deps.proxyCache.lookupProxyByDfspId(fspId)
+      if (!proxyName) {
+        this.log.warn('no proxyMapping for external DFSP!  Deleting reference in oracle...', { fspId })
+        await super.sendDeleteOracleRequest(headers, params)
+        // todo: check if it won't delete all parties
+        return false
+      }
+
+      // Coz there's no destination header, it means we're inside initial inter-scheme discovery phase from requester.
+      // So we should proceed only if source is in scheme (local participant)
+
+      // const schemeSource = await this.validateParticipant(this.state.source)
+      // if (schemeSource) {
+      if (!this.state.proxy) {
+        this.log.info('participant is NOT in scheme, but source is. So forwarding to proxy...', { fspId, proxyName })
+        await this.#forwardGetPartiesRequest({
+          sendTo: proxyName,
           headers: GetPartiesService.overrideDestinationHeader(headers, fspId),
           params
         })
+        return true
       }
 
-      if (this.state.proxyEnabled) {
-        const proxyName = await this.deps.proxyCache.lookupProxyByDfspId(fspId)
-        if (!proxyName) {
-          this.log.warn('no proxyMapping for external DFSP!  Deleting reference in oracle...', { fspId })
-          return super.sendDeleteOracleRequest(headers, params)
-          // todo: check if it won't delete all parties
-        }
-
-        // Coz there's no destination header, it means we're inside initial inter-scheme discovery phase.
-        // So we should proceed only if source is in scheme (local participant)
-        const schemeSource = await this.validateParticipant(this.state.source)
-        if (schemeSource) {
-          sentCount++
-          this.log.info('participant is NOT in scheme, but source is. So forwarding to proxy...', { fspId, proxyName })
-          return this.#forwardGetPartiesRequest({
-            sendTo: proxyName,
-            headers: GetPartiesService.overrideDestinationHeader(headers, fspId),
-            params
-          })
-        }
-      }
-    })
-    await Promise.all(sending)
-    this.log.verbose('processOraclePartyList is done', { sentCount })
-
-    if (sentCount === 0) throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded)
-  }
-
-  async getFilteredProxyList (proxy) {
-    this.stepInProgress('getFilteredProxyList')
-    if (!this.state.proxyEnabled) {
-      this.log.warn('proxyCache is not enabled')
-      return []
-    }
-
-    const proxyNames = await this.deps.proxies.getAllProxiesNames(this.deps.config.SWITCH_ENDPOINT)
-    this.log.debug('getAllProxiesNames is done', { proxyNames })
-    return proxyNames.filter(name => name !== proxy)
-  }
-
-  async triggerInterSchemeDiscoveryFlow (headers) {
-    const { params } = this.inputs
-    const { proxy, source } = this.state
-    const log = this.log.child({ method: 'triggerInterSchemeDiscoveryFlow' })
-    log.verbose('triggerInterSchemeDiscoveryFlow start...', { proxy, source })
-
-    const proxyNames = await this.getFilteredProxyList(proxy)
-    if (!proxyNames.length) {
-      return this.sendPartyNotFoundErrorCallback(headers)
-    }
-
-    this.stepInProgress('setSendToProxiesList-10')
-    const alsReq = this.deps.partiesUtils.alsRequestDto(source, params)
-    log.verbose('starting setSendToProxiesList flow: ', { proxyNames, alsReq, proxyCacheTtlSec })
-
-    const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, proxyCacheTtlSec)
-    if (!isCached) {
-      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.failedToCacheSendToProxiesList, log)
-    }
-
-    this.stepInProgress('sendingProxyRequests-11')
-    const sending = proxyNames.map(
-      sendTo => this.#forwardGetPartiesRequest({ sendTo, headers, params })
-        .then(({ status, data } = {}) => ({ status, data }))
-    )
-    const results = await Promise.allSettled(sending)
-    const isOk = results.some(result => result.status === 'fulfilled')
-    // If, at least, one request is sent to proxy, we treat the whole flow as successful.
-    // Failed requests should be handled by TTL expired/timeout handler
-    log.info('triggerInterSchemeDiscoveryFlow is done:', { isOk, results, proxyNames, alsReq })
-    this.stepInProgress('allSent-12')
-
-    if (!isOk) {
-      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.proxyConnectionError, log)
+      // todo: think, how to forward request from ZM on Region to MW
+      // So regional scheme might have partyInfo in oracle when gets initial inter-scheme discovery call from buffer scheme
+      console.log('todo....')
     }
   }
 
-  async sendPartyNotFoundErrorCallback (headers) {
+  async #sendPartyNotFoundErrorCallback (headers) {
     const { params } = this.inputs
     const fspiopError = super.createFspiopIdNotFoundError('No proxy found to start inter-scheme discovery flow')
 
@@ -246,18 +252,24 @@ class GetPartiesService extends BasePartiesService {
     return fspiopError
   }
 
-  async sendOracleDiscoveryRequest () {
-    this.stepInProgress('sendOracleDiscoveryRequest')
-    const { headers, params, query } = this.inputs
-    return this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
-  }
-
   async #forwardGetPartiesRequest ({ sendTo, headers, params }) {
     this.stepInProgress('#forwardGetPartiesRequest')
     const callbackEndpointType = this.deps.partiesUtils.getPartyCbType(params.SubId)
     const options = this.deps.partiesUtils.partiesRequestOptionsDto(params)
 
     return this.deps.participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.GET, undefined, options, this.deps.childSpan)
+  }
+
+  async #getFilteredProxyList (proxy) {
+    this.stepInProgress('#getFilteredProxyList')
+    if (!this.state.proxyEnabled) {
+      this.log.warn('proxyCache is not enabled')
+      return []
+    }
+
+    const proxyNames = await this.deps.proxies.getAllProxiesNames(this.deps.config.SWITCH_ENDPOINT)
+    this.log.debug('getAllProxiesNames is done', { proxyNames })
+    return proxyNames.filter(name => name !== proxy)
   }
 }
 

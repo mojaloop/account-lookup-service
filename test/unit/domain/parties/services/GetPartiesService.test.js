@@ -120,10 +120,29 @@ describe('GetPartiesService Tests -->', () => {
         })
     })
 
-    test('should forward request, if source is in scheme', async () => {
+    test('should forward request, if source is in scheme (no proxy header)', async () => {
       participantMock.validateParticipant = jest.fn(async (fsp) => (fsp === EXTERNAL_DFSP_ID ? null : {}))
       const headers = fixtures.partiesCallHeadersDto({
-        destination: '', proxy: 'proxyA'
+        destination: '', proxy: ''
+      })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+      expect(participantMock.sendRequest.mock.calls.length).toBe(1)
+      const [sentHeaders, sendTo] = participantMock.sendRequest.mock.lastCall
+      expect(sendTo).toEqual(PROXY_ID)
+      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(EXTERNAL_DFSP_ID)
+    })
+
+    test.skip('should forward request, if source is NOT in scheme', async () => {
+      // todo: unskip after adding correct impl.
+      const source = 'test-zm-dfsp'
+      participantMock.validateParticipant = jest.fn(
+        async (fsp) => ([EXTERNAL_DFSP_ID, source].includes(fsp) ? null : {})
+      )
+      const headers = fixtures.partiesCallHeadersDto({
+        source, destination: '', proxy: 'proxy-zm'
       })
       const params = fixtures.partiesParamsDto()
       const service = new GetPartiesService(deps, { headers, params })

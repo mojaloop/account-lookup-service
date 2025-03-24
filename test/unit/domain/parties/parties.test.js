@@ -490,7 +490,7 @@ describe('Parties Tests', () => {
       expect(isAdded).toBe(true)
 
       const source = `fromDfsp-${Date.now()}`
-      const headers = fixtures.partiesCallHeadersDto({ destination: '', source })
+      const headers = fixtures.partiesCallHeadersDto({ destination: '', source, proxy: 'proxy' })
       const { params, method, query } = Helper.getByTypeIdRequest
 
       await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, null, null, proxyCache)
