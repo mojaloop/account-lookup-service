@@ -90,7 +90,7 @@ describe('GetPartiesService Tests -->', () => {
     })
 
     test('should throw ID_NOT_FOUND error and cleanup oracle, if no proxyMapping for external dfsp', async () => {
-      expect.hasAssertions()
+      expect.assertions(3)
       proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(null)
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'

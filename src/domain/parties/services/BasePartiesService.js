@@ -35,6 +35,8 @@ const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
 
 /**
+ * Input parameters from party lookup request
+ *
  * @typedef {Object} PartiesInputs
  * @property {Object} headers - incoming http request headers.
  * @property {Object} params - uri parameters of the http request.
@@ -43,10 +45,22 @@ const { Headers, RestMethods } = Enum.Http
  * @property {string} [dataUri] - encoded payload of the request being sent out.
  */
 
+/**
+ * Any calculated values we get during request processing
+ *
+ * @typedef {Object} PartiesModelState
+ * @property {string} destination - The destination DFSP ID from headers
+ * @property {string} source - The source DFSP ID from headers
+ * @property {string} [proxy] - The proxy DFSP ID from headers, if present
+ * @property {string} requester - The entity initiating the request (either a DFSP in scheme or a proxy)
+ * @property {boolean} proxyEnabled - Indicates whether proxy functionality is enabled in the current configuration
+ * @property {StepState} stepState - Processing steps state
+ */
+
 class BasePartiesService {
   #deps
   #inputs // see PartiesInputs
-  #state // any calculated values we get during request processing
+  #state // see PartiesModelState
 
   /**
    * @param {Object} deps - The dependencies required by the class instance.
@@ -64,7 +78,11 @@ class BasePartiesService {
   }
 
   get deps () { return this.#deps }
+
+  /** @returns {PartiesInputs} */
   get inputs () { return this.#inputs }
+
+  /** @returns {PartiesModelState} */
   get state () { return this.#state }
 
   async handleError (error) {
@@ -130,6 +148,7 @@ class BasePartiesService {
       destination: headers[Headers.FSPIOP.DESTINATION],
       source: headers[Headers.FSPIOP.SOURCE],
       proxy: headers[Headers.FSPIOP.PROXY],
+      requester: '', // dfsp in scheme  OR  proxy
       proxyEnabled: !!(this.deps.config.PROXY_CACHE_CONFIG?.enabled && this.deps.proxyCache),
       stepState: initStepState()
     }

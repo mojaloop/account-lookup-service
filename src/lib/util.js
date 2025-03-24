@@ -101,7 +101,14 @@ const countFspiopError = (error, options) => {
   rethrow.countFspiopError(error, options)
 }
 
-// todo: think better name
+/**
+ *  An immutable object representing the step state
+ * @typedef {Object} StepState
+ * @property {string} step - The current step value (read-only getter property)
+ * @property {(string) => void} inProgress - Method to update the current step
+ */
+
+/** @returns {StepState} */
 const initStepState = (initStep = 'start') => {
   let step = initStep
   return Object.freeze({

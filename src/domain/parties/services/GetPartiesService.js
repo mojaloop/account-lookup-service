@@ -39,7 +39,6 @@ class GetPartiesService extends BasePartiesService {
     // without consulting any oracles.
     this.log.info('handling getParties request...', { source, destination, proxy })
     this.state.requester = await this.validateRequester()
-    // dfsp in scheme  OR  proxy
 
     if (destination) {
       await this.forwardRequestToDestination()
