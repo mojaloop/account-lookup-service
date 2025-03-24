@@ -32,6 +32,7 @@ const oracle = require('../../models/oracle/facade')
 const participant = require('../../models/participantEndpoint/facade')
 const partiesUtils = require('./partiesUtils')
 
+/** @returns {PartiesDeps} */
 const createDeps = ({ cache, proxyCache, childSpan, log = logger }) => Object.freeze({
   cache,
   proxyCache,

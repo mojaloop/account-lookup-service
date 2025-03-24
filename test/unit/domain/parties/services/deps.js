@@ -34,6 +34,7 @@ const { createDeps } = require('#src/domain/parties/deps')
 const { logger } = require('#src/lib/index')
 const { createProxyCacheMock } = require('#test/util/mockDeps')
 
+/** @returns {PartiesDeps} */
 const createMockDeps = ({
   proxyCache = createProxyCacheMock(),
   log = logger.child({ test: true }),

@@ -35,6 +35,19 @@ const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
 
 /**
+ * @typedef {Object} PartiesDeps
+ * @property {Object} cache
+ * @property {Object} proxyCache
+ * @property {Object} log
+ * @property {Object} config
+ * @property {Object} oracle
+ * @property {Object} participant
+ * @property {Proxies} proxies
+ * @property {Object} partiesUtils
+ * @property {Object} [childSpan]
+ */
+
+/**
  * Input parameters from party lookup request
  *
  * @typedef {Object} PartiesInputs
@@ -58,12 +71,12 @@ const { Headers, RestMethods } = Enum.Http
  */
 
 class BasePartiesService {
-  #deps
+  #deps // see PartiesDeps
   #inputs // see PartiesInputs
   #state // see PartiesModelState
 
   /**
-   * @param {Object} deps - The dependencies required by the class instance.
+   * @param {PartiesDeps} deps - The dependencies required by the class instance.
    * @param {PartiesInputs} inputs - The input parameters from incoming http request.
    * @return {void}
    */
@@ -77,6 +90,7 @@ class BasePartiesService {
     })
   }
 
+  /** @returns {PartiesDeps} */
   get deps () { return this.#deps }
 
   /** @returns {PartiesInputs} */
@@ -142,6 +156,7 @@ class BasePartiesService {
     return this.state.stepState?.step
   }
 
+  /** @returns {PartiesModelState} */
   #initiateState () {
     const { headers } = this.inputs
     return {
