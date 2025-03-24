@@ -25,13 +25,9 @@
  --------------
  ******/
 
-jest.mock('#src/models/oracle/facade')
-jest.mock('#src/models/participantEndpoint/facade')
-
+const { createMockDeps, oracleMock } = require('./deps')
 const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
-const oracle = require('#src/models/oracle/facade')
 const fixtures = require('#test/fixtures/index')
-const { createMockDeps } = require('./deps')
 
 const { RestMethods } = PutPartiesErrorService.enums()
 
@@ -47,7 +43,7 @@ describe('PutPartiesErrorService Tests -->', () => {
 
     const needDiscovery = await service.handleRequest()
     expect(needDiscovery).toBe(true)
-    expect(oracle.oracleRequest.mock.calls.length).toBe(1)
-    expect(oracle.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+    expect(oracleMock.oracleRequest.mock.calls.length).toBe(1)
+    expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
   })
 })

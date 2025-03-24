@@ -25,15 +25,11 @@
  --------------
  ******/
 
-jest.mock('#src/models/oracle/facade')
-jest.mock('#src/models/participantEndpoint/facade')
-
+const { createMockDeps, createProxyCacheMock, oracleMock, participantMock } = require('./deps')
+// should be first require to mock external deps
 const { GetPartiesService } = require('#src/domain/parties/services/index')
 const { ERROR_MESSAGES } = require('#src/constants')
-const oracle = require('#src/models/oracle/facade')
-const participant = require('#src/models/participantEndpoint/facade')
 const fixtures = require('#test/fixtures/index')
-const { createMockDeps, createProxyCacheMock } = require('./deps')
 
 const { RestMethods, Headers } = GetPartiesService.enums()
 
@@ -44,7 +40,7 @@ describe('GetPartiesService Tests -->', () => {
 
   describe('forwardRequestToDestination method', () => {
     test('should delete party info from oracle, if no destination DFSP in proxy mapping', async () => {
-      participant.validateParticipant = jest.fn().mockResolvedValueOnce(false)
+      participantMock.validateParticipant = jest.fn().mockResolvedValueOnce(false)
       const proxyCache = createProxyCacheMock({
         lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(null)
       })
@@ -58,8 +54,8 @@ describe('GetPartiesService Tests -->', () => {
 
       await service.forwardRequestToDestination()
 
-      expect(oracle.oracleRequest.mock.calls.length).toBe(1)
-      const [sentHeaders, method, sentParams] = oracle.oracleRequest.mock.lastCall
+      expect(oracleMock.oracleRequest.mock.calls.length).toBe(1)
+      const [sentHeaders, method, sentParams] = oracleMock.oracleRequest.mock.lastCall
       expect(method).toBe(RestMethods.DELETE)
       expect(sentHeaders).toEqual(headers)
       expect(sentParams).toEqual(params)
@@ -79,10 +75,10 @@ describe('GetPartiesService Tests -->', () => {
     let proxyCache
 
     beforeEach(async () => {
-      oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
+      oracleMock.oracleRequest = jest.fn().mockResolvedValueOnce(
         fixtures.oracleRequestResponseDto({ partyList: [{ fspId: EXTERNAL_DFSP_ID }] })
       )
-      participant.validateParticipant = jest.fn()
+      participantMock.validateParticipant = jest.fn()
         .mockResolvedValueOnce(null) // source
         .mockResolvedValueOnce({}) // proxy
 
@@ -106,8 +102,8 @@ describe('GetPartiesService Tests -->', () => {
         .catch((err) => {
           expect(err).toEqual(service.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded))
         })
-      expect(oracle.oracleRequest.mock.calls.length).toBe(2) // GET + DELETE
-      expect(oracle.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+      expect(oracleMock.oracleRequest.mock.calls.length).toBe(2) // GET + DELETE
+      expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
     })
 
     test('should throw ID_NOT_FOUND error, if source is external', async () => {
@@ -125,7 +121,7 @@ describe('GetPartiesService Tests -->', () => {
     })
 
     test('should forward request, if source is in scheme', async () => {
-      participant.validateParticipant = jest.fn(async (fsp) => (fsp === EXTERNAL_DFSP_ID ? null : {}))
+      participantMock.validateParticipant = jest.fn(async (fsp) => (fsp === EXTERNAL_DFSP_ID ? null : {}))
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'
       })
@@ -133,8 +129,8 @@ describe('GetPartiesService Tests -->', () => {
       const service = new GetPartiesService(deps, { headers, params })
 
       await service.handleRequest()
-      expect(participant.sendRequest.mock.calls.length).toBe(1)
-      const [sentHeaders, sendTo] = participant.sendRequest.mock.lastCall
+      expect(participantMock.sendRequest.mock.calls.length).toBe(1)
+      const [sentHeaders, sendTo] = participantMock.sendRequest.mock.lastCall
       expect(sendTo).toEqual(PROXY_ID)
       expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(EXTERNAL_DFSP_ID)
     })

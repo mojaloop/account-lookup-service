@@ -25,6 +25,8 @@
  --------------
  ******/
 
+const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
+
 const ERROR_MESSAGES = Object.freeze({
   emptyFilteredPartyList: 'Empty oracle partyList, filtered based on callbackEndpointType',
   failedToCacheSendToProxiesList: 'Failed to cache sendToProxiesList',
@@ -40,6 +42,7 @@ const HANDLER_TYPES = Object.freeze({
 })
 
 module.exports = {
+  API_TYPES,
   ERROR_MESSAGES,
   HANDLER_TYPES
 }

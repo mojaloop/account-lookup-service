@@ -29,10 +29,11 @@ const util = require('node:util')
 const Path = require('node:path')
 const EventSdk = require('@mojaloop/event-sdk')
 const Enum = require('@mojaloop/central-services-shared').Enum
-const { HeaderValidation, Hapi } = require('@mojaloop/central-services-shared').Util
+const { HeaderValidation } = require('@mojaloop/central-services-shared').Util
 const rethrow = require('@mojaloop/central-services-shared').Util.rethrow.with('ALS')
 
 const Config = require('../lib/config')
+const { API_TYPES } = require('../constants')
 const { logger } = require('./index')
 
 const getSpanTags = ({ headers }, transactionType, transactionAction) => {
@@ -69,7 +70,7 @@ const pathForInterface = ({ isAdmin, isMockInterface }) => {
     if (isMockInterface) {
       apiFile = 'api_swagger.json'
     } else {
-      apiFile = Config.API_TYPE === Hapi.API_TYPES.iso20022
+      apiFile = Config.API_TYPE === API_TYPES.iso20022
         ? 'api-swagger-iso20022-parties.yaml'
         : 'api-swagger.yaml'
     }

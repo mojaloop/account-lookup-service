@@ -3,7 +3,9 @@
  --------------
  Copyright © 2020-2025 Mojaloop Foundation
  The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
  Contributors
@@ -13,46 +15,43 @@
  should be listed with a '*' in the first column. People who have
  contributed from an organization can be listed under the organization
  that actually holds the copyright for their contributions (see the
- Mojaloop Foundation organization for an example). Those individuals should have
+ Mojaloop Foundation for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
+
  * Mojaloop Foundation
- - Name Surname <name.surname@mojaloop.io>
-
  * Eugen Klymniuk <eugen.klymniuk@infitx.com>
+
  --------------
- **********/
+ ******/
 
-const mockSendRequest = jest.fn()
+const { createMockDeps, participantMock } = require('./deps')
+// should be first require to mock external deps
+const BasePartiesService = require('#src/domain/parties/services/BasePartiesService')
+const config = require('#src/lib/config')
+const { API_TYPES } = require('#src/constants')
+const fixtures = require('#test/fixtures/index')
 
-jest.mock('@mojaloop/central-services-shared', () => ({
-  ...jest.requireActual('@mojaloop/central-services-shared'),
-  Util: {
-    ...jest.requireActual('@mojaloop/central-services-shared').Util,
-    Endpoints: { getEndpoint: jest.fn() },
-    Request: { sendRequest: mockSendRequest }
-  }
-}))
+describe('BasePartiesService Tests -->', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
-const { logger } = require('../../../../src/lib')
-const partiesUtils = require('../../../../src/domain/parties/partiesUtils')
-const config = require('../../../../src/lib/config')
-const fixtures = require('../../../fixtures')
-
-describe('parties utils Tests -->', () => {
-  test('should send error party callback in ISO format', async () => {
-    const isoConfig = { ...config, API_TYPE: API_TYPES.iso20022 }
-    const err = new Error('test error')
-    const source = 'dfsp1'
+  test('should send error party callback in ISO20022 format', async () => {
+    const deps = {
+      ...createMockDeps(),
+      config: { ...config, API_TYPE: API_TYPES.iso20022 }
+    }
+    const source = 'sourceFsp'
     const headers = fixtures.partiesCallHeadersDto({ source })
-    const params = { ID: '1234', Type: 'MSISDN' }
+    const params = fixtures.partiesParamsDto()
+    const service = new BasePartiesService(deps, { headers, params })
 
-    const handleError = partiesUtils.createErrorHandlerOnSendingCallback(isoConfig, logger)
-    await handleError(err, headers, params, source)
-
-    expect(mockSendRequest).toHaveBeenCalledTimes(1)
-    const { payload } = mockSendRequest.mock.calls[0][0]
+    await service.handleError(new Error('test error'))
+    expect(participantMock.sendErrorToParticipant.mock.calls.length).toBe(1)
+    // eslint-disable-next-line no-unused-vars
+    const [sentTo, _, payload] = participantMock.sendErrorToParticipant.mock.lastCall
+    expect(sentTo).toBe(source)
     expect(payload.Rpt.Rsn.Cd).toBe('2001')
     expect(payload.Rpt.OrgnlId).toBe(`${params.Type}/${params.ID}`)
     expect(payload.Assgnmt.Assgnr.Agt.FinInstnId.Othr.Id).toBe(source)

@@ -25,16 +25,24 @@
  --------------
  ******/
 
+jest.mock('#src/models/oracle/facade')
+jest.mock('#src/models/participantEndpoint/facade')
+
+const oracleMock = require('#src/models/oracle/facade')
+const participantMock = require('#src/models/participantEndpoint/facade')
 const { createDeps } = require('#src/domain/parties/deps')
 const { logger } = require('#src/lib/index')
 const { createProxyCacheMock } = require('#test/util/mockDeps')
 
 const createMockDeps = ({
   proxyCache = createProxyCacheMock(),
-  log = logger.child({ test: true })
-} = {}) => createDeps({ proxyCache, log })
+  log = logger.child({ test: true }),
+  cache
+} = {}) => createDeps({ cache, proxyCache, log })
 
 module.exports = {
   createMockDeps,
-  createProxyCacheMock
+  createProxyCacheMock,
+  oracleMock,
+  participantMock
 }
