@@ -64,16 +64,16 @@ describe('Timeout Domain', () => {
 
     describe('sendTimeoutCallback', () => {
       it('should send error to participant', async () => {
-        jest.spyOn(Participant, 'validateParticipant').mockResolvedValue({ fspId: 'sourceId' })
+        const SOURCE_ID = 'sourceId'
+        jest.spyOn(Participant, 'validateParticipant').mockResolvedValue({ fspId: SOURCE_ID })
 
-        const cacheKey = 'als:sourceId:2:3:expiresAt'
-        const [, destination] = cacheKey.split(':')
+        const cacheKey = `als:${SOURCE_ID}:2:3` // ':expiresAt' part is removed inside proxyCache.processExpiryKey()
 
         await TimeoutDomain.sendTimeoutCallback(cacheKey)
 
-        expect(Participant.validateParticipant).toHaveBeenCalledWith('sourceId')
+        expect(Participant.validateParticipant).toHaveBeenCalledWith(SOURCE_ID)
         expect(Participant.sendErrorToParticipant).toHaveBeenCalledWith(
-          destination,
+          SOURCE_ID,
           'FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR',
           { errorInformation: { errorCode: '3300', errorDescription: 'Generic expired error' } },
           expect.any(Object), expect.any(Object), undefined, expect.any(Object)

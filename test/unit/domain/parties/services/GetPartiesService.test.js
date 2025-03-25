@@ -28,7 +28,6 @@
 const { createMockDeps, createProxyCacheMock, oracleMock, participantMock } = require('./deps')
 // should be first require to mock external deps
 const { GetPartiesService } = require('#src/domain/parties/services/index')
-const { ERROR_MESSAGES } = require('#src/constants')
 const fixtures = require('#test/fixtures/index')
 
 const { RestMethods, Headers } = GetPartiesService.enums()
@@ -40,7 +39,7 @@ describe('GetPartiesService Tests -->', () => {
 
   describe('forwardRequestToDestination method', () => {
     test('should delete party info from oracle, if no destination DFSP in proxy mapping', async () => {
-      participantMock.validateParticipant = jest.fn().mockResolvedValueOnce(false)
+      participantMock.validateParticipant = jest.fn().mockResolvedValueOnce(null)
       const proxyCache = createProxyCacheMock({
         lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(null)
       })
@@ -89,35 +88,31 @@ describe('GetPartiesService Tests -->', () => {
       deps = createMockDeps({ proxyCache })
     })
 
-    test('should throw ID_NOT_FOUND error and cleanup oracle, if no proxyMapping for external dfsp', async () => {
-      expect.assertions(3)
+    test('should cleanup oracle and trigger interScheme discovery, if no proxyMapping for external dfsp', async () => {
       proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(null)
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'
       })
       const params = fixtures.partiesParamsDto()
       const service = new GetPartiesService(deps, { headers, params })
+      service.triggerInterSchemeDiscoveryFlow = jest.fn()
 
       await service.handleRequest()
-        .catch((err) => {
-          expect(err).toEqual(service.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded))
-        })
-      expect(oracleMock.oracleRequest.mock.calls.length).toBe(2) // GET + DELETE
+      expect(oracleMock.oracleRequest).toHaveBeenCalledTimes(2) // GET + DELETE
       expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+      expect(service.triggerInterSchemeDiscoveryFlow).toHaveBeenCalledWith(headers)
     })
 
-    test('should throw ID_NOT_FOUND error, if source is external', async () => {
-      expect.hasAssertions()
+    test('should trigger interScheme discovery flow, if source is external', async () => {
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'
       })
       const params = fixtures.partiesParamsDto()
       const service = new GetPartiesService(deps, { headers, params })
+      service.triggerInterSchemeDiscoveryFlow = jest.fn()
 
       await service.handleRequest()
-        .catch((err) => {
-          expect(err).toEqual(service.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded))
-        })
+      expect(service.triggerInterSchemeDiscoveryFlow).toHaveBeenCalledWith(headers)
     })
 
     test('should forward request, if source is in scheme (no proxy header)', async () => {
@@ -135,23 +130,93 @@ describe('GetPartiesService Tests -->', () => {
       expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(EXTERNAL_DFSP_ID)
     })
 
-    test.skip('should forward request, if source is NOT in scheme', async () => {
-      // todo: unskip after adding correct impl.
+    test('should trigger inter-scheme discovery flow, if source is NOT in scheme', async () => {
       const source = 'test-zm-dfsp'
+      const proxyZm = 'proxy-zm'
       participantMock.validateParticipant = jest.fn(
         async (fsp) => ([EXTERNAL_DFSP_ID, source].includes(fsp) ? null : {})
       )
+      deps.proxies.getAllProxiesNames = jest.fn().mockResolvedValueOnce([PROXY_ID, proxyZm])
       const headers = fixtures.partiesCallHeadersDto({
-        source, destination: '', proxy: 'proxy-zm'
+        source, destination: '', proxy: proxyZm
       })
       const params = fixtures.partiesParamsDto()
       const service = new GetPartiesService(deps, { headers, params })
 
       await service.handleRequest()
-      expect(participantMock.sendRequest.mock.calls.length).toBe(1)
+      expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
       const [sentHeaders, sendTo] = participantMock.sendRequest.mock.lastCall
       expect(sendTo).toEqual(PROXY_ID)
-      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(EXTERNAL_DFSP_ID)
+      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBeUndefined()
+    })
+  })
+
+  describe('setProxyGetPartiesTimeout Tests', () => {
+    test('should set getParties timeout for local source and external destination', async () => {
+      participantMock.validateParticipant = jest.fn()
+        .mockResolvedValueOnce({}) // source
+        .mockResolvedValueOnce(null) // destination
+      const proxyCache = createProxyCacheMock({
+        lookupProxyByDfspId: jest.fn().mockResolvedValueOnce('proxy-dest')
+      })
+      const deps = createMockDeps({ proxyCache })
+      const headers = fixtures.partiesCallHeadersDto()
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+      expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
+      expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
+    })
+
+    test('should NOT set getParties timeout if source is external', async () => {
+      participantMock.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // source
+        .mockResolvedValueOnce({}) // proxy-src
+      const proxyCache = createProxyCacheMock({
+        lookupProxyByDfspId: jest.fn().mockResolvedValue('proxy-desc')
+      })
+      const deps = createMockDeps({ proxyCache })
+      const headers = fixtures.partiesCallHeadersDto({ proxy: 'proxy-src' })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+      expect(proxyCache.setProxyGetPartiesTimeout).not.toHaveBeenCalled()
+      expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
+    })
+
+    test('should NOT set getParties timeout if destination is local', async () => {
+      participantMock.validateParticipant = jest.fn().mockResolvedValue({})
+      const proxyCache = createProxyCacheMock()
+      const deps = createMockDeps({ proxyCache })
+      const headers = fixtures.partiesCallHeadersDto()
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+      expect(proxyCache.setProxyGetPartiesTimeout).not.toHaveBeenCalled()
+      expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
+    })
+
+    test('should set getParties timeout if oracle returns external participant', async () => {
+      participantMock.validateParticipant = jest.fn()
+        .mockResolvedValueOnce({}) // source
+        .mockResolvedValueOnce(null) // externalDfsp
+      oracleMock.oracleRequest = jest.fn(async () => fixtures.oracleRequestResponseDto({
+        partyList: [{ fspId: 'externalDfsp' }]
+      }))
+      const proxyCache = createProxyCacheMock({
+        lookupProxyByDfspId: jest.fn().mockResolvedValue('proxyExternal')
+      })
+      const deps = createMockDeps({ proxyCache })
+      const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await service.handleRequest()
+      expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
+      expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
     })
   })
 })

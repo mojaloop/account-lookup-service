@@ -142,6 +142,12 @@ class BasePartiesService {
     return this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
   }
 
+  async removeProxyGetPartiesTimeout (alsReq) {
+    const isRemoved = await this.deps.proxyCache.removeProxyGetPartiesTimeout(alsReq)
+    this.log.debug('removeProxyGetPartiesTimeout is done', { isRemoved, alsReq })
+    return isRemoved
+  }
+
   createFspiopIdNotFoundError (errMessage, log = this.log) {
     log.warn(errMessage)
     return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)

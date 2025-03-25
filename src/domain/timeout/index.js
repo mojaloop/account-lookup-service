@@ -52,6 +52,10 @@ const timeoutInterschemePartiesLookups = async ({ proxyCache, batchSize }) => {
   return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, batchSize)
 }
 
+const timeoutProxyGetPartiesLookups = async ({ proxyCache, batchSize }) => {
+  return proxyCache.processExpiredProxyGetPartiesKeys(sendTimeoutCallback, batchSize)
+}
+
 const sendTimeoutCallback = async (cacheKey) => {
   const histTimerEnd = Metrics.getHistogram(
     'eg_timeoutInterschemePartiesLookups',
@@ -59,7 +63,7 @@ const sendTimeoutCallback = async (cacheKey) => {
     ['success']
   ).startTimer()
   let step
-  const [, destination, partyType, partyId] = cacheKey.split(':')
+  const [destination, partyType, partyId] = parseCacheKey(cacheKey)
   const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
   logger.debug('sendTimeoutCallback details:', { destination, partyType, partyId, cacheKey })
 
@@ -103,7 +107,13 @@ const finishSpan = async (span, err) => {
   }
 }
 
+const parseCacheKey = (cacheKey) => {
+  const [destination, partyType, partyId] = cacheKey.split(':').slice(-3)
+  return [destination, partyType, partyId]
+}
+
 module.exports = {
   timeoutInterschemePartiesLookups,
+  timeoutProxyGetPartiesLookups,
   sendTimeoutCallback // Exposed for testing
 }

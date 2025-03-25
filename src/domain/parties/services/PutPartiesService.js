@@ -49,8 +49,8 @@ class PutPartiesService extends BasePartiesService {
     const log = this.log.child({ source, proxy, method: 'validateSourceParticipant' })
     this.stepInProgress('validateSourceParticipant-1')
 
-    const requesterParticipant = await super.validateParticipant(source)
-    if (!requesterParticipant) {
+    const schemeParticipant = await super.validateParticipant(source)
+    if (!schemeParticipant) {
       if (!proxyEnabled || !proxy) {
         throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.sourceFspNotFound, log)
       }
@@ -72,12 +72,16 @@ class PutPartiesService extends BasePartiesService {
       const alsReq = this.deps.partiesUtils.alsRequestDto(destination, params)
 
       const isExists = await this.deps.proxyCache.receivedSuccessResponse(alsReq)
-      if (isExists) {
-        await this.#updateOracleWithParticipantMapping({ source, headers, params })
+      if (!isExists) {
+        this.log.verbose('NOT inter-scheme receivedSuccessResponse case')
+        await this.removeProxyGetPartiesTimeout(alsReq)
         return
       }
-      this.log.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
-      // todo: think, if we need to throw an error here
+
+      const schemeParticipant = await super.validateParticipant(destination)
+      if (schemeParticipant) {
+        await this.#updateOracleWithParticipantMapping({ source, headers, params })
+      }
     }
   }
 

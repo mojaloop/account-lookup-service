@@ -481,7 +481,7 @@ describe('Parties Tests', () => {
       })
       sandbox.stub(oracle, 'oracleRequest').resolves(oracleResponse)
       participant.validateParticipant = sandbox.stub()
-        .onFirstCall().resolves({}) // source
+        .onFirstCall().resolves(null) // source
         .onSecondCall().resolves(null) // oracle dfsp
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()

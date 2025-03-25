@@ -32,6 +32,8 @@ const createProxyCacheMock = ({
   receivedErrorResponse = jest.fn(async () => false),
   receivedSuccessResponse = jest.fn(async () => true),
   removeDfspIdFromProxyMapping = jest.fn(async () => true),
+  removeProxyGetPartiesTimeout = jest.fn(async () => true),
+  setProxyGetPartiesTimeout = jest.fn(async () => true),
   setSendToProxiesList = jest.fn(async () => true)
 } = {}) => ({
   addDfspIdToProxyMapping,
@@ -40,6 +42,8 @@ const createProxyCacheMock = ({
   receivedErrorResponse,
   receivedSuccessResponse,
   removeDfspIdFromProxyMapping,
+  removeProxyGetPartiesTimeout,
+  setProxyGetPartiesTimeout,
   setSendToProxiesList
 })
 

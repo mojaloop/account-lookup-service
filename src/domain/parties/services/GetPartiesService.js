@@ -47,11 +47,11 @@ class GetPartiesService extends BasePartiesService {
 
     const response = await this.sendOracleDiscoveryRequest()
     if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
-      await this.processOraclePartyListResponse(response)
-      return
+      const isDone = await this.processOraclePartyListResponse(response)
+      if (isDone) return
     }
 
-    this.log.info('empty partyList form oracle, checking inter-scheme discovery flow...')
+    this.log.info('no forwarded requests for oracle partyList')
     const fspiopError = await this.triggerInterSchemeDiscoveryFlow(this.inputs.headers)
     if (fspiopError) {
       this.state.fspiopError = fspiopError // todo: think, if we need this
@@ -83,7 +83,7 @@ class GetPartiesService extends BasePartiesService {
       throw super.createFspiopIdNotFoundError('failed to addDfspIdToProxyMapping', log)
     }
 
-    log.info('source is added to proxyMapping cache:', { proxy, isCached })
+    log.info('source is added to proxyMapping cache')
     return proxy
   }
 
@@ -121,14 +121,16 @@ class GetPartiesService extends BasePartiesService {
     this.stepInProgress('processOraclePartyList')
     const partyList = this.#filterOraclePartyList(response)
 
-    let sentCount = 0 // if sentCount === 0 after sending, we send idNotFound error
+    let sentCount = 0
     await Promise.all(partyList.map(async party => {
       const isSent = await this.#processSingleOracleParty(party)
       if (isSent) sentCount++
     }))
-    this.log.verbose('processOraclePartyList is done', { sentCount })
 
-    if (sentCount === 0) throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.noDiscoveryRequestsForwarded)
+    const isDone = sentCount > 0
+    this.log.verbose('processOraclePartyList is done', { isDone, sentCount })
+    // if NOT isDone, need to trigger interScheme discovery flow
+    return isDone
   }
 
   async triggerInterSchemeDiscoveryFlow (headers) {
@@ -166,6 +168,12 @@ class GetPartiesService extends BasePartiesService {
     if (!isOk) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.proxyConnectionError, log)
     }
+  }
+
+  isLocalSource () {
+    const isLocal = this.state.source === this.state.requester
+    this.log.debug(`isLocalSource: ${isLocal}`)
+    return isLocal
   }
 
   #filterOraclePartyList (response) {
@@ -219,25 +227,20 @@ class GetPartiesService extends BasePartiesService {
         return false
       }
 
-      // Coz there's no destination header, it means we're inside initial inter-scheme discovery phase from requester.
+      // Coz there's no destination header, it means we're inside initial inter-scheme discovery phase.
       // So we should proceed only if source is in scheme (local participant)
-
-      // const schemeSource = await this.validateParticipant(this.state.source)
-      // if (schemeSource) {
-      if (!this.state.proxy) {
+      const isLocalSource = this.isLocalSource()
+      if (isLocalSource) {
         this.log.info('participant is NOT in scheme, but source is. So forwarding to proxy...', { fspId, proxyName })
-        await this.#forwardGetPartiesRequest({
+        await this.#forwardGetPartiesRequest({ // todo: add timeout if sendTo is proxy
           sendTo: proxyName,
           headers: GetPartiesService.overrideDestinationHeader(headers, fspId),
           params
         })
         return true
       }
-
-      // todo: think, how to forward request from ZM on Region to MW
-      // So regional scheme might have partyInfo in oracle when gets initial inter-scheme discovery call from buffer scheme
-      console.log('todo....')
     }
+    return false
   }
 
   async #sendPartyNotFoundErrorCallback (headers) {
@@ -257,7 +260,11 @@ class GetPartiesService extends BasePartiesService {
     const callbackEndpointType = this.deps.partiesUtils.getPartyCbType(params.SubId)
     const options = this.deps.partiesUtils.partiesRequestOptionsDto(params)
 
-    return this.deps.participant.sendRequest(headers, sendTo, callbackEndpointType, RestMethods.GET, undefined, options, this.deps.childSpan)
+    const sentResult = await this.deps.participant.sendRequest(
+      headers, sendTo, callbackEndpointType, RestMethods.GET, undefined, options, this.deps.childSpan
+    )
+    await this.#setProxyGetPartiesTimeout(sendTo)
+    return sentResult
   }
 
   async #getFilteredProxyList (proxy) {
@@ -271,6 +278,30 @@ class GetPartiesService extends BasePartiesService {
     this.log.debug('getAllProxiesNames is done', { proxyNames })
     return proxyNames.filter(name => name !== proxy)
   }
+
+  async #setProxyGetPartiesTimeout (sendTo) {
+    const isLocalSource = this.isLocalSource()
+    const isSentToProxy = this.state.destination !== sendTo
+    this.log.verbose('isLocalSource and isSentToProxy: ', { isLocalSource, isSentToProxy })
+
+    if (isSentToProxy && isLocalSource) {
+      this.stepInProgress('#setProxyGetPartiesTimeout')
+      const { source, proxy } = this.state
+      const alsReq = this.deps.partiesUtils.alsRequestDto(source, this.inputs.params)
+      const isSet = await this.deps.proxyCache.setProxyGetPartiesTimeout(alsReq, proxy)
+      this.log.info('#setProxyGetPartiesTimeout is done', { isSet })
+      return isSet
+    }
+  }
 }
 
 module.exports = GetPartiesService
+
+// As Payee DFSP Scheme Oracle identifies direct participant.
+// As Payer DFSP Scheme oracle identifies interscheme participant.
+
+// zm-dfsp --> ZM
+// region-dfsp --> Region
+// mw-dfsp --> MW  (mw-party-123)
+
+// 1. region-dfsp gets info about mw-party-123
