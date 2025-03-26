@@ -56,4 +56,16 @@ describe('BasePartiesService Tests -->', () => {
     expect(payload.Rpt.OrgnlId).toBe(`${params.Type}/${params.ID}`)
     expect(payload.Assgnmt.Assgnr.Agt.FinInstnId.Othr.Id).toBe(source)
   })
+
+  test('should remove proxy getParties timeout cache key', async () => {
+    const deps = createMockDeps()
+    const proxy = 'proxyAB'
+    const headers = fixtures.partiesCallHeadersDto({ proxy })
+    const params = fixtures.partiesParamsDto()
+    const alsReq = {}
+    const service = new BasePartiesService(deps, { headers, params })
+
+    await service.removeProxyGetPartiesTimeoutCache(alsReq)
+    expect(deps.proxyCache.removeProxyGetPartiesTimeout).toHaveBeenCalledWith(alsReq, proxy)
+  })
 })

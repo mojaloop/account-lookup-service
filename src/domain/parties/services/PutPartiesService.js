@@ -74,7 +74,7 @@ class PutPartiesService extends BasePartiesService {
       const isExists = await this.deps.proxyCache.receivedSuccessResponse(alsReq)
       if (!isExists) {
         this.log.verbose('NOT inter-scheme receivedSuccessResponse case')
-        await this.removeProxyGetPartiesTimeout(alsReq)
+        await this.removeProxyGetPartiesTimeoutCache(alsReq)
         return
       }
 

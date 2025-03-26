@@ -282,13 +282,12 @@ class GetPartiesService extends BasePartiesService {
   async #setProxyGetPartiesTimeout (sendTo) {
     const isLocalSource = this.isLocalSource()
     const isSentToProxy = this.state.destination !== sendTo
-    this.log.verbose('isLocalSource and isSentToProxy: ', { isLocalSource, isSentToProxy })
+    this.log.verbose('isLocalSource and isSentToProxy: ', { isLocalSource, isSentToProxy, sendTo })
 
     if (isSentToProxy && isLocalSource) {
       this.stepInProgress('#setProxyGetPartiesTimeout')
-      const { source, proxy } = this.state
-      const alsReq = this.deps.partiesUtils.alsRequestDto(source, this.inputs.params)
-      const isSet = await this.deps.proxyCache.setProxyGetPartiesTimeout(alsReq, proxy)
+      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.source, this.inputs.params)
+      const isSet = await this.deps.proxyCache.setProxyGetPartiesTimeout(alsReq, sendTo)
       this.log.info('#setProxyGetPartiesTimeout is done', { isSet })
       return isSet
     }

@@ -142,9 +142,9 @@ class BasePartiesService {
     return this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
   }
 
-  async removeProxyGetPartiesTimeout (alsReq) {
-    const isRemoved = await this.deps.proxyCache.removeProxyGetPartiesTimeout(alsReq)
-    this.log.debug('removeProxyGetPartiesTimeout is done', { isRemoved, alsReq })
+  async removeProxyGetPartiesTimeoutCache (alsReq) {
+    const isRemoved = await this.deps.proxyCache.removeProxyGetPartiesTimeout(alsReq, this.state.proxy)
+    this.log.debug('removeProxyGetPartiesTimeoutCache is done', { isRemoved, alsReq })
     return isRemoved
   }
 

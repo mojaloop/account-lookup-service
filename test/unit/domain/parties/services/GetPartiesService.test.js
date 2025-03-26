@@ -156,8 +156,9 @@ describe('GetPartiesService Tests -->', () => {
       participantMock.validateParticipant = jest.fn()
         .mockResolvedValueOnce({}) // source
         .mockResolvedValueOnce(null) // destination
+      const proxyId = 'proxy-destination'
       const proxyCache = createProxyCacheMock({
-        lookupProxyByDfspId: jest.fn().mockResolvedValueOnce('proxy-dest')
+        lookupProxyByDfspId: jest.fn().mockResolvedValueOnce(proxyId)
       })
       const deps = createMockDeps({ proxyCache })
       const headers = fixtures.partiesCallHeadersDto()
@@ -166,6 +167,7 @@ describe('GetPartiesService Tests -->', () => {
 
       await service.handleRequest()
       expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
+      expect(proxyCache.setProxyGetPartiesTimeout.mock.lastCall[1]).toBe(proxyId)
       expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
     })
 

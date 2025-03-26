@@ -39,7 +39,7 @@ class PutPartiesErrorService extends BasePartiesService {
         // not initial inter-scheme discovery case. Cleanup oracle and trigger inter-scheme discovery
         this.log.warn('Need to cleanup oracle and trigger new inter-scheme discovery flow')
         await this.cleanupOracle()
-        await this.removeProxyGetPartiesTimeout(alsReq)
+        await this.removeProxyGetPartiesTimeoutCache(alsReq)
         return true // need to trigger inter-scheme discovery
       }
 
