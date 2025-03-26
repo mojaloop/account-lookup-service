@@ -44,15 +44,17 @@ const Metrics = require('@mojaloop/central-services-metrics')
 
 const Participant = require('../../models/participantEndpoint/facade')
 const { ERROR_MESSAGES } = require('../../constants')
-const { timeoutCallbackDto } = require('./dto')
 const { logger } = require('../../lib')
-const util = require('../../lib/util')
+const { countFspiopError } = require('../../lib/util')
+const { timeoutCallbackDto } = require('./dto')
 
 const timeoutInterschemePartiesLookups = async ({ proxyCache, batchSize }) => {
+  logger.info('timeoutInterschemePartiesLookups start...', { batchSize })
   return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, batchSize)
 }
 
 const timeoutProxyGetPartiesLookups = async ({ proxyCache, batchSize }) => {
+  logger.info('timeoutProxyGetPartiesLookups start...', { batchSize })
   return proxyCache.processExpiredProxyGetPartiesKeys(sendTimeoutCallback, batchSize)
 }
 
@@ -65,31 +67,32 @@ const sendTimeoutCallback = async (cacheKey) => {
   let step
   const [destination, partyType, partyId] = parseCacheKey(cacheKey)
   const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
-  logger.debug('sendTimeoutCallback details:', { destination, partyType, partyId, cacheKey })
+  const log = logger.child({ destination, partyId })
+  log.verbose('sendTimeoutCallback details:', { errorInformation, cacheKey, partyType })
 
   try {
     step = 'validateParticipant-1'
-    await validateParticipant(destination)
+    await validateParticipant(destination, log)
     await span.audit({ headers, errorInformation }, AuditEventAction.start)
     step = 'sendErrorToParticipant-2'
     await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
     histTimerEnd({ success: true })
   } catch (err) {
-    logger.warn('error in sendTimeoutCallback: ', err)
+    log.warn('error in sendTimeoutCallback: ', err)
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
-    util.countFspiopError(fspiopError, { operation: 'sendTimeoutCallback', step })
+    countFspiopError(fspiopError, { operation: 'sendTimeoutCallback', step })
 
     await finishSpan(span, fspiopError)
     throw fspiopError
   }
 }
 
-const validateParticipant = async (fspId) => {
+const validateParticipant = async (fspId, log) => {
   const participant = await Participant.validateParticipant(fspId)
   if (!participant) {
     const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-    logger.error(`error in validateParticipant: ${errMessage}`)
+    log.error(`error in validateParticipant: ${errMessage}`)
     throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
   }
   return participant
