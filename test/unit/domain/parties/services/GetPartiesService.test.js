@@ -26,7 +26,7 @@
  ******/
 
 const { createMockDeps, createProxyCacheMock, oracleMock, participantMock } = require('./deps')
-// should be first require to mock external deps
+// ↑ should be first require to mock external deps ↑
 const { GetPartiesService } = require('#src/domain/parties/services/index')
 const fixtures = require('#test/fixtures/index')
 

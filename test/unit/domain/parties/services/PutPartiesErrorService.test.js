@@ -26,6 +26,7 @@
  ******/
 
 const { createMockDeps, oracleMock } = require('./deps')
+// ↑ should be first require to mock external deps ↑
 const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
 const fixtures = require('#test/fixtures/index')
 

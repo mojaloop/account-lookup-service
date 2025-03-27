@@ -25,47 +25,48 @@
  --------------
  ******/
 
-const { createMockDeps, participantMock } = require('./deps')
+const { createMockDeps, createProxyCacheMock, participantMock } = require('./deps')
 // ↑ should be first require to mock external deps ↑
-const BasePartiesService = require('#src/domain/parties/services/BasePartiesService')
-const config = require('#src/lib/config')
+const { TimeoutPartiesService } = require('#src/domain/parties/services/index')
 const { API_TYPES } = require('#src/constants')
 const fixtures = require('#test/fixtures/index')
 
-describe('BasePartiesService Tests -->', () => {
+describe('TimeoutPartiesService Tests -->', () => {
+  const { config } = createMockDeps()
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('should send error party callback in ISO20022 format', async () => {
+  test('should send error callback to external participant through proxy', async () => {
+    participantMock.validateParticipant = jest.fn().mockResolvedValue(null)
+    const proxy = 'proxyAB'
+    const proxyCache = createProxyCacheMock({
+      lookupProxyByDfspId: jest.fn().mockResolvedValue(proxy)
+    })
+    const deps = createMockDeps({ proxyCache })
+    const cacheKey = fixtures.expiredCacheKeyDto()
+    const service = TimeoutPartiesService.createInstance(deps, cacheKey, 'test')
+
+    await service.handleExpiredKey()
+    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+    expect(participantMock.sendErrorToParticipant.mock.lastCall[0]).toBe(proxy)
+  })
+
+  test('should send error callback in ISO20022 format', async () => {
+    participantMock.validateParticipant = jest.fn().mockResolvedValue({})
     const deps = {
       ...createMockDeps(),
       config: { ...config, API_TYPE: API_TYPES.iso20022 }
     }
-    const source = 'sourceFsp'
-    const headers = fixtures.partiesCallHeadersDto({ source })
-    const params = fixtures.partiesParamsDto()
-    const service = new BasePartiesService(deps, { headers, params })
+    const sourceId = 'sourceFsp'
+    const cacheKey = fixtures.expiredCacheKeyDto({ sourceId })
+    const service = TimeoutPartiesService.createInstance(deps, cacheKey, 'test')
 
-    await service.handleError(new Error('test error'))
-    expect(participantMock.sendErrorToParticipant.mock.calls.length).toBe(1)
-    // eslint-disable-next-line no-unused-vars
-    const [sentTo, _, payload] = participantMock.sendErrorToParticipant.mock.lastCall
-    expect(sentTo).toBe(source)
-    expect(payload.Rpt.Rsn.Cd).toBe('2001')
-    expect(payload.Rpt.OrgnlId).toBe(`${params.Type}/${params.ID}`)
-    expect(payload.Assgnmt.Assgnr.Agt.FinInstnId.Othr.Id).toBe(source)
-  })
-
-  test('should remove proxy getParties timeout cache key', async () => {
-    const deps = createMockDeps()
-    const proxy = 'proxyAB'
-    const headers = fixtures.partiesCallHeadersDto({ proxy })
-    const params = fixtures.partiesParamsDto()
-    const alsReq = {}
-    const service = new BasePartiesService(deps, { headers, params })
-
-    await service.removeProxyGetPartiesTimeoutCache(alsReq)
-    expect(deps.proxyCache.removeProxyGetPartiesTimeout).toHaveBeenCalledWith(alsReq, proxy)
+    await service.handleExpiredKey()
+    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+    const { Assgnr, Assgne } = participantMock.sendErrorToParticipant.mock.lastCall[2].Assgnmt
+    expect(Assgnr.Agt.FinInstnId.Othr.Id).toBe(config.HUB_NAME)
+    expect(Assgne.Agt.FinInstnId.Othr.Id).toBe(sourceId)
   })
 })

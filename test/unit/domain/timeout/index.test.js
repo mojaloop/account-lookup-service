@@ -31,11 +31,13 @@
 
 'use strict'
 
-const Participant = require('../../../../src/models/participantEndpoint/facade')
-const TimeoutDomain = require('../../../../src/domain/timeout')
 const Metrics = require('@mojaloop/central-services-metrics')
+const Participant = require('#src/models/participantEndpoint/facade')
+const TimeoutDomain = require('#src/domain/timeout/index')
+const { mockDeps } = require('#test/util/index')
 
 describe('Timeout Domain', () => {
+  const proxyCache = mockDeps.createProxyCacheMock()
   // Initialize Metrics for testing
   Metrics.getCounter(
     'errorCount',
@@ -56,9 +58,10 @@ describe('Timeout Domain', () => {
   describe('timeoutInterschemePartiesLookups', () => {
     describe('timeoutInterschemePartiesLookups', () => {
       it('should process expired ALS keys', async () => {
-        const mockCache = { processExpiredAlsKeys: jest.fn() }
-        await TimeoutDomain.timeoutInterschemePartiesLookups({ proxyCache: mockCache, batchSize: 10 })
-        expect(mockCache.processExpiredAlsKeys).toHaveBeenCalledWith(TimeoutDomain.sendTimeoutCallback, 10)
+        const batchSize = 10
+        await TimeoutDomain.timeoutInterschemePartiesLookups({ proxyCache, batchSize })
+        expect(proxyCache.processExpiredAlsKeys).toHaveBeenCalledWith(expect.any(Function), batchSize)
+        expect(Participant.sendErrorToParticipant).toHaveBeenCalled()
       })
     })
 
@@ -69,7 +72,7 @@ describe('Timeout Domain', () => {
 
         const cacheKey = `als:${SOURCE_ID}:2:3` // ':expiresAt' part is removed inside proxyCache.processExpiryKey()
 
-        await TimeoutDomain.sendTimeoutCallback(cacheKey)
+        await TimeoutDomain.sendTimeoutCallback(cacheKey, proxyCache)
 
         expect(Participant.validateParticipant).toHaveBeenCalledWith(SOURCE_ID)
         expect(Participant.sendErrorToParticipant).toHaveBeenCalledWith(
@@ -82,7 +85,9 @@ describe('Timeout Domain', () => {
 
       it('should throw error if participant validation fails', async () => {
         Participant.validateParticipant.mockResolvedValue(null)
-        await expect(TimeoutDomain.sendTimeoutCallback('als:sourceId:2:3:expiresAt')).rejects.toThrow()
+        await expect(
+          TimeoutDomain.sendTimeoutCallback('als:sourceId:2:3:expiresAt', proxyCache)
+        ).rejects.toThrow()
       })
     })
   })

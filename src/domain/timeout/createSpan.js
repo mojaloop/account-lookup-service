@@ -25,37 +25,31 @@
  --------------
  ******/
 
-const fixtures = require('../fixtures')
+const {
+  Events: { Event },
+  Tags: { QueryTags }
+} = require('@mojaloop/central-services-shared').Enum
+const { Tracer } = require('@mojaloop/event-sdk')
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 
-// eslint-disable-next-line n/no-callback-literal
-const processExpierdKeysFn = async (cb) => cb(fixtures.expiredCacheKeyDto())
+const { getSpanTags } = require('../../lib/util')
 
-const createProxyCacheMock = ({
-  addDfspIdToProxyMapping = jest.fn(async () => true),
-  isPendingCallback = jest.fn(async () => false),
-  lookupProxyByDfspId = jest.fn(async () => null),
-  processExpiredAlsKeys = jest.fn(processExpierdKeysFn),
-  processExpiredProxyGetPartiesKeys = jest.fn(processExpierdKeysFn),
-  receivedErrorResponse = jest.fn(async () => false),
-  receivedSuccessResponse = jest.fn(async () => true),
-  removeDfspIdFromProxyMapping = jest.fn(async () => true),
-  removeProxyGetPartiesTimeout = jest.fn(async () => true),
-  setProxyGetPartiesTimeout = jest.fn(async () => true),
-  setSendToProxiesList = jest.fn(async () => true)
-} = {}) => ({
-  addDfspIdToProxyMapping,
-  isPendingCallback,
-  lookupProxyByDfspId,
-  processExpiredAlsKeys,
-  processExpiredProxyGetPartiesKeys,
-  receivedErrorResponse,
-  receivedSuccessResponse,
-  removeDfspIdFromProxyMapping,
-  removeProxyGetPartiesTimeout,
-  setProxyGetPartiesTimeout,
-  setSendToProxiesList
-})
-
-module.exports = {
-  createProxyCacheMock
+const createSpan = (spanName, headers, params) => {
+  const span = Tracer.createSpan(spanName, { headers })
+  const spanTags = getSpanTags({ headers }, Event.Type.PARTY, Event.Action.PUT)
+  span.setTags(spanTags)
+  const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+    QueryTags.serviceName.accountLookupService,
+    QueryTags.auditType.transactionFlow,
+    QueryTags.contentType.httpRequest,
+    QueryTags.operation.timeoutInterschemePartiesLookups,
+    {
+      partyIdType: params.Type,
+      partyIdentifier: params.ID
+    }
+  )
+  span.setTags(queryTags)
+  return span
 }
+
+module.exports = createSpan

@@ -186,9 +186,8 @@ class BasePartiesService {
   }
 
   static overrideDestinationHeader (headers, destination) {
-    const { [Headers.FSPIOP.DESTINATION]: _, ...restHeaders } = headers || {}
     return {
-      ...restHeaders,
+      ...BasePartiesService.headersWithoutDestination(headers),
       ...(destination && { [Headers.FSPIOP.DESTINATION]: destination })
     }
   }
@@ -202,6 +201,13 @@ class BasePartiesService {
         ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
         : FspEndpointTemplates.PARTIES_PUT_ERROR
     })
+  }
+
+  static createHubErrorCallbackHeaders (hubName, destination) {
+    return {
+      [Headers.FSPIOP.SOURCE]: hubName,
+      [Headers.FSPIOP.DESTINATION]: destination
+    }
   }
 
   static enums () {

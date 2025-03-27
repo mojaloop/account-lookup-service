@@ -163,6 +163,13 @@ const mockAlsRequestDto = (sourceId, type, partyId) => ({
   partyId
 })
 
+const expiredCacheKeyDto = ({
+  sourceId = 'sourceId',
+  type = 'MSISDN',
+  partyId = 'partyId-123',
+  prefix = 'prefix'
+} = {}) => `${prefix}:${sourceId}:${type}:${partyId}`
+
 const mockHapiRequestDto = ({ // https://hapi.dev/api/?v=21.3.3#request-properties
   method = 'GET',
   traceid = randomUUID(),
@@ -185,6 +192,7 @@ module.exports = {
   putPartiesSuccessResponseDto,
   postParticipantsPayloadDto,
   errorCallbackResponseDto,
+  expiredCacheKeyDto,
   mockAlsRequestDto,
   protocolVersionsDto,
   mockHapiRequestDto,
