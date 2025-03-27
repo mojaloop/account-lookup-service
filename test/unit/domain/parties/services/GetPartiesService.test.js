@@ -28,11 +28,14 @@
 const { createMockDeps, createProxyCacheMock, oracleMock, participantMock } = require('./deps')
 // ↑ should be first require to mock external deps ↑
 const { GetPartiesService } = require('#src/domain/parties/services/index')
+const { API_TYPES } = require('#src/constants')
 const fixtures = require('#test/fixtures/index')
 
 const { RestMethods, Headers } = GetPartiesService.enums()
 
 describe('GetPartiesService Tests -->', () => {
+  const { config } = createMockDeps()
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -220,5 +223,23 @@ describe('GetPartiesService Tests -->', () => {
       expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
       expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
     })
+  })
+
+  test('should send partyNotFound callback in ISO20022 format', async () => {
+    participantMock.validateParticipant = jest.fn().mockResolvedValue({})
+    oracleMock.oracleRequest = jest.fn()
+    const deps = {
+      ...createMockDeps(),
+      config: { ...config, API_TYPE: API_TYPES.iso20022 }
+    }
+    const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+    const params = fixtures.partiesParamsDto()
+    const service = new GetPartiesService(deps, { headers, params })
+
+    await service.handleRequest()
+    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+    const isoPayload = participantMock.sendErrorToParticipant.mock.lastCall[2]
+    expect(isoPayload.Assgnmt).toBeDefined()
+    expect(isoPayload.Rpt).toBeDefined()
   })
 })

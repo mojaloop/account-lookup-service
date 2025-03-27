@@ -162,6 +162,7 @@ class GetPartiesService extends BasePartiesService {
     const isOk = results.some(result => result.status === 'fulfilled')
     // If, at least, one request is sent to proxy, we treat the whole flow as successful.
     // Failed requests should be handled by TTL expired/timeout handler
+    // todo: If forwarding request to proxy failed, remove the proxy from setSendToProxiesList
     log.info('triggerInterSchemeDiscoveryFlow is done:', { isOk, results, proxyNames, alsReq })
     this.stepInProgress('allSent-12')
 
@@ -245,11 +246,15 @@ class GetPartiesService extends BasePartiesService {
 
   async #sendPartyNotFoundErrorCallback (headers) {
     const { params } = this.inputs
+    const callbackHeaders = GetPartiesService.createErrorCallbackHeaders(headers, params)
     const fspiopError = super.createFspiopIdNotFoundError('No proxy found to start inter-scheme discovery flow')
+    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(
+      this.deps.config, fspiopError, callbackHeaders, params
+    )
 
     await this.sendErrorCallback({
-      errorInfo: fspiopError.toApiErrorObject(this.deps.config.ERROR_HANDLING),
-      headers: GetPartiesService.createErrorCallbackHeaders(headers, params),
+      errorInfo,
+      headers: callbackHeaders,
       params
     })
     return fspiopError

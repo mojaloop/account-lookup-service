@@ -32,18 +32,20 @@ const oracleMock = require('#src/models/oracle/facade')
 const participantMock = require('#src/models/participantEndpoint/facade')
 const { createDeps } = require('#src/domain/parties/deps')
 const { logger } = require('#src/lib/index')
-const { createProxyCacheMock } = require('#test/util/mockDeps')
+const { createProxyCacheMock, createProxiesUtilMock } = require('#test/util/mockDeps')
 
 /** @returns {PartiesDeps} */
 const createMockDeps = ({
   proxyCache = createProxyCacheMock(),
+  proxies = createProxiesUtilMock(),
   log = logger.child({ test: true }),
   cache
-} = {}) => createDeps({ cache, proxyCache, log })
+} = {}) => createDeps({ cache, proxyCache, proxies, log })
 
 module.exports = {
   createMockDeps,
   createProxyCacheMock,
+  createProxiesUtilMock,
   oracleMock,
   participantMock
 }

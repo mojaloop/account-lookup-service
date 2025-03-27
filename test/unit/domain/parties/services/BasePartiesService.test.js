@@ -48,7 +48,7 @@ describe('BasePartiesService Tests -->', () => {
     const service = new BasePartiesService(deps, { headers, params })
 
     await service.handleError(new Error('test error'))
-    expect(participantMock.sendErrorToParticipant.mock.calls.length).toBe(1)
+    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
     // eslint-disable-next-line no-unused-vars
     const [sentTo, _, payload] = participantMock.sendErrorToParticipant.mock.lastCall
     expect(sentTo).toBe(source)

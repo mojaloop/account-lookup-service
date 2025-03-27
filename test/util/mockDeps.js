@@ -56,6 +56,17 @@ const createProxyCacheMock = ({
   setSendToProxiesList
 })
 
+// @mojaloop/central-services-shared/Util/proxies
+/** @returns {Proxies} */
+const createProxiesUtilMock = ({
+  getAllProxiesNames = jest.fn().mockResolvedValue([]),
+  invalidateProxiesCache = jest.fn()
+} = {}) => ({
+  getAllProxiesNames,
+  invalidateProxiesCache
+})
+
 module.exports = {
-  createProxyCacheMock
+  createProxyCacheMock,
+  createProxiesUtilMock
 }

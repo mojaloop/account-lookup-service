@@ -30,6 +30,7 @@ const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
 class PutPartiesErrorService extends BasePartiesService {
+  /** @returns {Promise<true | undefined>} - If true, need to trigger inter-scheme discovery. */
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
       const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
