@@ -1,10 +1,11 @@
 {
   "name": "account-lookup-service",
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "17.7.0",
+  "version": "17.8.0-snapshot.6",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
+    "Eugen Klymniuk <eugen.klymniuk@infitx.com>",
     "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
     "Matt Kingston <matt.kingston@modusbox.com>",
     "Lewis Daly <lewisd@crosslaketech.com>",
@@ -44,10 +45,8 @@
     "start:api": "node src/index.js server --api",
     "start:admin": "node src/index.js server --admin",
     "start:handlers": "node src/handlers/index.js handlers --timeout",
-    "standard": "standard",
-    "standard:fix": "standard --fix",
-    "lint": "npm run standard",
-    "lint:fix": "npm run standard:fix",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
     "dev": "nodemon src/index.js server",
     "test": "npm run test:unit",
     "test:unit": "NODE_OPTIONS='--experimental-vm-modules --max-old-space-size=8192' jest --runInBand",
@@ -107,7 +106,7 @@
     "ajv-keywords": "5.1.0",
     "blipp": "4.0.2",
     "commander": "13.1.0",
-    "cron": "4.1.0",
+    "cron": "4.1.1",
     "fast-safe-stringify": "^2.1.1",
     "hapi-auth-bearer-token": "8.0.0",
     "joi": "17.13.3",
@@ -190,5 +189,9 @@
     "scripts": {
       "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
     }
+  },
+  "imports": {
+    "#src/*": "./src/*.js",
+    "#test/*": "./test/*.js"
   }
 }

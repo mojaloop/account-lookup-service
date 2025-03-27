@@ -25,37 +25,26 @@
  --------------
  ******/
 
-const axiosLib = require('axios')
-const { logger } = require('#src/lib/index')
+const { createMockDeps, oracleMock } = require('./deps')
+// ↑ should be first require to mock external deps ↑
+const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
 const fixtures = require('#test/fixtures/index')
 
-class BasicApiClient {
-  constructor ({
-    baseURL,
-    axios = axiosLib.create({ baseURL }),
-    log = logger.child({ component: this.constructor.name })
-  } = {}) {
-    this.baseURL = baseURL
-    this.axios = axios
-    this.log = log
-    this.fixtures = fixtures
-  }
+const { RestMethods } = PutPartiesErrorService.enums()
 
-  async sendRequest ({ url, method = 'GET', headers = {}, body = null }) {
-    try {
-      const { data, status } = await this.axios.request({
-        method,
-        url,
-        headers,
-        data: body
-      })
-      this.log.info(`sendRequest is done [${method} ${url}]:`, { method, url, body, headers, response: { status, data } })
-      return { data, status }
-    } catch (err) {
-      this.log.error('error in sendRequest: ', err)
-      throw err
-    }
-  }
-}
+describe('PutPartiesErrorService Tests -->', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-module.exports = BasicApiClient
+  test('should cleanup oracle and trigger discovery flow for party from external dfsp', async () => {
+    const headers = fixtures.partiesCallHeadersDto({ proxy: 'proxyA' })
+    const params = fixtures.partiesParamsDto()
+    const service = new PutPartiesErrorService(createMockDeps(), { headers, params })
+
+    const needDiscovery = await service.handleRequest()
+    expect(needDiscovery).toBe(true)
+    expect(oracleMock.oracleRequest.mock.calls.length).toBe(1)
+    expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+  })
+})

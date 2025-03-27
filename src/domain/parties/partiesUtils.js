@@ -25,13 +25,9 @@
  --------------
  ******/
 
-const { Enum, Util: { Hapi } } = require('@mojaloop/central-services-shared')
-const { MojaloopApiErrorCodes } = require('@mojaloop/sdk-standard-components').Errors
-// todo: check why do we need sdk-standard-components deps here !!!
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-
-const participant = require('../../models/participantEndpoint/facade')
+const { Enum } = require('@mojaloop/central-services-shared')
 const { TransformFacades } = require('../../lib')
+const { API_TYPES } = require('../../constants')
 
 const { FspEndpointTypes } = Enum.EndPoints
 const { Headers } = Enum.Http
@@ -50,7 +46,7 @@ const errorPartyCbType = (partySubId) => partySubId
 
 const makePutPartiesErrorPayload = async (config, fspiopError, headers, params) => {
   const body = fspiopError.toApiErrorObject(config.ERROR_HANDLING)
-  return config.API_TYPE === Hapi.API_TYPES.iso20022
+  return config.API_TYPE === API_TYPES.iso20022
     ? (await TransformFacades.FSPIOP.parties.putError({ body, headers, params })).body
     : body
 }
@@ -81,38 +77,12 @@ const swapSourceDestinationHeaders = (headers) => {
   }
 }
 
-// todo: check if we need this function
-const createErrorHandlerOnSendingCallback = (config, logger) => async (err, headers, params, requester) => {
-  try {
-    logger.error('error in sending parties callback: ', err)
-    const sendTo = requester || headers[Headers.FSPIOP.SOURCE]
-    const errorCallbackEndpointType = errorPartyCbType(params.SubId)
-    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-    const errInfo = await makePutPartiesErrorPayload(config, fspiopError, headers, params)
-
-    await participant.sendErrorToParticipant(sendTo, errorCallbackEndpointType, errInfo, headers, params)
-
-    logger.info('handleErrorOnSendingCallback in done', { sendTo, params, errInfo })
-    return fspiopError
-  } catch (exc) {
-    // We can't do anything else here- we _must_ handle all errors _within_ this function because
-    // we've already sent a sync response- we cannot throw.
-    logger.error('failed to handleErrorOnSendingCallback. No further processing! ', exc)
-  }
-}
-
-function isNotValidPayeeCase (payload) {
-  return payload?.errorInformation?.errorCode === MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
-}
-
 module.exports = {
   getPartyCbType,
   putPartyCbType,
   errorPartyCbType,
   makePutPartiesErrorPayload,
-  createErrorHandlerOnSendingCallback,
   alsRequestDto,
   partiesRequestOptionsDto,
-  swapSourceDestinationHeaders,
-  isNotValidPayeeCase
+  swapSourceDestinationHeaders
 }

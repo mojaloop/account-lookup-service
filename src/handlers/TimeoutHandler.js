@@ -41,13 +41,13 @@ let isRunning
 
 const timeout = async (options) => {
   if (isRunning) return
-
   const { logger } = options
 
   try {
     isRunning = true
-    logger.debug('Timeout handler triggered')
     await TimeoutService.timeoutInterschemePartiesLookups(options)
+    await TimeoutService.timeoutProxyGetPartiesLookups(options)
+    logger.verbose('ALS timeout handler is done')
   } catch (err) {
     logger.error('error in timeout: ', err)
   } finally {

@@ -28,9 +28,11 @@
 const GetPartiesService = require('./GetPartiesService')
 const PutPartiesService = require('./PutPartiesService')
 const PutPartiesErrorService = require('./PutPartiesErrorService')
+const TimeoutPartiesService = require('./TimeoutPartiesService')
 
 module.exports = {
   GetPartiesService,
   PutPartiesService,
-  PutPartiesErrorService
+  PutPartiesErrorService,
+  TimeoutPartiesService
 }

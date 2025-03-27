@@ -25,37 +25,25 @@
  --------------
  ******/
 
-const axiosLib = require('axios')
+jest.mock('#src/models/oracle/facade')
+jest.mock('#src/models/participantEndpoint/facade')
+
+const oracleMock = require('#src/models/oracle/facade')
+const participantMock = require('#src/models/participantEndpoint/facade')
+const { createDeps } = require('#src/domain/parties/deps')
 const { logger } = require('#src/lib/index')
-const fixtures = require('#test/fixtures/index')
+const { createProxyCacheMock } = require('#test/util/mockDeps')
 
-class BasicApiClient {
-  constructor ({
-    baseURL,
-    axios = axiosLib.create({ baseURL }),
-    log = logger.child({ component: this.constructor.name })
-  } = {}) {
-    this.baseURL = baseURL
-    this.axios = axios
-    this.log = log
-    this.fixtures = fixtures
-  }
+/** @returns {PartiesDeps} */
+const createMockDeps = ({
+  proxyCache = createProxyCacheMock(),
+  log = logger.child({ test: true }),
+  cache
+} = {}) => createDeps({ cache, proxyCache, log })
 
-  async sendRequest ({ url, method = 'GET', headers = {}, body = null }) {
-    try {
-      const { data, status } = await this.axios.request({
-        method,
-        url,
-        headers,
-        data: body
-      })
-      this.log.info(`sendRequest is done [${method} ${url}]:`, { method, url, body, headers, response: { status, data } })
-      return { data, status }
-    } catch (err) {
-      this.log.error('error in sendRequest: ', err)
-      throw err
-    }
-  }
+module.exports = {
+  createMockDeps,
+  createProxyCacheMock,
+  oracleMock,
+  participantMock
 }
-
-module.exports = BasicApiClient

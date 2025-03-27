@@ -25,37 +25,31 @@
  --------------
  ******/
 
-const axiosLib = require('axios')
-const { logger } = require('#src/lib/index')
-const fixtures = require('#test/fixtures/index')
+const {
+  Events: { Event },
+  Tags: { QueryTags }
+} = require('@mojaloop/central-services-shared').Enum
+const { Tracer } = require('@mojaloop/event-sdk')
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 
-class BasicApiClient {
-  constructor ({
-    baseURL,
-    axios = axiosLib.create({ baseURL }),
-    log = logger.child({ component: this.constructor.name })
-  } = {}) {
-    this.baseURL = baseURL
-    this.axios = axios
-    this.log = log
-    this.fixtures = fixtures
-  }
+const { getSpanTags } = require('../../lib/util')
 
-  async sendRequest ({ url, method = 'GET', headers = {}, body = null }) {
-    try {
-      const { data, status } = await this.axios.request({
-        method,
-        url,
-        headers,
-        data: body
-      })
-      this.log.info(`sendRequest is done [${method} ${url}]:`, { method, url, body, headers, response: { status, data } })
-      return { data, status }
-    } catch (err) {
-      this.log.error('error in sendRequest: ', err)
-      throw err
+const createSpan = (spanName, headers, params) => {
+  const span = Tracer.createSpan(spanName, { headers })
+  const spanTags = getSpanTags({ headers }, Event.Type.PARTY, Event.Action.PUT)
+  span.setTags(spanTags)
+  const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+    QueryTags.serviceName.accountLookupService,
+    QueryTags.auditType.transactionFlow,
+    QueryTags.contentType.httpRequest,
+    QueryTags.operation.timeoutInterschemePartiesLookups,
+    {
+      partyIdType: params.Type,
+      partyIdentifier: params.ID
     }
-  }
+  )
+  span.setTags(queryTags)
+  return span
 }
 
-module.exports = BasicApiClient
+module.exports = createSpan

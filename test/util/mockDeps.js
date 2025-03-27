@@ -25,37 +25,37 @@
  --------------
  ******/
 
-const axiosLib = require('axios')
-const { logger } = require('#src/lib/index')
-const fixtures = require('#test/fixtures/index')
+const fixtures = require('../fixtures')
 
-class BasicApiClient {
-  constructor ({
-    baseURL,
-    axios = axiosLib.create({ baseURL }),
-    log = logger.child({ component: this.constructor.name })
-  } = {}) {
-    this.baseURL = baseURL
-    this.axios = axios
-    this.log = log
-    this.fixtures = fixtures
-  }
+// eslint-disable-next-line n/no-callback-literal
+const processExpierdKeysFn = async (cb) => cb(fixtures.expiredCacheKeyDto())
 
-  async sendRequest ({ url, method = 'GET', headers = {}, body = null }) {
-    try {
-      const { data, status } = await this.axios.request({
-        method,
-        url,
-        headers,
-        data: body
-      })
-      this.log.info(`sendRequest is done [${method} ${url}]:`, { method, url, body, headers, response: { status, data } })
-      return { data, status }
-    } catch (err) {
-      this.log.error('error in sendRequest: ', err)
-      throw err
-    }
-  }
+const createProxyCacheMock = ({
+  addDfspIdToProxyMapping = jest.fn(async () => true),
+  isPendingCallback = jest.fn(async () => false),
+  lookupProxyByDfspId = jest.fn(async () => null),
+  processExpiredAlsKeys = jest.fn(processExpierdKeysFn),
+  processExpiredProxyGetPartiesKeys = jest.fn(processExpierdKeysFn),
+  receivedErrorResponse = jest.fn(async () => false),
+  receivedSuccessResponse = jest.fn(async () => true),
+  removeDfspIdFromProxyMapping = jest.fn(async () => true),
+  removeProxyGetPartiesTimeout = jest.fn(async () => true),
+  setProxyGetPartiesTimeout = jest.fn(async () => true),
+  setSendToProxiesList = jest.fn(async () => true)
+} = {}) => ({
+  addDfspIdToProxyMapping,
+  isPendingCallback,
+  lookupProxyByDfspId,
+  processExpiredAlsKeys,
+  processExpiredProxyGetPartiesKeys,
+  receivedErrorResponse,
+  receivedSuccessResponse,
+  removeDfspIdFromProxyMapping,
+  removeProxyGetPartiesTimeout,
+  setProxyGetPartiesTimeout,
+  setSendToProxiesList
+})
+
+module.exports = {
+  createProxyCacheMock
 }
-
-module.exports = BasicApiClient

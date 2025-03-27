@@ -1,11 +1,10 @@
+const { AlsApiClient, ProxyApiClient } = require('./apiClients')
+const mockDeps = require('./mockDeps')
 const onboarding = require('./onboarding')
-const {
-  AlsApiClient,
-  ProxyApiClient
-} = require('./apiClients')
 
 module.exports = {
-  onboarding,
   AlsApiClient,
-  ProxyApiClient
+  ProxyApiClient,
+  mockDeps,
+  onboarding
 }
