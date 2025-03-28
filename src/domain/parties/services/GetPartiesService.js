@@ -46,12 +46,10 @@ class GetPartiesService extends BasePartiesService {
     }
 
     const response = await this.sendOracleDiscoveryRequest()
-    if (Array.isArray(response?.data?.partyList) && response.data.partyList.length > 0) {
-      const isDone = await this.processOraclePartyListResponse(response)
-      if (isDone) return
-    }
+    const isSent = await this.processOraclePartyListResponse(response)
+    this.log.info(`getParties request is ${isSent ? '' : 'NOT '}forwarded to oracle lookup DFSP`)
+    if (isSent) return
 
-    this.log.info('no forwarded requests for oracle partyList')
     const fspiopError = await this.triggerInterSchemeDiscoveryFlow(this.inputs.headers)
     if (fspiopError) {
       this.state.fspiopError = fspiopError // todo: think, if we need this
@@ -118,6 +116,11 @@ class GetPartiesService extends BasePartiesService {
   }
 
   async processOraclePartyListResponse (response) {
+    if (!Array.isArray(response?.data?.partyList) || response.data.partyList.length === 0) {
+      this.log.verbose('oracle partyList is empty')
+      return false
+    }
+
     this.stepInProgress('processOraclePartyList')
     const partyList = this.#filterOraclePartyList(response)
 
@@ -127,48 +130,31 @@ class GetPartiesService extends BasePartiesService {
       if (isSent) sentCount++
     }))
 
-    const isDone = sentCount > 0
-    this.log.verbose('processOraclePartyList is done', { isDone, sentCount })
-    // if NOT isDone, need to trigger interScheme discovery flow
-    return isDone
+    const isSent = sentCount > 0
+    this.log.verbose('processOraclePartyList is done', { isSent, sentCount })
+    // if NOT isSent, need to trigger interScheme discovery flow
+    return isSent
   }
 
   async triggerInterSchemeDiscoveryFlow (headers) {
     const { params } = this.inputs
     const { proxy, source } = this.state
-    const log = this.log.child({ method: 'triggerInterSchemeDiscoveryFlow' })
-    log.verbose('triggerInterSchemeDiscoveryFlow start...', { proxy, source })
+    const log = this.log.child({ source })
+    log.verbose('triggerInterSchemeDiscoveryFlow start...', { proxy })
 
     const proxyNames = await this.#getFilteredProxyList(proxy)
     if (!proxyNames.length) {
       return this.#sendPartyNotFoundErrorCallback(headers)
     }
 
-    this.stepInProgress('setSendToProxiesList-10')
-    const alsReq = this.deps.partiesUtils.alsRequestDto(source, params)
-    log.verbose('starting setSendToProxiesList flow: ', { proxyNames, alsReq, proxyCacheTtlSec })
-
-    const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, proxyCacheTtlSec)
-    if (!isCached) {
-      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.failedToCacheSendToProxiesList, log)
-    }
-
-    this.stepInProgress('sendingProxyRequests')
-    const sending = proxyNames.map(
-      sendTo => this.#forwardGetPartiesRequest({ sendTo, headers, params })
-        .then(({ status, data } = {}) => ({ status, data }))
-    )
-    const results = await Promise.allSettled(sending)
-    const isOk = results.some(result => result.status === 'fulfilled')
-    // If, at least, one request is sent to proxy, we treat the whole flow as successful.
-    // Failed requests should be handled by TTL expired/timeout handler
-    // todo: If forwarding request to proxy failed, remove the proxy from setSendToProxiesList
-    log.info('triggerInterSchemeDiscoveryFlow is done:', { isOk, results, proxyNames, alsReq })
-    this.stepInProgress('allSent-12')
-
-    if (!isOk) {
+    const alsReq = await this.#setProxyListToCache(proxyNames, source, params)
+    const sentList = await this.#sendOutProxyRequests({ proxyNames, alsReq, headers, params })
+    if (sentList.length === 0) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.proxyConnectionError, log)
     }
+
+    log.info('triggerInterSchemeDiscoveryFlow is done:', { sentList, alsReq })
+    return sentList
   }
 
   isLocalSource () {
@@ -269,7 +255,27 @@ class GetPartiesService extends BasePartiesService {
       headers, sendTo, callbackEndpointType, RestMethods.GET, undefined, options, this.deps.childSpan
     )
     await this.#setProxyGetPartiesTimeout(sendTo)
+    this.log.debug('#forwardGetPartiesRequest is done:', { sendTo, sentResult })
     return sentResult
+  }
+
+  async #sendOutProxyRequests ({ proxyNames, alsReq, headers, params }) {
+    this.stepInProgress('#sendOutProxyRequests')
+    const sentList = []
+
+    const sendProxyRequest = (sendTo) => this.#forwardGetPartiesRequest({ sendTo, headers, params })
+      .then(() => { sentList.push(sendTo) })
+      .catch(err => {
+        this.log.error(`error in sending request to proxy ${sendTo}: `, err)
+        return this.deps.proxyCache.receivedErrorResponse(alsReq, sendTo)
+      })
+      .catch(err => {
+        this.log.error(`failed to remove proxy ${sendTo} from proxyCache: `, err)
+      })
+    await Promise.all(proxyNames.map(sendProxyRequest))
+
+    this.log.verbose('#sendOutProxyRequests is done:', { sentList, proxyNames })
+    return sentList
   }
 
   async #getFilteredProxyList (proxy) {
@@ -282,6 +288,18 @@ class GetPartiesService extends BasePartiesService {
     const proxyNames = await this.deps.proxies.getAllProxiesNames(this.deps.config.SWITCH_ENDPOINT)
     this.log.debug('getAllProxiesNames is done', { proxyNames })
     return proxyNames.filter(name => name !== proxy)
+  }
+
+  async #setProxyListToCache (proxyNames, source, params) {
+    this.stepInProgress('#setProxyListToCache')
+    const alsReq = this.deps.partiesUtils.alsRequestDto(source, params)
+
+    const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, proxyCacheTtlSec)
+    if (!isCached) {
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.failedToCacheSendToProxiesList)
+    }
+    this.log.verbose('#setProxyListToCache is done: ', { alsReq, proxyNames, proxyCacheTtlSec })
+    return alsReq
   }
 
   async #setProxyGetPartiesTimeout (sendTo) {
@@ -300,12 +318,3 @@ class GetPartiesService extends BasePartiesService {
 }
 
 module.exports = GetPartiesService
-
-// As Payee DFSP Scheme Oracle identifies direct participant.
-// As Payer DFSP Scheme oracle identifies interscheme participant.
-
-// zm-dfsp --> ZM
-// region-dfsp --> Region
-// mw-dfsp --> MW  (mw-party-123)
-
-// 1. region-dfsp gets info about mw-party-123

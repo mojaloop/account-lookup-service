@@ -68,7 +68,7 @@ class PutPartiesErrorService extends BasePartiesService {
     this.stepInProgress('checkLastProxyCallback')
     const { proxy } = this.state
     const isLast = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
-    this.log.info(`got${isLast ? '' : 'NOT'} last error callback from proxy`, { proxy, alsReq, isLast })
+    this.log.info(`got ${isLast ? '' : 'NOT '}last inter-scheme error callback from a proxy`, { proxy, alsReq, isLast })
     return isLast
   }
 

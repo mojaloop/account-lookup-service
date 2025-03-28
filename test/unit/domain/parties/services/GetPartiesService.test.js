@@ -25,10 +25,16 @@
  --------------
  ******/
 
-const { createMockDeps, createProxyCacheMock, oracleMock, participantMock } = require('./deps')
+const {
+  createMockDeps,
+  createProxyCacheMock,
+  createProxiesUtilMock,
+  oracleMock,
+  participantMock
+} = require('./deps')
 // ↑ should be first require to mock external deps ↑
 const { GetPartiesService } = require('#src/domain/parties/services/index')
-const { API_TYPES } = require('#src/constants')
+const { API_TYPES, ERROR_MESSAGES } = require('#src/constants')
 const fixtures = require('#test/fixtures/index')
 
 const { RestMethods, Headers } = GetPartiesService.enums()
@@ -151,6 +157,45 @@ describe('GetPartiesService Tests -->', () => {
       const [sentHeaders, sendTo] = participantMock.sendRequest.mock.lastCall
       expect(sendTo).toEqual(PROXY_ID)
       expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBeUndefined()
+    })
+  })
+
+  describe('triggerInterSchemeDiscoveryFlow Tests', () => {
+    test('should remove proxy from proxyCache if sending request to it fails', async () => {
+      expect.assertions(2)
+      participantMock.sendRequest = jest.fn().mockRejectedValue(new Error('Proxy error'))
+      const proxies = createProxiesUtilMock({
+        getAllProxiesNames: jest.fn().mockResolvedValue(['proxy-1'])
+      })
+      const deps = createMockDeps({ proxies })
+
+      const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await expect(service.triggerInterSchemeDiscoveryFlow(headers))
+        .rejects.toThrow(ERROR_MESSAGES.proxyConnectionError)
+      expect(deps.proxyCache.receivedErrorResponse).toHaveBeenCalledTimes(1)
+    })
+
+    test('should NOT throw an error if at least one request is sent to a proxy', async () => {
+      participantMock.sendRequest = jest.fn()
+        .mockRejectedValueOnce(new Error('Proxy error'))
+        .mockResolvedValueOnce({})
+      const proxyOk = 'proxyOk'
+      const proxies = createProxiesUtilMock({
+        getAllProxiesNames: jest.fn().mockResolvedValue(['proxyErr', proxyOk])
+      })
+      const deps = createMockDeps({ proxies })
+
+      const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      const sentList = await service.triggerInterSchemeDiscoveryFlow(headers)
+      expect(sentList).toEqual([proxyOk])
+      expect(deps.proxyCache.receivedErrorResponse).toHaveBeenCalledTimes(1)
+      expect(participantMock.sendRequest.mock.lastCall[1]).toBe(proxyOk)
     })
   })
 
