@@ -106,7 +106,7 @@
     "ajv-keywords": "5.1.0",
     "blipp": "4.0.2",
     "commander": "13.1.0",
-    "cron": "4.1.1",
+    "cron": "4.1.2",
     "fast-safe-stringify": "^2.1.1",
     "hapi-auth-bearer-token": "8.0.0",
     "joi": "17.13.3",

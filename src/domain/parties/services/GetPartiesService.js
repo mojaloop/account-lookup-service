@@ -148,9 +148,12 @@ class GetPartiesService extends BasePartiesService {
     }
 
     const alsReq = await this.#setProxyListToCache(proxyNames, source, params)
-    const sentList = await this.#sendOutProxyRequests({ proxyNames, alsReq, headers, params })
+    const { sentList, wasLast } = await this.#sendOutProxyRequests({ proxyNames, alsReq, headers, params })
     if (sentList.length === 0) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.proxyConnectionError, log)
+    }
+    if (wasLast) {
+      throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.noSuccessfulProxyDiscoveryResponses, log)
     }
 
     log.info('triggerInterSchemeDiscoveryFlow is done:', { sentList, alsReq })
@@ -262,21 +265,23 @@ class GetPartiesService extends BasePartiesService {
   async #sendOutProxyRequests ({ proxyNames, alsReq, headers, params }) {
     this.stepInProgress('#sendOutProxyRequests')
     const sentList = []
+    let wasLast = false // if any failed proxy request was last
 
     const sendProxyRequest = (sendTo) => this.#forwardGetPartiesRequest({ sendTo, headers, params })
       .then(() => { sentList.push(sendTo) })
       .catch(err => {
         this.log.error(`error in sending request to proxy ${sendTo}: `, err)
-        this.log.verbose(`remove proxy ${sendTo} from proxyCache...`)
+        this.log.verbose(`removing proxy ${sendTo} from proxyCache...`)
         return this.deps.proxyCache.receivedErrorResponse(alsReq, sendTo)
       })
+      .then((isLast) => { wasLast = isLast })
       .catch(err => {
         this.log.error(`failed to remove proxy ${sendTo} from proxyCache: `, err)
       })
     await Promise.all(proxyNames.map(sendProxyRequest))
 
-    this.log.verbose('#sendOutProxyRequests is done:', { sentList, proxyNames })
-    return sentList
+    this.log.verbose('#sendOutProxyRequests is done:', { sentList, wasLast, proxyNames })
+    return { sentList, wasLast }
   }
 
   async #getFilteredProxyList (proxy) {

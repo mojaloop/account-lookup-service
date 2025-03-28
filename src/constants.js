@@ -34,7 +34,8 @@ const ERROR_MESSAGES = Object.freeze({
   sourceFspNotFound: 'Requester FSP not found',
   partyDestinationFspNotFound: 'Destination FSP not found',
   partyProxyNotFound: 'Proxy not found',
-  proxyConnectionError: 'Proxy connection error - no successful requests sent to proxies'
+  proxyConnectionError: 'Proxy connection error - no successful requests sent to proxies',
+  noSuccessfulProxyDiscoveryResponses: 'No successful proxy discovery responses'
 })
 
 const HANDLER_TYPES = Object.freeze({

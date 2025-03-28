@@ -37,14 +37,16 @@ const headersDto = ({
   proxy = '',
   date = new Date().toUTCString(),
   accept,
-  contentType
+  contentType,
+  addHeaders
 } = {}) => Object.freeze({
   [Headers.FSPIOP.SOURCE]: source,
   ...(destination && { [Headers.FSPIOP.DESTINATION]: destination }),
   ...(proxy && { [Headers.FSPIOP.PROXY]: proxy }),
   date,
   accept,
-  'content-type': contentType || accept
+  'content-type': contentType || accept,
+  ...(addHeaders && { ...addHeaders })
 })
 
 const partiesParamsDto = ({
@@ -72,12 +74,14 @@ const partiesCallHeadersDto = ({
   source,
   destination,
   proxy,
-  date
+  date,
+  addHeaders
 } = {}) => headersDto({
   source,
   destination,
   proxy,
   date,
+  addHeaders,
   accept: interopHeader('parties', '1'),
   contentType: interopHeader('parties', '1.1')
 })

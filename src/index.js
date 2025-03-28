@@ -24,7 +24,8 @@
 
 'use strict'
 
-process.env.HTTP_DEFAULT_RETRY_DELAY = process.env.HTTP_DEFAULT_RETRY_DELAY || '0'
+process.env.HTTP_DEFAULT_RETRIES = process.env.HTTP_DEFAULT_RETRIES || '0'
+// todo: think better way to avoid reties
 
 const Server = require('./server')
 const PJson = require('../package.json')

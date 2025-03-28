@@ -25,6 +25,7 @@
  --------------
  ******/
 
+const { setTimeout: sleep } = require('node:timers/promises')
 const {
   createMockDeps,
   createProxyCacheMock,
@@ -196,6 +197,31 @@ describe('GetPartiesService Tests -->', () => {
       expect(sentList).toEqual([proxyOk])
       expect(deps.proxyCache.receivedErrorResponse).toHaveBeenCalledTimes(1)
       expect(participantMock.sendRequest.mock.lastCall[1]).toBe(proxyOk)
+    })
+
+    test('should throw an error if proxyRequest failed after delay, and other proxies have already replied', async () => {
+      expect.assertions(1)
+      let count = 0
+      participantMock.sendRequest = jest.fn(async () => {
+        count++
+        if (count !== 2) return {}
+        await sleep(1000) // throw delayed error for 2nd proxy call
+        throw new Error('Proxy delayed error')
+      })
+      const proxies = createProxiesUtilMock({
+        getAllProxiesNames: jest.fn().mockResolvedValue(['proxy1', 'proxy2'])
+      })
+      const proxyCache = createProxyCacheMock({
+        receivedErrorResponse: jest.fn().mockResolvedValue(true) // failed proxy request is last in inter-scheme discovery flow
+      })
+      const deps = createMockDeps({ proxies, proxyCache })
+
+      const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const params = fixtures.partiesParamsDto()
+      const service = new GetPartiesService(deps, { headers, params })
+
+      await expect(service.triggerInterSchemeDiscoveryFlow(headers))
+        .rejects.toThrow(ERROR_MESSAGES.noSuccessfulProxyDiscoveryResponses)
     })
   })
 

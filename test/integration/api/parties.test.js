@@ -62,6 +62,7 @@ describe('Parties Endpoints Tests -->', () => {
         partyIdType: PARTY_ID_TYPE,
         source: PAYER_DFSP,
         destination: ''
+        // addHeaders: { 'x-response-status': '503' }
       })
       expect(result.status).toBe(202)
 
