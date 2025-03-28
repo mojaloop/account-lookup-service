@@ -24,6 +24,8 @@
 
 'use strict'
 
+process.env.HTTP_DEFAULT_RETRY_DELAY = process.env.HTTP_DEFAULT_RETRY_DELAY || '0'
+
 const Server = require('./server')
 const PJson = require('../package.json')
 const { Command } = require('commander')

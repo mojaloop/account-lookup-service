@@ -267,6 +267,7 @@ class GetPartiesService extends BasePartiesService {
       .then(() => { sentList.push(sendTo) })
       .catch(err => {
         this.log.error(`error in sending request to proxy ${sendTo}: `, err)
+        this.log.verbose(`remove proxy ${sendTo} from proxyCache...`)
         return this.deps.proxyCache.receivedErrorResponse(alsReq, sendTo)
       })
       .catch(err => {
