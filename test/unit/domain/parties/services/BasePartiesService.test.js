@@ -54,7 +54,8 @@ describe('BasePartiesService Tests -->', () => {
     expect(sentTo).toBe(source)
     expect(payload.Rpt.Rsn.Cd).toBe('2001')
     expect(payload.Rpt.OrgnlId).toBe(`${params.Type}/${params.ID}`)
-    expect(payload.Assgnmt.Assgnr.Agt.FinInstnId.Othr.Id).toBe(source)
+    expect(payload.Assgnmt.Assgne.Agt.FinInstnId.Othr.Id).toBe(source)
+    expect(payload.Assgnmt.Assgnr.Agt.FinInstnId.Othr.Id).toBe(config.HUB_NAME)
   })
 
   test('should remove proxy getParties timeout cache key', async () => {

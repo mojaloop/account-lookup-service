@@ -100,16 +100,17 @@ class BasePartiesService {
   get state () { return this.#state }
 
   async handleError (error) {
-    const { headers, params } = this.inputs
+    const { params } = this.inputs
     const log = this.log.child({ method: 'handleError' })
     try {
       log.error('error in processing parties request: ', error)
       const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(error)
-      const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, fspiopError, headers, params)
+      const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(this.inputs.headers, params)
+      const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, fspiopError, callbackHeaders, params)
 
       await this.sendErrorCallback({
         errorInfo,
-        headers: BasePartiesService.createErrorCallbackHeaders(headers, params),
+        headers: callbackHeaders,
         params
       })
       log.info('handleError in done')

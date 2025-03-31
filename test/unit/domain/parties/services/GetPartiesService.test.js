@@ -199,15 +199,18 @@ describe('GetPartiesService Tests -->', () => {
       expect(participantMock.sendRequest.mock.lastCall[1]).toBe(proxyOk)
     })
 
-    test('should throw an error if proxyRequest failed after delay, and other proxies have already replied', async () => {
-      expect.assertions(1)
+    const throwDelayedErrorOnNthCall = (N, delay = 1000, error = new Error('Nth call Delayed Error')) => {
       let count = 0
-      participantMock.sendRequest = jest.fn(async () => {
+      return async () => {
         count++
-        if (count !== 2) return {}
-        await sleep(1000) // throw delayed error for 2nd proxy call
-        throw new Error('Proxy delayed error')
-      })
+        if (count !== N) return {}
+        await sleep(1000)
+        throw error
+      }
+    }
+
+    const prepareGetPartiesServiceForDelayedProxyError = () => {
+      participantMock.sendRequest = jest.fn(throwDelayedErrorOnNthCall(2)) // throw error on 2nd proxy call
       const proxies = createProxiesUtilMock({
         getAllProxiesNames: jest.fn().mockResolvedValue(['proxy1', 'proxy2'])
       })
@@ -215,13 +218,30 @@ describe('GetPartiesService Tests -->', () => {
         receivedErrorResponse: jest.fn().mockResolvedValue(true) // failed proxy request is last in inter-scheme discovery flow
       })
       const deps = createMockDeps({ proxies, proxyCache })
-
       const headers = fixtures.partiesCallHeadersDto({ destination: '' })
       const params = fixtures.partiesParamsDto()
-      const service = new GetPartiesService(deps, { headers, params })
+
+      return new GetPartiesService(deps, { headers, params })
+    }
+
+    test('should throw an error if proxyRequest failed after delay, and other proxies have already replied', async () => {
+      expect.assertions(1)
+      const service = prepareGetPartiesServiceForDelayedProxyError()
+      const { headers } = service.inputs
 
       await expect(service.triggerInterSchemeDiscoveryFlow(headers))
         .rejects.toThrow(ERROR_MESSAGES.noSuccessfulProxyDiscoveryResponses)
+    })
+
+    test('should send error callback in ISO format if proxyRequest failed after delay, and other proxies have already replied', async () => {
+      const service = prepareGetPartiesServiceForDelayedProxyError()
+      const { headers } = service.inputs
+      service.deps.config.API_TYPE = API_TYPES.iso20022
+
+      await service.triggerInterSchemeDiscoveryFlow(headers)
+        .catch(err => service.handleError(err))
+      expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+      expect(participantMock.sendErrorToParticipant.mock.lastCall[2].Rpt.Rsn.Cd).toBe('3200')
     })
   })
 
