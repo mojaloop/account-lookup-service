@@ -99,6 +99,9 @@ describe('GetPartiesService Tests -->', () => {
     })
 
     test('should cleanup oracle and trigger interScheme discovery, if no proxyMapping for external dfsp', async () => {
+      participantMock.validateParticipant = jest.fn()
+      .mockResolvedValueOnce({}) // proxy, source is skipped
+
       proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(null)
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'
@@ -114,6 +117,8 @@ describe('GetPartiesService Tests -->', () => {
     })
 
     test('should trigger interScheme discovery flow, if source is external', async () => {
+      participantMock.validateParticipant = jest.fn()
+      .mockResolvedValueOnce({}) // proxy, source is skipped
       const headers = fixtures.partiesCallHeadersDto({
         destination: '', proxy: 'proxyA'
       })
@@ -267,8 +272,7 @@ describe('GetPartiesService Tests -->', () => {
 
     test('should NOT set getParties timeout if source is external', async () => {
       participantMock.validateParticipant = jest.fn()
-        .mockResolvedValueOnce(null) // source
-        .mockResolvedValueOnce({}) // proxy-src
+        .mockResolvedValueOnce({}) // proxy, source is skipped
       const proxyCache = createProxyCacheMock({
         lookupProxyByDfspId: jest.fn().mockResolvedValue('proxy-desc')
       })

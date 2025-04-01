@@ -174,8 +174,7 @@ describe('Parties Tests', () => {
     it('should set source proxyMapping if source is not in scheme, and there is proxy-header', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub()
-        .onFirstCall().resolves(null) // source
-        .onSecondCall().resolves({}) // proxy
+        .onFirstCall().resolves({}) // proxy, source is skipped
       const source = `source-${Date.now()}`
       const proxy = `proxy-${Date.now()}`
 
