@@ -61,13 +61,12 @@ class GetPartiesService extends BasePartiesService {
     const log = this.log.child({ source, proxy, method: 'validateRequester' })
     this.stepInProgress('validateRequester-0')
 
-    const schemeSource = await this.validateParticipant(source)
-    if (schemeSource) {
-      log.debug('source participant is in scheme')
-      return source
-    }
-
     if (!proxyEnabled || !proxy) {
+      const schemeSource = await this.validateParticipant(source)
+      if (schemeSource) {
+        log.debug('source participant is in scheme')
+        return source
+      }
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.sourceFspNotFound, log)
     }
 
