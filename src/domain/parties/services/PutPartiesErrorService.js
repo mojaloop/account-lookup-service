@@ -75,17 +75,19 @@ class PutPartiesErrorService extends BasePartiesService {
   async identifyDestinationForErrorCallback () {
     this.stepInProgress('identifyDestinationForErrorCallback')
     const { destination } = this.state
-    const schemeParticipant = await super.validateParticipant(destination)
-    if (schemeParticipant) {
-      this.state.requester = destination
-      return
-    }
 
     this.stepInProgress('lookupProxyDestination-4')
     const proxyName = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
+
     if (proxyName) {
       this.state.requester = proxyName
       return
+    } else {
+      const schemeParticipant = await super.validateParticipant(destination)
+      if (schemeParticipant) {
+        this.state.requester = destination
+        return
+      }
     }
 
     const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
