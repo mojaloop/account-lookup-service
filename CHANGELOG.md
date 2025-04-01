@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.7.1](https://github.com/mojaloop/account-lookup-service/compare/v17.7.0...v17.7.1) (2025-03-27)
+
+
+### Chore
+
+* **csi-1248:** update transform-lib, others ([#543](https://github.com/mojaloop/account-lookup-service/issues/543)) ([7a0a5c4](https://github.com/mojaloop/account-lookup-service/commit/7a0a5c402e8f8f28661540ea5982b1ac9a97a8dd))
+
 ## [17.7.0](https://github.com/mojaloop/account-lookup-service/compare/v17.6.0...v17.7.0) (2025-03-26)
 
 
