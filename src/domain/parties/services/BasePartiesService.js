@@ -124,8 +124,13 @@ class BasePartiesService {
   }
 
   async validateParticipant (participantId) {
-    this.stepInProgress('validateParticipant')
-    return this.deps.participant.validateParticipant(participantId)
+    try {
+      this.stepInProgress('validateParticipant')
+      return this.deps.participant.validateParticipant(participantId)
+    } catch (err) {
+      this.log.warn(`error in validateParticipant ${participantId}: `, err)
+      return null
+    }
   }
 
   async identifyDestinationForCallback () {
