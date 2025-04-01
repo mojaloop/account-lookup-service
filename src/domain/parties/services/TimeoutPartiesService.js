@@ -52,7 +52,7 @@ class TimeoutPartiesService extends PutPartiesErrorService {
     const { errorInfo, headers, params } = await this.prepareErrorInformation()
     this.#spanAuditStart(errorInfo)
 
-    await this.identifyDestinationForErrorCallback()
+    await this.identifyDestinationForCallback()
     return super.sendErrorCallback({ errorInfo, headers, params })
   }
 

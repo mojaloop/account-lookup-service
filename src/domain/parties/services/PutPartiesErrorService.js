@@ -25,8 +25,6 @@
  --------------
  ******/
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
 class PutPartiesErrorService extends BasePartiesService {
@@ -51,7 +49,7 @@ class PutPartiesErrorService extends BasePartiesService {
       }
     }
 
-    await this.identifyDestinationForErrorCallback()
+    await this.identifyDestinationForCallback()
     await this.sendErrorCallbackToParticipant()
     this.log.info('putPartiesByTypeAndID is done')
   }
@@ -70,27 +68,6 @@ class PutPartiesErrorService extends BasePartiesService {
     const isLast = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
     this.log.info(`got ${isLast ? '' : 'NOT '}last inter-scheme error callback from a proxy`, { proxy, alsReq, isLast })
     return isLast
-  }
-
-  async identifyDestinationForErrorCallback () {
-    this.stepInProgress('identifyDestinationForErrorCallback')
-    const { destination } = this.state
-    const schemeParticipant = await super.validateParticipant(destination)
-    if (schemeParticipant) {
-      this.state.requester = destination
-      return
-    }
-
-    this.stepInProgress('lookupProxyDestination-4')
-    const proxyName = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
-    if (proxyName) {
-      this.state.requester = proxyName
-      return
-    }
-
-    const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-    this.log.warn(errMessage, { destination })
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
   }
 
   async sendErrorCallbackToParticipant () {

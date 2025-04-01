@@ -30,6 +30,7 @@ const { Enum } = require('@mojaloop/central-services-shared')
 const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const { initStepState } = require('../../../lib/util')
 const { createCallbackHeaders } = require('../../../lib/headers')
+const { ERROR_MESSAGES } = require('../../../constants')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods } = Enum.Http
@@ -125,6 +126,27 @@ class BasePartiesService {
   async validateParticipant (participantId) {
     this.stepInProgress('validateParticipant')
     return this.deps.participant.validateParticipant(participantId)
+  }
+
+  async identifyDestinationForCallback () {
+    this.stepInProgress('identifyDestinationForCallback')
+    const { destination } = this.state
+
+    const schemeParticipant = await this.validateParticipant(destination)
+    if (schemeParticipant) {
+      this.state.requester = destination
+      return
+    }
+
+    const proxyName = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
+    if (proxyName) {
+      this.state.requester = proxyName
+      return
+    }
+
+    const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
+    this.log.warn(`${errMessage} and no proxy`, { destination })
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
   }
 
   async sendErrorCallback ({ errorInfo, headers, params }) {

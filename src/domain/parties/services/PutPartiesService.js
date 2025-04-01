@@ -25,7 +25,6 @@
  --------------
  ******/
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
@@ -40,7 +39,7 @@ class PutPartiesService extends BasePartiesService {
     if (proxy) {
       await this.checkProxySuccessResponse()
     }
-    await this.identifyDestinationForSuccessCallback()
+    await this.identifyDestinationForCallback()
     await this.sendSuccessCallback()
   }
 
@@ -83,25 +82,6 @@ class PutPartiesService extends BasePartiesService {
         await this.#updateOracleWithParticipantMapping({ source, headers, params })
       }
     }
-  }
-
-  async identifyDestinationForSuccessCallback () {
-    const { destination } = this.state
-    this.stepInProgress('identifyDestinationForSuccessCallback')
-    const destinationParticipant = await super.validateParticipant(destination)
-    if (destinationParticipant) {
-      this.state.requester = destinationParticipant.name
-      return
-    }
-
-    const proxyName = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
-    if (!proxyName) {
-      const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-      this.log.warn(`${errMessage} and no proxy`, { destination })
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
-    }
-
-    this.state.requester = proxyName
   }
 
   async sendSuccessCallback () {

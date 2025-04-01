@@ -587,20 +587,20 @@ describe('Parties Tests', () => {
     it('successfully sends the callback to the participant', async () => {
       expect.hasAssertions()
       // Arrange
-      participant.validateParticipant = sandbox.stub().resolves({
-        name: 'fsp1'
-      })
+      participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves()
       const payload = JSON.stringify({ testPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
+      const destination = 'destFsp'
+      const headers = fixtures.partiesCallHeadersDto({ destination })
 
       // Act
-      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const sendRequestCallArgs = participant.sendRequest.getCall(0).args
-      expect(sendRequestCallArgs[1]).toStrictEqual('fsp1')
+      expect(sendRequestCallArgs[1]).toBe(destination)
       participant.sendRequest.reset()
     })
 
