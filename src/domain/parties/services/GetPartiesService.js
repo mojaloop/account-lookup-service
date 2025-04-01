@@ -236,7 +236,7 @@ class GetPartiesService extends BasePartiesService {
   async #sendPartyNotFoundErrorCallback (headers) {
     const { params } = this.inputs
     const callbackHeaders = GetPartiesService.createErrorCallbackHeaders(headers, params)
-    const fspiopError = super.createFspiopIdNotFoundError('No proxy found to start inter-scheme discovery flow')
+    const fspiopError = super.createFspiopPartyNotFoundError('No proxy found to start inter-scheme discovery flow')
     const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(
       this.deps.config, fspiopError, callbackHeaders, params
     )
