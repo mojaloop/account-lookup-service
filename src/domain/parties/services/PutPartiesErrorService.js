@@ -26,9 +26,9 @@
  ******/
 
 const BasePartiesService = require('./BasePartiesService')
+const { ERROR_MESSAGES } = require('../../../constants')
 
 class PutPartiesErrorService extends BasePartiesService {
-  /** @returns {Promise<true | undefined>} - If true, need to trigger inter-scheme discovery. */
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
       const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
@@ -37,23 +37,24 @@ class PutPartiesErrorService extends BasePartiesService {
       if (isInterSchemeDiscoveryCase) {
         const isLast = await this.checkLastProxyCallback(alsReq)
         if (!isLast) {
-          this.log.verbose('putPartiesErrorByTypeAndID proxy callback was processed')
+          this.log.verbose('proxy error callback was processed (not last)')
           return
         }
       } else {
         const schemeParticipant = await this.validateParticipant(this.state.destination)
         if (schemeParticipant) {
-          this.log.warn('Need to cleanup oracle and trigger new inter-scheme discovery flow')
+          const err = super.createFspiopServiceUnavailableError(ERROR_MESSAGES.externalPartyError)
+          this.log.info('Need to cleanup oracle and throw SERVICE_CURRENTLY_UNAVAILABLE error')
           await this.cleanupOracle()
           await this.removeProxyGetPartiesTimeoutCache(alsReq)
-          return true // need to trigger inter-scheme discovery
+          throw err
         }
       }
     }
 
     await this.identifyDestinationForCallback()
     await this.sendErrorCallbackToParticipant()
-    this.log.info('putPartiesByTypeAndID is done')
+    this.log.info('handleRequest is done')
   }
 
   async cleanupOracle () {

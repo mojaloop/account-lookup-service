@@ -949,7 +949,6 @@ describe('Parties Tests', () => {
       expect(oracle.oracleRequest.callCount).toBe(1)
       const [, method] = oracle.oracleRequest.getCall(0).args
       expect(method).toBe(RestMethods.DELETE)
-      expect(Util.proxies.getAllProxiesNames.callCount).toBe(1) // inter-scheme discovery flow was triggered
     })
   })
 })

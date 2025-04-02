@@ -186,6 +186,11 @@ class BasePartiesService {
     return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, errMessage)
   }
 
+  createFspiopServiceUnavailableError (errMessage, log = this.log) {
+    log.warn(errMessage)
+    return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.SERVICE_CURRENTLY_UNAVAILABLE, errMessage)
+  }
+
   stepInProgress (stepName) {
     this.log.debug('step is in progress', { stepName })
     this.state.stepState?.inProgress(stepName)

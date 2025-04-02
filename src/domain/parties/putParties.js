@@ -97,15 +97,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   let fspiopError
 
   try {
-    const needDiscovery = await service.handleRequest()
-    if (needDiscovery) {
-      const getPartiesService = new services.GetPartiesService(deps, inputs)
-      await getPartiesService.triggerInterSchemeDiscoveryFlow(
-        services.GetPartiesService.headersWithoutDestination(headers)
-      )
-      // think, if we need to start the whole processing with getPartiesService.handleRequest() ?
-    }
-
+    await service.handleRequest()
     logger.info('putPartiesErrorByTypeAndID is done')
     histTimerEnd({ success: true })
   } catch (error) {
