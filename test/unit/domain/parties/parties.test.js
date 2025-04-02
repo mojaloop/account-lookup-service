@@ -927,7 +927,7 @@ describe('Parties Tests', () => {
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should handle notValidPayeeIdentifier case, and delete partyId from oracle', async () => {
+    it('should handle external party error callback, and delete partyId from oracle', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
@@ -945,10 +945,14 @@ describe('Parties Tests', () => {
 
       await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
 
-      expect(participant.sendRequest.callCount).toBe(0)
       expect(oracle.oracleRequest.callCount).toBe(1)
-      const [, method] = oracle.oracleRequest.getCall(0).args
-      expect(method).toBe(RestMethods.DELETE)
+      expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
+      expect(participant.sendRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      // eslint-disable-next-line no-unused-vars
+      const [sentTo, _, data] = participant.sendErrorToParticipant.lastCall.args
+      expect(sentTo).toBe(source)
+      expect(data.errorInformation.errorCode).toBe('2003')
     })
   })
 })
