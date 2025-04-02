@@ -935,6 +935,7 @@ describe('Parties Tests', () => {
       const proxy = `proxy-${Date.now()}`
       const headers = fixtures.partiesCallHeadersDto({ source, proxy })
       const { params } = Helper.putByTypeIdRequest
+      participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
@@ -948,9 +949,7 @@ describe('Parties Tests', () => {
       expect(oracle.oracleRequest.callCount).toBe(1)
       const [, method] = oracle.oracleRequest.getCall(0).args
       expect(method).toBe(RestMethods.DELETE)
-      // todo: think, how to stub getPartiesByTypeAndID call
-      // expect(partiesDomain.getPartiesByTypeAndID.callCount).toBe(1)
-      // expect(participant.sendErrorToParticipant.callCount).toBe(0)
+      expect(Util.proxies.getAllProxiesNames.callCount).toBe(1) // inter-scheme discovery flow was triggered
     })
   })
 })

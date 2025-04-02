@@ -25,7 +25,7 @@
  --------------
  ******/
 
-const { createMockDeps, oracleMock } = require('./deps')
+const { createMockDeps, oracleMock, participantMock } = require('./deps')
 // ↑ should be first require to mock external deps ↑
 const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
 const fixtures = require('#test/fixtures/index')
@@ -38,13 +38,35 @@ describe('PutPartiesErrorService Tests -->', () => {
   })
 
   test('should cleanup oracle and trigger discovery flow for party from external dfsp', async () => {
+    participantMock.validateParticipant = jest.fn().mockResolvedValue({})
     const headers = fixtures.partiesCallHeadersDto({ proxy: 'proxyA' })
     const params = fixtures.partiesParamsDto()
     const service = new PutPartiesErrorService(createMockDeps(), { headers, params })
 
     const needDiscovery = await service.handleRequest()
     expect(needDiscovery).toBe(true)
-    expect(oracleMock.oracleRequest.mock.calls.length).toBe(1)
+    expect(oracleMock.oracleRequest).toHaveBeenCalledTimes(1)
     expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+  })
+
+  test('should NOT cleanup oracle if destination is external', async () => {
+    const destination = 'externalDfsp'
+    const proxyDest = 'proxyDest'
+    const deps = createMockDeps()
+    deps.participant.validateParticipant = jest.fn().mockResolvedValue(null)
+    deps.proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValue(proxyDest)
+
+    const headers = fixtures.partiesCallHeadersDto({
+      destination, proxy: 'proxyA'
+    })
+    const params = fixtures.partiesParamsDto()
+    const dataUri = fixtures.dataUriDto()
+    const service = new PutPartiesErrorService(deps, { headers, params, dataUri })
+
+    const needDiscovery = await service.handleRequest()
+    expect(needDiscovery).toBeUndefined()
+    expect(oracleMock.oracleRequest).not.toHaveBeenCalled()
+    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+    expect(participantMock.sendErrorToParticipant.mock.lastCall[0]).toBe(proxyDest)
   })
 })

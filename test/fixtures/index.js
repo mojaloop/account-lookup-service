@@ -26,10 +26,11 @@
  ******/
 
 const { randomUUID } = require('node:crypto')
-const { Enum } = require('@mojaloop/central-services-shared')
+const { Enum, Util } = jest.requireActual('@mojaloop/central-services-shared')
 const isoFixtures = require('./iso')
 
 const { Headers } = Enum.Http
+const { encodePayload } = Util.StreamingProtocol
 
 const headersDto = ({
   source = 'fromDfsp',
@@ -145,6 +146,8 @@ const postParticipantsPayloadDto = ({
   ...(currency && { currency })
 })
 
+const dataUriDto = (payload = {}) => encodePayload(JSON.stringify(payload), 'application/json')
+
 const errorCallbackResponseDto = ({
   errorCode = '1234',
   errorDescription = 'Error description',
@@ -195,6 +198,7 @@ module.exports = {
   oracleRequestResponseDto,
   putPartiesSuccessResponseDto,
   postParticipantsPayloadDto,
+  dataUriDto,
   errorCallbackResponseDto,
   expiredCacheKeyDto,
   mockAlsRequestDto,

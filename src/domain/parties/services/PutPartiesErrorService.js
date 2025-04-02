@@ -32,20 +32,22 @@ class PutPartiesErrorService extends BasePartiesService {
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
       const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
-      const isPending = await this.deps.proxyCache.isPendingCallback(alsReq)
+      const isInterSchemeDiscoveryCase = await this.deps.proxyCache.isPendingCallback(alsReq)
 
-      if (!isPending) {
-        // not initial inter-scheme discovery case. Cleanup oracle and trigger inter-scheme discovery
-        this.log.warn('Need to cleanup oracle and trigger new inter-scheme discovery flow')
-        await this.cleanupOracle()
-        await this.removeProxyGetPartiesTimeoutCache(alsReq)
-        return true // need to trigger inter-scheme discovery
-      }
-
-      const isLast = await this.checkLastProxyCallback(alsReq)
-      if (!isLast) {
-        this.log.verbose('putPartiesErrorByTypeAndID proxy callback was processed')
-        return
+      if (isInterSchemeDiscoveryCase) {
+        const isLast = await this.checkLastProxyCallback(alsReq)
+        if (!isLast) {
+          this.log.verbose('putPartiesErrorByTypeAndID proxy callback was processed')
+          return
+        }
+      } else {
+        const schemeParticipant = await this.validateParticipant(this.state.destination)
+        if (schemeParticipant) {
+          this.log.warn('Need to cleanup oracle and trigger new inter-scheme discovery flow')
+          await this.cleanupOracle()
+          await this.removeProxyGetPartiesTimeoutCache(alsReq)
+          return true // need to trigger inter-scheme discovery
+        }
       }
     }
 
