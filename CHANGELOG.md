@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.8.0](https://github.com/mojaloop/account-lookup-service/compare/v17.7.1...v17.8.0) (2025-04-03)
+
+
+### Features
+
+* **csi-1266:** reset party mappings in inter-scheme scenario ([#541](https://github.com/mojaloop/account-lookup-service/issues/541)) ([279fac6](https://github.com/mojaloop/account-lookup-service/commit/279fac6bff5e9a30c0583e1bcfb724787590516c))
+
 ### [17.7.1](https://github.com/mojaloop/account-lookup-service/compare/v17.7.0...v17.7.1) (2025-03-27)
 
 
