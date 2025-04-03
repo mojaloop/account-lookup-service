@@ -25,54 +25,73 @@
  --------------
  ******/
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
+const { ERROR_MESSAGES } = require('../../../constants')
 
 class PutPartiesErrorService extends BasePartiesService {
-  // async handleRequest () {
-  //   // todo: add impl.
-  // }
+  async handleRequest () {
+    if (this.state.proxyEnabled && this.state.proxy) {
+      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
+      const isInterSchemeDiscoveryCase = await this.deps.proxyCache.isPendingCallback(alsReq)
 
-  async checkPayee ({ headers, params, payload, proxy }) {
-    const notValid = this.deps.partiesUtils.isNotValidPayeeCase(payload)
-    if (notValid) {
-      this.deps.stepState.inProgress('notValidPayeeCase-1')
-      this.log.warn('notValidPayee case - deleting Participants and run getPartiesByTypeAndID', { proxy, payload })
-      const swappedHeaders = this.deps.partiesUtils.swapSourceDestinationHeaders(headers)
-      await super.sendDeleteOracleRequest(swappedHeaders, params)
+      if (isInterSchemeDiscoveryCase) {
+        const isLast = await this.checkLastProxyCallback(alsReq)
+        if (!isLast) {
+          this.log.verbose('proxy error callback was processed (not last)')
+          return
+        }
+      } else {
+        const schemeParticipant = await this.validateParticipant(this.state.destination)
+        if (schemeParticipant) {
+          this.log.info('Need to cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error')
+          await this.cleanupOracle()
+          await this.removeProxyGetPartiesTimeoutCache(alsReq)
+          await this.forwardServiceUnavailableErrorCallback()
+          return
+        }
+      }
     }
-    return notValid
+
+    await super.identifyDestinationForCallback()
+    await this.sendErrorCallbackToParticipant()
+    this.log.info('handleRequest is done')
   }
 
-  async checkLastProxyCallback ({ destination, proxy, params }) {
-    this.deps.stepState.inProgress('checkLastProxyCallback-2')
-    const alsReq = this.deps.partiesUtils.alsRequestDto(destination, params) // or source?
+  async cleanupOracle () {
+    this.stepInProgress('cleanupOracle')
+    const { headers, params, payload } = this.inputs
+    this.log.info('cleanupOracle due to error callback...', { payload })
+    const swappedHeaders = this.deps.partiesUtils.swapSourceDestinationHeaders(headers)
+    await super.sendDeleteOracleRequest(swappedHeaders, params)
+  }
+
+  async checkLastProxyCallback (alsReq) {
+    this.stepInProgress('checkLastProxyCallback')
+    const { proxy } = this.state
     const isLast = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
-    this.log.info(`got${isLast ? '' : 'NOT'} last error callback from proxy`, { proxy, alsReq, isLast })
+    this.log.info(`got ${isLast ? '' : 'NOT '}last inter-scheme error callback from a proxy`, { proxy, alsReq, isLast })
     return isLast
   }
 
-  async identifyDestinationForErrorCallback (destination) {
-    this.deps.stepState.inProgress('validateParticipant-3')
-    const destinationParticipant = await super.validateParticipant(destination)
-    if (destinationParticipant) return destination
-
-    this.deps.stepState.inProgress('lookupProxyDestination-4')
-    const proxyName = this.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
-    if (proxyName) return proxyName
-
-    const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-    this.log.warn(errMessage, { destination })
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
+  async sendErrorCallbackToParticipant () {
+    const { headers, params, dataUri } = this.inputs
+    const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
+    return super.sendErrorCallback({ errorInfo, headers, params })
   }
 
-  async sendErrorCallbackToParticipant ({ sendTo, headers, params, dataUri }) {
-    this.deps.stepState.inProgress('sendErrorToParticipant-5')
-    const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
-    return super.sendErrorCallback({
-      sendTo, errorInfo, headers, params
+  async forwardServiceUnavailableErrorCallback () {
+    this.stepInProgress('forwardServiceUnavailableErrorCallback')
+    const { headers, params } = this.inputs
+    const error = super.createFspiopServiceUnavailableError(ERROR_MESSAGES.externalPartyError)
+    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params, this.state.destination)
+    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
+
+    await super.sendErrorCallback({
+      errorInfo,
+      headers: callbackHeaders,
+      params
     })
+    this.log.verbose('#forwardServiceUnavailableErrorCallback is done', { callbackHeaders, errorInfo })
   }
 }
 

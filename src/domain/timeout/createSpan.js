@@ -25,32 +25,31 @@
  --------------
  ******/
 
-const { Util } = require('@mojaloop/central-services-shared')
-const { logger } = require('../../lib')
-const config = require('../../lib/config')
-const oracle = require('../../models/oracle/facade')
-const participant = require('../../models/participantEndpoint/facade')
-const partiesUtils = require('./partiesUtils')
+const {
+  Events: { Event },
+  Tags: { QueryTags }
+} = require('@mojaloop/central-services-shared').Enum
+const { Tracer } = require('@mojaloop/event-sdk')
+const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
 
-/** @returns {PartiesDeps} */
-const createDeps = ({
-  cache,
-  proxyCache,
-  proxies = Util.proxies,
-  childSpan = null,
-  log = logger
-}) => Object.freeze({
-  cache,
-  proxyCache,
-  childSpan,
-  log,
-  config,
-  oracle,
-  participant,
-  proxies,
-  partiesUtils
-})
+const { getSpanTags } = require('../../lib/util')
 
-module.exports = {
-  createDeps
+const createSpan = (spanName, headers, params) => {
+  const span = Tracer.createSpan(spanName, { headers })
+  const spanTags = getSpanTags({ headers }, Event.Type.PARTY, Event.Action.PUT)
+  span.setTags(spanTags)
+  const queryTags = EventFrameworkUtil.Tags.getQueryTags(
+    QueryTags.serviceName.accountLookupService,
+    QueryTags.auditType.transactionFlow,
+    QueryTags.contentType.httpRequest,
+    QueryTags.operation.timeoutInterschemePartiesLookups,
+    {
+      partyIdType: params.Type,
+      partyIdentifier: params.ID
+    }
+  )
+  span.setTags(queryTags)
+  return span
 }
+
+module.exports = createSpan

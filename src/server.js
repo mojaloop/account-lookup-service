@@ -45,7 +45,18 @@ const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
 const Handlers = require('./handlers/register')
 
 const connectDatabase = async (dbConfig) => {
-  return Db.connect(dbConfig)
+  await Db.connect(dbConfig)
+  logger.info('Database connected')
+}
+
+const initOpenApiBackend = async ({ isAdmin }) => {
+  const OpenAPISpecPath = Util.pathForInterface({ isAdmin, isMockInterface: false })
+  const apiHandlers = isAdmin
+    ? APIHandlers.AdminHandlers
+    : APIHandlers.ApiHandlers
+  const api = await OpenapiBackend.initialise(OpenAPISpecPath, apiHandlers)
+  logger.verbose('OpenAPI Backend initialized', { isAdmin })
+  return api
 }
 
 const migrate = async () => {
@@ -132,8 +143,7 @@ const initializeApi = async (appConfig) => {
     initializeInstrumentation(INSTRUMENTATION_METRICS_CONFIG)
   }
   await connectDatabase(DATABASE)
-  const OpenAPISpecPath = Util.pathForInterface({ isAdmin: false, isMockInterface: false })
-  const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.ApiHandlers)
+  const api = await initOpenApiBackend({ isAdmin: false })
 
   await Promise.all([
     Endpoints.initializeCache(CENTRAL_SHARED_ENDPOINT_CACHE_CONFIG, Util.hubNameConfig),
@@ -142,6 +152,7 @@ const initializeApi = async (appConfig) => {
     OracleEndpointCache.initialize(),
     Cache.initCache()
   ])
+  logger.verbose('all caches initialized')
 
   return createServer(API_PORT, api, Routes.APIRoutes(api), false, PROXY_CACHE_CONFIG)
 }
@@ -161,8 +172,8 @@ const initializeAdmin = async (appConfig) => {
   }
   await connectDatabase(DATABASE)
   RUN_MIGRATIONS && await migrate()
-  const OpenAPISpecPath = Util.pathForInterface({ isAdmin: true, isMockInterface: false })
-  const api = await OpenapiBackend.initialise(OpenAPISpecPath, APIHandlers.AdminHandlers)
+  const api = await initOpenApiBackend({ isAdmin: true })
+
   await Promise.all([
     OracleEndpointCache.initialize(),
     Cache.initCache()

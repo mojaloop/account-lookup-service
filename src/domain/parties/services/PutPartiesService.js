@@ -25,71 +25,69 @@
  --------------
  ******/
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
 const { RestMethods } = BasePartiesService.enums()
 
 class PutPartiesService extends BasePartiesService {
-  // async handleRequest () {
-  //   // todo: add impl.
-  // }
+  async handleRequest () {
+    const { destination, source, proxy } = this.state
+    this.log.info('handleRequest start', { destination, source, proxy })
 
-  async validateSourceParticipant ({ source, proxy }) {
-    this.deps.stepState.inProgress('validateSourceParticipant-1')
-    const requesterParticipant = await super.validateParticipant(source)
+    await this.validateSourceParticipant()
+    if (proxy) {
+      await this.checkProxySuccessResponse()
+    }
+    await this.identifyDestinationForCallback()
+    await this.sendSuccessCallback()
+  }
 
-    if (!requesterParticipant) {
-      if (!this.proxyEnabled || !proxy) {
-        const errMessage = ERROR_MESSAGES.sourceFspNotFound
-        this.log.warn(`${errMessage} and no proxy`, { source })
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+  async validateSourceParticipant () {
+    const { source, proxy, proxyEnabled } = this.state
+    const log = this.log.child({ source, proxy, method: 'validateSourceParticipant' })
+    this.stepInProgress('validateSourceParticipant-1')
+
+    const schemeParticipant = await super.validateParticipant(source)
+    if (!schemeParticipant) {
+      if (!proxyEnabled || !proxy) {
+        throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.sourceFspNotFound, log)
       }
+
       const isCached = await this.deps.proxyCache.addDfspIdToProxyMapping(source, proxy)
       if (!isCached) {
-        const errMessage = 'failed to addDfspIdToProxyMapping'
-        this.log.warn(errMessage, { source, proxy })
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
+        throw super.createFspiopIdNotFoundError('failed to addDfspIdToProxyMapping', log)
       }
 
-      this.log.info('addDfspIdToProxyMapping is done', { source, proxy })
+      log.info('addDfspIdToProxyMapping is done', { source, proxy })
     }
   }
 
-  async checkProxySuccessResponse ({ destination, source, headers, params }) {
-    if (this.proxyEnabled) {
-      this.deps.stepState.inProgress('checkProxySuccessResponse-2')
+  async checkProxySuccessResponse () {
+    if (this.state.proxyEnabled) {
+      this.stepInProgress('checkProxySuccessResponse')
+      const { headers, params } = this.inputs
+      const { destination, source } = this.state
       const alsReq = this.deps.partiesUtils.alsRequestDto(destination, params)
 
       const isExists = await this.deps.proxyCache.receivedSuccessResponse(alsReq)
-      if (isExists) {
-        await this.#updateOracleWithParticipantMapping({ source, headers, params })
+      if (!isExists) {
+        this.log.verbose('NOT inter-scheme receivedSuccessResponse case')
+        await this.removeProxyGetPartiesTimeoutCache(alsReq)
         return
       }
-      this.log.warn('destination is NOT in scheme, and no cached sendToProxiesList', { destination, alsReq })
-      // todo: think, if we need to throw an error here
+
+      const schemeParticipant = await super.validateParticipant(destination)
+      if (schemeParticipant) {
+        await this.#updateOracleWithParticipantMapping({ source, headers, params })
+      }
     }
   }
 
-  async identifyDestinationForSuccessCallback (destination) {
-    this.deps.stepState.inProgress('validateDestinationParticipant-4')
-    const destinationParticipant = await super.validateParticipant(destination)
-    if (destinationParticipant) {
-      return destinationParticipant.name
-    }
-
-    const proxyName = this.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
-    if (!proxyName) {
-      const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-      this.log.warn(`${errMessage} and no proxy`, { destination })
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
-    }
-    return proxyName
-  }
-
-  async sendSuccessCallback ({ sendTo, headers, params, dataUri }) {
-    this.deps.stepState.inProgress('#sendSuccessCallback-6')
+  async sendSuccessCallback () {
+    const { headers, params, dataUri } = this.inputs
+    const sendTo = this.state.requester
+    this.stepInProgress('sendSuccessCallback')
     const payload = PutPartiesService.decodeDataUriPayload(dataUri)
     const callbackEndpointType = this.deps.partiesUtils.putPartyCbType(params.SubId)
     const options = this.deps.partiesUtils.partiesRequestOptionsDto(params)
@@ -97,11 +95,11 @@ class PutPartiesService extends BasePartiesService {
     await this.deps.participant.sendRequest(
       headers, sendTo, callbackEndpointType, RestMethods.PUT, payload, options
     )
-    this.log.verbose('sendSuccessCallback is done', { sendTo, payload })
+    this.log.verbose('sendSuccessCallback is sent', { sendTo, payload })
   }
 
   async #updateOracleWithParticipantMapping ({ source, headers, params }) {
-    this.deps.stepState.inProgress('#updateOracleWithParticipantMapping-3')
+    this.stepInProgress('#updateOracleWithParticipantMapping-3')
     const mappingPayload = {
       fspId: source
     }

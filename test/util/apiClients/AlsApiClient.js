@@ -8,9 +8,9 @@ class AlsProxyApiClient extends BasicApiClient {
     super({ ...deps, baseURL })
   }
 
-  async getPartyByIdAndType ({ partyId, partyIdType, source, destination, proxy = '' }) {
+  async getPartyByIdAndType ({ partyId, partyIdType, source, destination, proxy = '', addHeaders = null }) {
     return this.sendPartyRequest({
-      partyId, partyIdType, source, destination, proxy
+      partyId, partyIdType, source, destination, proxy, addHeaders
     })
   }
 
@@ -27,10 +27,12 @@ class AlsProxyApiClient extends BasicApiClient {
     })
   }
 
-  async sendPartyRequest ({ partyId, partyIdType, source, destination, proxy = '', body = null, isError = false }) {
+  async sendPartyRequest ({
+    partyId, partyIdType, source, destination, proxy = '', body = null, isError = false, addHeaders = null
+  }) {
     const method = body ? 'PUT' : 'GET'
     const url = `/parties/${partyIdType}/${partyId}${isError ? '/error' : ''}`
-    const headers = this.fixtures.partiesCallHeadersDto({ source, destination, proxy })
+    const headers = this.fixtures.partiesCallHeadersDto({ source, destination, proxy, addHeaders })
 
     return this.sendRequest({
       method,

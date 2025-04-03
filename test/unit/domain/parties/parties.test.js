@@ -56,7 +56,7 @@ const fixtures = require('../../../fixtures')
 const { type: proxyCacheType, proxyConfig: proxyCacheConfig } = Config.PROXY_CACHE_CONFIG
 
 const { encodePayload } = Util.StreamingProtocol
-const { RestMethods } = Enum.Http
+const { RestMethods, Headers } = Enum.Http
 
 Logger.isDebugEnabled = jest.fn(() => true)
 Logger.isErrorEnabled = jest.fn(() => true)
@@ -192,24 +192,26 @@ describe('Parties Tests', () => {
       expect(cached).toBe(proxy)
     })
 
-    it('should send error callback if destination is not in the scheme, and not in proxyCache', async () => {
+    it('should cleanup oracle and trigger discovery flow, if destination is not in scheme and no dfsp-to-proxy mapping', async () => {
+      Config.PROXY_CACHE_CONFIG.enabled = true
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves({}) // source
         .onSecondCall().resolves(null) // destination
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       sandbox.stub(oracle, 'oracleRequest')
+      const proxy = 'some-proxy'
+      Util.proxies.getAllProxiesNames = sandbox.stub().resolves([proxy])
       const headers = fixtures.partiesCallHeadersDto()
 
       await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
 
-      expect(participant.sendRequest.callCount).toBe(0)
-      expect(oracle.oracleRequest.callCount).toBe(0)
-      expect(participant.sendErrorToParticipant.callCount).toBe(1)
-
-      const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
-      expect(errorInformation.errorCode).toBe('3200')
-      expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.partyDestinationFspNotFound)
+      expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
+      expect(participant.sendErrorToParticipant.callCount).toBe(0)
+      expect(participant.sendRequest.callCount).toBe(1)
+      // eslint-disable-next-line no-unused-vars
+      const [_, sendTo] = participant.sendRequest.lastCall.args
+      expect(sendTo).toBe(proxy)
     })
 
     it('should send request to proxy, if destination is not in the scheme, but has proxyMapping', async () => {
@@ -470,7 +472,7 @@ describe('Parties Tests', () => {
       expect(firstCallArgs[2]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should send request to proxy if oracle returns dfsp NOT from the scheme', async () => {
+    it('should send errorCallback if oracle returns external dfsp, and source is external', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const proxyName = `proxy-${Date.now()}`
       const fspId = `dfspNotFromScheme-${Date.now()}`
@@ -479,7 +481,7 @@ describe('Parties Tests', () => {
       })
       sandbox.stub(oracle, 'oracleRequest').resolves(oracleResponse)
       participant.validateParticipant = sandbox.stub()
-        .onFirstCall().resolves({}) // source
+        .onFirstCall().resolves(null) // source
         .onSecondCall().resolves(null) // oracle dfsp
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
@@ -487,15 +489,20 @@ describe('Parties Tests', () => {
       const isAdded = await proxyCache.addDfspIdToProxyMapping(fspId, proxyName)
       expect(isAdded).toBe(true)
 
-      const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const source = `fromDfsp-${Date.now()}`
+      const headers = fixtures.partiesCallHeadersDto({ destination: '', source, proxy: 'proxy' })
       const { params, method, query } = Helper.getByTypeIdRequest
 
       await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, null, null, proxyCache)
 
-      expect(participant.sendErrorToParticipant.callCount).toBe(0)
-      expect(participant.sendRequest.callCount).toBe(1)
-      const calledProxy = participant.sendRequest.getCall(0).args[1]
-      expect(calledProxy).toBe(proxyName)
+      expect(participant.sendRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      // eslint-disable-next-line no-unused-vars
+      const [sentTo, _, payload, sentHeaders] = participant.sendErrorToParticipant.lastCall.args
+      expect(sentTo).toBe(source)
+      expect(payload.errorInformation.errorCode).toBe('3200')
+      expect(sentHeaders[Headers.FSPIOP.SOURCE]).toBe(Config.HUB_NAME)
+      expect(sentHeaders[Headers.FSPIOP.DESTINATION]).toBe(headers[Headers.FSPIOP.SOURCE])
     })
 
     it('handles error when `oracleRequest` returns no result', async () => {
@@ -554,13 +561,14 @@ describe('Parties Tests', () => {
       participant.sendRequest = sandbox.stub().rejects(new Error('Some network issue'))
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+      const params = fixtures.partiesParamsDto()
 
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
 
       expect(participant.sendRequest.callCount).toBe(proxyNames.length)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
 
-      const { errorInformation } = participant.sendErrorToParticipant.getCall(0).args[2]
+      const { errorInformation } = participant.sendErrorToParticipant.lastCall.args[2]
       expect(errorInformation.errorCode).toBe('3200')
       expect(errorInformation.errorDescription).toContain(ERROR_MESSAGES.proxyConnectionError)
     })
@@ -579,20 +587,20 @@ describe('Parties Tests', () => {
     it('successfully sends the callback to the participant', async () => {
       expect.hasAssertions()
       // Arrange
-      participant.validateParticipant = sandbox.stub().resolves({
-        name: 'fsp1'
-      })
+      participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves()
       const payload = JSON.stringify({ testPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
+      const destination = 'destFsp'
+      const headers = fixtures.partiesCallHeadersDto({ destination })
 
       // Act
-      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const sendRequestCallArgs = participant.sendRequest.getCall(0).args
-      expect(sendRequestCallArgs[1]).toStrictEqual('fsp1')
+      expect(sendRequestCallArgs[1]).toBe(destination)
       participant.sendRequest.reset()
     })
 
@@ -919,14 +927,15 @@ describe('Parties Tests', () => {
       expect(sendErrorCallArgs[1]).toBe(expectedCallbackEnpointType)
     })
 
-    it('should handle notValidPayeeIdentifier case, and delete partyId from oracle', async () => {
+    it('should handle external party error callback, and delete partyId from oracle', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
-      const source = `source-${Date.now()}`
+      const destination = `dest-${Date.now()}`
       const proxy = `proxy-${Date.now()}`
-      const headers = fixtures.partiesCallHeadersDto({ source, proxy })
+      const headers = fixtures.partiesCallHeadersDto({ destination, proxy })
       const { params } = Helper.putByTypeIdRequest
+      participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
@@ -936,13 +945,14 @@ describe('Parties Tests', () => {
 
       await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
 
-      expect(participant.sendRequest.callCount).toBe(0)
       expect(oracle.oracleRequest.callCount).toBe(1)
-      const [, method] = oracle.oracleRequest.getCall(0).args
-      expect(method).toBe(RestMethods.DELETE)
-      // todo: think, how to stub getPartiesByTypeAndID call
-      // expect(partiesDomain.getPartiesByTypeAndID.callCount).toBe(1)
-      // expect(participant.sendErrorToParticipant.callCount).toBe(0)
+      expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
+      expect(participant.sendRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      // eslint-disable-next-line no-unused-vars
+      const [sentTo, _, data] = participant.sendErrorToParticipant.lastCall.args
+      expect(sentTo).toBe(destination)
+      expect(data.errorInformation.errorCode).toBe('2003')
     })
   })
 })

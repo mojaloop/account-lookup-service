@@ -25,32 +25,27 @@
  --------------
  ******/
 
-const { Util } = require('@mojaloop/central-services-shared')
-const { logger } = require('../../lib')
-const config = require('../../lib/config')
-const oracle = require('../../models/oracle/facade')
-const participant = require('../../models/participantEndpoint/facade')
-const partiesUtils = require('./partiesUtils')
+jest.mock('#src/models/oracle/facade')
+jest.mock('#src/models/participantEndpoint/facade')
+
+const oracleMock = require('#src/models/oracle/facade')
+const participantMock = require('#src/models/participantEndpoint/facade')
+const { createDeps } = require('#src/domain/parties/deps')
+const { logger } = require('#src/lib/index')
+const { createProxyCacheMock, createProxiesUtilMock } = require('#test/util/mockDeps')
 
 /** @returns {PartiesDeps} */
-const createDeps = ({
-  cache,
-  proxyCache,
-  proxies = Util.proxies,
-  childSpan = null,
-  log = logger
-}) => Object.freeze({
-  cache,
-  proxyCache,
-  childSpan,
-  log,
-  config,
-  oracle,
-  participant,
-  proxies,
-  partiesUtils
-})
+const createMockDeps = ({
+  proxyCache = createProxyCacheMock(),
+  proxies = createProxiesUtilMock(),
+  log = logger.child({ test: true }),
+  cache
+} = {}) => createDeps({ cache, proxyCache, proxies, log })
 
 module.exports = {
-  createDeps
+  createMockDeps,
+  createProxyCacheMock,
+  createProxiesUtilMock,
+  oracleMock,
+  participantMock
 }

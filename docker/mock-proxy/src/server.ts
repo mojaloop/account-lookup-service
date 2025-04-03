@@ -38,24 +38,26 @@ app.get('/health', (req: Request, res: Response) => {
 app.get('/parties/:type/:id', (req: Request, res: Response) => {
   const { type, id } = req.params;
   const headers = hubCbHeaders(req.headers);
-  console.log('parties request details:', { type, id, headers, CL_HOST, CL_PORT });
+  const statusCode = detectStatusCode(req);
+  console.log('parties request details:', { type, id, headers, CL_HOST, CL_PORT, statusCode });
 
   // todo: reply to CL with party info
 
   res
     .set(headers)
-    .status(202)
+    .status(statusCode)
     .json({ success: true });
 });
 
 app.put('/parties/:type/:id/error', (req: Request, res: Response) => {
   const { type, id } = req.params;
   const headers = dfspCbHeaders(req.headers);
-  console.log('parties put error request details:', { type, id, headers, CL_HOST, CL_PORT });
+  const statusCode = detectStatusCode(req);
+  console.log('parties put error request details:', { type, id, headers, CL_HOST, CL_PORT, statusCode });
 
   res
     .set(headers)
-    .status(200)
+    .status(statusCode)
     .json({ success: true });
 });
 
@@ -92,3 +94,10 @@ const httpsServer = http.createServer(app);
 httpsServer.listen(PROXY_PORT, () => {
   console.log(`Mock proxyAdapter "${PROXY_NAME}" is running on port ${PROXY_PORT}...`);
 });
+
+const X_RESPONSE_STATUS_HEADER = 'x-response-status';
+
+const detectStatusCode = (req: Request) =>
+  typeof req.headers[X_RESPONSE_STATUS_HEADER] === 'string'
+    ? parseInt(req.headers[X_RESPONSE_STATUS_HEADER], 10)
+    : (req.method === 'GET' ? 202 : 200);

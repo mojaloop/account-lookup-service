@@ -31,64 +31,54 @@
  ******/
 'use strict'
 
-const {
-  Factory: { createFSPIOPError, reformatFSPIOPError },
-  Enums: { FSPIOPErrorCodes }
-} = require('@mojaloop/central-services-error-handling')
-const {
-  EventStateMetadata,
-  EventStatusType,
-  AuditEventAction
-} = require('@mojaloop/event-sdk')
+const { Factory: { reformatFSPIOPError } } = require('@mojaloop/central-services-error-handling')
+const { EventStateMetadata, EventStatusType } = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 
-const Participant = require('../../models/participantEndpoint/facade')
-const { ERROR_MESSAGES } = require('../../constants')
-const { timeoutCallbackDto } = require('./dto')
 const { logger } = require('../../lib')
-const util = require('../../lib/util')
+const { countFspiopError } = require('../../lib/util')
+const { createDeps } = require('../parties/deps')
+const { TimeoutPartiesService } = require('../parties/services')
 
 const timeoutInterschemePartiesLookups = async ({ proxyCache, batchSize }) => {
-  return proxyCache.processExpiredAlsKeys(sendTimeoutCallback, batchSize)
+  const operation = timeoutInterschemePartiesLookups.name
+  logger.info(`${operation} start...`, { batchSize })
+  return proxyCache.processExpiredAlsKeys(
+    (key) => sendTimeoutCallback(key, proxyCache, operation), batchSize
+  )
 }
 
-const sendTimeoutCallback = async (cacheKey) => {
+const timeoutProxyGetPartiesLookups = async ({ proxyCache, batchSize }) => {
+  const operation = timeoutProxyGetPartiesLookups.name
+  logger.info(`${operation} start...`, { batchSize })
+  return proxyCache.processExpiredProxyGetPartiesKeys(
+    (key) => sendTimeoutCallback(key, proxyCache, operation), batchSize
+  )
+}
+
+const sendTimeoutCallback = async (cacheKey, proxyCache, operation) => {
   const histTimerEnd = Metrics.getHistogram(
     'eg_timeoutInterschemePartiesLookups',
     'Egress - Interscheme parties lookup timeout callback',
     ['success']
   ).startTimer()
-  let step
-  const [, destination, partyType, partyId] = cacheKey.split(':')
-  const { errorInformation, params, headers, endpointType, span } = await timeoutCallbackDto({ destination, partyId, partyType })
-  logger.debug('sendTimeoutCallback details:', { destination, partyType, partyId, cacheKey })
+  const log = logger.child({ cacheKey, operation })
+  const deps = createDeps({ proxyCache, log })
+  const service = TimeoutPartiesService.createInstance(deps, cacheKey, operation)
+  const span = service.deps.childSpan
 
   try {
-    step = 'validateParticipant-1'
-    await validateParticipant(destination)
-    await span.audit({ headers, errorInformation }, AuditEventAction.start)
-    step = 'sendErrorToParticipant-2'
-    await Participant.sendErrorToParticipant(destination, endpointType, errorInformation, headers, params, undefined, span)
+    await service.handleExpiredKey()
     histTimerEnd({ success: true })
   } catch (err) {
-    logger.warn('error in sendTimeoutCallback: ', err)
+    log.warn('error in sendTimeoutCallback: ', err)
     histTimerEnd({ success: false })
     const fspiopError = reformatFSPIOPError(err)
-    util.countFspiopError(fspiopError, { operation: 'sendTimeoutCallback', step })
+    countFspiopError(fspiopError, { operation, step: service?.currenStep })
 
     await finishSpan(span, fspiopError)
     throw fspiopError
   }
-}
-
-const validateParticipant = async (fspId) => {
-  const participant = await Participant.validateParticipant(fspId)
-  if (!participant) {
-    const errMessage = ERROR_MESSAGES.partyDestinationFspNotFound
-    logger.error(`error in validateParticipant: ${errMessage}`)
-    throw createFSPIOPError(FSPIOPErrorCodes.DESTINATION_FSP_ERROR, errMessage)
-  }
-  return participant
 }
 
 const finishSpan = async (span, err) => {
@@ -105,5 +95,6 @@ const finishSpan = async (span, err) => {
 
 module.exports = {
   timeoutInterschemePartiesLookups,
+  timeoutProxyGetPartiesLookups,
   sendTimeoutCallback // Exposed for testing
 }
