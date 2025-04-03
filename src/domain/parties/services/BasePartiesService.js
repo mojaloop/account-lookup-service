@@ -156,7 +156,7 @@ class BasePartiesService {
 
   async sendErrorCallback ({ errorInfo, headers, params }) {
     this.stepInProgress('sendErrorCallback')
-    const sendTo = this.state.requester || this.state.source
+    const sendTo = this.state.requester || headers[Headers.FSPIOP.DESTINATION] /* || this.state.source */
     const endpointType = this.deps.partiesUtils.errorPartyCbType(params.SubId)
 
     await this.deps.participant.sendErrorToParticipant(
@@ -171,6 +171,7 @@ class BasePartiesService {
   }
 
   async removeProxyGetPartiesTimeoutCache (alsReq) {
+    this.stepInProgress('removeProxyGetPartiesTimeoutCache')
     const isRemoved = await this.deps.proxyCache.removeProxyGetPartiesTimeout(alsReq, this.state.proxy)
     this.log.debug('removeProxyGetPartiesTimeoutCache is done', { isRemoved, alsReq })
     return isRemoved
@@ -230,8 +231,8 @@ class BasePartiesService {
     }
   }
 
-  static createErrorCallbackHeaders (headers, params) {
-    return createCallbackHeaders({
+  static createErrorCallbackHeaders (headers, params, overrideDestination = '') {
+    const cbHeaders = createCallbackHeaders({
       requestHeaders: headers,
       partyIdType: params.Type,
       partyIdentifier: params.ID,
@@ -239,6 +240,10 @@ class BasePartiesService {
         ? FspEndpointTemplates.PARTIES_SUB_ID_PUT_ERROR
         : FspEndpointTemplates.PARTIES_PUT_ERROR
     })
+    if (overrideDestination) {
+      cbHeaders[Headers.FSPIOP.DESTINATION] = overrideDestination
+    }
+    return cbHeaders
   }
 
   static createHubErrorCallbackHeaders (hubName, destination) {

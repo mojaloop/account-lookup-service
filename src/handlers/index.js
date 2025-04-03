@@ -38,12 +38,12 @@ const { HANDLER_TYPES } = require('../constants')
 const Config = require('../lib/config')
 const log = require('../lib').logger.child('ALS-timeout-handler')
 
-process.on('uncaughtExceptionMonitor', (err) => {
-  log.error(`uncaughtException: ${err?.message}`, err)
+process.on('uncaughtException', (err, origin) => {
+  log.error(`uncaughtException event [origin: ${origin}]: `, err)
   process.exit(2)
 })
 process.on('unhandledRejection', (err) => {
-  log.error(`unhandledRejection: ${err?.message}`, err)
+  log.error('unhandledRejection event: ', err)
   process.exit(3)
 })
 

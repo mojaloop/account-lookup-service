@@ -29,7 +29,6 @@ const { createMockDeps, oracleMock, participantMock } = require('./deps')
 // ↑ should be first require to mock external deps ↑
 const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
 const fixtures = require('#test/fixtures/index')
-const { ERROR_MESSAGES } = require('#src/constants')
 
 const { RestMethods } = PutPartiesErrorService.enums()
 
@@ -38,21 +37,22 @@ describe('PutPartiesErrorService Tests -->', () => {
     jest.clearAllMocks()
   })
 
-  test('should cleanup oracle and throw SERVICE_CURRENTLY_UNAVAILABLE error for party from external dfsp', async () => {
-    expect.hasAssertions()
+  test('should cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error for party from external dfsp', async () => {
     participantMock.validateParticipant = jest.fn().mockResolvedValue({})
-    const headers = fixtures.partiesCallHeadersDto({ proxy: 'proxyA' })
+    const destination = 'destFsp'
+    const headers = fixtures.partiesCallHeadersDto({ destination, proxy: 'proxyA' })
     const params = fixtures.partiesParamsDto()
     const dataUri = fixtures.dataUriDto()
     const service = new PutPartiesErrorService(createMockDeps(), { headers, params, dataUri })
 
     await service.handleRequest()
-      .catch(err => {
-        expect(err).toEqual(service.createFspiopServiceUnavailableError(ERROR_MESSAGES.externalPartyError))
-        expect(oracleMock.oracleRequest).toHaveBeenCalledTimes(1)
-        expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
-        expect(participantMock.sendErrorToParticipant).not.toHaveBeenCalled()
-      })
+    expect(oracleMock.oracleRequest).toHaveBeenCalledTimes(1)
+    expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-unused-vars
+    const [sentTo, _, payload] = participantMock.sendErrorToParticipant.mock.lastCall
+    expect(sentTo).toBe(destination)
+    expect(payload.errorInformation.errorCode).toBe('2003')
   })
 
   test('should NOT cleanup oracle if destination is external', async () => {

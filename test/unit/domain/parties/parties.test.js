@@ -931,9 +931,9 @@ describe('Parties Tests', () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
-      const source = `source-${Date.now()}`
+      const destination = `dest-${Date.now()}`
       const proxy = `proxy-${Date.now()}`
-      const headers = fixtures.partiesCallHeadersDto({ source, proxy })
+      const headers = fixtures.partiesCallHeadersDto({ destination, proxy })
       const { params } = Helper.putByTypeIdRequest
       participant.validateParticipant = sandbox.stub().resolves({})
       participant.sendRequest = sandbox.stub().resolves()
@@ -951,7 +951,7 @@ describe('Parties Tests', () => {
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       // eslint-disable-next-line no-unused-vars
       const [sentTo, _, data] = participant.sendErrorToParticipant.lastCall.args
-      expect(sentTo).toBe(source)
+      expect(sentTo).toBe(destination)
       expect(data.errorInformation.errorCode).toBe('2003')
     })
   })

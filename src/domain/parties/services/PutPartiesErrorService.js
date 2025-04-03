@@ -43,16 +43,16 @@ class PutPartiesErrorService extends BasePartiesService {
       } else {
         const schemeParticipant = await this.validateParticipant(this.state.destination)
         if (schemeParticipant) {
-          const err = super.createFspiopServiceUnavailableError(ERROR_MESSAGES.externalPartyError)
-          this.log.info('Need to cleanup oracle and throw SERVICE_CURRENTLY_UNAVAILABLE error')
+          this.log.info('Need to cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error')
           await this.cleanupOracle()
           await this.removeProxyGetPartiesTimeoutCache(alsReq)
-          throw err
+          await this.forwardServiceUnavailableErrorCallback()
+          return
         }
       }
     }
 
-    await this.identifyDestinationForCallback()
+    await super.identifyDestinationForCallback()
     await this.sendErrorCallbackToParticipant()
     this.log.info('handleRequest is done')
   }
@@ -77,6 +77,21 @@ class PutPartiesErrorService extends BasePartiesService {
     const { headers, params, dataUri } = this.inputs
     const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
     return super.sendErrorCallback({ errorInfo, headers, params })
+  }
+
+  async forwardServiceUnavailableErrorCallback () {
+    this.stepInProgress('forwardServiceUnavailableErrorCallback')
+    const { headers, params } = this.inputs
+    const error = super.createFspiopServiceUnavailableError(ERROR_MESSAGES.externalPartyError)
+    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params, this.state.destination)
+    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
+
+    await super.sendErrorCallback({
+      errorInfo,
+      headers: callbackHeaders,
+      params
+    })
+    this.log.verbose('#forwardServiceUnavailableErrorCallback is done', { callbackHeaders, errorInfo })
   }
 }
 
