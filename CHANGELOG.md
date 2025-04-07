@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.8.1](https://github.com/mojaloop/account-lookup-service/compare/v17.8.0...v17.8.1) (2025-04-07)
+
+
+### Bug Fixes
+
+* **csi-1386:** delete participant audit ([#547](https://github.com/mojaloop/account-lookup-service/issues/547)) ([5ecf562](https://github.com/mojaloop/account-lookup-service/commit/5ecf562db8f48cf688f1ee19e901d46671d16ce9))
+
 ## [17.8.0](https://github.com/mojaloop/account-lookup-service/compare/v17.7.1...v17.8.0) (2025-04-03)
 
 
