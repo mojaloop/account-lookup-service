@@ -30,14 +30,15 @@
 const Sinon = require('sinon')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const request = require('@mojaloop/central-services-shared').Util.Request
+const errorHandling = require('@mojaloop/central-services-error-handling')
 
-const OracleFacade = require('../../../../src/models/oracle/facade')
-const oracleEndpointCached = require('../../../../src/models/oracle/oracleEndpointCached')
-const Logger = require('@mojaloop/central-services-logger')
+const OracleFacade = require('#src/models/oracle/facade')
+const oracleEndpointCached = require('#src/models/oracle/oracleEndpointCached')
+const fixtures = require('#test/fixtures/index')
 
-Logger.isDebugEnabled = jest.fn(() => true)
-Logger.isErrorEnabled = jest.fn(() => true)
-Logger.isInfoEnabled = jest.fn(() => true)
+const { createFSPIOPError } = errorHandling.Factory
+const { FSPIOPErrorCodes } = errorHandling.Enums
+
 let sandbox
 
 describe('Oracle Facade', () => {
@@ -442,6 +443,21 @@ describe('Oracle Facade', () => {
 
       // Assert
       await expect(action()).rejects.toThrowError(/(Oracle type:.*not found)/)
+    })
+
+    it('should return proper error on adding existing party [CSI-1352]', async () => {
+      expect.hasAssertions()
+      const ERROR = FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR
+      request.sendRequest = sandbox.stub().rejects(createFSPIOPError(ERROR))
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
+      const method = Enums.Http.RestMethods.POST
+      const headers = fixtures.partiesCallHeadersDto()
+      const params = fixtures.partiesParamsDto()
+
+      await OracleFacade.oracleRequest(headers, method, params)
+        .catch(err => {
+          expect(err.apiErrorCode.code).toBe(ERROR.code)
+        })
     })
   })
 

@@ -40,6 +40,12 @@ const oracleEndpointCached = require('../oracle/oracleEndpointCached')
 
 const { Headers, RestMethods, ReturnCodes } = Enums.Http
 
+const sendHttpRequest = ({ method, ...restArgs }) => request.sendRequest({
+  ...restArgs,
+  method: method.toUpperCase(),
+  hubNameRegex
+})
+
 /**
  * Sends a request to the oracles that are registered to the ALS
  *
@@ -67,7 +73,6 @@ const oracleRequest = async (headers, method, params = {}, query = {}, payload =
     const url = await determineOracleEndpoint({
       method, params, query, payload, assertPendingAcquire
     })
-    log.verbose(`Oracle endpoint: ${url}`)
 
     if (method.toUpperCase() === RestMethods.GET) {
       step = 'sendOracleGetRequest'
@@ -80,20 +85,17 @@ const oracleRequest = async (headers, method, params = {}, query = {}, payload =
 
     if (method.toUpperCase() === RestMethods.DELETE && Config.DELETE_PARTICIPANT_VALIDATION_ENABLED) {
       step = 'validatePartyDeletion'
-      await validatePartyDeletion({
-        url, source, destination, headers, method, params, payload
-      })
+      await validatePartyDeletion({ url, source, destination, headers, params })
     }
 
-    step = 'sendRequest'
-    return await request.sendRequest({
+    step = 'sendHttpRequest'
+    return await sendHttpRequest({
       url,
       headers,
       source,
       destination,
       method,
-      payload,
-      hubNameRegex
+      payload
     })
   } catch (err) {
     log.error('error in oracleRequest: ', err)
@@ -120,6 +122,8 @@ const determineOracleEndpoint = async ({
   } else {
     url = await _getOracleEndpointByType(partyIdType, partyIdentifier, assertPendingAcquire)
   }
+
+  logger.verbose(`Oracle endpoint: ${url}`, { currency, params, partySubIdOrType, url })
   return url
 }
 
@@ -138,13 +142,12 @@ const sendOracleGetRequest = async ({
     cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
 
     if (!cachedOracleFspResponse) {
-      cachedOracleFspResponse = await request.sendRequest({
+      cachedOracleFspResponse = await sendHttpRequest({
         url,
         headers,
         source,
         destination,
-        method,
-        hubNameRegex
+        method
       })
       // Trying to cache the whole response object will fail because it contains circular references
       // so we'll just cache the data property of the response.
@@ -204,19 +207,15 @@ const sendOracleGetRequest = async ({
   }
 }
 
-const validatePartyDeletion = async ({
-  url, source, destination, headers, method, params, payload
-}) => {
+const validatePartyDeletion = async ({ url, source, destination, headers, params }) => {
   const log = logger.child({ component: 'validatePartyDeletion', params })
   // If the request is a DELETE request, we need to ensure that the participant belongs to the requesting FSP
-  const getParticipantResponse = await request.sendRequest({
+  const getParticipantResponse = await sendHttpRequest({
     url,
     headers,
     source,
     destination,
-    method,
-    payload,
-    hubNameRegex
+    method: RestMethods.GET
   })
 
   if (getParticipantResponse.status !== ReturnCodes.OK.CODE) {
@@ -274,7 +273,7 @@ const _getOracleEndpointByTypeAndCurrency = async (partyIdType, partyIdentifier,
     }
   } else {
     const errMessage = `Oracle type:${partyIdType} and currency:${currency} not found`
-    logger.error(errMessage)
+    logger.warn(errMessage)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, errMessage)
       .toApiErrorObject(Config.ERROR_HANDLING)
   }
@@ -312,7 +311,7 @@ const _getOracleEndpointByType = async (partyIdType, partyIdentifier, assertPend
     }
   } else {
     const errMessage = `Oracle type:${partyIdType} not found`
-    logger.error(errMessage)
+    logger.warn(errMessage)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, errMessage)
   }
   return url
@@ -350,7 +349,7 @@ const _getOracleEndpointByTypeAndSubId = async (partyIdType, partyIdentifier, pa
     }
   } else {
     const errMessage = `Oracle type: ${partyIdType} and subId: ${partySubIdOrType} not found`
-    logger.error(errMessage)
+    logger.warn(errMessage)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, errMessage)
       .toApiErrorObject(Config.ERROR_HANDLING)
   }
@@ -390,7 +389,7 @@ const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdenti
     }
   } else {
     const errMessage = `Oracle type: ${partyIdType}, currency: ${currency} and subId: ${partySubIdOrType} not found`
-    logger.error(errMessage)
+    logger.warn(errMessage)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, errMessage)
       .toApiErrorObject(Config.ERROR_HANDLING)
   }
@@ -429,14 +428,13 @@ const oracleBatchRequest = async (headers, method, requestPayload, type, payload
         url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
       }
       logger.debug(`Oracle endpoints: ${url}`)
-      return await request.sendRequest({
+      return await sendHttpRequest({
         url,
         headers,
         source: headers[Headers.FSPIOP.SOURCE],
         destination: headers[Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
         method,
-        payload,
-        hubNameRegex
+        payload
       })
     } else {
       logger.error(`Oracle type:${type} not found`)
