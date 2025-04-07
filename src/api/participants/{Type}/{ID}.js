@@ -175,7 +175,7 @@ module.exports = {
       ['success']
     ).startTimer()
 
-    const { headers, payload, method, path, params, span } = request
+    const { headers, method, path, params, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.DELETE)
     span.setTags(spanTags)
     const queryTags = EventFrameworkUtil.Tags.getQueryTags(
@@ -193,7 +193,7 @@ module.exports = {
     span.setTags(queryTags)
     await span.audit({
       headers,
-      payload
+      payload: undefined
     }, EventSdk.AuditEventAction.start)
 
     const metadata = `${request.method} ${request.path}`
