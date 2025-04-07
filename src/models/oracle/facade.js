@@ -408,6 +408,7 @@ const _getOracleEndpointByTypeCurrencyAndSubId = async (partyIdType, partyIdenti
  * @returns {object} - response from the oracle
  */
 const oracleBatchRequest = async (headers, method, requestPayload, type, payload) => {
+  let step = 'getOracleEndpoint'
   try {
     let oracleEndpointModel
     let url
@@ -416,33 +417,37 @@ const oracleBatchRequest = async (headers, method, requestPayload, type, payload
     } else {
       oracleEndpointModel = await oracleEndpointCached.getOracleEndpointByType(type)
     }
-    if (oracleEndpointModel.length > 0) {
-      if (oracleEndpointModel.length > 1) {
-        for (const record of oracleEndpointModel) {
-          if (record.isDefault) {
-            url = record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
-            break
-          }
-        }
-      } else {
-        url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
-      }
-      logger.debug(`Oracle endpoints: ${url}`)
-      return await sendHttpRequest({
-        url,
-        headers,
-        source: headers[Headers.FSPIOP.SOURCE],
-        destination: headers[Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
-        method,
-        payload
-      })
-    } else {
-      logger.error(`Oracle type:${type} not found`)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, `Oracle type:${type} not found`)
+
+    if (!Array.isArray(oracleEndpointModel) || oracleEndpointModel.length === 0) {
+      const errMessage = `Oracle type:${type} not found`
+      logger.warn(errMessage)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR, errMessage)
     }
+
+    if (oracleEndpointModel.length > 1) {
+      for (const record of oracleEndpointModel) {
+        if (record.isDefault) {
+          url = record.value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
+          break
+        }
+      }
+    } else {
+      url = oracleEndpointModel[0].value + Enums.EndPoints.FspEndpointTemplates.ORACLE_PARTICIPANTS_BATCH
+    }
+    logger.verbose(`Oracle endpoint: ${url}`)
+
+    step = 'sendHttpRequest'
+    return await sendHttpRequest({
+      url,
+      headers,
+      source: headers[Headers.FSPIOP.SOURCE],
+      destination: headers[Headers.FSPIOP.DESTINATION] || Config.HUB_NAME,
+      method,
+      payload
+    })
   } catch (err) {
     logger.error('error in oracleBatchRequest: ', err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw countFspiopError(err, { operation: 'oracleBatchRequest', step })
   }
 }
 
