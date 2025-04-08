@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.9.0](https://github.com/mojaloop/account-lookup-service/compare/v17.8.1...v17.9.0) (2025-04-08)
+
+
+### Features
+
+* **csi-1350:** refactored oracleRequest ([#546](https://github.com/mojaloop/account-lookup-service/issues/546)) ([3f76ef7](https://github.com/mojaloop/account-lookup-service/commit/3f76ef7f712590e82bcb5bf7e49a643b2aae63f3))
+
 ### [17.8.1](https://github.com/mojaloop/account-lookup-service/compare/v17.8.0...v17.8.1) (2025-04-07)
 
 
