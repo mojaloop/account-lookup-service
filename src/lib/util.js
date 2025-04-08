@@ -97,8 +97,8 @@ const rethrowDatabaseError = (error) => {
 }
 
 const countFspiopError = (error, options) => {
-  options.loggerOverride = logger
-  rethrow.countFspiopError(error, options)
+  options.loggerOverride = options?.log || logger
+  return rethrow.countFspiopError(error, options)
 }
 
 /**
