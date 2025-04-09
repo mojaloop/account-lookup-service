@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.9.1](https://github.com/mojaloop/account-lookup-service/compare/v17.9.0...v17.9.1) (2025-04-09)
+
+
+### Bug Fixes
+
+* avoid exception when no proxy cache exists ([#548](https://github.com/mojaloop/account-lookup-service/issues/548)) ([37dd8fa](https://github.com/mojaloop/account-lookup-service/commit/37dd8fa8932694022d1cd9c4ad8e2ddf180133e5))
+
 ## [17.9.0](https://github.com/mojaloop/account-lookup-service/compare/v17.8.1...v17.9.0) (2025-04-08)
 
 
