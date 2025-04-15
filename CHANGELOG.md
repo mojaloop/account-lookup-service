@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.10.0](https://github.com/mojaloop/account-lookup-service/compare/v17.9.1...v17.10.0) (2025-04-15)
+
+
+### Features
+
+* **csi-1348:** use updated AxiosHttpRequester ([#549](https://github.com/mojaloop/account-lookup-service/issues/549)) ([93fbda4](https://github.com/mojaloop/account-lookup-service/commit/93fbda46dd2dacaf7254a3ef8bdef24341cc4989))
+
 ### [17.9.1](https://github.com/mojaloop/account-lookup-service/compare/v17.9.0...v17.9.1) (2025-04-09)
 
 
