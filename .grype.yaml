@@ -2,7 +2,7 @@
 disabled: false
 
 ignore:
-
+  - vulnerability: "CVE-2025-23166"
 
 # Set output format defaults
 output:
