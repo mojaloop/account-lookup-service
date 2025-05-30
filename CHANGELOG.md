@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.10.1](https://github.com/mojaloop/account-lookup-service/compare/v17.10.0...v17.10.1) (2025-05-30)
+
+
+### Chore
+
+* upgrade to npm version v22.15.0 ([#550](https://github.com/mojaloop/account-lookup-service/issues/550)) ([00ae011](https://github.com/mojaloop/account-lookup-service/commit/00ae011b8ea4e920c7bfd95346b4a1ebc063034a))
+
 ## [17.10.0](https://github.com/mojaloop/account-lookup-service/compare/v17.9.1...v17.10.0) (2025-04-15)
 
 
