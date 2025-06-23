@@ -26,7 +26,7 @@
  ******/
 
 const { randomUUID } = require('node:crypto')
-const { Enum, Util } = jest.requireActual('@mojaloop/central-services-shared')
+const { Enum, Util } = require('@mojaloop/central-services-shared')
 const isoFixtures = require('./iso')
 
 const { Headers } = Enum.Http

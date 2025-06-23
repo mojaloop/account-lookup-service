@@ -1,11 +1,11 @@
 require('./setup')
 
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../src/lib')
 const { onboarding } = require('../util')
 const { PROXY_NAME, PAYER_DFSP } = require('../integration/constants')
 
 const pause = async (ms = 1000) => new Promise(resolve => {
-  Logger.info(`pause for ${ms / 1000} sec....`)
+  logger.info(`pause for ${ms / 1000} sec....`)
   setTimeout(resolve, ms)
 })
 
@@ -21,10 +21,10 @@ const prepareTestParticipants = async () => {
   })
 
   await onboarding.createOracle()
-  Logger.info('prepareTestParticipants is finished')
+  logger.info('prepareTestParticipants is finished')
 }
 
 prepareTestParticipants().catch(err => {
-  Logger.error(err)
+  logger.error('error in prepareTestParticipants: ', err)
   throw err
 })
