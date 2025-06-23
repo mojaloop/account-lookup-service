@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.10.2](https://github.com/mojaloop/account-lookup-service/compare/v17.10.1...v17.10.2) (2025-06-23)
+
+
+### Bug Fixes
+
+* fix broken int test reporting ([#554](https://github.com/mojaloop/account-lookup-service/issues/554)) ([d69cb64](https://github.com/mojaloop/account-lookup-service/commit/d69cb641bec52d0e122361cfb2b36b0b066f6f86))
+
 ### [17.10.1](https://github.com/mojaloop/account-lookup-service/compare/v17.10.0...v17.10.1) (2025-05-30)
 
 
