@@ -56,7 +56,7 @@
     "test:xunit": "npm run test:junit",
     "test:functional": "bash ./scripts/test-functional.sh",
     "test:int": "npm run migrate  &&  npm run onboarding  &&  jest --config=./jest-int.config.js --runInBand",
-    "test:integration": "npm run dc:up && npm run wait-4-docker && npm run test:int | tee ./test/results/test-int.log",
+    "test:integration": "./test/scripts/test-integration.sh",
     "test:integration-runner": "TEST_MODE=rm ./test/integration-runner.sh",
     "onboarding": "node test/integration/prepareTestParticipants.js",
     "cover": "npx nyc --all report --reporter=lcov npm run test",
