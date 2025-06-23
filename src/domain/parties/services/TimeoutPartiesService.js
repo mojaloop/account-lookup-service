@@ -41,7 +41,7 @@ class TimeoutPartiesService extends PutPartiesErrorService {
    */
   static createInstance (deps, cacheKey, spanName) {
     const { destination, partyType, partyId } = TimeoutPartiesService.parseExpiredKey(cacheKey)
-    const headers = TimeoutPartiesService.createHubErrorCallbackHeaders(deps.config.HUB_NAME, destination)
+    const headers = TimeoutPartiesService.createHubErrorCallbackHeaders(deps.config.HUB_NAME, destination, deps.config)
     const params = { Type: partyType, ID: partyId } // todo: think, if we need to handle party SubId
     const childSpan = createSpan(spanName, headers, params)
 

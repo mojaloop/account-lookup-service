@@ -31,7 +31,6 @@ const { decodePayload } = require('@mojaloop/central-services-shared').Util.Stre
 const { initStepState } = require('../../../lib/util')
 const { createCallbackHeaders } = require('../../../lib/headers')
 const { ERROR_MESSAGES } = require('../../../constants')
-const config = require('../../../lib/config')
 const { makeAcceptContentTypeHeader } = require('@mojaloop/central-services-shared').Util.Headers
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
@@ -248,7 +247,7 @@ class BasePartiesService {
     return cbHeaders
   }
 
-  static createHubErrorCallbackHeaders (hubName, destination) {
+  static createHubErrorCallbackHeaders (hubName, destination, config) {
     return {
       [Headers.FSPIOP.SOURCE]: hubName,
       [Headers.FSPIOP.DESTINATION]: destination,
