@@ -24,15 +24,18 @@
   },
   "PROTOCOL_VERSIONS": {
     "CONTENT": {
-      "DEFAULT": "1.1",
+      "DEFAULT": "2.0",
       "VALIDATELIST": [
+        "2.0",
         "1.1",
         "1.0"
       ]
     },
     "ACCEPT": {
-      "DEFAULT": "1",
+      "DEFAULT": "2",
       "VALIDATELIST": [
+        "2",
+        "2.0",
         "1",
         "1.0",
         "1.1"

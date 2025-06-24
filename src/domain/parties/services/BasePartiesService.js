@@ -31,9 +31,10 @@ const { decodePayload } = require('@mojaloop/central-services-shared').Util.Stre
 const { initStepState } = require('../../../lib/util')
 const { createCallbackHeaders } = require('../../../lib/headers')
 const { ERROR_MESSAGES } = require('../../../constants')
+const { makeAcceptContentTypeHeader } = require('@mojaloop/central-services-shared').Util.Headers
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
-const { Headers, RestMethods } = Enum.Http
+const { Headers, RestMethods, HeaderResources } = Enum.Http
 
 /**
  * @typedef {Object} PartiesDeps
@@ -246,10 +247,15 @@ class BasePartiesService {
     return cbHeaders
   }
 
-  static createHubErrorCallbackHeaders (hubName, destination) {
+  static createHubErrorCallbackHeaders (hubName, destination, config) {
     return {
       [Headers.FSPIOP.SOURCE]: hubName,
-      [Headers.FSPIOP.DESTINATION]: destination
+      [Headers.FSPIOP.DESTINATION]: destination,
+      [Headers.GENERAL.CONTENT_TYPE.value]: makeAcceptContentTypeHeader(
+        HeaderResources.PARTIES,
+        config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
+        config.API_TYPE
+      )
     }
   }
 

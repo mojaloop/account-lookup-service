@@ -91,10 +91,12 @@ describe('Timeout Handler', () => {
     expect(await checkKeysExistence(keys)).toEqual([0, 0])
 
     expect(history.length).toBe(2)
-    const path0 = history.find(h => h.path.includes(partyIds[0])).path
-    const path1 = history.find(h => h.path.includes(partyIds[1])).path
-    expect(path0).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[0]}/error`)
-    expect(path1).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[1]}/error`)
+    const entry0 = history.find(h => h.path.includes(partyIds[0]))
+    const entry1 = history.find(h => h.path.includes(partyIds[1]))
+    expect(entry0.path).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[0]}/error`)
+    expect(entry1.path).toBe(`/parties/${PARTY_ID_TYPE}/${partyIds[1]}/error`)
+    expect(entry0.headers['content-type']).toContain('parties')
+    expect(entry1.headers['content-type']).toContain('parties')
   })
 
   it('should pass timeoutProxyGetPartiesLookups flow', async () => {
@@ -122,9 +124,11 @@ describe('Timeout Handler', () => {
     expect(await checkKeysExistence(keys)).toEqual([0, 0])
 
     expect(history.length).toBe(2)
-    const path1 = history.find(h => h.path.includes(partyId1)).path
-    const path2 = history.find(h => h.path.includes(partyId2)).path
-    expect(path1).toBe(`/parties/${PARTY_ID_TYPE}/${partyId1}/error`)
-    expect(path2).toBe(`/parties/${PARTY_ID_TYPE}/${partyId2}/error`)
+    const entry1 = history.find(h => h.path.includes(partyId1))
+    const entry2 = history.find(h => h.path.includes(partyId2))
+    expect(entry1.path).toBe(`/parties/${PARTY_ID_TYPE}/${partyId1}/error`)
+    expect(entry2.path).toBe(`/parties/${PARTY_ID_TYPE}/${partyId2}/error`)
+    expect(entry1.headers['content-type']).toContain('parties')
+    expect(entry2.headers['content-type']).toContain('parties')
   })
 })
