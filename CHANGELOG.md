@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.10.3](https://github.com/mojaloop/account-lookup-service/compare/v17.10.2...v17.10.3) (2025-06-24)
+
+
+### Bug Fixes
+
+* ensure timeout callbacks have content-type headers ([#555](https://github.com/mojaloop/account-lookup-service/issues/555)) ([3850241](https://github.com/mojaloop/account-lookup-service/commit/38502419d1900e5ccef869ddde07274974efb62d))
+
 ### [17.10.2](https://github.com/mojaloop/account-lookup-service/compare/v17.10.1...v17.10.2) (2025-06-23)
 
 
