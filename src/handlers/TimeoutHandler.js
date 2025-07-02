@@ -74,7 +74,7 @@ const register = async (options) => {
       cronTime: Config.HANDLERS_TIMEOUT_TIMEXP,
       timeZone: Config.HANDLERS_TIMEOUT_TIMEZONE
     })
-    distLock = createDistLock(Config.HANDLERS_TIMEOUT?.DIST_LOCK || {}, logger)
+    distLock = createDistLock(Config.HANDLERS_TIMEOUT?.DIST_LOCK, logger)
     timeoutJob.start()
     isRegistered = true
     logger.info('Timeout handler registered')

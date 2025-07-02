@@ -30,10 +30,10 @@ const { TIMEOUT_HANDLER_DIST_LOCK_KEY } = require('../constants')
 
 const createDistLock = (distLockConfig, logger) => {
   const distLockKey = TIMEOUT_HANDLER_DIST_LOCK_KEY
-  const distLockTtl = distLockConfig.lockTimeout || 10000
-  const distLockAcquireTimeout = distLockConfig.acquireTimeout || 5000
+  const distLockTtl = distLockConfig?.lockTimeout || 10000
+  const distLockAcquireTimeout = distLockConfig?.acquireTimeout || 5000
 
-  const lock = distLockConfig.enabled
+  const lock = distLockConfig?.enabled
     ? distLock.createLock(distLockConfig, logger)
     : null
 
@@ -60,8 +60,9 @@ const createDistLock = (distLockConfig, logger) => {
         logger.error('error releasing distributed lock:', error)
         // should this be added to metrics?
       }
+    } else {
+      logger.verbose('distributed lock not configured or disabled')
     }
-    logger.verbose('distributed lock not configured or disabled')
   }
 
   return {
