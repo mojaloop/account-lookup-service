@@ -84,7 +84,7 @@ describe('TimeoutHandler', () => {
       await TimeoutHandler.stop()
     })
 
-    it('should execute timout service', async () => {
+    it('should execute timeout service', async () => {
       await TimeoutHandler.register(mockOptions)
       jest.spyOn(TimeoutService, 'timeoutInterschemePartiesLookups').mockResolvedValue()
       await TimeoutHandler.timeout(mockOptions)
@@ -93,7 +93,6 @@ describe('TimeoutHandler', () => {
 
     it('should not run if isRunning is true (distLock disabled)', async () => {
       await TimeoutHandler.register(mockOptions)
-      Config.HANDLERS_TIMEOUT_DIST_LOCK_ENABLED = false
       jest.spyOn(TimeoutService, 'timeoutInterschemePartiesLookups').mockImplementation(async () => {
         await wait(1000)
       })

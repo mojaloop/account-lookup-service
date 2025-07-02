@@ -88,7 +88,7 @@ const register = async (options) => {
 const stop = async () => {
   if (isRegistered) {
     await timeoutJob.stop()
-    // await distLock?.releaseLock()
+    await distLock?.releaseLock()
     isRegistered = false
   }
 }
