@@ -80,7 +80,20 @@
       "DISABLED": false,
       "TIMEXP": "*/30 * * * * *",
       "TIMEZONE": "UTC",
-      "BATCH_SIZE": 100
+      "BATCH_SIZE": 100,
+      "DIST_LOCK": {
+        "enabled": false,
+        "lockTimeout": 10000,
+        "acquireTimeout": 5000,
+        "driftFactor": 0.01,
+        "retryCount": 3,
+        "retryDelay": 200,
+        "retryJitter": 100,
+        "redisConfigs": [{
+          "type": "redis-cluster",
+          "cluster": [{ "host": "localhost", "port": 6379 }]
+        }]
+      }
     }
   },
   "SWITCH_ENDPOINT": "http://localhost:3001",
