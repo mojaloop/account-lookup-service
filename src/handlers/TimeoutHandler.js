@@ -34,10 +34,12 @@ const CronJob = require('cron').CronJob
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TimeoutService = require('../domain/timeout')
 const Config = require('../lib/config')
+const { createDistLock } = require('../lib')
 
 let timeoutJob
 let isRegistered
 let isRunning
+let distLock
 
 const timeout = async (options) => {
   if (isRunning) return
@@ -45,24 +47,26 @@ const timeout = async (options) => {
 
   try {
     isRunning = true
+    if (!await distLock?.acquireLock()) return
     await TimeoutService.timeoutInterschemePartiesLookups(options)
     await TimeoutService.timeoutProxyGetPartiesLookups(options)
     logger.verbose('ALS timeout handler is done')
   } catch (err) {
     logger.error('error in timeout: ', err)
   } finally {
+    await distLock?.releaseLock()
     isRunning = false
   }
 }
 
 const register = async (options) => {
   if (Config.HANDLERS_TIMEOUT_DISABLED) return false
-
   const { logger } = options
 
   try {
     if (isRegistered) {
-      await stop()
+      logger.info('Timeout handler already registered')
+      return false
     }
     timeoutJob = CronJob.from({
       start: false,
@@ -70,6 +74,7 @@ const register = async (options) => {
       cronTime: Config.HANDLERS_TIMEOUT_TIMEXP,
       timeZone: Config.HANDLERS_TIMEOUT_TIMEZONE
     })
+    distLock = createDistLock(Config.HANDLERS_TIMEOUT?.DIST_LOCK || {}, logger)
     timeoutJob.start()
     isRegistered = true
     logger.info('Timeout handler registered')
@@ -83,7 +88,8 @@ const register = async (options) => {
 const stop = async () => {
   if (isRegistered) {
     await timeoutJob.stop()
-    isRegistered = undefined
+    // await distLock?.releaseLock()
+    isRegistered = false
   }
 }
 

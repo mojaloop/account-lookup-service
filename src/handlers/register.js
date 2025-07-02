@@ -70,7 +70,7 @@ const registerHandlers = async (handlers, options) => {
 const registerAllHandlers = async (options) => {
   options.logger.debug('Registering all handlers')
   await init(options)
-  TimeoutHandler.register(options)
+  await TimeoutHandler.register(options)
 }
 
 const stopAllHandlers = async (options) => {

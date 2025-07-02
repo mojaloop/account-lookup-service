@@ -79,7 +79,20 @@
       "DISABLED": false,
       "TIMEXP": "*/10 * * * * *",
       "TIMEZONE": "UTC",
-      "BATCH_SIZE": 100
+      "BATCH_SIZE": 100,
+      "DIST_LOCK": {
+        "enabled": false,
+        "lockTimeout": 10000,
+        "driftFactor": 0.01,
+        "retryCount": 3,
+        "retryDelay": 200,
+        "retryJitter": 100,
+        "redisConfig": {
+          "instances": [{
+            "type": "redis-cluster", "cluster": [{ "host": "localhost", "port": 6379 }]
+          }]
+        }
+      }
     }
   },
   "SWITCH_ENDPOINT": "http://central-ledger:3001",
