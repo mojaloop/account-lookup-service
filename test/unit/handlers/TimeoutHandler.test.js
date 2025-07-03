@@ -123,7 +123,7 @@ describe('TimeoutHandler', () => {
       await TimeoutHandler.timeout(mockOptions)
 
       expect(mockDistLock.acquire).toHaveBeenCalledTimes(1)
-      expect(mockDistLock.release).toHaveBeenCalled() // todo: think if we need .release() to have been called
+      expect(mockDistLock.release).not.toHaveBeenCalled()
       expect(TimeoutService.timeoutProxyGetPartiesLookups).not.toHaveBeenCalled()
     })
   })

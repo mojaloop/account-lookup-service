@@ -44,17 +44,19 @@ let distLock
 const timeout = async (options) => {
   if (isRunning) return
   const { logger } = options
+  let isAcquired = false
 
   try {
     isRunning = true
-    if (!await distLock?.acquireLock()) return
+    isAcquired = await distLock?.acquireLock()
+    if (!isAcquired) return
     await TimeoutService.timeoutInterschemePartiesLookups(options)
     await TimeoutService.timeoutProxyGetPartiesLookups(options)
     logger.verbose('ALS timeout handler is done')
   } catch (err) {
     logger.error('error in timeout: ', err)
   } finally {
-    await distLock?.releaseLock()
+    if (isAcquired) await distLock?.releaseLock()
     isRunning = false
   }
 }
