@@ -56,7 +56,7 @@ const timeout = async (options) => {
   } catch (err) {
     logger.error('error in timeout: ', err)
   } finally {
-    if (isAcquired) await distLock?.releaseLock()
+    if (isAcquired) await distLock.releaseLock()
     isRunning = false
   }
 }
