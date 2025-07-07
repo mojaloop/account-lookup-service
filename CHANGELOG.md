@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.11.0](https://github.com/mojaloop/account-lookup-service/compare/v17.10.3...v17.11.0) (2025-07-07)
+
+
+### Features
+
+* **csi-1604:** used ha timeout design with redlock impl ([#556](https://github.com/mojaloop/account-lookup-service/issues/556)) ([17a2477](https://github.com/mojaloop/account-lookup-service/commit/17a24779fb39b09ee535cd908f4f30ab45e57a8e))
+
 ### [17.10.3](https://github.com/mojaloop/account-lookup-service/compare/v17.10.2...v17.10.3) (2025-06-24)
 
 
