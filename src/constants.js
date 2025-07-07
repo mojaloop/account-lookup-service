@@ -43,8 +43,11 @@ const HANDLER_TYPES = Object.freeze({
   TIMEOUT: 'timeout'
 })
 
+const TIMEOUT_HANDLER_DIST_LOCK_KEY = 'mutex:als-timeout-handler'
+
 module.exports = {
   API_TYPES,
   ERROR_MESSAGES,
-  HANDLER_TYPES
+  HANDLER_TYPES,
+  TIMEOUT_HANDLER_DIST_LOCK_KEY
 }

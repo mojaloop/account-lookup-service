@@ -31,11 +31,23 @@
 
 'use strict'
 
+let mockDistLock
+jest.mock('@mojaloop/central-services-shared', () => ({
+  ...jest.requireActual('@mojaloop/central-services-shared'),
+  Util: {
+    ...jest.requireActual('@mojaloop/central-services-shared').Util,
+    distLock: {
+      createLock: jest.fn().mockImplementation(() => mockDistLock)
+    }
+  }
+}))
+
 const CronJob = require('cron').CronJob
 const TimeoutHandler = require('../../../src/handlers/TimeoutHandler')
 const TimeoutService = require('../../../src/domain/timeout')
 const Config = require('../../../src/lib/config')
 const { logger } = require('../../../src/lib')
+
 const DefaultConfig = { ...Config }
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -48,8 +60,19 @@ describe('TimeoutHandler', () => {
       start: jest.fn(),
       stop: jest.fn()
     })
-    const mockProxyCache = { processExpiredAlsKeys: jest.fn() }
-    mockOptions = { proxyCache: mockProxyCache, batchSize: 10, logger }
+    const mockProxyCache = {
+      processExpiredAlsKeys: jest.fn(),
+      processExpiredProxyGetPartiesKeys: jest.fn()
+    }
+    mockOptions = {
+      proxyCache: mockProxyCache,
+      batchSize: 10,
+      logger
+    }
+    mockDistLock = {
+      acquire: jest.fn().mockResolvedValue(true),
+      release: jest.fn().mockResolvedValue()
+    }
   })
 
   afterEach(async () => {
@@ -57,13 +80,19 @@ describe('TimeoutHandler', () => {
   })
 
   describe('timeout', () => {
-    it('should execute timout service', async () => {
+    afterEach(async () => {
+      await TimeoutHandler.stop()
+    })
+
+    it('should execute timeout service', async () => {
+      await TimeoutHandler.register(mockOptions)
       jest.spyOn(TimeoutService, 'timeoutInterschemePartiesLookups').mockResolvedValue()
-      await expect(TimeoutHandler.timeout(mockOptions)).resolves.toBeUndefined()
+      await TimeoutHandler.timeout(mockOptions)
       expect(TimeoutService.timeoutInterschemePartiesLookups).toHaveBeenCalled()
     })
 
-    it('should not run if isRunning is true', async () => {
+    it('should not run if isRunning is true (distLock disabled)', async () => {
+      await TimeoutHandler.register(mockOptions)
       jest.spyOn(TimeoutService, 'timeoutInterschemePartiesLookups').mockImplementation(async () => {
         await wait(1000)
       })
@@ -72,6 +101,30 @@ describe('TimeoutHandler', () => {
         TimeoutHandler.timeout(mockOptions)
       ])
       expect(TimeoutService.timeoutInterschemePartiesLookups).toHaveBeenCalledTimes(1)
+    })
+
+    it('should use distributed lock when enabled', async () => {
+      Config.HANDLERS_TIMEOUT.DIST_LOCK = { enabled: true }
+      jest.spyOn(TimeoutService, 'timeoutProxyGetPartiesLookups').mockResolvedValue()
+      await TimeoutHandler.register(mockOptions)
+
+      await TimeoutHandler.timeout(mockOptions)
+      expect(mockDistLock.acquire).toHaveBeenCalledTimes(1)
+      expect(mockDistLock.release).toHaveBeenCalledTimes(1)
+      expect(TimeoutService.timeoutProxyGetPartiesLookups).toHaveBeenCalled()
+    })
+
+    it('should not run if distributed lock cannot be acquired', async () => {
+      mockDistLock.acquire = jest.fn().mockResolvedValue(false)
+      Config.HANDLERS_TIMEOUT.DIST_LOCK = { enabled: true }
+      jest.spyOn(TimeoutService, 'timeoutProxyGetPartiesLookups').mockResolvedValue()
+      await TimeoutHandler.register(mockOptions)
+
+      await TimeoutHandler.timeout(mockOptions)
+
+      expect(mockDistLock.acquire).toHaveBeenCalledTimes(1)
+      expect(mockDistLock.release).not.toHaveBeenCalled()
+      expect(TimeoutService.timeoutProxyGetPartiesLookups).not.toHaveBeenCalled()
     })
   })
 

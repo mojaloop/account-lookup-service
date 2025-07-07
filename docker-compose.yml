@@ -68,6 +68,8 @@ services:
       - "sh"
       - "-c"
       - "node src/handlers/index.js h --timeout"
+    environment:
+      - LOG_LEVEL=debug
     depends_on:
       account-lookup-service:
         condition: service_healthy
