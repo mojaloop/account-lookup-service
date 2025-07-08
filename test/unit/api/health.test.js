@@ -86,7 +86,7 @@ describe('/health', () => {
     expect(response.statusCode).toBe(200)
     const payload = JSON.parse(response.payload)
     expect(payload.status).toBe('OK')
-    expect(payload.services.length).toBe(1)
+    expect(payload.services.length).toBe(2)
     expect(payload.services[0].name).toBe('datastore')
   })
 
@@ -108,7 +108,7 @@ describe('/health', () => {
     expect(response.statusCode).toBe(503)
     const payload = JSON.parse(response.payload)
     expect(payload.status).toBe('DOWN')
-    expect(payload.services.length).toBe(1)
+    expect(payload.services.length).toBe(2)
     expect(payload.services[0].name).toBe('datastore')
   })
 
@@ -135,8 +135,8 @@ describe('/health', () => {
       // Assert
       const payload = JSON.parse(response.payload)
       expect(response.statusCode).toBe(200)
-      expect(payload.services.length).toBe(2)
-      expect(payload.services[1].name).toBe('proxyCache')
+      expect(payload.services.length).toBe(3)
+      expect(payload.services[2].name).toBe('proxyCache')
     } finally {
       serverWithProxy && await serverWithProxy.stop()
     }

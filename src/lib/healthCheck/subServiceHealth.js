@@ -26,6 +26,7 @@
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
 const { logger } = require('../../lib')
 const MigrationLockModel = require('../../models/misc/migrationLock')
+const Producer = require('@mojaloop/central-services-stream').Util.Producer
 
 /**
  * @function getSubServiceHealthDatastore
@@ -55,6 +56,28 @@ const getSubServiceHealthDatastore = async () => {
 }
 
 /**
+ * @function getSubServiceHealthBroker
+ *
+ * @description Gets the health for the Notification broker
+ * @returns Promise<object> The SubService health object for the broker
+ */
+const getSubServiceHealthBroker = async () => {
+  let status = statusEnum.OK
+  try {
+    await Producer.allConnected()
+    status = statusEnum.OK
+  } catch (err) {
+    logger.isDebugEnabled && logger.debug(`getSubServiceHealthBroker failed with error: ${err.message}.`)
+    status = statusEnum.DOWN
+  }
+
+  return {
+    name: serviceName.broker,
+    status
+  }
+}
+
+/**
  * @function getProxyCacheHealth
  *
  * @description Gets the health of the proxy cache by checking the connection to the cache.
@@ -79,5 +102,6 @@ const getProxyCacheHealth = async (proxyCache) => {
 
 module.exports = {
   getSubServiceHealthDatastore,
-  getProxyCacheHealth
+  getProxyCacheHealth,
+  getSubServiceHealthBroker
 }

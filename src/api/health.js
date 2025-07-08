@@ -27,7 +27,7 @@
 'use strict'
 
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { getSubServiceHealthDatastore, getProxyCacheHealth } = require('../lib/healthCheck/subServiceHealth')
+const { getSubServiceHealthDatastore, getProxyCacheHealth, getSubServiceHealthBroker } = require('../lib/healthCheck/subServiceHealth')
 const packageJson = require('../../package.json')
 const Config = require('../lib/config')
 
@@ -36,7 +36,8 @@ const getSubServices = (appConfig, isAdmin) => {
     return [getSubServiceHealthDatastore]
   }
 
-  const subServices = [getSubServiceHealthDatastore]
+  const subServices = [getSubServiceHealthDatastore, getSubServiceHealthBroker]
+
   if (appConfig.PROXY_CACHE_CONFIG.enabled) {
     subServices.push(getProxyCacheHealth)
   }
