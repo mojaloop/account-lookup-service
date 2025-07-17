@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.12.0](https://github.com/mojaloop/account-lookup-service/compare/v17.11.2...v17.12.0) (2025-07-17)
+
+
+### Features
+
+* enable mysql2 ([#558](https://github.com/mojaloop/account-lookup-service/issues/558)) ([e2ebd5e](https://github.com/mojaloop/account-lookup-service/commit/e2ebd5e65696fa7921677ac957e0827805fef96c))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([82fcacc](https://github.com/mojaloop/account-lookup-service/commit/82fcacc2f4ef27bcbc508a48811b7826c422db76))
+
 ### [17.11.2](https://github.com/mojaloop/account-lookup-service/compare/v17.11.0...v17.11.2) (2025-07-17)
 
 
