@@ -7,7 +7,7 @@
   "ADMIN_PORT": 4001,
   "API_PORT": 4002,
   "DATABASE": {
-    "DIALECT": "mysql",
+    "DIALECT": "mysql2",
     "HOST": "mysql-als",
     "PORT": 3306,
     "USER": "account_lookup",
@@ -21,7 +21,8 @@
     "IDLE_TIMEOUT_MILLIS": 30000,
     "REAP_INTERVAL_MILLIS": 1000,
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
-    "DEBUG": false
+    "DEBUG": false,
+    "ADDITIONAL_CONNECTION_OPTIONS": {}
   },
   "PROTOCOL_VERSIONS": {
     "CONTENT": {

@@ -115,7 +115,8 @@ const config = {
       port: RC.DATABASE.PORT,
       user: RC.DATABASE.USER,
       password: RC.DATABASE.PASSWORD,
-      database: RC.DATABASE.DATABASE
+      database: RC.DATABASE.DATABASE,
+      ...RC.DATABASE.ADDITIONAL_CONNECTION_OPTIONS
     },
     maxPendingAcquire: RC.DATABASE.MAX_PENDING_ACQUIRE,
     pool: {
