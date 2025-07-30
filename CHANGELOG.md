@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.1](https://github.com/mojaloop/account-lookup-service/compare/v17.12.0...v17.12.1) (2025-07-30)
+
+
+### Chore
+
+* **deps:** bump form-data from 4.0.1 to 4.0.4 in /docker/mock-proxy ([#561](https://github.com/mojaloop/account-lookup-service/issues/561)) ([033b1e4](https://github.com/mojaloop/account-lookup-service/commit/033b1e417925e2e9ca4f0573c14811f5dd2a8570))
+* fix vuls and update deps ([#563](https://github.com/mojaloop/account-lookup-service/issues/563)) ([aa10309](https://github.com/mojaloop/account-lookup-service/commit/aa103094a9c3cf474cdc4d1654f9b279b7f06a04))
+* **sbom:** update sbom [skip ci] ([22b269e](https://github.com/mojaloop/account-lookup-service/commit/22b269ee7747ea812ba5091cc126980ad686a986))
+
 ## [17.12.0](https://github.com/mojaloop/account-lookup-service/compare/v17.11.2...v17.12.0) (2025-07-17)
 
 
