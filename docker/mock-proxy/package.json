@@ -13,11 +13,11 @@
     "dep:update": "npx ncu -u"
   },
   "dependencies": {
-    "@mojaloop/central-services-shared": "^18.16.2",
+    "@mojaloop/central-services-shared": "18.30.6",
     "@types/node": "^24.1.0",
     "axios": "^1.11.0",
     "body-parser": "^2.2.0",
-    "express": "^5.1.0",
+    "express": "4.21.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
