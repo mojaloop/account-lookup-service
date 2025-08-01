@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.2](https://github.com/mojaloop/account-lookup-service/compare/v17.12.1...v17.12.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* form-data vulnerability ([#564](https://github.com/mojaloop/account-lookup-service/issues/564)) ([6d93096](https://github.com/mojaloop/account-lookup-service/commit/6d93096e75f3b3f4ff7036d81b81989fca74869f))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([f4780d2](https://github.com/mojaloop/account-lookup-service/commit/f4780d21f36b30b7c84efcb1a665e43eebc4acb0))
+
 ### [17.12.1](https://github.com/mojaloop/account-lookup-service/compare/v17.12.0...v17.12.1) (2025-07-30)
 
 
