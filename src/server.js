@@ -45,6 +45,12 @@ const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
 const Handlers = require('./handlers/register')
 
 const connectDatabase = async (dbConfig) => {
+  if (dbConfig.pool) {
+    dbConfig.pool.afterCreate = (connection, done) => {
+      connection.on('end', () => { connection.__knex__disposed = 'Connection ended' })
+      done(null, connection)
+    }
+  }
   await Db.connect(dbConfig)
   logger.info('Database connected')
 }
