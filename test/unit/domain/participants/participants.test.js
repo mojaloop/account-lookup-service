@@ -67,6 +67,42 @@ describe('participant Tests', () => {
       sandbox.restore()
     })
 
+    it('rejects request with placeholder {ID} value', async () => {
+      expect.hasAssertions()
+      // Arrange
+      const headers = {
+        'fspiop-source': 'payeefsp'
+      }
+      const params = {
+        Type: 'MSISDN',
+        ID: '{ID}'
+      }
+      const method = 'GET'
+      const query = {}
+
+      // Act & Assert
+      await expect(participantsDomain.getParticipantsByTypeAndID(headers, params, method, query, Helper.mockSpan()))
+        .rejects.toThrow('Invalid ID parameter: {ID}. ID must not be a placeholder value')
+    })
+
+    it('rejects request with ID containing curly braces', async () => {
+      expect.hasAssertions()
+      // Arrange
+      const headers = {
+        'fspiop-source': 'payeefsp'
+      }
+      const params = {
+        Type: 'MSISDN',
+        ID: 'some{invalid}id'
+      }
+      const method = 'GET'
+      const query = {}
+
+      // Act & Assert
+      await expect(participantsDomain.getParticipantsByTypeAndID(headers, params, method, query, Helper.mockSpan()))
+        .rejects.toThrow('Invalid ID parameter: some{invalid}id. ID must not be a placeholder value')
+    })
+
     it('gets participants and sends callback', async () => {
       expect.hasAssertions()
       // Arrange
@@ -855,6 +891,131 @@ describe('participant Tests', () => {
 
     afterEach(() => {
       sandbox.restore()
+    })
+
+    it('rejects request with placeholder {ID} value', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Config.HUB_NAME,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '{ID}',
+        Type: 'MSISDN'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'post', params, payload, Helper.mockSpan())
+
+      // Assert - Verify error is sent to participant with MALFORMED_SYNTAX error
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const errorArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(errorArgs[2].errorInformation.errorCode).toBe('3101') // MALFORMED_SYNTAX error code
+      expect(errorArgs[2].errorInformation.errorDescription).toContain('Invalid ID parameter: {ID}')
+    })
+
+    it('handles URL-decoded placeholder values (e.g., %7BID%7D becomes {ID})', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Config.HUB_NAME,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '{ID}',
+        Type: 'MSISDN'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'post', params, payload, Helper.mockSpan())
+
+      // Assert - Our existing validation catches this because {ID} contains curly braces
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const errorArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(errorArgs[2].errorInformation.errorCode).toBe('3101') // MALFORMED_SYNTAX error code
+      expect(errorArgs[2].errorInformation.errorDescription).toContain('Invalid ID parameter: {ID}')
+    })
+
+    it('rejects request with ID containing curly braces', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Config.HUB_NAME,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: 'some{invalid}id',
+        Type: 'MSISDN'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'post', params, payload, Helper.mockSpan())
+
+      // Assert - Verify error is sent to participant with MALFORMED_SYNTAX error
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const errorArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(errorArgs[2].errorInformation.errorCode).toBe('3101') // MALFORMED_SYNTAX error code
+      expect(errorArgs[2].errorInformation.errorDescription).toContain('Invalid ID parameter: some{invalid}id')
+    })
+
+    it('rejects request with placeholder {SubId} value', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Config.HUB_NAME,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: '{SubId}'
+      }
+      const payload = {
+        fspId: 'fsp1',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'post', params, payload, Helper.mockSpan())
+
+      // Assert - Verify error is sent to participant with MALFORMED_SYNTAX error
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const errorArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(errorArgs[2].errorInformation.errorCode).toBe('3101') // MALFORMED_SYNTAX error code
+      expect(errorArgs[2].errorInformation.errorDescription).toContain('Invalid SubId parameter: {SubId}')
     })
 
     it('sends the request to the participant', async () => {
