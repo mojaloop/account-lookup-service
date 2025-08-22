@@ -42,6 +42,36 @@ const util = require('../../lib/util')
 const { FSPIOPErrorCodes } = ErrorHandler.Enums
 
 /**
+ * @function validatePathParameters
+ * @description Validates that path parameters are not placeholder values like {ID} or {SubId}
+ * @param {object} params - The path parameters object
+ * @param {object} log - Logger instance for error logging
+ * @throws {FSPIOPError} When parameters contain placeholder values
+ */
+const validatePathParameters = (params, log = logger) => {
+  // Validate that ID is not a placeholder value
+  if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
+    const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
+    log.error(errMessage, { params })
+    throw ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
+      errMessage
+    )
+  }
+
+  // Validate SubId if present
+  const partySubIdOrType = params.SubId
+  if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
+    const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
+    log.error(errMessage, { params })
+    throw ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
+      errMessage
+    )
+  }
+}
+
+/**
  * @function getParticipantsByTypeAndID
  *
  * @description sends request to applicable oracle based on type and sends results back to requester
@@ -63,27 +93,9 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
   const type = params.Type
   const partySubIdOrType = params.SubId
 
-  // Validate that ID is not a placeholder value
-  if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
-    const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
-    log.error(errMessage, { params })
-    const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-      errMessage
-    )
-    throw fspiopError
-  }
+  // Validate path parameters
+  validatePathParameters(params, log)
 
-  // Validate SubId if present
-  if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
-    const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
-    log.error(errMessage, { params })
-    const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-      errMessage
-    )
-    throw fspiopError
-  }
   const source = headers[Enums.Http.Headers.FSPIOP.SOURCE]
   const callbackEndpointType = partySubIdOrType
     ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
@@ -203,27 +215,9 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
 
-    // Validate that ID is not a placeholder value
-    if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
-      const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
-      logger.error(errMessage, { params })
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
+    // Validate path parameters
+    validatePathParameters(params)
 
-    // Validate SubId if present
-    if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
-      const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
-      logger.error(errMessage, { params })
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
     const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
@@ -317,27 +311,9 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
   try {
     const partySubIdOrType = params.SubId || undefined
 
-    // Validate that ID is not a placeholder value
-    if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
-      const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
-      logger.error(errMessage, { params })
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
+    // Validate path parameters
+    validatePathParameters(params)
 
-    // Validate SubId if present
-    if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
-      const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
-      logger.error(errMessage, { params })
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
     const callbackEndpointType = partySubIdOrType
       ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
@@ -414,27 +390,9 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
     const type = params.Type
     const partySubIdOrType = params.SubId
 
-    // Validate that ID is not a placeholder value
-    if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
-      const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
-      logger.error(errMessage, { params })
-      fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
+    // Validate path parameters
+    validatePathParameters(params)
 
-    // Validate SubId if present
-    if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
-      const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
-      logger.error(errMessage, { params })
-      fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
     const callbackEndpointType = partySubIdOrType
       ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
       : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
@@ -670,27 +628,9 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
 
-    // Validate that ID is not a placeholder value
-    if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
-      const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
-      log.error(errMessage, { params })
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
+    // Validate path parameters
+    validatePathParameters(params, log)
 
-    // Validate SubId if present
-    if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
-      const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
-      log.error(errMessage, { params })
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        errMessage
-      )
-      throw fspiopError
-    }
     const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
     const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
@@ -752,5 +692,6 @@ module.exports = {
   putParticipantsErrorByTypeAndID,
   postParticipants,
   postParticipantsBatch,
-  deleteParticipants
+  deleteParticipants,
+  validatePathParameters
 }
