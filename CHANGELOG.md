@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.3](https://github.com/mojaloop/account-lookup-service/compare/v17.12.2...v17.12.3) (2025-08-26)
+
+
+### Bug Fixes
+
+* add validation for missing ID or SubId ([#565](https://github.com/mojaloop/account-lookup-service/issues/565)) ([8db0d1c](https://github.com/mojaloop/account-lookup-service/commit/8db0d1c1af7e858680280542f25201a655ae218e))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([f63ce0f](https://github.com/mojaloop/account-lookup-service/commit/f63ce0fc2169ed55594863f809c79183dbfd8550))
+
 ### [17.12.2](https://github.com/mojaloop/account-lookup-service/compare/v17.12.1...v17.12.2) (2025-08-01)
 
 
