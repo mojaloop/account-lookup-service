@@ -50,6 +50,76 @@ Logger.isInfoEnabled = jest.fn(() => true)
 let server
 let sandbox
 
+// Helper function to test missing parameter scenarios
+const testMissingParameter = (method, urlWithMissingParam, payloadRequired = false) => {
+  return async () => {
+    const options = {
+      method,
+      url: urlWithMissingParam,
+      headers: Helper.defaultSwitchHeaders
+    }
+
+    if (payloadRequired) {
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', method)
+      options.payload = mock.request.body
+    }
+
+    const response = await server.inject(options)
+
+    expect(response.statusCode).toBe(404)
+    expect(response.result.errorInformation).toBeDefined()
+    expect(response.result.errorInformation.errorCode).toBe('3002')
+    expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
+  }
+}
+
+// Helper function to test successful domain method calls
+const testSuccessfulDomainCall = (method, domainMethod, expectedStatus, pathOverride = null) => {
+  return async () => {
+    const path = pathOverride || '/participants/{Type}/{ID}'
+    const mock = await Helper.generateMockRequest(path, method)
+    const options = {
+      method,
+      url: mock.request.path,
+      headers: Helper.defaultSwitchHeaders,
+      payload: mock.request.body
+    }
+    sandbox.stub(participants, domainMethod).resolves({})
+
+    const response = await server.inject(options)
+
+    expect(response.statusCode).toBe(expectedStatus)
+    expect(participants[domainMethod].callCount).toBe(1)
+    expect(participants[domainMethod].getCall(0).returnValue).resolves.toStrictEqual({})
+
+    participants[domainMethod].restore()
+  }
+}
+
+// Helper function to test domain method error handling
+const testDomainMethodError = (method, domainMethod, expectedStatus, pathOverride = null) => {
+  return async () => {
+    const path = pathOverride || '/participants/{Type}/{ID}'
+    const mock = await Helper.generateMockRequest(path, method)
+    const options = {
+      method,
+      url: mock.request.path,
+      headers: Helper.defaultSwitchHeaders,
+      payload: mock.request.body
+    }
+    const throwError = new Error('Unknown error')
+    sandbox.stub(participants, domainMethod).rejects(throwError)
+
+    const response = await server.inject(options)
+
+    expect(response.statusCode).toBe(expectedStatus)
+    expect(participants[domainMethod].callCount).toBe(1)
+    expect(participants[domainMethod].getCall(0).returnValue).rejects.toStrictEqual(throwError)
+
+    participants[domainMethod].restore()
+  }
+}
+
 describe('/participants/{Type}/{ID}', () => {
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
@@ -66,63 +136,10 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('GET /participants', () => {
-    it('returns 404 when ID parameter is missing', async () => {
-      // Arrange
-      const options = {
-        method: 'get',
-        url: '/participants/MSISDN/', // Missing ID parameter
-        headers: Helper.defaultSwitchHeaders
-      }
+    it('returns 404 when ID parameter is missing', testMissingParameter('get', '/participants/MSISDN/'))
+    it('returns 404 when Type parameter is missing', testMissingParameter('get', '/participants//123456789'))
 
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(404)
-      expect(response.result.errorInformation).toBeDefined()
-      expect(response.result.errorInformation.errorCode).toBe('3002')
-      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
-    })
-
-    it('returns 404 when Type parameter is missing', async () => {
-      // Arrange
-      const options = {
-        method: 'get',
-        url: '/participants//123456789', // Missing Type parameter
-        headers: Helper.defaultSwitchHeaders
-      }
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(404)
-      expect(response.result.errorInformation).toBeDefined()
-      expect(response.result.errorInformation.errorCode).toBe('3002')
-      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
-    })
-
-    it('returns 202 when getParticipantsByTypeAndID resolves', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'get')
-      const options = {
-        method: 'get',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders
-      }
-      sandbox.stub(participants, 'getParticipantsByTypeAndID').resolves({})
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-      expect(participants.getParticipantsByTypeAndID.callCount).toBe(1)
-      expect(participants.getParticipantsByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
-
-      // Cleanup
-      participants.getParticipantsByTypeAndID.restore()
-    })
+    it('returns 202 when getParticipantsByTypeAndID resolves', testSuccessfulDomainCall('get', 'getParticipantsByTypeAndID', 202))
 
     it('getParticipantsByTypeAndID sends an async 3204 for invalid party id on response with status 400', async () => {
       // Arrange
@@ -194,283 +211,36 @@ describe('/participants/{Type}/{ID}', () => {
       stubs.forEach(s => s.restore())
     })
 
-    it('returns 202 when getParticipantsByTypeAndID rejects with an unknown error', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'get')
-      const options = {
-        method: 'get',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders
-      }
-      const throwError = new Error('Unknown error')
-      sandbox.stub(participants, 'getParticipantsByTypeAndID').rejects(throwError)
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-      expect(participants.getParticipantsByTypeAndID.callCount).toBe(1)
-      expect(participants.getParticipantsByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-
-      // Cleanup
-      participants.getParticipantsByTypeAndID.restore()
-    })
+    it('returns 202 when getParticipantsByTypeAndID rejects with an unknown error', testDomainMethodError('get', 'getParticipantsByTypeAndID', 202))
   })
 
   describe('POST /participants', () => {
-    it('returns 404 when ID parameter is missing', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'post')
-      const options = {
-        method: 'post',
-        url: '/participants/MSISDN/', // Missing ID parameter
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
+    it('returns 404 when ID parameter is missing', testMissingParameter('post', '/participants/MSISDN/', true))
 
-      // Act
-      const response = await server.inject(options)
+    it('returns 202 when postParticipants resolves', testSuccessfulDomainCall('post', 'postParticipants', 202))
 
-      // Assert
-      expect(response.statusCode).toBe(404)
-      expect(response.result.errorInformation).toBeDefined()
-      expect(response.result.errorInformation.errorCode).toBe('3002')
-      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
-    })
-
-    it('returns 202 when postParticipants resolves', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'post')
-      const options = {
-        method: 'post',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      sandbox.stub(participants, 'postParticipants').resolves({})
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-      expect(participants.postParticipants.callCount).toBe(1)
-      expect(participants.postParticipants.getCall(0).returnValue).resolves.toStrictEqual({})
-
-      // Cleanup
-      participants.postParticipants.restore()
-    })
-
-    it('returns 202 when postParticipants rejects with an unknown error', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'post')
-      const options = {
-        method: 'post',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      const throwError = new Error('Unknown error')
-      sandbox.stub(participants, 'postParticipants').rejects(throwError)
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-      expect(participants.postParticipants.callCount).toBe(1)
-      expect(participants.postParticipants.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-
-      // Cleanup
-      participants.postParticipants.restore()
-    })
+    it('returns 202 when postParticipants rejects with an unknown error', testDomainMethodError('post', 'postParticipants', 202))
   })
 
   describe('PUT /participants', () => {
-    it('returns 404 when ID parameter is missing', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
-      const options = {
-        method: 'put',
-        url: '/participants/MSISDN/', // Missing ID parameter
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
+    it('returns 404 when ID parameter is missing', testMissingParameter('put', '/participants/MSISDN/', true))
 
-      // Act
-      const response = await server.inject(options)
+    it('returns 200 when putParticipantsByTypeAndID resolves', testSuccessfulDomainCall('put', 'putParticipantsByTypeAndID', 200))
 
-      // Assert
-      expect(response.statusCode).toBe(404)
-      expect(response.result.errorInformation).toBeDefined()
-      expect(response.result.errorInformation.errorCode).toBe('3002')
-      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
-    })
-
-    it('returns 200 when putParticipantsByTypeAndID resolves', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
-      const options = {
-        method: 'put',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      sandbox.stub(participants, 'putParticipantsByTypeAndID').resolves({})
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(200)
-      expect(participants.putParticipantsByTypeAndID.callCount).toBe(1)
-      expect(participants.putParticipantsByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
-
-      // Cleanup
-      participants.putParticipantsByTypeAndID.restore()
-    })
-
-    it('returns 200 when putParticipantsByTypeAndID rejects with an unknown error', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
-      const options = {
-        method: 'put',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      const throwError = new Error('Unknown error')
-      sandbox.stub(participants, 'putParticipantsByTypeAndID').rejects(throwError)
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(200)
-      expect(participants.putParticipantsByTypeAndID.callCount).toBe(1)
-      expect(participants.putParticipantsByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-
-      // Cleanup
-      participants.putParticipantsByTypeAndID.restore()
-    })
+    it('returns 200 when putParticipantsByTypeAndID rejects with an unknown error', testDomainMethodError('put', 'putParticipantsByTypeAndID', 200))
   })
 
   describe('DELETE /participants', () => {
-    it('returns 404 when ID parameter is missing', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
-      const options = {
-        method: 'delete',
-        url: '/participants/MSISDN/', // Missing ID parameter
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
+    it('returns 404 when ID parameter is missing', testMissingParameter('delete', '/participants/MSISDN/', true))
 
-      // Act
-      const response = await server.inject(options)
+    it('returns 202 when deleteParticipants resolves', testSuccessfulDomainCall('delete', 'deleteParticipants', 202))
 
-      // Assert
-      expect(response.statusCode).toBe(404)
-      expect(response.result.errorInformation).toBeDefined()
-      expect(response.result.errorInformation.errorCode).toBe('3002')
-      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
-    })
-
-    it('returns 202 when deleteParticipants resolves', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
-      const options = {
-        method: 'delete',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      sandbox.stub(participants, 'deleteParticipants').resolves({})
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-      expect(participants.deleteParticipants.callCount).toBe(1)
-      expect(participants.deleteParticipants.getCall(0).returnValue).resolves.toStrictEqual({})
-
-      // Cleanup
-      participants.deleteParticipants.restore()
-    })
-
-    it('returns 202 when deleteParticipants rejects with an unknown error', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
-      const options = {
-        method: 'delete',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      const throwError = new Error('Unknown error')
-      sandbox.stub(participants, 'deleteParticipants').rejects(throwError)
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-      expect(participants.deleteParticipants.callCount).toBe(1)
-      expect(participants.deleteParticipants.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-
-      // Cleanup
-      participants.deleteParticipants.restore()
-    })
+    it('returns 202 when deleteParticipants rejects with an unknown error', testDomainMethodError('delete', 'deleteParticipants', 202))
   })
 
   describe('PUT /error', () => {
-    it('returns 200 when putParticipantsErrorByTypeAndID resolves', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
-      const options = {
-        method: 'put',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').resolves({})
+    it('returns 200 when putParticipantsErrorByTypeAndID resolves', testSuccessfulDomainCall('put', 'putParticipantsErrorByTypeAndID', 200, '/participants/{Type}/{ID}/error'))
 
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(200)
-      expect(participants.putParticipantsErrorByTypeAndID.callCount).toBe(1)
-      expect(participants.putParticipantsErrorByTypeAndID.getCall(0).returnValue).resolves.toStrictEqual({})
-
-      // Cleanup
-      participants.putParticipantsErrorByTypeAndID.restore()
-    })
-
-    it('returns 200 when putParticipantsErrorByTypeAndID rejects with an unknown error', async () => {
-      // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/error', 'put')
-      const options = {
-        method: 'put',
-        url: mock.request.path,
-        headers: Helper.defaultSwitchHeaders,
-        payload: mock.request.body
-      }
-      const throwError = new Error('Unknown error')
-      sandbox.stub(participants, 'putParticipantsErrorByTypeAndID').rejects(throwError)
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(200)
-      expect(participants.putParticipantsErrorByTypeAndID.callCount).toBe(1)
-      expect(participants.putParticipantsErrorByTypeAndID.getCall(0).returnValue).rejects.toStrictEqual(throwError)
-
-      // Cleanup
-      participants.putParticipantsErrorByTypeAndID.restore()
-    })
+    it('returns 200 when putParticipantsErrorByTypeAndID rejects with an unknown error', testDomainMethodError('put', 'putParticipantsErrorByTypeAndID', 200, '/participants/{Type}/{ID}/error'))
   })
 })
