@@ -66,6 +66,42 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('GET /participants', () => {
+    it('returns 404 when ID parameter is missing', async () => {
+      // Arrange
+      const options = {
+        method: 'get',
+        url: '/participants/MSISDN/', // Missing ID parameter
+        headers: Helper.defaultSwitchHeaders
+      }
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(404)
+      expect(response.result.errorInformation).toBeDefined()
+      expect(response.result.errorInformation.errorCode).toBe('3002')
+      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
+    })
+
+    it('returns 404 when Type parameter is missing', async () => {
+      // Arrange
+      const options = {
+        method: 'get',
+        url: '/participants//123456789', // Missing Type parameter
+        headers: Helper.defaultSwitchHeaders
+      }
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(404)
+      expect(response.result.errorInformation).toBeDefined()
+      expect(response.result.errorInformation.errorCode).toBe('3002')
+      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
+    })
+
     it('returns 202 when getParticipantsByTypeAndID resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'get')
@@ -183,6 +219,26 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('POST /participants', () => {
+    it('returns 404 when ID parameter is missing', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'post')
+      const options = {
+        method: 'post',
+        url: '/participants/MSISDN/', // Missing ID parameter
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(404)
+      expect(response.result.errorInformation).toBeDefined()
+      expect(response.result.errorInformation.errorCode).toBe('3002')
+      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
+    })
+
     it('returns 202 when postParticipants resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'post')
@@ -232,6 +288,26 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('PUT /participants', () => {
+    it('returns 404 when ID parameter is missing', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
+      const options = {
+        method: 'put',
+        url: '/participants/MSISDN/', // Missing ID parameter
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(404)
+      expect(response.result.errorInformation).toBeDefined()
+      expect(response.result.errorInformation.errorCode).toBe('3002')
+      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
+    })
+
     it('returns 200 when putParticipantsByTypeAndID resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'put')
@@ -281,6 +357,26 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('DELETE /participants', () => {
+    it('returns 404 when ID parameter is missing', async () => {
+      // Arrange
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
+      const options = {
+        method: 'delete',
+        url: '/participants/MSISDN/', // Missing ID parameter
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+
+      // Act
+      const response = await server.inject(options)
+
+      // Assert
+      expect(response.statusCode).toBe(404)
+      expect(response.result.errorInformation).toBeDefined()
+      expect(response.result.errorInformation.errorCode).toBe('3002')
+      expect(response.result.errorInformation.errorDescription).toContain('Unknown URI')
+    })
+
     it('returns 202 when deleteParticipants resolves', async () => {
       // Arrange
       const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'delete')
