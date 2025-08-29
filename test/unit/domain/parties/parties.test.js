@@ -240,7 +240,9 @@ describe('Parties Tests', () => {
     it('handles error when sourceDfsp cannot be found (no fspiop-proxy in headers)', async () => {
       expect.hasAssertions()
       // Arrange
-      participant.validateParticipant = sandbox.stub().resolves(null)
+      participant.validateParticipant = sandbox.stub()
+        .resolves(null)
+        .onSecondCall().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().resolves(null)
       const loggerStub = sandbox.stub(logger.mlLogger, 'error')
 
@@ -258,7 +260,11 @@ describe('Parties Tests', () => {
 
     it('should send error callback, if proxy-header is present, but no proxy in the scheme', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
-      participant.validateParticipant = sandbox.stub().resolves(null)
+      participant.validateParticipant = sandbox.stub()
+        .resolves(null) // source
+        .onSecondCall().resolves(null) // proxy
+        .onThirdCall().resolves({}) // destination of callback
+      // !! Need to review the whole test: coz it's not clear where to send callback if no proxy and external source
       participant.sendErrorToParticipant = sandbox.stub().resolves()
       participant.sendRequest = sandbox.stub().resolves()
       const proxy = `proxy-${Date.now()}`
@@ -483,6 +489,7 @@ describe('Parties Tests', () => {
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves(null) // source
         .onSecondCall().resolves(null) // oracle dfsp
+        .onThirdCall().resolves({})
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
 
@@ -631,6 +638,9 @@ describe('Parties Tests', () => {
       // Arrange
       const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
       participant.sendErrorToParticipant = sandbox.stub().resolves()
+      participant.validateParticipant = sandbox.stub()
+        .resolves(null)
+        .onSecondCall().resolves({})
 
       const payload = JSON.stringify({ testPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
@@ -755,7 +765,7 @@ describe('Parties Tests', () => {
       await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
 
       // Assert
-      expect(participant.validateParticipant.callCount).toBe(2)
+      expect(participant.validateParticipant.callCount).toBe(3)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       participant.validateParticipant.reset()
       participant.sendErrorToParticipant.reset()
@@ -784,7 +794,7 @@ describe('Parties Tests', () => {
       await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri, null, proxyCache)
 
       // Assert
-      expect(participant.validateParticipant.callCount).toBe(2)
+      expect(participant.validateParticipant.callCount).toBe(3)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
       expect(firstCallArgs[1]).toBe(expectedErrorCallbackEnpointType)
@@ -850,7 +860,9 @@ describe('Parties Tests', () => {
     it('sends error to the participant when there is no destination participant', async () => {
       expect.hasAssertions()
       // Arrange
-      participant.validateParticipant = sandbox.stub().resolves(null)
+      participant.validateParticipant = sandbox.stub()
+        .resolves(null)
+        .onSecondCall().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().throws(new Error('Unknown error'))
       const payload = JSON.stringify({ errorPayload: true })
       const dataUri = encodePayload(payload, 'application/json')
@@ -884,14 +896,16 @@ describe('Parties Tests', () => {
       // Assert
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       const sendErrorCallArgs = participant.sendErrorToParticipant.getCall(0).args
-      expect(sendErrorCallArgs[0]).toStrictEqual(headers['fspiop-destination'])
+      expect(sendErrorCallArgs[0]).toStrictEqual(headers['fspiop-source'])
     })
 
     it('handles error when `validateParticipant()` fails', async () => {
       expect.hasAssertions()
       // Arrange)
       const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
-      participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
+      participant.validateParticipant = sandbox.stub()
+        .onFirstCall().throws(new Error('Validation fails'))
+        .onSecondCall().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
       const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_PUT_ERROR
@@ -911,7 +925,9 @@ describe('Parties Tests', () => {
       // Arrange
 
       const loggerStub = sandbox.stub(logger.constructor.prototype, 'error')
-      participant.validateParticipant = sandbox.stub().throws(new Error('Validation fails'))
+      participant.validateParticipant = sandbox.stub()
+        .throws(new Error('Validation fails'))
+        .onSecondCall().resolves({})
       participant.sendErrorToParticipant = sandbox.stub().resolves({})
       const payload = JSON.stringify({ errorPayload: true })
       const params = { ...Helper.putByTypeIdRequest.params, SubId: 'SubId' }
