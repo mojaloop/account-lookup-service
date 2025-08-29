@@ -48,6 +48,48 @@ const fixtures = require('../../../fixtures')
 const { Headers } = Enums.Http
 
 describe('participant Tests', () => {
+  describe('validatePathParameters', () => {
+    it('should throw error for placeholder {ID} value', () => {
+      expect.hasAssertions()
+      const params = { ID: '{ID}', Type: 'MSISDN' }
+
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow('Invalid ID parameter: {ID}. ID must not be a placeholder value')
+    })
+
+    it('should throw error for ID containing curly braces', () => {
+      expect.hasAssertions()
+      const params = { ID: 'some{invalid}id', Type: 'MSISDN' }
+
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow('Invalid ID parameter: some{invalid}id. ID must not be a placeholder value')
+    })
+
+    it('should throw error for placeholder {SubId} value', () => {
+      expect.hasAssertions()
+      const params = { ID: '123456', Type: 'MSISDN', SubId: '{SubId}' }
+
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow('Invalid SubId parameter: {SubId}. SubId must not be a placeholder value')
+    })
+
+    it('should pass validation for valid parameters', () => {
+      expect.hasAssertions()
+      const params = { ID: '123456', Type: 'MSISDN' }
+
+      // Should not throw
+      expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
+    })
+
+    it('should pass validation for valid parameters with SubId', () => {
+      expect.hasAssertions()
+      const params = { ID: '123456', Type: 'MSISDN', SubId: 'validSubId' }
+
+      // Should not throw
+      expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
+    })
+  })
+
   describe('getParticipantsByTypeAndID', () => {
     let sandbox
     // Initialize Metrics for testing

@@ -42,6 +42,53 @@ const util = require('../../lib/util')
 const { FSPIOPErrorCodes } = ErrorHandler.Enums
 
 /**
+ * @function getCallbackEndpointTypes
+ * @description Determines the callback and error callback endpoint types based on SubId presence
+ * @param {string|undefined} partySubIdOrType - The SubId parameter
+ * @returns {object} Object containing callbackEndpointType and errorCallbackEndpointType
+ */
+const getCallbackEndpointTypes = (partySubIdOrType) => {
+  return {
+    callbackEndpointType: partySubIdOrType
+      ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
+      : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT,
+    errorCallbackEndpointType: partySubIdOrType
+      ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
+      : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+  }
+}
+
+/**
+ * @function validatePathParameters
+ * @description Validates that path parameters are not placeholder values like {ID} or {SubId}
+ * @param {object} params - The path parameters object
+ * @param {object} log - Logger instance for error logging
+ * @throws {FSPIOPError} When parameters contain placeholder values
+ */
+const validatePathParameters = (params, log = logger) => {
+  // Validate that ID is not a placeholder value
+  if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
+    const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
+    log.error(errMessage, { params })
+    throw ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
+      errMessage
+    )
+  }
+
+  // Validate SubId if present
+  const partySubIdOrType = params.SubId
+  if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
+    const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
+    log.error(errMessage, { params })
+    throw ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
+      errMessage
+    )
+  }
+}
+
+/**
  * @function getParticipantsByTypeAndID
  *
  * @description sends request to applicable oracle based on type and sends results back to requester
@@ -62,13 +109,12 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
   const log = logger.child('getParticipantsByTypeAndID')
   const type = params.Type
   const partySubIdOrType = params.SubId
+
+  // Validate path parameters
+  validatePathParameters(params, log)
+
   const source = headers[Enums.Http.Headers.FSPIOP.SOURCE]
-  const callbackEndpointType = partySubIdOrType
-    ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
-    : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
-  const errorCallbackEndpointType = params.SubId
-    ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
-    : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+  const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
 
   let fspiopError
   let step
@@ -180,8 +226,11 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
     logger.info('putParticipantsByTypeAndID::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
-    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
-    const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+
+    // Validate path parameters
+    validatePathParameters(params)
+
+    const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       step = 'validateParticipant-1'
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
@@ -234,7 +283,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
     logger.error('error in putParticipantsByTypeAndID:', err)
     let fspiopError
     try {
-      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+      const { errorCallbackEndpointType } = getCallbackEndpointTypes(params.SubId)
       fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.ADD_PARTY_INFO_ERROR)
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params)
@@ -272,6 +321,11 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
   let step
   try {
     const partySubIdOrType = params.SubId || undefined
+
+    // Validate path parameters
+    validatePathParameters(params)
+
+    // For error endpoints, we only need the error callback type
     const callbackEndpointType = partySubIdOrType
       ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
       : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
@@ -303,9 +357,7 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
     logger.error('error in putParticipantsErrorByTypeAndID:', err)
     try {
       const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
-      const callbackEndpointType = params.SubId
-        ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
-        : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+      const { errorCallbackEndpointType: callbackEndpointType } = getCallbackEndpointTypes(params.SubId)
       await participant.sendErrorToParticipant(
         headers[Enums.Http.Headers.FSPIOP.SOURCE],
         callbackEndpointType,
@@ -347,12 +399,11 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
     logger.info('postParticipants::begin')
     const type = params.Type
     const partySubIdOrType = params.SubId
-    const callbackEndpointType = partySubIdOrType
-      ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT
-      : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
-    const errorCallbackEndpointType = partySubIdOrType
-      ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
-      : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+
+    // Validate path parameters
+    validatePathParameters(params)
+
+    const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
 
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       step = 'validateParticipant-1'
@@ -415,9 +466,7 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
       util.countFspiopError(fspiopError, { operation: 'postParticipants', step })
     }
     try {
-      const errorCallbackEndpointType = params.SubId
-        ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR
-        : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+      const { errorCallbackEndpointType } = getCallbackEndpointTypes(params.SubId)
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType,
         fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params, childSpan)
     } catch (exc) {
@@ -581,8 +630,11 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
     log.debug('deleteParticipants::begin', { headers, params })
     const type = params.Type
     const partySubIdOrType = params.SubId || undefined
-    const callbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT
-    const errorCallbackEndpointType = partySubIdOrType ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+
+    // Validate path parameters
+    validatePathParameters(params, log)
+
+    const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
       step = 'validateParticipant-1'
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
@@ -624,7 +676,7 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
     log.error('error in deleteParticipants', err)
     try {
       const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err, ErrorHandler.Enums.FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR)
-      const errorCallbackEndpointType = params.SubId ? Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_SUB_ID_PUT_ERROR : Enums.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTICIPANT_PUT_ERROR
+      const { errorCallbackEndpointType } = getCallbackEndpointTypes(params.SubId)
       await participant.sendErrorToParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], errorCallbackEndpointType, fspiopError.toApiErrorObject(Config.ERROR_HANDLING), headers, params)
       util.countFspiopError(fspiopError, { operation: 'deleteParticipants', step })
     } catch (exc) {
@@ -642,5 +694,7 @@ module.exports = {
   putParticipantsErrorByTypeAndID,
   postParticipants,
   postParticipantsBatch,
-  deleteParticipants
+  deleteParticipants,
+  validatePathParameters,
+  getCallbackEndpointTypes
 }
