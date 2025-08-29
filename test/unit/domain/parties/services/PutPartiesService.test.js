@@ -27,12 +27,11 @@
 
 const { createMockDeps, participantMock } = require('./deps')
 // ↑ should be first require to mock external deps ↑
-const { Enum } = require('@mojaloop/central-services-shared')
 const { PutPartiesService } = require('#src/domain/parties/services/index')
 const config = require('#src/lib/config')
 const fixtures = require('#test/fixtures/index')
 
-const { Headers } = Enum.Http
+const { Headers } = PutPartiesService.enums()
 
 describe('PutPartiesService Tests -->', () => {
   beforeEach(() => {
@@ -96,5 +95,23 @@ describe('PutPartiesService Tests -->', () => {
     expect(payload.errorInformation.errorDescription.endsWith(errMessage)).toBe(true)
     expect(cbHeaders[Headers.FSPIOP.SOURCE]).toBe(config.HUB_NAME)
     expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(source)
+  })
+
+  test('should just log error in case handleError failed', async () => {
+    const headers = fixtures.partiesCallHeadersDto()
+    const params = fixtures.partiesParamsDto()
+    const dataUri = fixtures.dataUriDto()
+    const service = new PutPartiesService(createMockDeps(), { headers, params, dataUri })
+
+    service.handleRequest = jest.fn().mockRejectedValue(new Error('handleRequest failed'))
+    service.identifyDestinationForCallback = jest.fn()
+    service.sendErrorCallback = jest.fn().mockRejectedValue(new Error('sendErrorCallback failed'))
+    const logSpy = jest.spyOn(service.log.mlLogger, 'error')
+
+    const result = await service.handleRequest()
+      .catch(err => service.handleError(err))
+
+    expect(result).toBeUndefined()
+    expect(logSpy.mock.lastCall[0]).toBe('failed to handleError. No further processing! ')
   })
 })
