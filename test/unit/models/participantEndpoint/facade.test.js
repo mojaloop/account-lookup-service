@@ -188,6 +188,26 @@ describe('participantEndpoint Facade', () => {
 
       expect(mockSendRequest.mock.lastCall[0].jwsSigner).toBeTruthy()
     })
+
+    it('should add default timeout to sendRequest', async () => {
+      const mockedConfig = {
+        JWS_SIGN: false,
+        FSPIOP_SOURCE_TO_SIGN: mockHubName,
+        PROTOCOL_VERSIONS: fixtures.protocolVersionsDto(),
+        HTTP_REQUEST_TIMEOUT_MS: 1000
+      }
+      jest.mock('../../../../src/lib/config', () => (mockedConfig))
+      mockGetEndpoint.mockImplementation(() => 'https://example.com/12345')
+      mockSendRequest.mockImplementation(async () => true)
+      const ParticipantFacade = require(`${src}/models/participantEndpoint/facade`)
+
+      const headers = {}
+      const requestedParticipant = {}
+      const endpointType = 'URL'
+
+      await ParticipantFacade.sendRequest(headers, requestedParticipant, endpointType)
+      expect(mockSendRequest.mock.calls[0][0].axiosRequestOptionsOverride.timeout).toBe(mockedConfig.HTTP_REQUEST_TIMEOUT_MS)
+    })
   })
 
   describe('validateParticipant', () => {

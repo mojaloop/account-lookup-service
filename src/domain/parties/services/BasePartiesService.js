@@ -168,7 +168,9 @@ class BasePartiesService {
 
   async sendDeleteOracleRequest (headers, params) {
     this.stepInProgress('sendDeleteOracleRequest')
-    return this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
+    const result = await this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
+    this.log.verbose('sendDeleteOracleRequest is done', { params })
+    return result
   }
 
   async removeProxyGetPartiesTimeoutCache (alsReq) {
