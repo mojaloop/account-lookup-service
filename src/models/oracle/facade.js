@@ -43,7 +43,10 @@ const { Headers, RestMethods, ReturnCodes } = Enums.Http
 const sendHttpRequest = ({ method, ...restArgs }) => request.sendRequest({
   ...restArgs,
   method: method.toUpperCase(),
-  hubNameRegex
+  hubNameRegex,
+  axiosRequestOptionsOverride: {
+    timeout: Config.HTTP_REQUEST_TIMEOUT_MS
+  }
 })
 
 /**

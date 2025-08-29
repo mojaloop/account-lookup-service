@@ -107,8 +107,12 @@ class BasePartiesService {
     try {
       log.error('error in processing parties request: ', error)
       const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(error)
+
       const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(this.inputs.headers, params)
       const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, fspiopError, callbackHeaders, params)
+
+      this.state.destination = callbackHeaders[Headers.FSPIOP.DESTINATION]
+      await this.identifyDestinationForCallback()
 
       await this.sendErrorCallback({
         errorInfo,
@@ -127,7 +131,7 @@ class BasePartiesService {
   async validateParticipant (participantId) {
     try {
       this.stepInProgress('validateParticipant')
-      return this.deps.participant.validateParticipant(participantId)
+      return await this.deps.participant.validateParticipant(participantId)
     } catch (err) {
       this.log.warn(`error in validateParticipant ${participantId}: `, err)
       return null
@@ -157,7 +161,7 @@ class BasePartiesService {
 
   async sendErrorCallback ({ errorInfo, headers, params }) {
     this.stepInProgress('sendErrorCallback')
-    const sendTo = this.state.requester || headers[Headers.FSPIOP.DESTINATION] /* || this.state.source */
+    const sendTo = this.state.requester || headers[Headers.FSPIOP.DESTINATION]
     const endpointType = this.deps.partiesUtils.errorPartyCbType(params.SubId)
 
     await this.deps.participant.sendErrorToParticipant(
@@ -168,7 +172,9 @@ class BasePartiesService {
 
   async sendDeleteOracleRequest (headers, params) {
     this.stepInProgress('sendDeleteOracleRequest')
-    return this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
+    const result = await this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
+    this.log.verbose('sendDeleteOracleRequest is done', { params })
+    return result
   }
 
   async removeProxyGetPartiesTimeoutCache (alsReq) {

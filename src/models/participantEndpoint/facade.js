@@ -37,6 +37,9 @@ const { logger } = require('../../lib')
 const { hubNameRegex } = require('../../lib/util').hubNameConfig
 
 const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
+const axiosRequestOptionsOverride = {
+  timeout: Config.HTTP_REQUEST_TIMEOUT_MS
+}
 
 /**
  * @module src/models/participantEndpoint/facade
@@ -115,7 +118,8 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
       span,
       protocolVersions,
       hubNameRegex,
-      apiType: Config.API_TYPE
+      apiType: Config.API_TYPE,
+      axiosRequestOptionsOverride
     }
     logger.debug('participant - sendRequest params:', { params })
     params.jwsSigner = defineJwsSigner(Config, headers, requestedEndpoint)
@@ -252,7 +256,8 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
       hubNameRegex,
       span,
       protocolVersions,
-      apiType: Config.API_TYPE
+      apiType: Config.API_TYPE,
+      axiosRequestOptionsOverride
     }
     logger.debug('participant - sendErrorToParticipant params: ', { params })
     params.jwsSigner = defineJwsSigner(Config, clonedHeaders, requesterErrorEndpoint)

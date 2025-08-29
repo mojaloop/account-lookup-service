@@ -38,6 +38,7 @@ describe('BasePartiesService Tests -->', () => {
   })
 
   test('should send error party callback in ISO20022 format', async () => {
+    participantMock.validateParticipant = jest.fn().mockResolvedValue({})
     const deps = {
       ...createMockDeps(),
       config: { ...config, API_TYPE: API_TYPES.iso20022 }
