@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.4](https://github.com/mojaloop/account-lookup-service/compare/v17.12.3...v17.12.4) (2025-08-29)
+
+
+### Bug Fixes
+
+* **csi-1715:** fixed handleError to set destination of errorCallback properly ([#567](https://github.com/mojaloop/account-lookup-service/issues/567)) ([0d5f115](https://github.com/mojaloop/account-lookup-service/commit/0d5f115ef5922b34421f6326abf628bc91900c26))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([982af3f](https://github.com/mojaloop/account-lookup-service/commit/982af3fbcfe3d81afeb5d7690ab53d3cc3a9282a))
+
 ### [17.12.3](https://github.com/mojaloop/account-lookup-service/compare/v17.12.2...v17.12.3) (2025-08-26)
 
 
