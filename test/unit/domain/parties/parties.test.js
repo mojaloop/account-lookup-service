@@ -951,9 +951,10 @@ describe('Parties Tests', () => {
       const proxy = `proxy-${Date.now()}`
       const headers = fixtures.partiesCallHeadersDto({ destination, proxy })
       const { params } = Helper.putByTypeIdRequest
-      participant.validateParticipant = sandbox.stub().resolves({})
+      participant.validateParticipant = sandbox.stub().resolves(null) // external participant
       participant.sendRequest = sandbox.stub().resolves()
       participant.sendErrorToParticipant = sandbox.stub().resolves()
+      proxyCache.lookupProxyByDfspId = sandbox.stub().resolves(proxy)
       oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
         { value: 'http://oracle.endpoint' }
       ])
@@ -966,8 +967,9 @@ describe('Parties Tests', () => {
       expect(participant.sendRequest.callCount).toBe(0)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
       // eslint-disable-next-line no-unused-vars
-      const [sentTo, _, data] = participant.sendErrorToParticipant.lastCall.args
-      expect(sentTo).toBe(destination)
+      const [sentTo, _, data, cbHeaders] = participant.sendErrorToParticipant.lastCall.args
+      expect(sentTo).toBe(proxy)
+      expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
       expect(data.errorInformation.errorCode).toBe('2003')
     })
   })
