@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.5](https://github.com/mojaloop/account-lookup-service/compare/v17.12.4...v17.12.5) (2025-09-01)
+
+
+### Bug Fixes
+
+* **csi-1715:** updated delete party logic; added unit-test to check handleError failure ([#568](https://github.com/mojaloop/account-lookup-service/issues/568)) ([30f8b0f](https://github.com/mojaloop/account-lookup-service/commit/30f8b0f90c55787d1a1f6efdae5423ea51ec9844))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([4002084](https://github.com/mojaloop/account-lookup-service/commit/400208429b94d3a2820960e26564d60c958be8ce))
+
 ### [17.12.4](https://github.com/mojaloop/account-lookup-service/compare/v17.12.3...v17.12.4) (2025-08-29)
 
 
