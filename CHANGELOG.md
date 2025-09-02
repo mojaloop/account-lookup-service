@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.6](https://github.com/mojaloop/account-lookup-service/compare/v17.12.5...v17.12.6) (2025-09-02)
+
+
+### Bug Fixes
+
+* use the fixed cs-shared ([#569](https://github.com/mojaloop/account-lookup-service/issues/569)) ([3d91009](https://github.com/mojaloop/account-lookup-service/commit/3d910094b186dd8962948458c043bc9806c56239))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([b250752](https://github.com/mojaloop/account-lookup-service/commit/b250752d54d957be66697b49414273846192e49a))
+
 ### [17.12.5](https://github.com/mojaloop/account-lookup-service/compare/v17.12.4...v17.12.5) (2025-09-01)
 
 
