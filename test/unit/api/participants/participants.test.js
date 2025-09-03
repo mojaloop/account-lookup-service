@@ -112,4 +112,25 @@ describe('/participants', () => {
     expect(response.statusCode).toBe(500)
     participants.postParticipantsBatch.restore()
   })
+
+  it('should return 501 error on PUT /participants/{ID} call [CSI-1694]', async () => {
+    // Arrange
+    const options = {
+      method: 'put',
+      url: '/participants/123',
+      headers: Helper.defaultSwitchHeaders,
+      payload: {
+        partyList: [
+          { partyId: mock.partyList[0] }
+        ]
+      }
+    }
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(501)
+    expect(response.result.errorInformation).toBeDefined()
+  })
 })
