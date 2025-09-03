@@ -25,7 +25,8 @@
 /* istanbul ignore file */
 'use strict'
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const { Factory, Enums } = require('@mojaloop/central-services-error-handling')
+const { errorInfoDto } = require('../../lib/dto')
 
 /**
  * Operations on /participants/{ID}
@@ -39,6 +40,8 @@ module.exports = {
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
   put: function (context, request, h) {
-    return h.response(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED))
+    const { code, message, httpStatusCode } = Factory.createFSPIOPError(Enums.FSPIOPErrorCodes.NOT_IMPLEMENTED).apiErrorCode
+    return h.response(errorInfoDto(code, message))
+      .code(httpStatusCode)
   }
 }
