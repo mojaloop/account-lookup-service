@@ -31,18 +31,6 @@ const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
-const { logger } = require('../../../lib')
-
-const safeSpanAudit = async (span, headers, payload) => {
-  try {
-    await span.audit({
-      headers,
-      payload
-    }, EventSdk.AuditEventAction.start)
-  } catch (err) {
-    logger.error('error in send.audit: ', err)
-  }
-}
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -78,7 +66,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await safeSpanAudit(span, headers, payload)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
 
     const metadata = `${method} ${path}`
     participants.getParticipantsByTypeAndID(headers, params, method, request.query, span, request.server.app.cache).catch(err => {
@@ -119,7 +110,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await safeSpanAudit(span, headers, payload)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
 
     participants.putParticipantsByTypeAndID(headers, params, method, payload, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
@@ -156,7 +150,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await safeSpanAudit(span, headers, payload)
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
 
     const metadata = `${method} ${path}`
     participants.postParticipants(headers, method, params, payload, span, request.server.app.cache).catch(err => {
@@ -195,7 +192,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await safeSpanAudit(span, headers)
+    await span.audit({
+      headers,
+      payload: undefined
+    }, EventSdk.AuditEventAction.start)
 
     const metadata = `${method} ${path}`
     participants.deleteParticipants(headers, params, method, request.query, request.server.app.cache).catch(err => {
