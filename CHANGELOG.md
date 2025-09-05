@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.12.8](https://github.com/mojaloop/account-lookup-service/compare/v17.12.7...v17.12.8) (2025-09-05)
+
+
+### Bug Fixes
+
+* **csi-1695:** updated stream lib and event-sdk ([#571](https://github.com/mojaloop/account-lookup-service/issues/571)) ([1ba4a6d](https://github.com/mojaloop/account-lookup-service/commit/1ba4a6d9d72f107774659cbb4be8c6b1848671ec))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([5e1f94d](https://github.com/mojaloop/account-lookup-service/commit/5e1f94dc48d9cd7b114569c177d13fab4f2e16b8))
+
 ### [17.12.7](https://github.com/mojaloop/account-lookup-service/compare/v17.12.6...v17.12.7) (2025-09-03)
 
 
