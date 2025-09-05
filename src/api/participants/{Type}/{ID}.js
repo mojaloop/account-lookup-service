@@ -31,6 +31,18 @@ const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
+const { logger } = require('../../../lib')
+
+const safeSpanAudit = async (span, headers, payload) => {
+  try {
+    await span.audit({
+      headers,
+      payload
+    }, EventSdk.AuditEventAction.start)
+  } catch (err) {
+    logger.error('error in send.audit: ', err)
+  }
+}
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -66,13 +78,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
-      headers,
-      payload
-    }, EventSdk.AuditEventAction.start)
+    await safeSpanAudit(span, headers, payload)
 
-    const metadata = `${request.method} ${request.path}`
-    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, span, request.server.app.cache).catch(err => {
+    const metadata = `${method} ${path}`
+    participants.getParticipantsByTypeAndID(headers, params, method, request.query, span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -110,12 +119,9 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
-      headers,
-      payload
-    }, EventSdk.AuditEventAction.start)
+    await safeSpanAudit(span, headers, payload)
 
-    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload, request.server.app.cache).catch(err => {
+    participants.putParticipantsByTypeAndID(headers, params, method, payload, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -134,7 +140,7 @@ module.exports = {
       'Ingress: Post participant by Type and Id',
       ['success']
     ).startTimer()
-    const { method, path, params, span } = request
+    const { headers, payload, method, path, params, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTICIPANT, Enum.Events.Event.Action.POST)
     span.setTags(spanTags)
     const queryTags = EventFrameworkUtil.Tags.getQueryTags(
@@ -150,12 +156,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
-      headers: request.headers,
-      payload: request.payload
-    }, EventSdk.AuditEventAction.start)
-    const metadata = `${request.method} ${request.path}`
-    participants.postParticipants(request.headers, request.method, request.params, request.payload, span, request.server.app.cache).catch(err => {
+    await safeSpanAudit(span, headers, payload)
+
+    const metadata = `${method} ${path}`
+    participants.postParticipants(headers, method, params, payload, span, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -191,13 +195,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
-      headers,
-      payload: undefined
-    }, EventSdk.AuditEventAction.start)
+    await safeSpanAudit(span, headers)
 
-    const metadata = `${request.method} ${request.path}`
-    participants.deleteParticipants(request.headers, request.params, request.method, request.query, request.server.app.cache).catch(err => {
+    const metadata = `${method} ${path}`
+    participants.deleteParticipants(headers, params, method, request.query, request.server.app.cache).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
