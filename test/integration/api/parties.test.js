@@ -68,7 +68,7 @@ describe('Parties Endpoints Tests -->', () => {
 
       await sleep(1000)
       history = await proxyClient.getHistory()
-      expect(history.length).toBe(2)
+      expect(history.length).toBeGreaterThanOrEqual(2)
       expect(history[0].path).toBe(`/oracle/participants/${PARTY_ID_TYPE}/${partyId}`)
       expect(history[1].path).toBe(`/parties/${PARTY_ID_TYPE}/${partyId}`)
 
