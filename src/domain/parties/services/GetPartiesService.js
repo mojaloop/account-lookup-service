@@ -63,7 +63,7 @@ class GetPartiesService extends BasePartiesService {
 
     const schemeSource = await this.validateParticipant(source)
     if (schemeSource) {
-      log.debug('source participant is in scheme')
+      log.verbose('source participant is in scheme')
       return source
     }
 
@@ -91,9 +91,9 @@ class GetPartiesService extends BasePartiesService {
     const log = this.log.child({ method: 'forwardRequestToDestination' })
     let sendTo = destination
 
-    const schemeParticipant = await this.validateParticipant(destination)
-    if (!schemeParticipant) {
-      this.stepInProgress('lookupProxyDestination-2')
+    const localParticipant = await this.validateParticipant(destination)
+    if (!localParticipant) {
+      this.stepInProgress('lookupProxyDestination')
       const proxyId = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
 
       if (!proxyId) {
@@ -103,6 +103,14 @@ class GetPartiesService extends BasePartiesService {
         return
       }
       sendTo = proxyId
+    } else {
+      // OSS-4203: Oracle validation for external source + local destination
+      const isValid = await this.#validateLocalDestinationForExternalSource()
+      if (!isValid) {
+        log.warn('incorrect destination from external source', { destination })
+        await this.#sendPartyNotFoundErrorCallback(headers)
+        return
+      }
     }
 
     await this.#forwardGetPartiesRequest({ sendTo, headers, params })
@@ -320,6 +328,25 @@ class GetPartiesService extends BasePartiesService {
       this.log.info('#setProxyGetPartiesTimeout is done', { isSet })
       return isSet
     }
+  }
+
+  async #validateLocalDestinationForExternalSource () {
+    // this method is called ONLY for local destination
+    const { state, log } = this
+
+    const needValidation = state.requester !== state.source
+    log.verbose('needOracleValidation: ', { needValidation })
+    if (!needValidation) return true
+
+    const oracleResponse = await this.sendOracleDiscoveryRequest()
+    if (!Array.isArray(oracleResponse?.data?.partyList) || oracleResponse.data.partyList.length === 0) {
+      log.warn('Oracle returned empty party list')
+      return false
+    }
+
+    const isValid = oracleResponse.data.partyList.some(party => party.fspId === state.destination)
+    log.verbose('#validateLocalDestinationForExternalSource is done', { isValid })
+    return isValid
   }
 }
 

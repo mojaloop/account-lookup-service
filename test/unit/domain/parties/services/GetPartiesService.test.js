@@ -28,10 +28,12 @@
 const { setTimeout: sleep } = require('node:timers/promises')
 const {
   createMockDeps,
+  createOracleFacadeMock, // use it instead of oracleMock
+  createParticipantFacadeMock, // use it instead of participantMock
   createProxyCacheMock,
   createProxiesUtilMock,
-  oracleMock,
-  participantMock
+  oracleMock, // deprecated - use createOracleFacadeMock
+  participantMock// deprecated - use createParticipantFacadeMock
 } = require('./deps')
 // ↑ should be first require to mock external deps ↑
 const { GetPartiesService } = require('#src/domain/parties/services/index')
@@ -42,9 +44,15 @@ const { RestMethods, Headers } = GetPartiesService.enums()
 
 describe('GetPartiesService Tests -->', () => {
   const { config } = createMockDeps()
+  let apiType
 
   beforeEach(() => {
     jest.clearAllMocks()
+    apiType = config.API_TYPE
+  })
+
+  afterEach(() => {
+    config.API_TYPE = apiType // to avoid side effects
   })
 
   describe('forwardRequestToDestination method', () => {
@@ -234,12 +242,14 @@ describe('GetPartiesService Tests -->', () => {
     })
 
     test('should send error callback in ISO format if proxyRequest failed after delay, and other proxies have already replied', async () => {
+      participantMock.validateParticipant = jest.fn().mockResolvedValue({})
       const service = prepareGetPartiesServiceForDelayedProxyError()
       const { headers } = service.inputs
       service.deps.config.API_TYPE = API_TYPES.iso20022
 
       await service.triggerInterSchemeDiscoveryFlow(headers)
         .catch(err => service.handleError(err))
+
       expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
       expect(participantMock.sendErrorToParticipant.mock.lastCall[2].Rpt.Rsn.Cd).toBe('3200')
     })
@@ -332,5 +342,180 @@ describe('GetPartiesService Tests -->', () => {
     const isoPayload = participantMock.sendErrorToParticipant.mock.lastCall[2]
     expect(isoPayload.Assgnmt).toBeDefined()
     expect(isoPayload.Rpt).toBeDefined()
+  })
+
+  describe('OSS-4203: oracle validation for external source + local destination', () => {
+    const EXTERNAL_SOURCE_DFSP = 'externalSourceDfsp'
+    const LOCAL_DESTINATION_DFSP = 'localDestinationDfsp'
+    const ORACLE_DFSP_DIFFERENT = 'differentDfsp'
+    const PROXY_ID = 'proxyForExternal'
+
+    let deps
+    let oracle // facade
+    let participant // facade
+    let headers
+    let params
+
+    beforeEach(() => {
+      oracle = createOracleFacadeMock()
+      participant = createParticipantFacadeMock()
+      deps = createMockDeps({ oracle, participant })
+      headers = fixtures.partiesCallHeadersDto({
+        source: EXTERNAL_SOURCE_DFSP,
+        destination: LOCAL_DESTINATION_DFSP,
+        proxy: PROXY_ID
+      })
+      params = fixtures.partiesParamsDto()
+    })
+
+    test('should forward request when oracle DFSP matches destination DFSP', async () => {
+      // Setup proxy cache to NOT find proxy mapping for local destination
+      deps.proxyCache.addDfspIdToProxyMapping = jest.fn().mockResolvedValueOnce(true)
+      deps.proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(null)
+
+      participant.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // external source (validateRequester)
+        .mockResolvedValueOnce({}) // proxy exists (validateRequester)
+        .mockResolvedValueOnce({}) // local destination (forwardRequestToDestination)
+        .mockResolvedValueOnce(null) // external source (shouldValidateViaOracle)
+        .mockResolvedValueOnce({}) // local destination (shouldValidateViaOracle)
+
+      oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
+        fixtures.oracleRequestResponseDto({
+          partyList: [{ fspId: LOCAL_DESTINATION_DFSP }]
+        })
+      )
+
+      const service = new GetPartiesService(deps, { headers, params })
+      await service.handleRequest()
+
+      expect(oracle.oracleRequest).toHaveBeenCalledWith(
+        headers,
+        RestMethods.GET,
+        params,
+        undefined,
+        undefined,
+        deps.cache
+      )
+      expect(participant.sendRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          [Headers.FSPIOP.DESTINATION]: LOCAL_DESTINATION_DFSP
+        }),
+        LOCAL_DESTINATION_DFSP,
+        expect.any(String),
+        RestMethods.GET,
+        undefined,
+        expect.any(Object),
+        null
+      )
+      expect(participant.sendErrorToParticipant).not.toHaveBeenCalled()
+    })
+
+    test('should send error callback when oracle DFSP differs from destination DFSP', async () => {
+      // Setup proxy cache to NOT find proxy mapping for local destination
+      deps.proxyCache.addDfspIdToProxyMapping = jest.fn().mockResolvedValueOnce(true)
+      deps.proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(null)
+
+      participant.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // external source (validateRequester)
+        .mockResolvedValueOnce({}) // proxy exists (validateRequester)
+        .mockResolvedValueOnce({}) // local destination (forwardRequestToDestination)
+        .mockResolvedValueOnce(null) // external source (shouldValidateViaOracle)
+        .mockResolvedValueOnce({})
+
+      oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
+        fixtures.oracleRequestResponseDto({
+          partyList: [{ fspId: ORACLE_DFSP_DIFFERENT }]
+        })
+      )
+
+      const service = new GetPartiesService(deps, { headers, params })
+      await service.handleRequest()
+
+      expect(oracle.oracleRequest).toHaveBeenCalledTimes(1)
+      expect(participant.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+      expect(participant.sendRequest).not.toHaveBeenCalled()
+
+      const [sentTo, , errorPayload] = participant.sendErrorToParticipant.mock.lastCall
+      expect(sentTo).toBe(PROXY_ID) // Error is sent to the proxy (requester)
+      expect(errorPayload.errorInformation.errorCode).toBeDefined()
+    })
+
+    test('should send error callback when oracle returns empty result', async () => {
+      participant.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // external source (validateRequester)
+        .mockResolvedValueOnce({}) // proxy exists (validateRequester)
+        .mockResolvedValueOnce(null) // external source (shouldValidateViaOracle)
+        .mockResolvedValueOnce({}) // local destination (shouldValidateViaOracle)
+        .mockResolvedValueOnce({}) // local destination (forwardRequestToDestination)
+
+      oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
+        fixtures.oracleRequestResponseDto({ partyList: [] })
+      )
+
+      const service = new GetPartiesService(deps, { headers, params })
+      await service.handleRequest()
+
+      expect(oracle.oracleRequest).toHaveBeenCalledTimes(1)
+      expect(participant.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+      expect(participant.sendRequest).not.toHaveBeenCalled()
+    })
+
+    test('should skip oracle validation when source is local (not external)', async () => {
+      const headers = fixtures.partiesCallHeadersDto()
+      participant.validateParticipant = jest.fn().mockResolvedValue({})
+
+      const service = new GetPartiesService(deps, { headers, params })
+      await service.handleRequest()
+
+      expect(oracle.oracleRequest).not.toHaveBeenCalled()
+      expect(participant.sendRequest).toHaveBeenCalledTimes(1)
+    })
+
+    test('should skip oracle validation when destination is external (not local)', async () => {
+      const externalDestHeaders = fixtures.partiesCallHeadersDto({
+        source: EXTERNAL_SOURCE_DFSP,
+        destination: 'externalDestinationDfsp',
+        proxy: PROXY_ID
+      })
+
+      participant.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // external source
+        .mockResolvedValueOnce({}) // proxy exists
+        .mockResolvedValueOnce(null) // external destination
+      deps.proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(PROXY_ID)
+
+      const service = new GetPartiesService(deps, { headers: externalDestHeaders, params })
+      await service.handleRequest()
+
+      expect(oracle.oracleRequest).not.toHaveBeenCalled()
+      expect(participant.sendRequest).toHaveBeenCalledTimes(1)
+    })
+
+    test('should send error callback in ISO20022 format when API_TYPE is iso20022', async () => {
+      const isoConfig = { ...deps.config, API_TYPE: API_TYPES.iso20022 }
+      const isoDeps = { ...deps, config: isoConfig }
+
+      participant.validateParticipant = jest.fn()
+        .mockResolvedValueOnce(null) // external source (validateRequester)
+        .mockResolvedValueOnce({}) // proxy exists (validateRequester)
+        .mockResolvedValueOnce(null) // external source (shouldValidateViaOracle)
+        .mockResolvedValueOnce({}) // local destination (shouldValidateViaOracle)
+        .mockResolvedValueOnce({}) // local destination (forwardRequestToDestination)
+
+      oracle.oracleRequest = jest.fn().mockResolvedValueOnce(
+        fixtures.oracleRequestResponseDto({
+          partyList: [{ fspId: ORACLE_DFSP_DIFFERENT }]
+        })
+      )
+
+      const service = new GetPartiesService(isoDeps, { headers, params })
+      await service.handleRequest()
+
+      expect(participant.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+      const isoPayload = participant.sendErrorToParticipant.mock.lastCall[2]
+      expect(isoPayload.Assgnmt).toBeDefined()
+      expect(isoPayload.Rpt).toBeDefined()
+    })
   })
 })

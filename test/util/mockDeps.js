@@ -66,7 +66,27 @@ const createProxiesUtilMock = ({
   invalidateProxiesCache
 })
 
+const createParticipantFacadeMock = ({
+  validateParticipant = jest.fn(),
+  sendRequest = jest.fn(),
+  sendErrorToParticipant = jest.fn()
+} = {}) => ({
+  validateParticipant,
+  sendRequest,
+  sendErrorToParticipant
+})
+
+const createOracleFacadeMock = ({
+  oracleRequest = jest.fn(),
+  oracleBatchRequest = jest.fn()
+} = {}) => ({
+  oracleRequest,
+  oracleBatchRequest
+})
+
 module.exports = {
+  createOracleFacadeMock,
+  createParticipantFacadeMock,
   createProxyCacheMock,
   createProxiesUtilMock
 }
