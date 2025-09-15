@@ -43,7 +43,7 @@ class PutPartiesErrorService extends BasePartiesService {
       } else {
         const schemeParticipant = await this.validateParticipant(this.state.destination)
         if (!schemeParticipant) {
-          this.log.info('Need to cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error')
+          this.log.info('Need to cleanup oracle and forward PARTY_RESOLUTION_FAILURE error')
           await this.cleanupOracle()
           await this.removeProxyGetPartiesTimeoutCache(alsReq)
           await this.#sendPartyResolutionErrorCallback()
