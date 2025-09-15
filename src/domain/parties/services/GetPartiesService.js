@@ -28,7 +28,7 @@
 const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
-const { FspEndpointTypes, RestMethods } = BasePartiesService.enums()
+const { RestMethods } = BasePartiesService.enums()
 const proxyCacheTtlSec = 40 // todo: make configurable
 
 class GetPartiesService extends BasePartiesService {
@@ -45,8 +45,8 @@ class GetPartiesService extends BasePartiesService {
       return
     }
 
-    const response = await this.sendOracleDiscoveryRequest()
-    const isSent = await this.processOraclePartyListResponse(response)
+    const partyList = await this.sendOracleDiscoveryRequest()
+    const isSent = await this.processOraclePartyListResponse(partyList)
     this.log.info(`getParties request is ${isSent ? '' : 'NOT '}forwarded to oracle lookup DFSP`)
     if (isSent) return
 
@@ -117,20 +117,34 @@ class GetPartiesService extends BasePartiesService {
     log.info('discovery getPartiesByTypeAndID request was sent', { sendTo })
   }
 
+  /**
+   * @returns {Promise<{ fspId: string, partySubIdOrType?: string }[]>} List of parties from oracle response
+   */
   async sendOracleDiscoveryRequest () {
     this.stepInProgress('#sendOracleDiscoveryRequest')
     const { headers, params, query } = this.inputs
-    return this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+
+    const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+    this.log.debug('oracle discovery raw response:', { response })
+
+    let { partyList } = response?.data || {}
+    if (!Array.isArray(partyList)) {
+      this.log.warn('invalid oracle discovery response:', { response })
+      // todo: maybe, it's better to throw an error
+      partyList = []
+    }
+
+    return partyList
   }
 
-  async processOraclePartyListResponse (response) {
-    if (!Array.isArray(response?.data?.partyList) || response.data.partyList.length === 0) {
+  async processOraclePartyListResponse (rawPartyList) {
+    if (rawPartyList.length === 0) {
       this.log.verbose('oracle partyList is empty')
       return false
     }
 
     this.stepInProgress('processOraclePartyList')
-    const partyList = this.#filterOraclePartyList(response)
+    const partyList = this.#filterOraclePartyList(rawPartyList)
 
     let sentCount = 0
     await Promise.all(partyList.map(async party => {
@@ -174,26 +188,17 @@ class GetPartiesService extends BasePartiesService {
     return isLocal
   }
 
-  #filterOraclePartyList (response) {
+  #filterOraclePartyList (partyList) {
     // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records.
     // We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
-    this.stepInProgress('filterOraclePartyList')
+    this.stepInProgress('#filterOraclePartyList')
     const { params } = this.inputs
-    const callbackEndpointType = this.deps.partiesUtils.getPartyCbType(params.SubId)
-    let filteredPartyList
 
-    switch (callbackEndpointType) {
-      case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET:
-        filteredPartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
-        break
-      case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET:
-        filteredPartyList = response.data.partyList.filter(party => party.partySubIdOrType === params.SubId) // Filter records that match partySubIdOrType
-        break
-      default:
-        filteredPartyList = response // Fallback to providing the standard list
-    }
+    const filteredPartyList = !params?.SubId
+      ? partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
+      : partyList.filter(party => party.partySubIdOrType === params.SubId) // Filter records that match partySubIdOrType
 
-    if (!Array.isArray(filteredPartyList) || !filteredPartyList.length) {
+    if (!filteredPartyList.length) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.emptyFilteredPartyList)
     }
 
@@ -338,13 +343,13 @@ class GetPartiesService extends BasePartiesService {
     log.verbose('needOracleValidation: ', { needValidation })
     if (!needValidation) return true
 
-    const oracleResponse = await this.sendOracleDiscoveryRequest()
-    if (!Array.isArray(oracleResponse?.data?.partyList) || oracleResponse.data.partyList.length === 0) {
+    const partyList = await this.sendOracleDiscoveryRequest()
+    if (partyList.length === 0) {
       log.warn('Oracle returned empty party list')
       return false
     }
 
-    const isValid = oracleResponse.data.partyList.some(party => party.fspId === state.destination)
+    const isValid = partyList.some(party => party.fspId === state.destination)
     log.verbose('#validateLocalDestinationForExternalSource is done', { isValid })
     return isValid
   }

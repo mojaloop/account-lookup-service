@@ -41,6 +41,12 @@ class PutPartiesErrorService extends BasePartiesService {
           return
         }
       } else {
+        // 1. get party from oracle
+        // 2. check ig fspId is external
+        // 3. cleanup oracle only for external participant
+        // const isExternal = await this.#isPartyFromExternalDfsp()
+        // if (isExternal) {
+
         const schemeParticipant = await this.validateParticipant(this.state.destination)
         if (!schemeParticipant) {
           this.log.info('Need to cleanup oracle and forward PARTY_RESOLUTION_FAILURE error')
@@ -77,6 +83,11 @@ class PutPartiesErrorService extends BasePartiesService {
     const { headers, params, dataUri } = this.inputs
     const errorInfo = PutPartiesErrorService.decodeDataUriPayload(dataUri)
     return super.sendErrorCallback({ errorInfo, headers, params })
+  }
+
+  async #isPartyFromExternalDfsp () {
+    this.stepInProgress('#isPartyFromExternalDfsp')
+    // todo: add impl.
   }
 
   async #sendPartyResolutionErrorCallback () {
