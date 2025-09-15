@@ -117,26 +117,6 @@ class GetPartiesService extends BasePartiesService {
     log.info('discovery getPartiesByTypeAndID request was sent', { sendTo })
   }
 
-  /**
-   * @returns {Promise<{ fspId: string, partySubIdOrType?: string }[]>} List of parties from oracle response
-   */
-  async sendOracleDiscoveryRequest () {
-    this.stepInProgress('#sendOracleDiscoveryRequest')
-    const { headers, params, query } = this.inputs
-
-    const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
-    this.log.debug('oracle discovery raw response:', { response })
-
-    let { partyList } = response?.data || {}
-    if (!Array.isArray(partyList)) {
-      this.log.warn('invalid oracle discovery response:', { response })
-      // todo: maybe, it's better to throw an error
-      partyList = []
-    }
-
-    return partyList
-  }
-
   async processOraclePartyListResponse (rawPartyList) {
     if (rawPartyList.length === 0) {
       this.log.verbose('oracle partyList is empty')

@@ -170,6 +170,26 @@ class BasePartiesService {
     this.log.info('sendErrorCallback is done', { sendTo, errorInfo })
   }
 
+  /**
+   * @returns {Promise<{ fspId: string, partySubIdOrType?: string }[]>} List of parties from oracle response
+   */
+  async sendOracleDiscoveryRequest () {
+    this.stepInProgress('#sendOracleDiscoveryRequest')
+    const { headers, params, query } = this.inputs
+
+    const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+    this.log.debug('oracle discovery raw response:', { response })
+
+    let { partyList } = response?.data || {}
+    if (!Array.isArray(partyList)) {
+      this.log.warn('invalid oracle discovery response:', { response })
+      // todo: maybe, it's better to throw an error
+      partyList = []
+    }
+
+    return partyList
+  }
+
   async sendDeleteOracleRequest (headers, params) {
     this.stepInProgress('sendDeleteOracleRequest')
     const result = await this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)

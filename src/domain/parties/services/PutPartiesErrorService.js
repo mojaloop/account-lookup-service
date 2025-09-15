@@ -41,14 +41,8 @@ class PutPartiesErrorService extends BasePartiesService {
           return
         }
       } else {
-        // 1. get party from oracle
-        // 2. check ig fspId is external
-        // 3. cleanup oracle only for external participant
-        // const isExternal = await this.#isPartyFromExternalDfsp()
-        // if (isExternal) {
-
-        const schemeParticipant = await this.validateParticipant(this.state.destination)
-        if (!schemeParticipant) {
+        const isExternal = await this.#isPartyFromExternalDfsp()
+        if (isExternal) {
           this.log.info('Need to cleanup oracle and forward PARTY_RESOLUTION_FAILURE error')
           await this.cleanupOracle()
           await this.removeProxyGetPartiesTimeoutCache(alsReq)
@@ -87,7 +81,16 @@ class PutPartiesErrorService extends BasePartiesService {
 
   async #isPartyFromExternalDfsp () {
     this.stepInProgress('#isPartyFromExternalDfsp')
-    // todo: add impl.
+    const partyList = await super.sendOracleDiscoveryRequest()
+    if (!partyList.length) {
+      this.log.verbose('oracle returns empty partyList')
+      return false
+    }
+    // think, if we have several parties from oracle
+    const isExternal = !(await this.validateParticipant(partyList[0].fspId))
+    this.log.verbose('#isPartyFromExternalDfsp is done:', { isExternal, partyList })
+
+    return isExternal
   }
 
   async #sendPartyResolutionErrorCallback () {

@@ -958,11 +958,13 @@ describe('Parties Tests', () => {
       oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
         { value: 'http://oracle.endpoint' }
       ])
-      oracle.oracleRequest = sandbox.stub().resolves()
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: { partyList: [{ fspId: 'fspId' }] }
+      })
 
       await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
 
-      expect(oracle.oracleRequest.callCount).toBe(1)
+      expect(oracle.oracleRequest.callCount).toBe(2)
       expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
       expect(participant.sendRequest.callCount).toBe(0)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
