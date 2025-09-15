@@ -970,7 +970,7 @@ describe('Parties Tests', () => {
       const [sentTo, _, data, cbHeaders] = participant.sendErrorToParticipant.lastCall.args
       expect(sentTo).toBe(proxy)
       expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
-      expect(data.errorInformation.errorCode).toBe('2003')
+      expect(data.errorInformation.errorCode).toBe('2006')
     })
   })
 })

@@ -37,7 +37,7 @@ describe('PutPartiesErrorService Tests -->', () => {
     jest.clearAllMocks()
   })
 
-  test('should cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error for party from external dfsp', async () => {
+  test('should cleanup oracle and forward PARTY_RESOLUTION_FAILURE error for party from external dfsp', async () => {
     participantMock.validateParticipant = jest.fn().mockRejectedValue(new Error('No participant found')) // external participant
     const destination = 'externalDfsp'
     const proxyDest = 'proxyDest'
@@ -57,7 +57,7 @@ describe('PutPartiesErrorService Tests -->', () => {
     const [sentTo, _, payload, cbHeaders] = participantMock.sendErrorToParticipant.mock.lastCall
     expect(sentTo).toBe(proxyDest)
     expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
-    expect(payload.errorInformation.errorCode).toBe('2003')
+    expect(payload.errorInformation.errorCode).toBe('2006')
   })
 
   test('should NOT cleanup oracle if destination is local', async () => {
