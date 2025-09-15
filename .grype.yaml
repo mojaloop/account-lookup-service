@@ -2,9 +2,6 @@
 disabled: false
 
 ignore:
-  - vulnerability: "GHSA-4hjh-wcwx-xvwj"  # todo: need to fix this
-    package:
-      name: "axios"
 
 # Set output format defaults
 output:
