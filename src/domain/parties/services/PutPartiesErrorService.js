@@ -26,7 +26,6 @@
  ******/
 
 const BasePartiesService = require('./BasePartiesService')
-const { ERROR_MESSAGES } = require('../../../constants')
 
 class PutPartiesErrorService extends BasePartiesService {
   async handleRequest () {
@@ -46,7 +45,7 @@ class PutPartiesErrorService extends BasePartiesService {
           this.log.info('Need to cleanup oracle and forward PARTY_RESOLUTION_FAILURE error')
           await this.cleanupOracle()
           await this.removeProxyGetPartiesTimeoutCache(alsReq)
-          await this.#sendPartyResolutionErrorCallback()
+          await this.sendPartyResolutionErrorCallback()
           return
         }
       }
@@ -91,22 +90,6 @@ class PutPartiesErrorService extends BasePartiesService {
     this.log.verbose('#isPartyFromExternalDfsp is done:', { isExternal, partyList })
 
     return isExternal
-  }
-
-  async #sendPartyResolutionErrorCallback () {
-    this.stepInProgress('#sendPartyResolutionErrorCallback')
-    const { headers, params } = this.inputs
-    const error = super.createFspiopPartyResolutionError(ERROR_MESSAGES.externalPartyError)
-    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params, this.state.destination)
-    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
-
-    await this.identifyDestinationForCallback()
-    await super.sendErrorCallback({
-      errorInfo,
-      headers: callbackHeaders,
-      params
-    })
-    this.log.verbose('#sendPartyResolutionErrorCallback is done', { callbackHeaders, errorInfo })
   }
 }
 

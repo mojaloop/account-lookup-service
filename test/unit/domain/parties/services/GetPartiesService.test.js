@@ -422,6 +422,7 @@ describe('GetPartiesService Tests -->', () => {
           partyList: [{ fspId: ORACLE_DFSP_DIFFERENT }]
         })
       )
+      proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValueOnce(PROXY_ID)
 
       const service = new GetPartiesService(deps, { headers, params })
       await service.handleRequest()

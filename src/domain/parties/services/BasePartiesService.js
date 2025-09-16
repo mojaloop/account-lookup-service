@@ -26,12 +26,10 @@
  ******/
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const { Enum } = require('@mojaloop/central-services-shared')
-const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const { Enum, Util } = require('@mojaloop/central-services-shared')
 const { initStepState } = require('../../../lib/util')
 const { createCallbackHeaders } = require('../../../lib/headers')
 const { ERROR_MESSAGES } = require('../../../constants')
-const { makeAcceptContentTypeHeader } = require('@mojaloop/central-services-shared').Util.Headers
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods, HeaderResources } = Enum.Http
@@ -204,6 +202,22 @@ class BasePartiesService {
     return isRemoved
   }
 
+  async sendPartyResolutionErrorCallback () {
+    this.stepInProgress('sendPartyResolutionErrorCallback')
+    const { headers, params } = this.inputs
+    const error = this.createFspiopPartyResolutionError(ERROR_MESSAGES.externalPartyError)
+    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params, this.state.destination)
+    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
+
+    await this.identifyDestinationForCallback()
+    await this.sendErrorCallback({
+      errorInfo,
+      headers: callbackHeaders,
+      params
+    })
+    this.log.verbose('sendPartyResolutionErrorCallback is done', { callbackHeaders, errorInfo })
+  }
+
   createFspiopIdNotFoundError (errMessage, log = this.log) {
     log.warn(errMessage)
     return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
@@ -242,7 +256,7 @@ class BasePartiesService {
   }
 
   static decodeDataUriPayload (dataUri) {
-    const decoded = decodePayload(dataUri, { asParsed: false })
+    const decoded = Util.StreamingProtocol.decodePayload(dataUri, { asParsed: false })
     return decoded.body.toString()
   }
 
@@ -277,7 +291,7 @@ class BasePartiesService {
     return {
       [Headers.FSPIOP.SOURCE]: hubName,
       [Headers.FSPIOP.DESTINATION]: destination,
-      [Headers.GENERAL.CONTENT_TYPE.value]: makeAcceptContentTypeHeader(
+      [Headers.GENERAL.CONTENT_TYPE.value]: Util.Headers.makeAcceptContentTypeHeader(
         HeaderResources.PARTIES,
         config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
         config.API_TYPE

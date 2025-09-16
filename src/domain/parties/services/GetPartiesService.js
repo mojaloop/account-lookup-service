@@ -108,7 +108,7 @@ class GetPartiesService extends BasePartiesService {
       const isValid = await this.#validateLocalDestinationForExternalSource()
       if (!isValid) {
         log.warn('incorrect destination from external source', { destination })
-        await this.#sendPartyNotFoundErrorCallback(headers)
+        await this.sendPartyResolutionErrorCallback()
         return
       }
     }
