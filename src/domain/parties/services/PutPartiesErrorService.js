@@ -42,11 +42,9 @@ class PutPartiesErrorService extends BasePartiesService {
       } else {
         const isExternal = await this.#isPartyFromExternalDfsp()
         if (isExternal) {
-          this.log.info('Need to cleanup oracle and forward PARTY_RESOLUTION_FAILURE error')
+          this.log.info('need to cleanup oracle coz party is from external DFSP')
           await this.cleanupOracle()
-          await this.removeProxyGetPartiesTimeoutCache(alsReq)
-          await this.sendPartyResolutionErrorCallback() // todo: think, if we need this?
-          return
+          await this.removeProxyGetPartiesTimeoutCache(alsReq) // think if we need this
         }
       }
     }
