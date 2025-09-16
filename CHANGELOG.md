@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.13.0](https://github.com/mojaloop/account-lookup-service/compare/v17.12.10...v17.13.0) (2025-09-16)
+
+
+### Features
+
+* **oss-4203:** added validation of local destination for external source ([#574](https://github.com/mojaloop/account-lookup-service/issues/574)) ([8ca46d6](https://github.com/mojaloop/account-lookup-service/commit/8ca46d6bbacbf30bb4b6dcc739df970e1b46d268))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([f68b088](https://github.com/mojaloop/account-lookup-service/commit/f68b088b9fa01b96682761bfb946048ea24de54f))
+
 ### [17.12.10](https://github.com/mojaloop/account-lookup-service/compare/v17.12.9...v17.12.10) (2025-09-10)
 
 
