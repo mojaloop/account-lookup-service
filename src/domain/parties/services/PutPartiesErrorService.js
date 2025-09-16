@@ -30,8 +30,9 @@ const BasePartiesService = require('./BasePartiesService')
 class PutPartiesErrorService extends BasePartiesService {
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
-      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
+      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params)
       const isInterSchemeDiscoveryCase = await this.deps.proxyCache.isPendingCallback(alsReq)
+      this.log.verbose(`isInterSchemeDiscoveryCase: ${isInterSchemeDiscoveryCase}`, this.state)
 
       if (isInterSchemeDiscoveryCase) {
         const isLast = await this.checkLastProxyCallback(alsReq)

@@ -47,7 +47,7 @@ const services = require('./services')
  * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
 const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, cache, proxyCache = undefined) => {
-  // todo: think, if we need to pass span here
+  // think, if we need to pass span here
   const component = putPartiesByTypeAndID.name
   const histTimerEnd = Metrics.getHistogram(
     component,
