@@ -172,7 +172,7 @@ class BasePartiesService {
    * @returns {Promise<{ fspId: string, partySubIdOrType?: string }[]>} List of parties from oracle response
    */
   async sendOracleDiscoveryRequest () {
-    this.stepInProgress('#sendOracleDiscoveryRequest')
+    this.stepInProgress('sendOracleDiscoveryRequest')
     const { headers, params, query } = this.inputs
 
     const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
