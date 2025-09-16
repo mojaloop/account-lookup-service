@@ -178,7 +178,7 @@ class BasePartiesService {
     const { headers, params, query } = this.inputs
 
     const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
-    this.log.debug('oracle discovery raw response:', { response })
+    this.log.verbose('oracle discovery raw response:', { response })
 
     let { partyList } = response?.data || {}
     if (!Array.isArray(partyList)) {

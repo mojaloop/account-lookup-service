@@ -181,6 +181,7 @@ class GetPartiesService extends BasePartiesService {
     if (!filteredPartyList.length) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.emptyFilteredPartyList)
     }
+    this.log.verbose('#filterOraclePartyList is done:', { filteredPartyList })
 
     return filteredPartyList
   }

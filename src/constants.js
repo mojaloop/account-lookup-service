@@ -29,7 +29,7 @@ const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 
 const ERROR_MESSAGES = Object.freeze({
   emptyFilteredPartyList: 'Empty oracle partyList, filtered based on callbackEndpointType',
-  externalPartyError: 'External party error', // todo: think better message
+  externalPartyError: 'External party resolution error',
   failedToCacheSendToProxiesList: 'Failed to cache sendToProxiesList',
   noDiscoveryRequestsForwarded: 'No discovery requests forwarded to participants',
   sourceFspNotFound: 'Requester FSP not found',
