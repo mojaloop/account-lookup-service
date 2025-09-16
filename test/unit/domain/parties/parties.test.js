@@ -947,9 +947,10 @@ describe('Parties Tests', () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
+      const source = 'payerFsp'
       const destination = `dest-${Date.now()}`
       const proxy = `proxy-${Date.now()}`
-      const headers = fixtures.partiesCallHeadersDto({ destination, proxy })
+      const headers = fixtures.partiesCallHeadersDto({ source, destination, proxy })
       const { params } = Helper.putByTypeIdRequest
       participant.validateParticipant = sandbox.stub().resolves(null) // external participant
       participant.sendRequest = sandbox.stub().resolves()
@@ -971,7 +972,8 @@ describe('Parties Tests', () => {
       // eslint-disable-next-line no-unused-vars
       const [sentTo, _, data, cbHeaders] = participant.sendErrorToParticipant.lastCall.args
       expect(sentTo).toBe(proxy)
-      expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
+      expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(source)
+      expect(cbHeaders[Headers.FSPIOP.PROXY]).toBeUndefined()
       expect(data.errorInformation.errorCode).toBe('2006')
     })
   })

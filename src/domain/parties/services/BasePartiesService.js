@@ -206,7 +206,7 @@ class BasePartiesService {
     this.stepInProgress('sendPartyResolutionErrorCallback')
     const { headers, params } = this.inputs
     const error = this.createFspiopPartyResolutionError(ERROR_MESSAGES.externalPartyError)
-    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params, this.state.destination)
+    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params)
     const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
 
     await this.identifyDestinationForCallback()

@@ -45,7 +45,7 @@ class PutPartiesErrorService extends BasePartiesService {
           this.log.info('Need to cleanup oracle and forward PARTY_RESOLUTION_FAILURE error')
           await this.cleanupOracle()
           await this.removeProxyGetPartiesTimeoutCache(alsReq)
-          await this.sendPartyResolutionErrorCallback()
+          await this.sendPartyResolutionErrorCallback() // todo: think, if we need this?
           return
         }
       }

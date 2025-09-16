@@ -46,12 +46,13 @@ describe('PutPartiesErrorService Tests -->', () => {
     oracle.oracleRequest = jest.fn().mockResolvedValue({
       data: { partyList: [{ fspId: 'fspId' }] }
     })
-    const destination = 'externalDfsp'
+    const source = 'externalSource'
+    const destination = 'externalDestination'
     const proxyDest = 'proxyDest'
     const deps = createMockDeps({ oracle, participant })
     deps.proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValue(proxyDest)
 
-    const headers = fixtures.partiesCallHeadersDto({ destination, proxy: 'proxyA' })
+    const headers = fixtures.partiesCallHeadersDto({ source, destination, proxy: 'proxyA' })
     const params = fixtures.partiesParamsDto()
     const dataUri = fixtures.dataUriDto()
 
@@ -64,7 +65,7 @@ describe('PutPartiesErrorService Tests -->', () => {
 
     const [sentTo, , payload, cbHeaders] = participant.sendErrorToParticipant.mock.lastCall
     expect(sentTo).toBe(proxyDest)
-    expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
+    expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(source)
     expect(payload.errorInformation.errorCode).toBe('2006')
   })
 
