@@ -28,8 +28,8 @@
 const { Util } = require('@mojaloop/central-services-shared')
 const { logger } = require('../../lib')
 const config = require('../../lib/config')
-const oracle = require('../../models/oracle/facade')
-const participant = require('../../models/participantEndpoint/facade')
+const oracleFacade = require('../../models/oracle/facade')
+const participantFacade = require('../../models/participantEndpoint/facade')
 const partiesUtils = require('./partiesUtils')
 
 /** @returns {PartiesDeps} */
@@ -37,6 +37,8 @@ const createDeps = ({
   cache,
   proxyCache,
   proxies = Util.proxies,
+  participant = participantFacade,
+  oracle = oracleFacade,
   childSpan = null,
   log = logger
 }) => Object.freeze({
@@ -44,10 +46,10 @@ const createDeps = ({
   proxyCache,
   childSpan,
   log,
-  config,
   oracle,
-  participant,
   proxies,
+  participant,
+  config,
   partiesUtils
 })
 

@@ -25,45 +25,54 @@
  --------------
  ******/
 
-const { createMockDeps, oracleMock, participantMock } = require('./deps')
-// ↑ should be first require to mock external deps ↑
 const { PutPartiesErrorService } = require('#src/domain/parties/services/index')
+const { createMockDeps, createOracleFacadeMock, createParticipantFacadeMock } = require('./deps')
 const fixtures = require('#test/fixtures/index')
 
 const { RestMethods, Headers } = PutPartiesErrorService.enums()
 
 describe('PutPartiesErrorService Tests -->', () => {
+  let oracle
+  let participant
+
   beforeEach(() => {
     jest.clearAllMocks()
+    oracle = createOracleFacadeMock()
+    participant = createParticipantFacadeMock()
   })
 
-  test('should cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error for party from external dfsp', async () => {
-    participantMock.validateParticipant = jest.fn().mockRejectedValue(new Error('No participant found')) // external participant
-    const destination = 'externalDfsp'
+  test('should cleanup oracle and forward PARTY_RESOLUTION_FAILURE error for party from external dfsp', async () => {
+    participant.validateParticipant = jest.fn().mockRejectedValue(new Error('No participant found')) // external participant
+    oracle.oracleRequest = jest.fn().mockResolvedValue({
+      data: { partyList: [{ fspId: 'fspId' }] }
+    })
+    const destination = 'externalDestination'
     const proxyDest = 'proxyDest'
-    const deps = createMockDeps()
+    const deps = createMockDeps({ oracle, participant })
     deps.proxyCache.lookupProxyByDfspId = jest.fn().mockResolvedValue(proxyDest)
 
     const headers = fixtures.partiesCallHeadersDto({ destination, proxy: 'proxyA' })
     const params = fixtures.partiesParamsDto()
-    const dataUri = fixtures.dataUriDto()
-    const service = new PutPartiesErrorService(deps, { headers, params, dataUri })
+    const data = { test: true }
+    const dataUri = fixtures.dataUriDto(data)
 
+    const service = new PutPartiesErrorService(deps, { headers, params, dataUri })
     await service.handleRequest()
-    expect(oracleMock.oracleRequest).toHaveBeenCalledTimes(1)
-    expect(oracleMock.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
-    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-unused-vars
-    const [sentTo, _, payload, cbHeaders] = participantMock.sendErrorToParticipant.mock.lastCall
+
+    expect(oracle.oracleRequest).toHaveBeenCalledTimes(2)
+    expect(oracle.oracleRequest.mock.lastCall[1]).toBe(RestMethods.DELETE)
+    expect(participant.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+
+    const [sentTo, , payload, cbHeaders] = participant.sendErrorToParticipant.mock.lastCall
     expect(sentTo).toBe(proxyDest)
     expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
-    expect(payload.errorInformation.errorCode).toBe('2003')
+    expect(payload).toBe(JSON.stringify(data))
   })
 
   test('should NOT cleanup oracle if destination is local', async () => {
     const destination = 'localDfsp'
-    const deps = createMockDeps()
-    deps.participant.validateParticipant = jest.fn().mockResolvedValue({})
+    participant.validateParticipant = jest.fn().mockResolvedValue({})
+    const deps = createMockDeps({ participant })
 
     const headers = fixtures.partiesCallHeadersDto({ destination })
     const params = fixtures.partiesParamsDto()
@@ -71,8 +80,8 @@ describe('PutPartiesErrorService Tests -->', () => {
     const service = new PutPartiesErrorService(deps, { headers, params, dataUri })
 
     await service.handleRequest()
-    expect(oracleMock.oracleRequest).not.toHaveBeenCalled()
-    expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
-    expect(participantMock.sendErrorToParticipant.mock.lastCall[0]).toBe(destination)
+    expect(oracle.oracleRequest).not.toHaveBeenCalled()
+    expect(participant.sendErrorToParticipant).toHaveBeenCalledTimes(1)
+    expect(participant.sendErrorToParticipant.mock.lastCall[0]).toBe(destination)
   })
 })

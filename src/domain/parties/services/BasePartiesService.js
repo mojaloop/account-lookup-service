@@ -26,12 +26,10 @@
  ******/
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const { Enum } = require('@mojaloop/central-services-shared')
-const { decodePayload } = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const { Enum, Util } = require('@mojaloop/central-services-shared')
 const { initStepState } = require('../../../lib/util')
 const { createCallbackHeaders } = require('../../../lib/headers')
 const { ERROR_MESSAGES } = require('../../../constants')
-const { makeAcceptContentTypeHeader } = require('@mojaloop/central-services-shared').Util.Headers
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods, HeaderResources } = Enum.Http
@@ -170,6 +168,26 @@ class BasePartiesService {
     this.log.info('sendErrorCallback is done', { sendTo, errorInfo })
   }
 
+  /**
+   * @returns {Promise<{ fspId: string, partySubIdOrType?: string }[]>} List of parties from oracle response
+   */
+  async sendOracleDiscoveryRequest () {
+    this.stepInProgress('sendOracleDiscoveryRequest')
+    const { headers, params, query } = this.inputs
+
+    const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+    this.log.verbose('oracle discovery raw response:', { response })
+
+    let { partyList } = response?.data || {}
+    if (!Array.isArray(partyList)) {
+      this.log.warn('invalid oracle discovery response:', { response })
+      // todo: maybe, it's better to throw an error
+      partyList = []
+    }
+
+    return partyList
+  }
+
   async sendDeleteOracleRequest (headers, params) {
     this.stepInProgress('sendDeleteOracleRequest')
     const result = await this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
@@ -184,6 +202,24 @@ class BasePartiesService {
     return isRemoved
   }
 
+  async sendPartyResolutionErrorCallback () {
+    this.stepInProgress('sendPartyResolutionErrorCallback')
+    const { headers, params } = this.inputs
+
+    const error = this.createFspiopPartyResolutionError(ERROR_MESSAGES.externalPartyError)
+    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params)
+    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
+    this.state.destination = callbackHeaders[Headers.FSPIOP.DESTINATION]
+
+    await this.identifyDestinationForCallback()
+    await this.sendErrorCallback({
+      errorInfo,
+      headers: callbackHeaders,
+      params
+    })
+    this.log.verbose('sendPartyResolutionErrorCallback is done', { callbackHeaders, errorInfo })
+  }
+
   createFspiopIdNotFoundError (errMessage, log = this.log) {
     log.warn(errMessage)
     return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
@@ -194,9 +230,9 @@ class BasePartiesService {
     return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, errMessage)
   }
 
-  createFspiopServiceUnavailableError (errMessage, log = this.log) {
+  createFspiopPartyResolutionError (errMessage, log = this.log) {
     log.warn(errMessage)
-    return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.SERVICE_CURRENTLY_UNAVAILABLE, errMessage)
+    return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_RESOLUTION_FAILURE, errMessage)
   }
 
   stepInProgress (stepName) {
@@ -222,7 +258,7 @@ class BasePartiesService {
   }
 
   static decodeDataUriPayload (dataUri) {
-    const decoded = decodePayload(dataUri, { asParsed: false })
+    const decoded = Util.StreamingProtocol.decodePayload(dataUri, { asParsed: false })
     return decoded.body.toString()
   }
 
@@ -257,7 +293,7 @@ class BasePartiesService {
     return {
       [Headers.FSPIOP.SOURCE]: hubName,
       [Headers.FSPIOP.DESTINATION]: destination,
-      [Headers.GENERAL.CONTENT_TYPE.value]: makeAcceptContentTypeHeader(
+      [Headers.GENERAL.CONTENT_TYPE.value]: Util.Headers.makeAcceptContentTypeHeader(
         HeaderResources.PARTIES,
         config.PROTOCOL_VERSIONS.CONTENT.DEFAULT.toString(),
         config.API_TYPE

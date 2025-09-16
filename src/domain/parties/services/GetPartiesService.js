@@ -28,7 +28,7 @@
 const { ERROR_MESSAGES } = require('../../../constants')
 const BasePartiesService = require('./BasePartiesService')
 
-const { FspEndpointTypes, RestMethods } = BasePartiesService.enums()
+const { RestMethods } = BasePartiesService.enums()
 const proxyCacheTtlSec = 40 // todo: make configurable
 
 class GetPartiesService extends BasePartiesService {
@@ -45,8 +45,8 @@ class GetPartiesService extends BasePartiesService {
       return
     }
 
-    const response = await this.sendOracleDiscoveryRequest()
-    const isSent = await this.processOraclePartyListResponse(response)
+    const partyList = await this.sendOracleDiscoveryRequest()
+    const isSent = await this.processOraclePartyListResponse(partyList)
     this.log.info(`getParties request is ${isSent ? '' : 'NOT '}forwarded to oracle lookup DFSP`)
     if (isSent) return
 
@@ -63,7 +63,7 @@ class GetPartiesService extends BasePartiesService {
 
     const schemeSource = await this.validateParticipant(source)
     if (schemeSource) {
-      log.debug('source participant is in scheme')
+      log.verbose('source participant is in scheme')
       return source
     }
 
@@ -91,9 +91,9 @@ class GetPartiesService extends BasePartiesService {
     const log = this.log.child({ method: 'forwardRequestToDestination' })
     let sendTo = destination
 
-    const schemeParticipant = await this.validateParticipant(destination)
-    if (!schemeParticipant) {
-      this.stepInProgress('lookupProxyDestination-2')
+    const localParticipant = await this.validateParticipant(destination)
+    if (!localParticipant) {
+      this.stepInProgress('lookupProxyDestination')
       const proxyId = this.state.proxyEnabled && await this.deps.proxyCache.lookupProxyByDfspId(destination)
 
       if (!proxyId) {
@@ -103,26 +103,28 @@ class GetPartiesService extends BasePartiesService {
         return
       }
       sendTo = proxyId
+    } else {
+      // OSS-4203: Oracle validation for external source + local destination
+      const isValid = await this.#validateLocalDestinationForExternalSource()
+      if (!isValid) {
+        log.warn('incorrect destination from external source', { destination })
+        await this.sendPartyResolutionErrorCallback()
+        return
+      }
     }
 
     await this.#forwardGetPartiesRequest({ sendTo, headers, params })
     log.info('discovery getPartiesByTypeAndID request was sent', { sendTo })
   }
 
-  async sendOracleDiscoveryRequest () {
-    this.stepInProgress('#sendOracleDiscoveryRequest')
-    const { headers, params, query } = this.inputs
-    return this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
-  }
-
-  async processOraclePartyListResponse (response) {
-    if (!Array.isArray(response?.data?.partyList) || response.data.partyList.length === 0) {
+  async processOraclePartyListResponse (rawPartyList) {
+    if (rawPartyList.length === 0) {
       this.log.verbose('oracle partyList is empty')
       return false
     }
 
     this.stepInProgress('processOraclePartyList')
-    const partyList = this.#filterOraclePartyList(response)
+    const partyList = this.#filterOraclePartyList(rawPartyList)
 
     let sentCount = 0
     await Promise.all(partyList.map(async party => {
@@ -166,28 +168,20 @@ class GetPartiesService extends BasePartiesService {
     return isLocal
   }
 
-  #filterOraclePartyList (response) {
+  #filterOraclePartyList (partyList) {
     // Oracle's API is a standard rest-style end-point Thus a GET /party on the oracle will return all participant-party records.
     // We must filter the results based on the callbackEndpointType to make sure we remove records containing partySubIdOrType when we are in FSPIOP_CALLBACK_URL_PARTIES_GET mode:
-    this.stepInProgress('filterOraclePartyList')
+    this.stepInProgress('#filterOraclePartyList')
     const { params } = this.inputs
-    const callbackEndpointType = this.deps.partiesUtils.getPartyCbType(params.SubId)
-    let filteredPartyList
 
-    switch (callbackEndpointType) {
-      case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_GET:
-        filteredPartyList = response.data.partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
-        break
-      case FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_GET:
-        filteredPartyList = response.data.partyList.filter(party => party.partySubIdOrType === params.SubId) // Filter records that match partySubIdOrType
-        break
-      default:
-        filteredPartyList = response // Fallback to providing the standard list
-    }
+    const filteredPartyList = !params?.SubId
+      ? partyList.filter(party => party.partySubIdOrType == null) // Filter records that DON'T contain a partySubIdOrType
+      : partyList.filter(party => party.partySubIdOrType === params.SubId) // Filter records that match partySubIdOrType
 
-    if (!Array.isArray(filteredPartyList) || !filteredPartyList.length) {
+    if (!filteredPartyList.length) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.emptyFilteredPartyList)
     }
+    this.log.verbose('#filterOraclePartyList is done:', { filteredPartyList })
 
     return filteredPartyList
   }
@@ -320,6 +314,25 @@ class GetPartiesService extends BasePartiesService {
       this.log.info('#setProxyGetPartiesTimeout is done', { isSet })
       return isSet
     }
+  }
+
+  async #validateLocalDestinationForExternalSource () {
+    // this method is called ONLY for local destination
+    const { state, log } = this
+
+    const needValidation = state.requester !== state.source
+    log.verbose('needOracleValidation: ', { needValidation })
+    if (!needValidation) return true
+
+    const partyList = await this.sendOracleDiscoveryRequest()
+    if (partyList.length === 0) {
+      log.warn('Oracle returned empty party list')
+      return false
+    }
+
+    const isValid = partyList.some(party => party.fspId === state.destination)
+    log.verbose('#validateLocalDestinationForExternalSource is done', { isValid })
+    return isValid
   }
 }
 

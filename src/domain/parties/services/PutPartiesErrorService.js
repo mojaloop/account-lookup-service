@@ -26,13 +26,13 @@
  ******/
 
 const BasePartiesService = require('./BasePartiesService')
-const { ERROR_MESSAGES } = require('../../../constants')
 
 class PutPartiesErrorService extends BasePartiesService {
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
-      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params) // or source?
+      const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params)
       const isInterSchemeDiscoveryCase = await this.deps.proxyCache.isPendingCallback(alsReq)
+      this.log.verbose(`isInterSchemeDiscoveryCase: ${isInterSchemeDiscoveryCase}`, this.state)
 
       if (isInterSchemeDiscoveryCase) {
         const isLast = await this.checkLastProxyCallback(alsReq)
@@ -41,13 +41,11 @@ class PutPartiesErrorService extends BasePartiesService {
           return
         }
       } else {
-        const schemeParticipant = await this.validateParticipant(this.state.destination)
-        if (!schemeParticipant) {
-          this.log.info('Need to cleanup oracle and forward SERVICE_CURRENTLY_UNAVAILABLE error')
+        const isExternal = await this.#isPartyFromExternalDfsp()
+        if (isExternal) {
+          this.log.info('need to cleanup oracle coz party is from external DFSP')
           await this.cleanupOracle()
-          await this.removeProxyGetPartiesTimeoutCache(alsReq)
-          await this.forwardServiceUnavailableErrorCallback()
-          return
+          await this.removeProxyGetPartiesTimeoutCache(alsReq) // think if we need this
         }
       }
     }
@@ -79,20 +77,18 @@ class PutPartiesErrorService extends BasePartiesService {
     return super.sendErrorCallback({ errorInfo, headers, params })
   }
 
-  async forwardServiceUnavailableErrorCallback () {
-    this.stepInProgress('forwardServiceUnavailableErrorCallback')
-    const { headers, params } = this.inputs
-    const error = super.createFspiopServiceUnavailableError(ERROR_MESSAGES.externalPartyError)
-    const callbackHeaders = BasePartiesService.createErrorCallbackHeaders(headers, params, this.state.destination)
-    const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(this.deps.config, error, callbackHeaders, params)
+  async #isPartyFromExternalDfsp () {
+    this.stepInProgress('#isPartyFromExternalDfsp')
+    const partyList = await super.sendOracleDiscoveryRequest()
+    if (!partyList.length) {
+      this.log.verbose('oracle returns empty partyList')
+      return false
+    }
+    // think, if we have several parties from oracle
+    const isExternal = !(await this.validateParticipant(partyList[0].fspId))
+    this.log.verbose('#isPartyFromExternalDfsp is done:', { isExternal, partyList })
 
-    await this.identifyDestinationForCallback()
-    await super.sendErrorCallback({
-      errorInfo,
-      headers: callbackHeaders,
-      params
-    })
-    this.log.verbose('#forwardServiceUnavailableErrorCallback is done', { callbackHeaders, errorInfo })
+    return isExternal
   }
 }
 

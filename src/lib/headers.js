@@ -41,6 +41,7 @@ const Config = require('../lib/config')
  */
 exports.createCallbackHeaders = (params) => {
   const callbackHeaders = { ...params.requestHeaders }
+  delete callbackHeaders[Enums.Http.Headers.FSPIOP.PROXY]
 
   callbackHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
   callbackHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = params.requestHeaders[Enums.Http.Headers.FSPIOP.SOURCE]

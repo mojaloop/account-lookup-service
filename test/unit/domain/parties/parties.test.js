@@ -947,6 +947,7 @@ describe('Parties Tests', () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const errorCode = MojaloopApiErrorCodes.PAYEE_IDENTIFIER_NOT_VALID.code
       const payload = fixtures.errorCallbackResponseDto({ errorCode })
+      const dataUri = encodePayload(JSON.stringify(payload), 'application/json')
       const destination = `dest-${Date.now()}`
       const proxy = `proxy-${Date.now()}`
       const headers = fixtures.partiesCallHeadersDto({ destination, proxy })
@@ -958,11 +959,13 @@ describe('Parties Tests', () => {
       oracleEndpointCached.getOracleEndpointByType = sandbox.stub().resolves([
         { value: 'http://oracle.endpoint' }
       ])
-      oracle.oracleRequest = sandbox.stub().resolves()
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: { partyList: [{ fspId: 'fspId' }] }
+      })
 
-      await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, '', null, null, proxyCache)
+      await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, null, null, proxyCache)
 
-      expect(oracle.oracleRequest.callCount).toBe(1)
+      expect(oracle.oracleRequest.callCount).toBe(2)
       expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
       expect(participant.sendRequest.callCount).toBe(0)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -970,7 +973,7 @@ describe('Parties Tests', () => {
       const [sentTo, _, data, cbHeaders] = participant.sendErrorToParticipant.lastCall.args
       expect(sentTo).toBe(proxy)
       expect(cbHeaders[Headers.FSPIOP.DESTINATION]).toBe(destination)
-      expect(data.errorInformation.errorCode).toBe('2003')
+      expect(JSON.parse(data).errorInformation.errorCode).toBe(errorCode)
     })
   })
 })
