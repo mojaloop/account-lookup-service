@@ -35,17 +35,17 @@ class PutPartiesErrorService extends BasePartiesService {
       this.log.verbose(`isInterSchemeDiscoveryCase: ${isInterSchemeDiscoveryCase}`, this.state)
 
       if (isInterSchemeDiscoveryCase) {
-        const isLast = await this.checkLastProxyCallback(alsReq)
-        if (!isLast) {
-          this.log.verbose('proxy error callback was processed (not last)')
+        const isLastAndNoSuccess = await this.checkLastProxyCallback(alsReq)
+        if (!isLastAndNoSuccess) {
+          this.log.verbose('proxy error callback was processed - not last OR has success, skip forwarding')
           return
         }
       } else {
-        const isExternal = await this.#isPartyFromExternalDfsp() // !!! DO not clear oracle for the error callback for the same inter-scheme discovery flow
+        const isExternal = await this.#isPartyFromExternalDfsp()
         if (isExternal) {
           this.log.info('need to cleanup oracle coz party is from external DFSP')
           await this.cleanupOracle()
-          await this.removeProxyGetPartiesTimeoutCache(alsReq) // todo: think if we need this
+          await this.removeProxyGetPartiesTimeoutCache(alsReq)
         }
       }
     }

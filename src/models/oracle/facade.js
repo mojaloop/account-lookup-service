@@ -126,7 +126,7 @@ const determineOracleEndpoint = async ({
     url = await _getOracleEndpointByType(partyIdType, partyIdentifier, assertPendingAcquire)
   }
 
-  logger.verbose(`Oracle endpoint: ${url}`, { currency, params, partySubIdOrType, url })
+  logger.debug(`Oracle endpoint: ${url}`, { currency, params, partySubIdOrType, url })
   return url
 }
 

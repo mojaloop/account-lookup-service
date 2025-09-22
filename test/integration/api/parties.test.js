@@ -43,10 +43,6 @@ describe('Parties Endpoints Tests -->', () => {
     await proxyCache.connect()
   })
 
-  // beforeEach(async () => {
-  //   await proxyCache.redisClient.flushdb()
-  // })
-
   afterAll(async () => {
     await proxyCache.disconnect()
   })
