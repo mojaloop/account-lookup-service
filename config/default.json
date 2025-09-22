@@ -52,14 +52,14 @@
     "getDecoratedValue": true
   },
   "CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG": {
-    "expiresIn": 61000,
+    "expiresIn": 3000,
     "generateTimeout": 30000,
     "getDecoratedValue": true
   },
   "GENERAL_CACHE_CONFIG": {
     "CACHE_ENABLED": false,
     "MAX_BYTE_SIZE": 10000000,
-    "EXPIRES_IN_MS": 61000
+    "EXPIRES_IN_MS": 3000
   },
   "PROXY_CACHE": {
     "enabled": true,
