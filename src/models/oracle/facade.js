@@ -141,6 +141,7 @@ const sendOracleGetRequest = async ({
   const log = logger.child({ component: 'sendOracleGetRequest', params })
 
   try {
+    let hit = false // cache hit
     let cachedOracleFspResponse
     cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
 
@@ -161,12 +162,12 @@ const sendOracleGetRequest = async ({
         cache.createKey(`oracleSendRequest_${url}`),
         cachedOracleFspResponse
       )
-      histTimerEnd({ success: true, hit: false })
     } else {
+      hit = true
       cachedOracleFspResponse = cachedOracleFspResponse.item
-      histTimerEnd({ success: true, hit: true })
-      logger.debug('[oracleRequest]: cache hit for fsp for partyId lookup')
     }
+    logger.verbose(`[oracleRequest]: cache hit for partyId lookup: ${hit}`, { url, source, destination })
+    histTimerEnd({ success: true, hit })
 
     return cachedOracleFspResponse
   } catch (err) {
