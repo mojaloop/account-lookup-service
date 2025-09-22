@@ -31,7 +31,7 @@ class PutPartiesErrorService extends BasePartiesService {
   async handleRequest () {
     if (this.state.proxyEnabled && this.state.proxy) {
       const alsReq = this.deps.partiesUtils.alsRequestDto(this.state.destination, this.inputs.params)
-      const isInterSchemeDiscoveryCase = await this.deps.proxyCache.isPendingCallback(alsReq)
+      const isInterSchemeDiscoveryCase = await this.deps.proxyCache.isPendingCallback(alsReq, this.state.proxy)
       this.log.verbose(`isInterSchemeDiscoveryCase: ${isInterSchemeDiscoveryCase}`, this.state)
 
       if (isInterSchemeDiscoveryCase) {
@@ -41,11 +41,11 @@ class PutPartiesErrorService extends BasePartiesService {
           return
         }
       } else {
-        const isExternal = await this.#isPartyFromExternalDfsp()
+        const isExternal = await this.#isPartyFromExternalDfsp() // !!! DO not clear oracle for the error callback for the same inter-scheme discovery flow
         if (isExternal) {
           this.log.info('need to cleanup oracle coz party is from external DFSP')
           await this.cleanupOracle()
-          await this.removeProxyGetPartiesTimeoutCache(alsReq) // think if we need this
+          await this.removeProxyGetPartiesTimeoutCache(alsReq) // todo: think if we need this
         }
       }
     }
@@ -66,9 +66,9 @@ class PutPartiesErrorService extends BasePartiesService {
   async checkLastProxyCallback (alsReq) {
     this.stepInProgress('checkLastProxyCallback')
     const { proxy } = this.state
-    const isLast = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
-    this.log.info(`got ${isLast ? '' : 'NOT '}last inter-scheme error callback from a proxy`, { proxy, alsReq, isLast })
-    return isLast
+    const isLastWithoutSuccess = await this.deps.proxyCache.receivedErrorResponse(alsReq, proxy)
+    this.log.info(`got ${isLastWithoutSuccess ? '' : 'NOT '}last inter-scheme error callback from a proxy`, { proxy, alsReq, isLastWithoutSuccess })
+    return isLastWithoutSuccess
   }
 
   async sendErrorCallbackToParticipant () {

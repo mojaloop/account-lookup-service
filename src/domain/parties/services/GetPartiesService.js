@@ -26,10 +26,10 @@
  ******/
 
 const { ERROR_MESSAGES } = require('../../../constants')
+const { PROXY_CACHE_EXPIRES_IN_SEC } = require('../../../lib/config')
 const BasePartiesService = require('./BasePartiesService')
 
 const { RestMethods } = BasePartiesService.enums()
-const proxyCacheTtlSec = 40 // todo: make configurable
 
 class GetPartiesService extends BasePartiesService {
   async handleRequest () {
@@ -294,11 +294,11 @@ class GetPartiesService extends BasePartiesService {
     this.stepInProgress('#setProxyListToCache')
     const alsReq = this.deps.partiesUtils.alsRequestDto(source, params)
 
-    const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, proxyCacheTtlSec)
+    const isCached = await this.deps.proxyCache.setSendToProxiesList(alsReq, proxyNames, PROXY_CACHE_EXPIRES_IN_SEC)
     if (!isCached) {
       throw super.createFspiopIdNotFoundError(ERROR_MESSAGES.failedToCacheSendToProxiesList)
     }
-    this.log.verbose('#setProxyListToCache is done: ', { alsReq, proxyNames, proxyCacheTtlSec })
+    this.log.verbose('#setProxyListToCache is done: ', { alsReq, proxyNames, PROXY_CACHE_EXPIRES_IN_SEC })
     return alsReq
   }
 

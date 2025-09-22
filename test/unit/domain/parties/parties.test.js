@@ -534,7 +534,7 @@ describe('Parties Tests', () => {
 
     it('should perform sendToProxies alsRequest, if no destination-header and no data in oracle response', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
-      const proxyNames = ['proxyA', 'proxyB']
+      const proxyNames = [`proxyA-${Date.now()}`, `proxyB-${Date.now()}`]
       Util.proxies.getAllProxiesNames = sandbox.stub().resolves(proxyNames)
       oracle.oracleRequest = sandbox.stub().resolves(null)
       participant.validateParticipant = sandbox.stub().resolves({})
@@ -546,12 +546,12 @@ describe('Parties Tests', () => {
       const headers = fixtures.partiesCallHeadersDto({ source, destination })
       const alsReq = partiesUtils.alsRequestDto(source, Helper.getByTypeIdRequest.params)
 
-      let isExists = await proxyCache.receivedSuccessResponse(alsReq) // no in cache
+      let isExists = await proxyCache.receivedSuccessResponse(alsReq, proxyNames[0]) // no in cache
       expect(isExists).toBe(false)
 
       await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
 
-      isExists = await proxyCache.receivedSuccessResponse(alsReq)
+      isExists = await proxyCache.receivedSuccessResponse(alsReq, proxyNames[0])
       expect(isExists).toBe(true)
       expect(participant.sendErrorToParticipant.callCount).toBe(0)
       expect(participant.sendRequest.callCount).toBe(proxyNames.length)
@@ -682,8 +682,8 @@ describe('Parties Tests', () => {
     it('should update oracle with partyDetails received from proxy, if previous alsReq is cached', async () => {
       Config.PROXY_CACHE_CONFIG.enabled = true
       const source = `source-${Date.now()}`
-      const destination = `payer-fsp-${Date.now()}`
-      const proxy = `proxy-${Date.now()}`
+      const destination = `payeeDfsp-${Date.now()}`
+      const proxy = `proxyAB-${Date.now()}`
 
       participant.validateParticipant = sandbox.stub()
         .onFirstCall().resolves(null) // payee
