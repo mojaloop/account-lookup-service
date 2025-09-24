@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.14.0](https://github.com/mojaloop/account-lookup-service/compare/v17.13.0...v17.14.0) (2025-09-24)
+
+
+### Features
+
+* **csi-1817:** improve inter-scheme discovery flow ([#578](https://github.com/mojaloop/account-lookup-service/issues/578)) ([2677440](https://github.com/mojaloop/account-lookup-service/commit/2677440028c6654fd030d88183313a41463dd5f7))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([afd493f](https://github.com/mojaloop/account-lookup-service/commit/afd493f8c8d9d64ca87321ed3f3876008a13263c))
+
 ## [17.13.0](https://github.com/mojaloop/account-lookup-service/compare/v17.12.10...v17.13.0) (2025-09-16)
 
 
