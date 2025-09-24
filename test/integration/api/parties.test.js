@@ -30,7 +30,7 @@ const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
 const config = require('../../../src/lib/config')
 const fixtures = require('../../fixtures')
 const { AlsApiClient, ProxyApiClient } = require('../../util')
-const { PAYER_DFSP, PARTY_ID_TYPE } = require('../constants')
+const { PAYER_DFSP, PARTY_ID_TYPE, PROXY_NAME } = require('../constants')
 
 const alsClient = new AlsApiClient()
 const proxyClient = new ProxyApiClient() // mock ISPA
@@ -51,7 +51,7 @@ describe('Parties Endpoints Tests -->', () => {
     test('should do GET /parties/{Type}/{ID} call to proxy', async () => {
       const partyId = 'PT123456789'
       const alsReq = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyId)
-      let isExists = await proxyCache.receivedSuccessResponse(alsReq)
+      let isExists = await proxyCache.receivedSuccessResponse(alsReq, PROXY_NAME)
       expect(isExists).toBe(false)
 
       let history = await proxyClient.deleteHistory()
@@ -72,7 +72,7 @@ describe('Parties Endpoints Tests -->', () => {
       expect(history[0].path).toBe(`/oracle/participants/${PARTY_ID_TYPE}/${partyId}`)
       expect(history[1].path).toBe(`/parties/${PARTY_ID_TYPE}/${partyId}`)
 
-      isExists = await proxyCache.receivedSuccessResponse(alsReq)
+      isExists = await proxyCache.receivedSuccessResponse(alsReq, PROXY_NAME)
       expect(isExists).toBe(true)
     })
 

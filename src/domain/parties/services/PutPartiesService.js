@@ -67,10 +67,10 @@ class PutPartiesService extends BasePartiesService {
     if (this.state.proxyEnabled) {
       this.stepInProgress('checkProxySuccessResponse')
       const { headers, params } = this.inputs
-      const { destination, source } = this.state
+      const { destination, source, proxy } = this.state
       const alsReq = this.deps.partiesUtils.alsRequestDto(destination, params)
 
-      const isExists = await this.deps.proxyCache.receivedSuccessResponse(alsReq)
+      const isExists = await this.deps.proxyCache.receivedSuccessResponse(alsReq, proxy)
       if (!isExists) {
         this.log.verbose('NOT inter-scheme receivedSuccessResponse case')
         await this.removeProxyGetPartiesTimeoutCache(alsReq)

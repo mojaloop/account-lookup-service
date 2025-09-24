@@ -58,6 +58,8 @@ class TimeoutPartiesService extends PutPartiesErrorService {
 
   async prepareErrorInformation () {
     const { headers, params } = this.inputs
+    headers.date = new Date().toUTCString()
+
     const error = TimeoutPartiesService.createFSPIOPExpiredError()
     const errorInfo = await this.deps.partiesUtils.makePutPartiesErrorPayload(
       this.deps.config, error, headers, params

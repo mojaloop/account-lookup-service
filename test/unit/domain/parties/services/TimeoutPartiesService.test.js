@@ -50,7 +50,9 @@ describe('TimeoutPartiesService Tests -->', () => {
 
     await service.handleExpiredKey()
     expect(participantMock.sendErrorToParticipant).toHaveBeenCalledTimes(1)
-    expect(participantMock.sendErrorToParticipant.mock.lastCall[0]).toBe(proxy)
+    const [sendTo, , , cbHeaders] = participantMock.sendErrorToParticipant.mock.lastCall
+    expect(sendTo).toBe(proxy)
+    expect(cbHeaders.date).toBeDefined()
   })
 
   test('should send error callback in ISO20022 format', async () => {
