@@ -251,7 +251,7 @@ class GetPartiesService extends BasePartiesService {
     const sentResult = await this.deps.participant.sendRequest(
       headers, sendTo, callbackEndpointType, RestMethods.GET, undefined, options, this.deps.childSpan
     )
-    await this.#setProxyGetPartiesTimeout(sendTo)
+    // await this.#setProxyGetPartiesTimeout(sendTo)
     this.log.debug('#forwardGetPartiesRequest is done:', { sendTo, sentResult })
     return sentResult
   }

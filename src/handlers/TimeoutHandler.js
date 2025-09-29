@@ -51,7 +51,7 @@ const timeout = async (options) => {
     isAcquired = await distLock?.acquireLock()
     if (!isAcquired) return
     await TimeoutService.timeoutInterschemePartiesLookups(options)
-    await TimeoutService.timeoutProxyGetPartiesLookups(options)
+    // await TimeoutService.timeoutProxyGetPartiesLookups(options)
     logger.verbose('ALS timeout handler is done')
   } catch (err) {
     logger.error('error in timeout: ', err)

@@ -79,7 +79,7 @@
     "MONITORING_PORT": 4003,
     "TIMEOUT": {
       "DISABLED": false,
-      "TIMEXP": "*/15 * * * * *",
+      "TIMEXP": "*/30 * * * * *",
       "TIMEZONE": "UTC",
       "BATCH_SIZE": 100,
       "DIST_LOCK": {
