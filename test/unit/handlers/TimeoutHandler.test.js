@@ -111,7 +111,7 @@ describe('TimeoutHandler', () => {
       await TimeoutHandler.timeout(mockOptions)
       expect(mockDistLock.acquire).toHaveBeenCalledTimes(1)
       expect(mockDistLock.release).toHaveBeenCalledTimes(1)
-      //expect(TimeoutService.timeoutProxyGetPartiesLookups).toHaveBeenCalled()
+      // expect(TimeoutService.timeoutProxyGetPartiesLookups).toHaveBeenCalled()
     })
 
     it('should not run if distributed lock cannot be acquired', async () => {
