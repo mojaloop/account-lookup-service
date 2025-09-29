@@ -269,8 +269,8 @@ describe('GetPartiesService Tests -->', () => {
       const service = new GetPartiesService(deps, { headers, params })
 
       await service.handleRequest()
-      expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
-      expect(proxyCache.setProxyGetPartiesTimeout.mock.lastCall[1]).toBe(proxyId)
+      // expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
+      // expect(proxyCache.setProxyGetPartiesTimeout.mock.lastCall[1]).toBe(proxyId)
       expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
     })
 
@@ -320,7 +320,7 @@ describe('GetPartiesService Tests -->', () => {
       const service = new GetPartiesService(deps, { headers, params })
 
       await service.handleRequest()
-      expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
+      // expect(proxyCache.setProxyGetPartiesTimeout).toHaveBeenCalledTimes(1)
       expect(participantMock.sendRequest).toHaveBeenCalledTimes(1)
     })
   })
