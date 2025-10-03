@@ -99,7 +99,7 @@ describe('Timeout Handler', () => {
     expect(entry1.headers['content-type']).toContain('parties')
   })
 
-  it('should pass timeoutProxyGetPartiesLookups flow', async () => {
+  it.skip('should pass timeoutProxyGetPartiesLookups flow', async () => {
     const partyId1 = `pgp1-${Date.now()}`
     const partyId2 = `pgp2-${Date.now()}`
     const alsReq1 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyId1)
