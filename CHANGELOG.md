@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.14.1](https://github.com/mojaloop/account-lookup-service/compare/v17.14.0...v17.14.1) (2025-10-03)
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([debc4d4](https://github.com/mojaloop/account-lookup-service/commit/debc4d405b294d840bff29141f14402cfe7406c2))
+* test timeout handler changes ([#579](https://github.com/mojaloop/account-lookup-service/issues/579)) ([a5f4a88](https://github.com/mojaloop/account-lookup-service/commit/a5f4a882f53590f19118a31bb819c8b5fce90c5d))
+
 ## [17.14.0](https://github.com/mojaloop/account-lookup-service/compare/v17.13.0...v17.14.0) (2025-09-24)
 
 
