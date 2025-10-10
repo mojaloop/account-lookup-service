@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.14.3](https://github.com/mojaloop/account-lookup-service/compare/v17.14.2...v17.14.3) (2025-10-10)
+
+
+### Bug Fixes
+
+* **csi-1259:** returned only isActive proxies ([#581](https://github.com/mojaloop/account-lookup-service/issues/581)) ([0361a18](https://github.com/mojaloop/account-lookup-service/commit/0361a18e681ec1b8f0a4617b7702ed88492a6bd1))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([789c2ad](https://github.com/mojaloop/account-lookup-service/commit/789c2ad37bab5280b1a2afea402ab4426ceebd7b))
+
 ### [17.14.2](https://github.com/mojaloop/account-lookup-service/compare/v17.14.1...v17.14.2) (2025-10-06)
 
 
