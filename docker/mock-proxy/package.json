@@ -13,9 +13,9 @@
     "dep:update": "npx ncu -u"
   },
   "dependencies": {
-    "@mojaloop/central-services-shared": "18.30.6",
+    "@mojaloop/central-services-shared": "18.34.2",
     "@types/node": "^24.1.0",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
     "body-parser": "^2.2.0",
     "express": "4.21.2",
     "ts-node": "^10.9.2",
