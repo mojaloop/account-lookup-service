@@ -146,6 +146,7 @@ class GetPartiesService extends BasePartiesService {
 
     const proxyNames = await this.#getFilteredProxyList(proxy)
     if (!proxyNames.length) {
+      log.info('no active proxies found, sending error callback')
       return this.#sendPartyNotFoundErrorCallback(headers)
     }
 
@@ -285,7 +286,7 @@ class GetPartiesService extends BasePartiesService {
       return []
     }
 
-    const proxyNames = await this.deps.proxies.getAllProxiesNames(this.deps.config.SWITCH_ENDPOINT)
+    const proxyNames = await this.deps.proxies.getAllProxiesNames(this.deps.config.SWITCH_ENDPOINT, true)
     this.log.debug('getAllProxiesNames is done', { proxyNames })
     return proxyNames.filter(name => name !== proxy)
   }
