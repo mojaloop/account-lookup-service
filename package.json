@@ -119,6 +119,7 @@
     "rc": "1.2.8"
   },
   "overrides": {
+    "brace-expansion": "2.0.2",
     "form-data": "4.0.4",
     "on-headers": "1.1.0",
     "postcss": {
@@ -175,7 +176,7 @@
     "jest-junit": "16.0.0",
     "jsdoc": "4.0.5",
     "nodemon": "3.1.10",
-    "npm-check-updates": "19.0.0",
+    "npm-check-updates": "19.1.0",
     "nyc": "17.1.0",
     "pre-commit": "1.2.2",
     "proxyquire": "2.1.3",
