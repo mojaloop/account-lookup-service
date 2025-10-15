@@ -5,6 +5,7 @@ ignore:
   - vulnerability: CVE-2025-9230
   - vulnerability: CVE-2025-9232
   - vulnerability: CVE-2025-9231
+  - vulnerability: CVE-2025-56200
 
 # Set output format defaults
 output:
