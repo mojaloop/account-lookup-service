@@ -162,7 +162,8 @@
     },
     "jsonwebtoken": "9.0.0",
     "jsonpointer": "5.0.0",
-    "validator": "13.7.0"
+    "validator": "13.7.0",
+    "yaml": "2.7.0"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",
