@@ -5,6 +5,7 @@
   "moderate": true,
   // NOTE: Please add as much information as possible to any items added to the allowList
   "allowlist": [
-    "GHSA-4hjh-wcwx-xvwj" // todo: update axios -  https://github.com/advisories/GHSA-4hjh-wcwx-xvwj
+    "GHSA-9965-vmph-33xx", // CVE-2025-56200: validator.js URL validation bypass - no fix without breaking changes
+    "GHSA-52f5-9888-hmc6" // tmp vulnerability - would require breaking changes in ioredis-mock
   ]
 }
