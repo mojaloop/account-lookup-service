@@ -21,7 +21,7 @@
   },
   "bugs": "http://github.com/mojaloop/account-lookup-service/issues",
   "engines": {
-    "node": ">=18.x"
+    "node": "22.x"
   },
   "config": {
     "knex": "--knexfile ./config/knexfile.js",
