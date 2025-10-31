@@ -124,6 +124,7 @@
     "postcss": {
       "nanoid": "^3.3.8"
     },
+    "ioredis": "5.6.1",
     "@mojaloop/central-services-health": {
       "@mojaloop/central-services-logger": ">=11.4.0"
     },
