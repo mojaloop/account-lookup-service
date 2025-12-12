@@ -49,7 +49,7 @@ module.exports = {
       ['success']
     ).startTimer()
     const { headers, payload, method, path, params, dataUri, span } = request
-    const { cache, proxyCache } = request.server.app
+    const { proxyCache } = request.server.app
 
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
@@ -71,7 +71,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    parties.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, span, cache, proxyCache).catch(err => {
+    parties.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, span, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

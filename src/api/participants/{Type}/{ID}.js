@@ -72,7 +72,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
 
     const metadata = `${method} ${path}`
-    participants.getParticipantsByTypeAndID(headers, params, method, request.query, span, request.server.app.cache).catch(err => {
+    participants.getParticipantsByTypeAndID(headers, params, method, request.query, span).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -115,7 +115,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    participants.putParticipantsByTypeAndID(headers, params, method, payload, request.server.app.cache).catch(err => {
+    participants.putParticipantsByTypeAndID(headers, params, method, payload).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -156,7 +156,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
 
     const metadata = `${method} ${path}`
-    participants.postParticipants(headers, method, params, payload, span, request.server.app.cache).catch(err => {
+    participants.postParticipants(headers, method, params, payload, span).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -198,7 +198,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
 
     const metadata = `${method} ${path}`
-    participants.deleteParticipants(headers, params, method, request.query, request.server.app.cache).catch(err => {
+    participants.deleteParticipants(headers, params, method, request.query).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

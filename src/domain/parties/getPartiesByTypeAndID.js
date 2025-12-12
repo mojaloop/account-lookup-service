@@ -39,10 +39,9 @@ const { GetPartiesService } = require('./services')
  * @param {string} method - http request method
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
- * @param {object} cache
  * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
-const getPartiesByTypeAndID = async (headers, params, method, query, span, cache, proxyCache = undefined) => {
+const getPartiesByTypeAndID = async (headers, params, method, query, span, proxyCache = undefined) => {
   const component = getPartiesByTypeAndID.name
   const histTimerEnd = Metrics.getHistogram(
     component,
@@ -50,7 +49,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, cache
     ['success']
   ).startTimer()
   const childSpan = span ? span.getChild(component) : undefined
-  const deps = createDeps({ cache, proxyCache, childSpan })
+  const deps = createDeps({ proxyCache, childSpan })
   const service = new GetPartiesService(deps, { headers, params, query })
   let fspiopError
 

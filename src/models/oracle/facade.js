@@ -37,6 +37,7 @@ const { logger } = require('../../lib')
 const { countFspiopError } = require('../../lib/util')
 const { hubNameRegex } = require('../../lib/util').hubNameConfig
 const oracleEndpointCached = require('../oracle/oracleEndpointCached')
+const { oracleGetCached } = require('./oracleGetCached')
 
 const { Headers, RestMethods, ReturnCodes } = Enums.Http
 
@@ -61,7 +62,7 @@ const sendHttpRequest = ({ method, ...restArgs }) => request.sendRequest({
  *
  * @returns {object} - response from the oracle
  */
-const oracleRequest = async (headers, method, params = {}, query = {}, payload = undefined, cache, assertPendingAcquire) => {
+const oracleRequest = async (headers, method, params = {}, query = {}, payload = undefined, assertPendingAcquire) => {
   const operation = oracleRequest.name
   const log = logger.child({ component: operation, params })
   let step = 'start'
@@ -80,7 +81,7 @@ const oracleRequest = async (headers, method, params = {}, query = {}, payload =
     if (method.toUpperCase() === RestMethods.GET) {
       step = 'sendOracleGetRequest'
       return await sendOracleGetRequest({
-        url, source, destination, headers, method, params, cache
+        url, source, destination, headers, method, params, cache: oracleGetCached
       })
     }
 
@@ -136,43 +137,26 @@ const sendOracleGetRequest = async ({
   const histTimerEnd = Metrics.getHistogram(
     'egress_oracleRequest',
     'Egress: oracleRequest',
-    ['success', 'hit']
+    ['success']
   ).startTimer()
   const log = logger.child({ component: 'sendOracleGetRequest', params })
 
   try {
-    let hit = false // cache hit
-    let cachedOracleFspResponse
-    cachedOracleFspResponse = cache && cache.get(cache.createKey(`oracleSendRequest_${url}`))
+    const response = cache
+      ? await cache(url)
+      : (await sendHttpRequest({
+          url,
+          headers,
+          source,
+          destination,
+          method
+        })).data
 
-    if (!cachedOracleFspResponse) {
-      cachedOracleFspResponse = await sendHttpRequest({
-        url,
-        headers,
-        source,
-        destination,
-        method
-      })
-      // Trying to cache the whole response object will fail because it contains circular references
-      // so we'll just cache the data property of the response.
-      cachedOracleFspResponse = {
-        data: cachedOracleFspResponse.data
-      }
-      cache && cache.set(
-        cache.createKey(`oracleSendRequest_${url}`),
-        cachedOracleFspResponse
-      )
-    } else {
-      hit = true
-      cachedOracleFspResponse = cachedOracleFspResponse.item
-    }
-    logger.verbose(`[oracleRequest]: cache hit for partyId lookup: ${hit}`, { url, source, destination })
-    histTimerEnd({ success: true, hit })
-
-    return cachedOracleFspResponse
+    histTimerEnd({ success: true })
+    return response
   } catch (err) {
     log.warn('error in sendOracleGetRequest: ', err)
-    histTimerEnd({ success: false, hit: false })
+    histTimerEnd({ success: false })
 
     // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
     // initiator of the request.

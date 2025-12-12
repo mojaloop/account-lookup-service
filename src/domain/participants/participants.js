@@ -99,7 +99,7 @@ const validatePathParameters = (params, log = logger) => {
  * @param {object} query - uri query parameters of the http request
  * @param {object} span
  * */
-const getParticipantsByTypeAndID = async (headers, params, method, query, span, cache) => {
+const getParticipantsByTypeAndID = async (headers, params, method, query, span) => {
   const childSpan = span ? span.getChild('getParticipantsByTypeAndID') : undefined
   const histTimerEnd = Metrics.getHistogram(
     'getParticipantsByTypeAndID',
@@ -130,7 +130,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND, errMessage)
     }
     step = 'oracleRequest-2'
-    const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache, true)
+    const response = await oracle.oracleRequest(headers, method, params, query, undefined, true)
     if (response?.data && Array.isArray(response.data.partyList) && response.data.partyList.length > 0) {
       const options = {
         partyIdType: type,
@@ -215,7 +215,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span, 
  * @param {object} payload - payload of the request being sent out
  *
  */
-const putParticipantsByTypeAndID = async (headers, params, method, payload, cache) => {
+const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
   const histTimerEnd = Metrics.getHistogram(
     'putParticipantsByTypeAndID',
     'Put participants by type and ID',
@@ -236,7 +236,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload, cach
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         step = 'oracleRequest-2'
-        const response = await oracle.oracleRequest(headers, method, params, undefined, payload, cache)
+        const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
         if (response && response.data) {
           const responsePayload = {
             partyList: [
@@ -386,7 +386,7 @@ const putParticipantsErrorByTypeAndID = async (headers, params, payload, dataUri
  * @param {object} payload - payload of the request being sent out
  * @param {object} span
  */
-const postParticipants = async (headers, method, params, payload, span, cache) => {
+const postParticipants = async (headers, method, params, payload, span) => {
   const histTimerEnd = Metrics.getHistogram(
     'postParticipants',
     'Post participants',
@@ -410,7 +410,7 @@ const postParticipants = async (headers, method, params, payload, span, cache) =
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
       if (requesterParticipantModel) {
         step = 'oracleRequest-2'
-        const response = await oracle.oracleRequest(headers, method, params, undefined, payload, cache)
+        const response = await oracle.oracleRequest(headers, method, params, undefined, payload)
         if (response && response.status === Enums.Http.ReturnCodes.CREATED.CODE) {
           const responsePayload = {
             partyList: [
@@ -618,7 +618,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
  * @param {object} query - uri query parameters of the http request
  *
  */
-const deleteParticipants = async (headers, params, method, query, cache) => {
+const deleteParticipants = async (headers, params, method, query) => {
   const histTimerEnd = Metrics.getHistogram(
     'deleteParticipants',
     'Delete participants',
@@ -640,7 +640,7 @@ const deleteParticipants = async (headers, params, method, query, cache) => {
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
         step = 'oracleRequest-2'
-        const response = await oracle.oracleRequest(headers, method, params, query, undefined, cache)
+        const response = await oracle.oracleRequest(headers, method, params, query, undefined)
         if (response) {
           const responsePayload = {
             fspId: headers[Enums.Http.Headers.FSPIOP.SOURCE]
