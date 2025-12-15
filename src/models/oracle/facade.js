@@ -143,7 +143,13 @@ const sendOracleGetRequest = async ({
 
   try {
     const response = cache
-      ? await cache(url)
+      ? await cache({
+        url,
+        headers,
+        source,
+        destination,
+        method
+      })
       : (await sendHttpRequest({
           url,
           headers,

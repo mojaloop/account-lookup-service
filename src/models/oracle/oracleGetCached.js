@@ -16,14 +16,11 @@ const sendHttpRequest = ({ method, ...restArgs }) => request.sendRequest({
 
 exports.oracleGetCached = params => cacheClient.get({ id: params.url, ...params })
 
-const generateFunc = async ({ url, headers, source, destination, method }) => (await sendHttpRequest({
-  url,
-  headers,
-  source,
-  destination,
-  method
-})).data
+const generate = async ({ id, ...params }) => (await sendHttpRequest(params)).data
 
 exports.initialize = async () => {
-  cacheClient = Cache.registerCacheClient('oracleGet', generateFunc)
+  cacheClient = Cache.registerCacheClient({
+    id: 'oracleGet',
+    generate
+  })
 }

@@ -34,6 +34,7 @@ const errorHandling = require('@mojaloop/central-services-error-handling')
 
 const OracleFacade = require('#src/models/oracle/facade')
 const oracleEndpointCached = require('#src/models/oracle/oracleEndpointCached')
+const oracleGetCached = require('#src/models/oracle/oracleGetCached')
 const fixtures = require('#test/fixtures/index')
 
 const { createFSPIOPError } = errorHandling.Factory
@@ -49,6 +50,11 @@ describe('Oracle Facade', () => {
 
   afterEach(() => {
     sandbox.restore()
+  })
+
+  beforeAll(async () => {
+    await oracleEndpointCached.initialize()
+    await oracleGetCached.initialize()
   })
 
   describe('oracleRequest', () => {

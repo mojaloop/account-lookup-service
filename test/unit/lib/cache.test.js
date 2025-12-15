@@ -8,18 +8,17 @@ describe('Config tests', () => {
   let sandbox
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
-    Cache.registerCacheClient({
-      id: 'testCacheClient',
-      preloadCache: async () => sandbox.stub()
-    })
   })
 
   afterEach(() => {
+    Cache.dropClients()
+    Cache.destroyCache()
     sandbox.restore()
   })
 
   describe('Cache should', () => {
     it('call constructor of CatboxMemory', async () => {
+      Config.GENERAL_CACHE_CONFIG.CACHE_ENABLED = true
       sandbox.stub(Cache.CatboxMemory.Engine)
       const catboxMemoryConstructorSpy = sandbox.spy(Cache.CatboxMemory, 'Engine')
       await Cache.initCache()
@@ -44,6 +43,7 @@ describe('Config tests', () => {
       let preloadCacheCalledCnt = 0
       Cache.registerCacheClient({
         id: 'testCacheClient',
+        generate: async () => {},
         preloadCache: async () => {
           preloadCacheCalledCnt++
         }
@@ -64,7 +64,7 @@ describe('Config tests', () => {
 
       const cacheClient = Cache.registerCacheClient({
         id: 'testCacheClient',
-        preloadCache: async () => {}
+        generate: async () => {}
       })
 
       // Test get()
@@ -84,7 +84,7 @@ describe('Config tests', () => {
 
       const cacheClient = Cache.registerCacheClient({
         id: 'testCacheClient',
-        preloadCache: async () => {}
+        generate: async () => {}
       })
 
       // Test get()
@@ -104,9 +104,9 @@ describe('Config tests', () => {
       const setSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'set')
       const cacheClient = Cache.registerCacheClient({
         id: 'testCacheClient',
-        preloadCache: async () => {}
+        generate: async () => valueToCache
       })
-      const testKey = cacheClient.createKey('testKeyName')
+      const testKey = 'testKeyName'
       const valueToCache = { a: 'some random value', b: 10 }
 
       // Init cache
@@ -116,13 +116,20 @@ describe('Config tests', () => {
       getSpy.resetHistory()
 
       // Test set()
-      await cacheClient.set(testKey, valueToCache)
+      await cacheClient.get(testKey)
       expect(setSpy.called).toBeTruthy()
 
       // Verify the value with get()
       const valueFromCache = await cacheClient.get(testKey)
       expect(getSpy.called).toBeTruthy()
-      expect(valueFromCache.item).toEqual(valueToCache)
+      expect(valueFromCache).toEqual(valueToCache)
+
+      // Test cache hit
+      getSpy.resetHistory()
+      setSpy.resetHistory()
+      await cacheClient.get(testKey)
+      expect(setSpy.called).toBeFalsy()
+      expect(getSpy.called).toBeTruthy()
 
       // end
       await Cache.destroyCache()
@@ -135,9 +142,9 @@ describe('Config tests', () => {
       const dropSpy = sandbox.spy(Cache.CatboxMemory.Engine.prototype, 'drop')
       const cacheClient = Cache.registerCacheClient({
         id: 'testCacheClient',
-        preloadCache: async () => {}
+        generate: async () => valueToCache
       })
-      const testKey = cacheClient.createKey('testKeyName')
+      const testKey = 'testKeyName'
       const valueToCache = { a: 'some random value', b: 10 }
 
       // Init cache
@@ -148,22 +155,22 @@ describe('Config tests', () => {
       getSpy.resetHistory()
 
       // Test set()
-      await cacheClient.set(testKey, valueToCache)
+      await cacheClient.get(testKey)
       expect(setSpy.called).toBeTruthy()
 
       // Verify the value with get()
       const valueFromCache = await cacheClient.get(testKey)
       expect(getSpy.called).toBeTruthy()
-      expect(valueFromCache.item).toEqual(valueToCache)
+      expect(valueFromCache).toEqual(valueToCache)
 
       // Test drop()
       await cacheClient.drop(testKey)
       expect(setSpy.called).toBeTruthy()
 
       // Verify the value doesn't exist in cache with get()
-      const valueFromCacheAfterDrop = await cacheClient.get(testKey)
+      await cacheClient.get(testKey)
       expect(getSpy.called).toBeTruthy()
-      expect(valueFromCacheAfterDrop).toBeNull()
+      expect(setSpy.called).toBeTruthy()
 
       // end
       await Cache.destroyCache()

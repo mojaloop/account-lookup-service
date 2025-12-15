@@ -37,7 +37,7 @@ const extensions = [{
 
 const getOracleEndpointCached = async (params) => cacheClient.get({ ...params, id: Object.values(params).join('__') })
 
-const generateFunc = async function (params) {
+const generate = async function (params) {
   const partyIdType = params.partyIdType || null
   const currency = params.currency || null
   if (params.assertPendingAcquire) OracleEndpointUncached.assertPendingAcquires()
@@ -58,7 +58,10 @@ const generateFunc = async function (params) {
 */
 exports.initialize = async () => {
   /* Register as cache client */
-  cacheClient = Cache.registerCacheClient('oracleEndpoints', generateFunc)
+  cacheClient = Cache.registerCacheClient({
+    id: 'oracleEndpoints',
+    generate
+  })
 }
 
 exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency, assertPendingAcquire) => {
