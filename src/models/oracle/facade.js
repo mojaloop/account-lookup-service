@@ -159,7 +159,7 @@ const sendOracleGetRequest = async ({
         })).data
 
     histTimerEnd({ success: true })
-    return response
+    return { data: response }
   } catch (err) {
     log.warn('error in sendOracleGetRequest: ', err)
     histTimerEnd({ success: false })
