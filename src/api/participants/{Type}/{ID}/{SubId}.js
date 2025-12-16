@@ -156,7 +156,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span, request).catch(err => {
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
