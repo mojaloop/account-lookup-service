@@ -36,7 +36,6 @@ const { Headers, RestMethods, HeaderResources } = Enum.Http
 
 /**
  * @typedef {Object} PartiesDeps
- * @property {Object} cache
  * @property {Object} proxyCache
  * @property {Object} log
  * @property {Object} config
@@ -175,7 +174,7 @@ class BasePartiesService {
     this.stepInProgress('sendOracleDiscoveryRequest')
     const { headers, params, query } = this.inputs
 
-    const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined, this.deps.cache)
+    const response = await this.deps.oracle.oracleRequest(headers, RestMethods.GET, params, query, undefined)
     this.log.verbose('oracle discovery raw response:', { response })
 
     let { partyList } = response?.data || {}
@@ -190,7 +189,7 @@ class BasePartiesService {
 
   async sendDeleteOracleRequest (headers, params) {
     this.stepInProgress('sendDeleteOracleRequest')
-    const result = await this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null, this.deps.cache)
+    const result = await this.deps.oracle.oracleRequest(headers, RestMethods.DELETE, params, null, null)
     this.log.verbose('sendDeleteOracleRequest is done', { params })
     return result
   }

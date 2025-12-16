@@ -34,7 +34,6 @@ const partiesUtils = require('./partiesUtils')
 
 /** @returns {PartiesDeps} */
 const createDeps = ({
-  cache,
   proxyCache,
   proxies = Util.proxies,
   participant = participantFacade,
@@ -42,7 +41,6 @@ const createDeps = ({
   childSpan = null,
   log = logger
 }) => Object.freeze({
-  cache,
   proxyCache,
   childSpan,
   log,

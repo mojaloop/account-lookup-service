@@ -185,7 +185,7 @@ describe('Parties Tests', () => {
       const headers = fixtures.partiesCallHeadersDto({ source, proxy })
       const { params, method, query } = Helper.getByTypeIdRequest
 
-      await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, Helper.mockSpan(), proxyCache)
       await sleep(1000)
 
       cached = await proxyCache.lookupProxyByDfspId(source)
@@ -204,7 +204,7 @@ describe('Parties Tests', () => {
       Util.proxies.getAllProxiesNames = sandbox.stub().resolves([proxy])
       const headers = fixtures.partiesCallHeadersDto()
 
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), proxyCache)
 
       expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)
       expect(participant.sendErrorToParticipant.callCount).toBe(0)
@@ -227,7 +227,7 @@ describe('Parties Tests', () => {
       await proxyCache.addDfspIdToProxyMapping(destination, proxyId)
       const headers = fixtures.partiesCallHeadersDto({ destination })
 
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), proxyCache)
 
       expect(participant.sendErrorToParticipant.callCount).toBe(0)
       expect(participant.sendRequest.callCount).toBe(1)
@@ -270,7 +270,7 @@ describe('Parties Tests', () => {
       const proxy = `proxy-${Date.now()}`
       const headers = fixtures.partiesCallHeadersDto({ proxy })
 
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, null, null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, null, proxyCache)
 
       expect(participant.sendRequest.callCount).toBe(0)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -500,7 +500,7 @@ describe('Parties Tests', () => {
       const headers = fixtures.partiesCallHeadersDto({ destination: '', source, proxy: 'proxy' })
       const { params, method, query } = Helper.getByTypeIdRequest
 
-      await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, null, null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, params, method, query, null, proxyCache)
 
       expect(participant.sendRequest.callCount).toBe(0)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -549,7 +549,7 @@ describe('Parties Tests', () => {
       let isExists = await proxyCache.receivedSuccessResponse(alsReq, proxyNames[0]) // no in cache
       expect(isExists).toBe(false)
 
-      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, Helper.getByTypeIdRequest.params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), proxyCache)
 
       isExists = await proxyCache.receivedSuccessResponse(alsReq, proxyNames[0])
       expect(isExists).toBe(true)
@@ -570,7 +570,7 @@ describe('Parties Tests', () => {
       const headers = fixtures.partiesCallHeadersDto({ destination: '' })
       const params = fixtures.partiesParamsDto()
 
-      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), null, proxyCache)
+      await partiesDomain.getPartiesByTypeAndID(headers, params, Helper.getByTypeIdRequest.method, Helper.getByTypeIdRequest.query, Helper.mockSpan(), proxyCache)
 
       expect(participant.sendRequest.callCount).toBe(proxyNames.length)
       expect(participant.sendErrorToParticipant.callCount).toBe(1)
@@ -602,7 +602,7 @@ describe('Parties Tests', () => {
       const headers = fixtures.partiesCallHeadersDto({ destination })
 
       // Act
-      await partiesDomain.putPartiesByTypeAndID(headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, proxyCache)
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
@@ -625,7 +625,7 @@ describe('Parties Tests', () => {
       const expectedCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT
 
       // Act
-      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, null, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, null, proxyCache)
 
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
@@ -673,7 +673,7 @@ describe('Parties Tests', () => {
       const dataUri = encodePayload(JSON.stringify(payload), 'application/json')
       const { params, method } = Helper.putByTypeIdRequest
 
-      await partiesDomain.putPartiesByTypeAndID(headers, params, method, payload, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(headers, params, method, payload, dataUri, proxyCache)
 
       cachedProxy = await proxyCache.lookupProxyByDfspId(source)
       expect(cachedProxy).toBe(proxy)
@@ -708,7 +708,7 @@ describe('Parties Tests', () => {
       const isSet = await proxyCache.setSendToProxiesList(alsReq, [proxy])
       expect(isSet).toBe(true)
 
-      await partiesDomain.putPartiesByTypeAndID(headers, params, 'PUT', partyDetails, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(headers, params, 'PUT', partyDetails, dataUri, proxyCache)
       await sleep(1000)
 
       expect(oracle.oracleRequest.callCount).toBe(1)
@@ -762,7 +762,7 @@ describe('Parties Tests', () => {
       const dataUri = encodePayload(payload, 'application/json')
 
       // Act
-      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, Helper.putByTypeIdRequest.params, 'put', payload, dataUri, proxyCache)
 
       // Assert
       expect(participant.validateParticipant.callCount).toBe(3)
@@ -791,7 +791,7 @@ describe('Parties Tests', () => {
       const expectedErrorCallbackEnpointType = Enum.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_PARTIES_SUB_ID_PUT_ERROR
 
       // Act
-      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri, null, proxyCache)
+      await partiesDomain.putPartiesByTypeAndID(Helper.putByTypeIdRequest.headers, params, 'put', payload, dataUri, proxyCache)
 
       // Assert
       expect(participant.validateParticipant.callCount).toBe(3)
@@ -963,7 +963,7 @@ describe('Parties Tests', () => {
         data: { partyList: [{ fspId: 'fspId' }] }
       })
 
-      await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, null, null, proxyCache)
+      await partiesDomain.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, null, proxyCache)
 
       expect(oracle.oracleRequest.callCount).toBe(2)
       expect(oracle.oracleRequest.lastCall.args[1]).toBe(RestMethods.DELETE)

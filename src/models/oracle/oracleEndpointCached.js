@@ -27,7 +27,6 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Cache = require('../../lib/cache')
-const Metrics = require('@mojaloop/central-services-metrics')
 const OracleEndpointUncached = require('./oracleEndpoint')
 
 let cacheClient
@@ -36,43 +35,22 @@ const extensions = [{
   value: '["db","@hapi/catbox-memory"]'
 }]
 
-const getCacheKey = (params) => {
-  return cacheClient.createKey(`${Object.values(params).join('__')}`)
-}
+const getOracleEndpointCached = async (params) => cacheClient.get({ ...params, id: Object.values(params).join('__') })
 
-const getOracleEndpointCached = async (params) => {
-  const histTimer = Metrics.getHistogram(
-    'model_oracleEndpoints',
-    'model_getOracleEndpointsCached - Metrics for oracle endpoints cached model',
-    ['success', 'queryName', 'hit']
-  ).startTimer()
+const generate = async function (params) {
   const partyIdType = params.partyIdType || null
   const currency = params.currency || null
-
-  // Do we have valid participants list in the cache ?
-  const cacheKey = getCacheKey(params)
-  let cachedEndpoints = cacheClient.get(cacheKey)
-  if (!cachedEndpoints) {
-    if (params.assertPendingAcquire) OracleEndpointUncached.assertPendingAcquires()
-    // No oracleEndpoint in the cache, so fetch from participant API
-    let oracleEndpoints
-    if (partyIdType && currency) {
-      oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
-    } else if (currency) {
-      oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByCurrency(currency)
-    } else {
-      oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByType(partyIdType)
-    }
-    // store in cache
-    cacheClient.set(cacheKey, oracleEndpoints)
-    cachedEndpoints = oracleEndpoints
-    histTimer({ success: true, queryName: 'model_getOracleEndpointCached', hit: false })
+  if (params.assertPendingAcquire) OracleEndpointUncached.assertPendingAcquires()
+  // No oracleEndpoint in the cache, so fetch from participant API
+  let oracleEndpoints
+  if (partyIdType && currency) {
+    oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByTypeAndCurrency(partyIdType, currency)
+  } else if (currency) {
+    oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByCurrency(currency)
   } else {
-    // unwrap oracleEndpoints list from catbox structure
-    cachedEndpoints = cachedEndpoints.item
-    histTimer({ success: true, queryName: 'model_getOracleEndpointCached', hit: true })
+    oracleEndpoints = await OracleEndpointUncached.getOracleEndpointByType(partyIdType)
   }
-  return cachedEndpoints
+  return oracleEndpoints
 }
 
 /*
@@ -80,12 +58,10 @@ const getOracleEndpointCached = async (params) => {
 */
 exports.initialize = async () => {
   /* Register as cache client */
-  const oracleEndpointCacheClientMeta = {
+  cacheClient = Cache.registerCacheClient({
     id: 'oracleEndpoints',
-    preloadCache: async () => Promise.resolve()
-  }
-
-  cacheClient = Cache.registerCacheClient(oracleEndpointCacheClientMeta)
+    generate
+  })
 }
 
 exports.getOracleEndpointByTypeAndCurrency = async (partyIdType, currency, assertPendingAcquire) => {

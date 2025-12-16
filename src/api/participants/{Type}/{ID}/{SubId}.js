@@ -72,7 +72,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span, request.server.app.cache).catch(err => {
+    participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -114,7 +114,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload, request.server.app.cache).catch(err => {
+    participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -156,7 +156,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span, request.server.app.cache).catch(err => {
+    participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -198,7 +198,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    participants.deleteParticipants(request.headers, request.params, request.method, request.query, request.server.app.cache).catch(err => {
+    participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

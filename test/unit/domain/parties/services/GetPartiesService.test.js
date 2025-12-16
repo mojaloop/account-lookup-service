@@ -39,6 +39,7 @@ const {
 const { GetPartiesService } = require('#src/domain/parties/services/index')
 const { API_TYPES, ERROR_MESSAGES } = require('#src/constants')
 const fixtures = require('#test/fixtures/index')
+const oracleGetCached = require('#src/models/oracle/oracleGetCached')
 
 const { RestMethods, Headers } = GetPartiesService.enums()
 
@@ -52,6 +53,10 @@ describe('GetPartiesService Tests -->', () => {
 
   afterEach(() => {
     config.API_TYPE = API_TYPE // to avoid side effects
+  })
+
+  beforeAll(async () => {
+    await oracleGetCached.initialize()
   })
 
   describe('forwardRequestToDestination method', () => {
@@ -393,8 +398,7 @@ describe('GetPartiesService Tests -->', () => {
         RestMethods.GET,
         params,
         undefined,
-        undefined,
-        deps.cache
+        undefined
       )
       expect(participant.sendRequest).toHaveBeenCalledWith(
         expect.objectContaining({

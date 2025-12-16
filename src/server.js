@@ -42,6 +42,7 @@ const APIHandlers = require('./api')
 const Routes = require('./api/routes')
 const Cache = require('./lib/cache')
 const OracleEndpointCache = require('./models/oracle/oracleEndpointCached')
+const oracleGetCached = require('./models/oracle/oracleGetCached')
 const Handlers = require('./handlers/register')
 
 const connectDatabase = async (dbConfig) => {
@@ -101,11 +102,6 @@ const createServer = async (port, api, routes, isAdmin, proxyCacheConfig) => {
   })
   server.app.isAdmin = isAdmin
 
-  server.app.cache = Cache.registerCacheClient({
-    id: 'serverGeneralCache',
-    preloadCache: async () => Promise.resolve()
-  })
-
   if (!isAdmin && proxyCacheConfig.enabled) {
     server.app.proxyCache = await createConnectedProxyCache(proxyCacheConfig)
   }
@@ -150,6 +146,7 @@ const initializeApi = async (appConfig) => {
     Participants.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
     proxies.initializeCache(CENTRAL_SHARED_PARTICIPANT_CACHE_CONFIG, Util.hubNameConfig),
     OracleEndpointCache.initialize(),
+    oracleGetCached.initialize(),
     Cache.initCache()
   ])
   logger.verbose('all caches initialized')
@@ -176,6 +173,7 @@ const initializeAdmin = async (appConfig) => {
 
   await Promise.all([
     OracleEndpointCache.initialize(),
+    oracleGetCached.initialize(),
     Cache.initCache()
   ])
   return createServer(ADMIN_PORT, api, Routes.AdminRoutes(api), true, PROXY_CACHE_CONFIG)

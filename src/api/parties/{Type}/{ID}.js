@@ -49,7 +49,7 @@ module.exports = {
       ['success']
     ).startTimer()
     const { headers, payload, method, path, params, query, span } = request
-    const { cache, proxyCache } = request.server.app
+    const { proxyCache } = request.server.app
 
     const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.LOOKUP)
     span.setTags(spanTags)
@@ -72,7 +72,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
-    parties.getPartiesByTypeAndID(headers, params, method, query, span, cache, proxyCache).catch(err => {
+    parties.getPartiesByTypeAndID(headers, params, method, query, span, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -93,7 +93,7 @@ module.exports = {
       ['success']
     ).startTimer()
     const { headers, payload, method, path, params, dataUri, span } = request
-    const { cache, proxyCache } = request.server.app
+    const { proxyCache } = request.server.app
 
     const spanTags = LibUtil.getSpanTags({ headers }, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
     span.setTags(spanTags)
@@ -116,7 +116,7 @@ module.exports = {
     }, EventSdk.AuditEventAction.start)
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by putPartiesByTypeAndID.
-    parties.putPartiesByTypeAndID(headers, params, method, payload, dataUri, cache, proxyCache).catch(err => {
+    parties.putPartiesByTypeAndID(headers, params, method, payload, dataUri, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

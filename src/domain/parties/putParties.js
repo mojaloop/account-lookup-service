@@ -43,10 +43,9 @@ const services = require('./services')
  * @param {string} method - http request method
  * @param {object} payload - payload of the request being sent out
  * @param {string} dataUri - encoded payload of the request being sent out
- * @param {CacheClient} cache - in-memory cache with CatboxMemory engine
  * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
-const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, cache, proxyCache = undefined) => {
+const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, proxyCache = undefined) => {
   // think, if we need to pass span here
   const component = putPartiesByTypeAndID.name
   const histTimerEnd = Metrics.getHistogram(
@@ -55,7 +54,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
     ['success']
   ).startTimer()
   // const childSpan = span ? span.getChild(component) : undefined
-  const deps = createDeps({ cache, proxyCache })
+  const deps = createDeps({ proxyCache })
   const service = new services.PutPartiesService(deps, { headers, params, payload, dataUri })
   let fspiopError
 
@@ -80,10 +79,9 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
  * @param {object} payload - payload of the request being sent out
  * @param {string} dataUri - encoded payload of the request being sent out
  * @param {object} span
- * @param {CacheClient} cache - in-memory cache with CatboxMemory engine
  * @param {IProxyCache} [proxyCache] - IProxyCache instance
  */
-const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, cache, proxyCache = undefined) => {
+const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, proxyCache = undefined) => {
   const component = putPartiesErrorByTypeAndID.name
   const histTimerEnd = Metrics.getHistogram(
     component,
@@ -91,7 +89,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
     ['success']
   ).startTimer()
   const childSpan = span ? span.getChild(component) : undefined
-  const deps = createDeps({ cache, proxyCache, childSpan })
+  const deps = createDeps({ proxyCache, childSpan })
   const inputs = { headers, params, payload, dataUri }
   const service = new services.PutPartiesErrorService(deps, inputs)
   let fspiopError

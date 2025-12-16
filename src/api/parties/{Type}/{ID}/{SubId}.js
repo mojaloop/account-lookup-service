@@ -49,7 +49,7 @@ module.exports = {
       'Ingress - Get party by Type, ID and SubId',
       ['success']
     ).startTimer()
-    const { cache, proxyCache } = request.server.app
+    const { proxyCache } = request.server.app
 
     const { headers, payload, method, path, params, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.GET)
@@ -73,7 +73,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, cache, proxyCache).catch(err => {
+    parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })
@@ -92,7 +92,7 @@ module.exports = {
       'Ingress - Put parties by Type, ID and SubId',
       ['success']
     ).startTimer()
-    const { cache, proxyCache } = request.server.app
+    const { proxyCache } = request.server.app
 
     const { headers, payload, method, path, params, span } = request
     const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.PARTY, Enum.Events.Event.Action.PUT)
@@ -116,7 +116,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri, cache, proxyCache).catch(err => {
+    parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
     })
     histTimerEnd({ success: true })

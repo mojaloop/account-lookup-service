@@ -103,7 +103,7 @@ class PutPartiesService extends BasePartiesService {
     const mappingPayload = {
       fspId: source
     }
-    await this.deps.oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload, this.deps.cache)
+    await this.deps.oracle.oracleRequest(headers, RestMethods.POST, params, null, mappingPayload)
     this.log.info('oracle was updated with mappingPayload: ', mappingPayload)
   }
 }
