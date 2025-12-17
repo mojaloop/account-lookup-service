@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.14.5](https://github.com/mojaloop/account-lookup-service/compare/v17.14.4...v17.14.5) (2025-12-17)
+
+
+### Bug Fixes
+
+* use catbox policy.get for proper concurrency handling ([#589](https://github.com/mojaloop/account-lookup-service/issues/589)) ([c4dd65e](https://github.com/mojaloop/account-lookup-service/commit/c4dd65e4ef9c1cdf764a7f3f6dce4bfed6bcd199))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([677daee](https://github.com/mojaloop/account-lookup-service/commit/677daeed2b40fdbced6bbe3654418000379f4969))
+
 ### [17.14.4](https://github.com/mojaloop/account-lookup-service/compare/v17.14.3...v17.14.4) (2025-10-31)
 
 
