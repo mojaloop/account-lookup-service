@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.14.6](https://github.com/mojaloop/account-lookup-service/compare/v17.14.5...v17.14.6) (2025-12-18)
+
+
+### Chore
+
+* **ci:** update CircleCI orb to 1.1.9 ([#592](https://github.com/mojaloop/account-lookup-service/issues/592)) ([8f3db7e](https://github.com/mojaloop/account-lookup-service/commit/8f3db7e25aae39b70a957b3a9b15060c6ae666a7))
+* **sbom:** update sbom [skip ci] ([2ce60c7](https://github.com/mojaloop/account-lookup-service/commit/2ce60c72bc52f2b3dfad6ad9f0512e50d458c2f2))
+
 ### [17.14.5](https://github.com/mojaloop/account-lookup-service/compare/v17.14.4...v17.14.5) (2025-12-17)
 
 
