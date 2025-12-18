@@ -97,7 +97,7 @@
     "@mojaloop/central-services-logger": "11.10.2",
     "@mojaloop/central-services-metrics": "12.8.3",
     "@mojaloop/central-services-shared": "18.34.5",
-    "@mojaloop/central-services-stream": "11.8.13",
+    "@mojaloop/central-services-stream": "11.8.14",
     "@mojaloop/database-lib": "^11.3.4",
     "@mojaloop/event-sdk": "14.8.2",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.9.0",
@@ -114,7 +114,7 @@
     "knex": "3.1.0",
     "mustache": "4.2.0",
     "mysql": "2.18.1",
-    "mysql2": "^3.15.3",
+    "mysql2": "^3.16.0",
     "npm-run-all": "4.1.5",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8"
