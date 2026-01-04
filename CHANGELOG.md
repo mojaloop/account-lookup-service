@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.14.8](https://github.com/mojaloop/account-lookup-service/compare/v17.14.7...v17.14.8) (2026-01-04)
+
+
+### Bug Fixes
+
+* handle subtype mapping ([#594](https://github.com/mojaloop/account-lookup-service/issues/594)) ([ae06c95](https://github.com/mojaloop/account-lookup-service/commit/ae06c9519bf92df1a3535852b024f0673333976e))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([19a811a](https://github.com/mojaloop/account-lookup-service/commit/19a811a0e340e7ec553b4b66c1889ef94a76b7c3))
+
 ### [17.14.7](https://github.com/mojaloop/account-lookup-service/compare/v17.14.6...v17.14.7) (2025-12-30)
 
 
