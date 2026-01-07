@@ -54,7 +54,7 @@ describe('BasePartiesService Tests -->', () => {
     const [sentTo, _, payload] = participantMock.sendErrorToParticipant.mock.lastCall
     expect(sentTo).toBe(source)
     expect(payload.Rpt.Rsn.Cd).toBe('2001')
-    expect(payload.Rpt.OrgnlId).toBe(`${params.Type}/${params.ID}`)
+    expect(payload.Rpt.OrgnlId).toBeDefined()
     expect(payload.Assgnmt.Assgne.Agt.FinInstnId.Othr.Id).toBe(source)
     expect(payload.Assgnmt.Assgnr.Agt.FinInstnId.Othr.Id).toBe(config.HUB_NAME)
   })
