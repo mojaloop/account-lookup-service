@@ -174,7 +174,8 @@
     },
     "body-parser": "2.2.1",
     "lodash": "^4.17.23",
-    "lodash-es": "^4.17.23"
+    "lodash-es": "^4.17.23",
+    "diff": "^5.2.2"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",
