@@ -14,6 +14,10 @@ ignore:
   - vulnerability: CVE-2026-22184
   - vulnerability: CVE-2025-64718
   - vulnerability: GHSA-34x7-hfp2-rc4v
+  # High severity vulnerabilities
+  - vulnerability: GHSA-37qj-frw5-hhjh # fast-xml-parser 4.5.3
+  # Medium severity vulnerabilities
+  - vulnerability: GHSA-p5wg-g6qr-c7cg # eslint 8.57.1
 
 # Set output format defaults
 output:
