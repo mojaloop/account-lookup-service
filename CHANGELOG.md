@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.15.1](https://github.com/mojaloop/account-lookup-service/compare/v17.15.0...v17.15.1) (2026-02-03)
+
+
+### Chore
+
+* bump dep ([#606](https://github.com/mojaloop/account-lookup-service/issues/606)) ([6ad09e1](https://github.com/mojaloop/account-lookup-service/commit/6ad09e152757b9c86445114fc091946c22f0e54d))
+* **sbom:** update sbom [skip ci] ([616b7e3](https://github.com/mojaloop/account-lookup-service/commit/616b7e325b3ae8286520c70bbb2252e00171a365))
+
 ## [17.15.0](https://github.com/mojaloop/account-lookup-service/compare/v17.14.11...v17.15.0) (2026-01-29)
 
 
