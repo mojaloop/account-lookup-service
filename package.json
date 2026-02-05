@@ -79,7 +79,6 @@
     "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
     "dep:check": "npx ncu -e 2",
     "dep:update": "npx ncu -u",
-    "dep:automate": "sh ./updateDepAndAudit.sh",
     "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
     "wait-4-docker": "node ./scripts/_wait4_all.js"
@@ -103,7 +102,7 @@
     "@mojaloop/event-sdk": "14.8.2",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.9.0",
     "@mojaloop/ml-schema-transformer-lib": "2.9.0",
-    "@mojaloop/sdk-standard-components": "19.18.6",
+    "@mojaloop/sdk-standard-components": "19.18.7",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.17.1",
     "ajv-keywords": "5.1.0",
