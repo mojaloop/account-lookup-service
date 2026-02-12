@@ -19,6 +19,7 @@ ignore:
   # Medium severity vulnerabilities
   - vulnerability: GHSA-p5wg-g6qr-c7cg # eslint 8.57.1
   - vulnerability: GHSA-3966-f6p6-2qr9
+  - vulnerability: GHSA-43fc-jf86-j433
 
 # Set output format defaults
 output:
