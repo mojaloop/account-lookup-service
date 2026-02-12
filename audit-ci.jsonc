@@ -5,6 +5,8 @@
   "moderate": true,
   // NOTE: Please add as much information as possible to any items added to the allowList
   "allowlist": [
-    "GHSA-37qj-frw5-hhjh"
+    "GHSA-37qj-frw5-hhjh",
+    // js-yaml < 3.14.2 prototype pollution in merge (<<) - transitive via json-schema-ref-parser
+    "GHSA-mh29-5h37-fv8m"
   ]
 }
