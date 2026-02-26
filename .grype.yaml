@@ -1,4 +1,5 @@
 disabled: false
+scan-type: source
 ignore:
   - vulnerability: CVE-2025-9230
   - vulnerability: CVE-2025-9232
