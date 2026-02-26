@@ -1,4 +1,4 @@
-ARG NODE_VERSION=lts-alpine
+ARG NODE_VERSION=22-alpine
 ARG USERNAME=ml-user
 
 FROM node:${NODE_VERSION}
