@@ -176,7 +176,10 @@
     "lodash": "4.17.23",
     "lodash-es": "^4.17.23",
     "diff": "^5.2.2",
-    "fast-xml-parser": "5.3.6"
+    "fast-xml-parser": "5.3.6",
+    "minimatch@3.0.5": "3.1.5",
+    "minimatch@3.1.2": "3.1.5",
+    "minimatch@5.1.6": "5.1.9"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",
