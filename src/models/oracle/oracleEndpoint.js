@@ -30,7 +30,7 @@ const util = require('../../lib/util')
 
 const getOracleEndpointByType = async (type) => {
   try {
-    return Db.from('oracleEndpoint').query(builder => {
+    return await Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
@@ -49,7 +49,7 @@ const getOracleEndpointByType = async (type) => {
 
 const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
   try {
-    return Db.from('oracleEndpoint').query(builder => {
+    return await Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
@@ -70,7 +70,7 @@ const getOracleEndpointByTypeAndCurrency = async (type, currencyId) => {
 
 const getOracleEndpointByCurrency = async (currencyId) => {
   try {
-    return Db.from('oracleEndpoint').query(builder => {
+    return await Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
@@ -90,7 +90,7 @@ const getOracleEndpointByCurrency = async (currencyId) => {
 
 const getOracleEndpointById = async (oracleEndpointId) => {
   try {
-    return Db.from('oracleEndpoint').query(builder => {
+    return await Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('currency AS cu', 'oracleEndpoint.currencyId', 'cu.currencyId')
         .innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
@@ -110,7 +110,7 @@ const getOracleEndpointById = async (oracleEndpointId) => {
 
 const getAllOracleEndpoint = async () => {
   try {
-    return Db.from('oracleEndpoint').query(builder => {
+    return await Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({
@@ -128,7 +128,7 @@ const getAllOracleEndpoint = async () => {
 
 const getAllOracleEndpointsByMatchCondition = async (oracleEndpointModel, partyIdTypeId, endpointTypeId) => {
   try {
-    return Db.from('oracleEndpoint').query(builder => {
+    return await Db.from('oracleEndpoint').query(builder => {
       return builder.innerJoin('endpointType AS et', 'oracleEndpoint.endpointTypeId', 'et.endpointTypeId')
         .innerJoin('partyIdType AS pt', 'oracleEndpoint.partyIdTypeId', 'pt.partyIdTypeId')
         .where({

@@ -37,7 +37,7 @@ const util = require('../../lib/util')
  */
 const getEndpointTypeByType = async (type) => {
   try {
-    return Db.from('endpointType').findOne({ type, isActive: true })
+    return await Db.from('endpointType').findOne({ type, isActive: true })
   } catch (err) {
     util.rethrowDatabaseError(err)
   }

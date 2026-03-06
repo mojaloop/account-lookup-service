@@ -20,6 +20,12 @@ ignore:
   - vulnerability: GHSA-p5wg-g6qr-c7cg # eslint 8.57.1
   - vulnerability: GHSA-3966-f6p6-2qr9
   - vulnerability: GHSA-43fc-jf86-j433
+  - vulnerability: GHSA-23c5-xmqv-rm74
+  - vulnerability: GHSA-2g4f-4pwh-qvx6
+  - vulnerability: GHSA-3ppc-4f35-3m26
+  - vulnerability: GHSA-7r86-cg39-jmmj
+  - vulnerability: GHSA-mh29-5h37-fv8m
+  - vulnerability: GHSA-wf6x-7x77-mvgw
 
 # Set output format defaults
 output:
