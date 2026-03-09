@@ -30,7 +30,7 @@ const util = require('../../lib/util')
 
 const getPartyIdTypeByName = async (name) => {
   try {
-    return Db.from('partyIdType').findOne({ name, isActive: true })
+    return await Db.from('partyIdType').findOne({ name, isActive: true })
   } catch (err) {
     util.rethrowDatabaseError(err)
   }

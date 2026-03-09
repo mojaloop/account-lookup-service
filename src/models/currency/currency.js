@@ -37,7 +37,7 @@ const util = require('../../lib/util')
  */
 const getCurrencyById = async (currencyId) => {
   try {
-    return Db.from('currency').findOne({ currencyId, isActive: true })
+    return await Db.from('currency').findOne({ currencyId, isActive: true })
   } catch (err) {
     util.rethrowDatabaseError(err)
   }
