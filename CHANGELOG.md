@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.15.3](https://github.com/mojaloop/account-lookup-service/compare/v17.15.2...v17.15.3) (2026-03-25)
+
+
+### Chore
+
+* add private:true to prevent npm publish ([#4384](https://github.com/mojaloop/account-lookup-service/issues/4384)) ([#617](https://github.com/mojaloop/account-lookup-service/issues/617)) ([5d6f716](https://github.com/mojaloop/account-lookup-service/commit/5d6f716e714d4d65393b6f225e932b5e441821b2))
+* maintenance updates ([#615](https://github.com/mojaloop/account-lookup-service/issues/615)) ([44069d5](https://github.com/mojaloop/account-lookup-service/commit/44069d53852bf721a87097a873867eec92d6ad6d))
+* **sbom:** update sbom [skip ci] ([2401a25](https://github.com/mojaloop/account-lookup-service/commit/2401a250458c0ae49580bbf5515c17c589b5cf1d))
+
 ### [17.15.2](https://github.com/mojaloop/account-lookup-service/compare/v17.15.1...v17.15.2) (2026-02-05)
 
 
