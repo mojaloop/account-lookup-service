@@ -27,10 +27,13 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const LibUtil = require('../../../lib/util')
 const participants = require('../../../domain/participants')
+const participant = require('../../../models/participantEndpoint/facade')
+const { ERROR_MESSAGES } = require('../../../constants')
 
 /**
  * Operations on /participants/{Type}/{ID}
@@ -154,6 +157,15 @@ module.exports = {
       headers,
       payload
     }, EventSdk.AuditEventAction.start)
+
+    const sourceFsp = headers[Enum.Http.Headers.FSPIOP.SOURCE]
+    const requesterParticipantModel = await participant.validateParticipant(sourceFsp)
+    if (!requesterParticipantModel) {
+      throw ErrorHandler.Factory.createFSPIOPError(
+        ErrorHandler.Enums.FSPIOPErrorCodes.ID_NOT_FOUND,
+        ERROR_MESSAGES.sourceFspNotFound
+      )
+    }
 
     const metadata = `${method} ${path}`
     participants.postParticipants(headers, method, params, payload, span).catch(err => {

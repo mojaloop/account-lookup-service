@@ -215,11 +215,40 @@ describe('/participants/{Type}/{ID}', () => {
   })
 
   describe('POST /participants', () => {
+    let validateStub
+
+    beforeEach(() => {
+      validateStub = sandbox.stub(participant, 'validateParticipant').resolves(true)
+    })
+
+    afterEach(() => {
+      if (validateStub && validateStub.restore) validateStub.restore()
+    })
+
     it('returns 404 when ID parameter is missing', testMissingParameter('post', '/participants/MSISDN/', true))
 
     it('returns 202 when postParticipants resolves', testSuccessfulDomainCall('post', 'postParticipants', 202))
 
     it('returns 202 when postParticipants rejects with an unknown error', testDomainMethodError('post', 'postParticipants', 202))
+
+    it('returns 400 when fspiop-source references an unknown FSP', async () => {
+      validateStub.restore()
+      validateStub = sandbox.stub(participant, 'validateParticipant').resolves(null)
+
+      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'post')
+      const options = {
+        method: 'post',
+        url: mock.request.path,
+        headers: Helper.defaultSwitchHeaders,
+        payload: mock.request.body
+      }
+
+      const response = await server.inject(options)
+
+      expect(response.statusCode).toBe(400)
+      expect(response.result.errorInformation).toBeDefined()
+      expect(response.result.errorInformation.errorCode).toBe('3200')
+    })
   })
 
   describe('PUT /participants', () => {
