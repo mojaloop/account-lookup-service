@@ -1367,6 +1367,7 @@ components:
       title: PartyIdentifier
       maxLength: 128
       minLength: 1
+      pattern: '^[^\s{}]+$'
       type: string
       description: Identifier of the Party.
     PartyName:
@@ -1710,6 +1711,7 @@ components:
       schema:
         maxLength: 128
         minLength: 1
+        pattern: '^[^\s{}]+$'
         type: string
     Type:
       name: Type
