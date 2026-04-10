@@ -3,5 +3,7 @@ reject: [
   # TODO: v6+ (ref: https://github.com/sindresorhus/get-port/releases/tag/v6.0.0) is an ESM library and thus not compatible with CommonJS. Future story needed to resolve.
   "get-port",
   ## jest 30 is released but libraries that work with jest have not been updated to support it yet.
-  "jest"
+  "jest",
+  ## sinon 21.1.0 breaks test suite - requires investigation of compatibility issue
+  "sinon"
 ]
