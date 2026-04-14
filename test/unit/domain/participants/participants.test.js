@@ -49,43 +49,110 @@ const { Headers } = Enums.Http
 
 describe('participant Tests', () => {
   describe('validatePathParameters', () => {
-    it('should throw error for placeholder {ID} value', () => {
+    it('should throw for placeholder {ID} value', () => {
       expect.hasAssertions()
       const params = { ID: '{ID}', Type: 'MSISDN' }
-
       expect(() => participantsDomain.validatePathParameters(params))
-        .toThrow('Invalid ID parameter: {ID}. ID must not be a placeholder value')
+        .toThrow(/Invalid ID parameter/)
     })
 
-    it('should throw error for ID containing curly braces', () => {
+    it('should throw for ID containing curly braces', () => {
       expect.hasAssertions()
       const params = { ID: 'some{invalid}id', Type: 'MSISDN' }
-
       expect(() => participantsDomain.validatePathParameters(params))
-        .toThrow('Invalid ID parameter: some{invalid}id. ID must not be a placeholder value')
+        .toThrow(/Invalid ID parameter/)
     })
 
-    it('should throw error for placeholder {SubId} value', () => {
+    it('should throw for ID containing angle brackets', () => {
+      expect.hasAssertions()
+      const params = { ID: '<script>', Type: 'ALIAS' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid ID parameter/)
+    })
+
+    it('should throw for ID containing backticks', () => {
+      expect.hasAssertions()
+      const params = { ID: '`inject`', Type: 'ALIAS' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid ID parameter/)
+    })
+
+    it('should throw for ID containing backslash', () => {
+      expect.hasAssertions()
+      const params = { ID: 'path\\traversal', Type: 'ALIAS' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid ID parameter/)
+    })
+
+    it('should throw for ID containing whitespace', () => {
+      expect.hasAssertions()
+      const params = { ID: 'has space', Type: 'ALIAS' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid ID parameter/)
+    })
+
+    it('should throw for ID exceeding 128 characters', () => {
+      expect.hasAssertions()
+      const params = { ID: 'a'.repeat(129), Type: 'ALIAS' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/exceeds maximum length/)
+    })
+
+    it('should throw for non-numeric MSISDN', () => {
+      expect.hasAssertions()
+      const params = { ID: 'not-a-phone', Type: 'MSISDN' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid MSISDN identifier/)
+    })
+
+    it('should throw for invalid EMAIL format', () => {
+      expect.hasAssertions()
+      const params = { ID: 'not-an-email', Type: 'EMAIL' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid EMAIL identifier/)
+    })
+
+    it('should throw for invalid IBAN format', () => {
+      expect.hasAssertions()
+      const params = { ID: '12345', Type: 'IBAN' }
+      expect(() => participantsDomain.validatePathParameters(params))
+        .toThrow(/Invalid IBAN identifier/)
+    })
+
+    it('should throw for placeholder {SubId} value', () => {
       expect.hasAssertions()
       const params = { ID: '123456', Type: 'MSISDN', SubId: '{SubId}' }
-
       expect(() => participantsDomain.validatePathParameters(params))
-        .toThrow('Invalid SubId parameter: {SubId}. SubId must not be a placeholder value')
+        .toThrow(/Invalid SubId parameter/)
     })
 
-    it('should pass validation for valid parameters', () => {
+    it('should pass for valid MSISDN', () => {
       expect.hasAssertions()
-      const params = { ID: '123456', Type: 'MSISDN' }
-
-      // Should not throw
+      const params = { ID: '+123456789', Type: 'MSISDN' }
       expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
     })
 
-    it('should pass validation for valid parameters with SubId', () => {
+    it('should pass for valid EMAIL', () => {
+      expect.hasAssertions()
+      const params = { ID: 'user@example.com', Type: 'EMAIL' }
+      expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
+    })
+
+    it('should pass for valid IBAN', () => {
+      expect.hasAssertions()
+      const params = { ID: 'GB82WEST12345698765432', Type: 'IBAN' }
+      expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
+    })
+
+    it('should pass for valid ALIAS (free-form)', () => {
+      expect.hasAssertions()
+      const params = { ID: 'my-alias_123.test', Type: 'ALIAS' }
+      expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
+    })
+
+    it('should pass for valid parameters with SubId', () => {
       expect.hasAssertions()
       const params = { ID: '123456', Type: 'MSISDN', SubId: 'validSubId' }
-
-      // Should not throw
       expect(() => participantsDomain.validatePathParameters(params)).not.toThrow()
     })
   })

@@ -84,10 +84,9 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
 
     it('getParticipantsByTypeAndID sends an async 3204 for invalid party id on response with status 400', async () => {
       // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
       const options = {
         method: 'get',
-        url: mock.request.path,
+        url: '/participants/MSISDN/123456789/subId1',
         headers: Helper.defaultSwitchHeaders
       }
 
@@ -120,10 +119,9 @@ describe('/participants/{Type}/{ID}/{SubId}', () => {
     // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
     it('getParticipantsByTypeAndID sends an async 3201 for invalid party id on response with status 404', async () => {
       // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}/{SubId}', 'get')
       const options = {
         method: 'get',
-        url: mock.request.path,
+        url: '/participants/MSISDN/123456789/subId1',
         headers: Helper.defaultSwitchHeaders
       }
 
