@@ -4,107 +4,50 @@ const { validatePathParameters, validatePartyIdentifier, validatePartySubIdOrTyp
 
 describe('validators', () => {
   describe('validatePartyIdentifier', () => {
-    describe('general safety validation', () => {
-      it('should reject null/undefined ID', () => {
-        expect(() => validatePartyIdentifier('ALIAS', null)).toThrow(/required/)
-        expect(() => validatePartyIdentifier('ALIAS', undefined)).toThrow(/required/)
-      })
-
-      it('should reject empty string', () => {
-        expect(() => validatePartyIdentifier('ALIAS', '')).toThrow(/required/)
-      })
-
-      it('should reject ID longer than 128 chars', () => {
-        expect(() => validatePartyIdentifier('ALIAS', 'x'.repeat(129))).toThrow(/exceeds maximum length/)
-      })
-
-      it('should reject whitespace', () => {
-        expect(() => validatePartyIdentifier('ALIAS', 'has space')).toThrow(/Invalid ID/)
-        expect(() => validatePartyIdentifier('ALIAS', 'has\ttab')).toThrow(/Invalid ID/)
-        expect(() => validatePartyIdentifier('ALIAS', 'has\nnewline')).toThrow(/Invalid ID/)
-      })
-
-      it('should reject curly braces (URL template placeholders)', () => {
-        expect(() => validatePartyIdentifier('ALIAS', '{ID}')).toThrow(/Invalid ID/)
-        expect(() => validatePartyIdentifier('ALIAS', 'some{val}ue')).toThrow(/Invalid ID/)
-      })
-
-      it('should reject angle brackets (HTML injection)', () => {
-        expect(() => validatePartyIdentifier('ALIAS', '<script>')).toThrow(/Invalid ID/)
-        expect(() => validatePartyIdentifier('ALIAS', 'a<b>c')).toThrow(/Invalid ID/)
-      })
-
-      it('should reject backticks (template literal injection)', () => {
-        expect(() => validatePartyIdentifier('ALIAS', '`inject`')).toThrow(/Invalid ID/)
-      })
-
-      it('should reject backslash (path traversal)', () => {
-        expect(() => validatePartyIdentifier('ALIAS', 'path\\file')).toThrow(/Invalid ID/)
-      })
-
-      it('should reject control characters', () => {
-        expect(() => validatePartyIdentifier('ALIAS', 'has\x00null')).toThrow(/Invalid ID/)
-        expect(() => validatePartyIdentifier('ALIAS', 'has\x1fescape')).toThrow(/Invalid ID/)
-      })
-
-      it('should accept valid free-form identifiers', () => {
-        expect(() => validatePartyIdentifier('ALIAS', 'my-alias_123')).not.toThrow()
-        expect(() => validatePartyIdentifier('ALIAS', 'user@example.com')).not.toThrow()
-        expect(() => validatePartyIdentifier('ALIAS', 'ABC-123/456')).not.toThrow()
-        expect(() => validatePartyIdentifier('ALIAS', "it's-valid")).not.toThrow()
-        expect(() => validatePartyIdentifier('ALIAS', 'x'.repeat(128))).not.toThrow()
-      })
+    it.each([
+      ['null', 'ALIAS', null, /required/],
+      ['undefined', 'ALIAS', undefined, /required/],
+      ['empty string', 'ALIAS', '', /required/],
+      ['over 128 chars', 'ALIAS', 'x'.repeat(129), /exceeds maximum length/],
+      ['whitespace', 'ALIAS', 'has space', /Invalid ID/],
+      ['tab', 'ALIAS', 'has\ttab', /Invalid ID/],
+      ['newline', 'ALIAS', 'has\nnewline', /Invalid ID/],
+      ['curly braces {ID}', 'ALIAS', '{ID}', /Invalid ID/],
+      ['embedded braces', 'ALIAS', 'some{val}ue', /Invalid ID/],
+      ['angle brackets', 'ALIAS', '<script>', /Invalid ID/],
+      ['backticks', 'ALIAS', '`inject`', /Invalid ID/],
+      ['backslash', 'ALIAS', 'path\\file', /Invalid ID/],
+      ['null byte', 'ALIAS', 'has\x00null', /Invalid ID/],
+      ['control char', 'ALIAS', 'has\x1fescape', /Invalid ID/],
+      ['non-numeric MSISDN', 'MSISDN', 'not-a-phone', /Invalid MSISDN/],
+      ['alpha MSISDN', 'MSISDN', 'abc123', /Invalid MSISDN/],
+      ['EMAIL without @', 'EMAIL', 'not-an-email', /Invalid EMAIL/],
+      ['EMAIL without domain', 'EMAIL', 'user@', /Invalid EMAIL/],
+      ['IBAN without country', 'IBAN', '12345678901234', /Invalid IBAN/]
+    ])('should reject %s', (_desc, type, id, pattern) => {
+      expect(() => validatePartyIdentifier(type, id)).toThrow(pattern)
     })
 
-    describe('MSISDN type-specific validation', () => {
-      it('should accept valid MSISDN (digits only)', () => {
-        expect(() => validatePartyIdentifier('MSISDN', '123456789')).not.toThrow()
-      })
-
-      it('should accept MSISDN with + prefix', () => {
-        expect(() => validatePartyIdentifier('MSISDN', '+254712345678')).not.toThrow()
-      })
-
-      it('should reject non-numeric MSISDN', () => {
-        expect(() => validatePartyIdentifier('MSISDN', 'not-a-phone')).toThrow(/Invalid MSISDN/)
-        expect(() => validatePartyIdentifier('MSISDN', 'abc123')).toThrow(/Invalid MSISDN/)
-      })
+    it.each([
+      ['free-form alias', 'ALIAS', 'my-alias_123'],
+      ['email as alias', 'ALIAS', 'user@example.com'],
+      ['slashes', 'ALIAS', 'ABC-123/456'],
+      ['apostrophe', 'ALIAS', "it's-valid"],
+      ['max length', 'ALIAS', 'x'.repeat(128)],
+      ['digits MSISDN', 'MSISDN', '123456789'],
+      ['+ prefix MSISDN', 'MSISDN', '+254712345678'],
+      ['simple email', 'EMAIL', 'user@example.com'],
+      ['tagged email', 'EMAIL', 'first.last+tag@sub.domain.org'],
+      ['GB IBAN', 'IBAN', 'GB82WEST12345698765432'],
+      ['DE IBAN', 'IBAN', 'DE89370400440532013000']
+    ])('should accept %s', (_desc, type, id) => {
+      expect(() => validatePartyIdentifier(type, id)).not.toThrow()
     })
 
-    describe('EMAIL type-specific validation', () => {
-      it('should accept valid email', () => {
-        expect(() => validatePartyIdentifier('EMAIL', 'user@example.com')).not.toThrow()
-        expect(() => validatePartyIdentifier('EMAIL', 'first.last+tag@sub.domain.org')).not.toThrow()
-      })
-
-      it('should reject email without @', () => {
-        expect(() => validatePartyIdentifier('EMAIL', 'not-an-email')).toThrow(/Invalid EMAIL/)
-      })
-
-      it('should reject email without domain', () => {
-        expect(() => validatePartyIdentifier('EMAIL', 'user@')).toThrow(/Invalid EMAIL/)
-      })
-    })
-
-    describe('IBAN type-specific validation', () => {
-      it('should accept valid IBAN', () => {
-        expect(() => validatePartyIdentifier('IBAN', 'GB82WEST12345698765432')).not.toThrow()
-        expect(() => validatePartyIdentifier('IBAN', 'DE89370400440532013000')).not.toThrow()
-      })
-
-      it('should reject IBAN without country code', () => {
-        expect(() => validatePartyIdentifier('IBAN', '12345678901234')).toThrow(/Invalid IBAN/)
-      })
-    })
-
-    describe('types without specific validation', () => {
-      const freeFormTypes = ['PERSONAL_ID', 'BUSINESS', 'DEVICE', 'ACCOUNT_ID', 'CONSENT', 'THIRD_PARTY_LINK']
-
-      freeFormTypes.forEach(type => {
-        it(`should accept alphanumeric ID for ${type}`, () => {
-          expect(() => validatePartyIdentifier(type, 'ABC-123_456')).not.toThrow()
-        })
-      })
+    it.each(
+      ['PERSONAL_ID', 'BUSINESS', 'DEVICE', 'ACCOUNT_ID', 'CONSENT', 'THIRD_PARTY_LINK']
+    )('should accept alphanumeric ID for %s', (type) => {
+      expect(() => validatePartyIdentifier(type, 'ABC-123_456')).not.toThrow()
     })
   })
 
