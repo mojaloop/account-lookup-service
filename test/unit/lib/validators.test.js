@@ -123,7 +123,7 @@ describe('validators', () => {
     })
 
     it('should reject SubId longer than 128 chars', () => {
-      expect(() => validatePartySubIdOrType('x'.repeat(129))).toThrow(/at most 128/)
+      expect(() => validatePartySubIdOrType('x'.repeat(129))).toThrow(/exceeds maximum length/)
     })
   })
 

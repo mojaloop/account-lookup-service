@@ -30,7 +30,6 @@
 
 'use strict'
 
-const { randomUUID } = require('node:crypto')
 const { setTimeout: sleep } = require('node:timers/promises')
 const Sinon = require('sinon')
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
