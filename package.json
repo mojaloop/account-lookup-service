@@ -196,7 +196,6 @@
     "convict": "6.2.5",
     "@hapi/content": "6.0.1",
     "path-to-regexp": "0.1.13",
-    "picomatch": "2.3.2",
     "brace-expansion": "1.1.13"
   },
   "devDependencies": {
