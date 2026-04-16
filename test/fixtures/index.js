@@ -173,7 +173,7 @@ const mockAlsRequestDto = (sourceId, type, partyId) => ({
 const expiredCacheKeyDto = ({
   sourceId = 'sourceId',
   type = 'MSISDN',
-  partyId = 'partyId-123',
+  partyId = '123456789',
   prefix = 'prefix'
 } = {}) => `${prefix}:${sourceId}:${type}:${partyId}`
 

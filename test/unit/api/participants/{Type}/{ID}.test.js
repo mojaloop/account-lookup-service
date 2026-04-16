@@ -143,10 +143,9 @@ describe('/participants/{Type}/{ID}', () => {
 
     it('getParticipantsByTypeAndID sends an async 3204 for invalid party id on response with status 400', async () => {
       // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'get')
       const options = {
         method: 'get',
-        url: mock.request.path,
+        url: '/participants/MSISDN/123456789',
         headers: Helper.defaultSwitchHeaders
       }
 
@@ -179,10 +178,9 @@ describe('/participants/{Type}/{ID}', () => {
     // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
     it('getParticipantsByTypeAndID sends an async 3201 for invalid party id on response with status 404', async () => {
       // Arrange
-      const mock = await Helper.generateMockRequest('/participants/{Type}/{ID}', 'get')
       const options = {
         method: 'get',
-        url: mock.request.path,
+        url: '/participants/MSISDN/123456789',
         headers: Helper.defaultSwitchHeaders
       }
 
@@ -230,6 +228,20 @@ describe('/participants/{Type}/{ID}', () => {
     it('returns 202 when postParticipants resolves', testSuccessfulDomainCall('post', 'postParticipants', 202))
 
     it('returns 202 when postParticipants rejects with an unknown error', testDomainMethodError('post', 'postParticipants', 202))
+
+    it('returns 400 when ID contains curly braces (e.g. URL template placeholder {ID})', async () => {
+      const options = {
+        method: 'post',
+        url: '/participants/MSISDN/%7BID%7D',
+        headers: Helper.defaultSwitchHeaders,
+        payload: { fspId: 'payeefsp', currency: 'USD' }
+      }
+
+      const response = await server.inject(options)
+
+      expect(response.statusCode).toBe(400)
+      expect(response.result.errorInformation).toBeDefined()
+    })
 
     it('returns 400 when fspiop-source references an unknown FSP', async () => {
       validateStub.restore()

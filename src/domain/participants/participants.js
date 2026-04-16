@@ -38,6 +38,7 @@ const Config = require('../../lib/config')
 const { logger } = require('../../lib')
 const { ERROR_MESSAGES } = require('../../constants')
 const util = require('../../lib/util')
+const { validatePathParameters } = require('../../lib/validators')
 
 const { FSPIOPErrorCodes } = ErrorHandler.Enums
 
@@ -58,35 +59,7 @@ const getCallbackEndpointTypes = (partySubIdOrType) => {
   }
 }
 
-/**
- * @function validatePathParameters
- * @description Validates that path parameters are not placeholder values like {ID} or {SubId}
- * @param {object} params - The path parameters object
- * @param {object} log - Logger instance for error logging
- * @throws {FSPIOPError} When parameters contain placeholder values
- */
-const validatePathParameters = (params, log = logger) => {
-  // Validate that ID is not a placeholder value
-  if (params.ID && (params.ID === '{ID}' || params.ID.includes('{') || params.ID.includes('}'))) {
-    const errMessage = `Invalid ID parameter: ${params.ID}. ID must not be a placeholder value`
-    log.error(errMessage, { params })
-    throw ErrorHandler.Factory.createFSPIOPError(
-      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-      errMessage
-    )
-  }
-
-  // Validate SubId if present
-  const partySubIdOrType = params.SubId
-  if (partySubIdOrType && (partySubIdOrType === '{SubId}' || partySubIdOrType.includes('{') || partySubIdOrType.includes('}'))) {
-    const errMessage = `Invalid SubId parameter: ${partySubIdOrType}. SubId must not be a placeholder value`
-    log.error(errMessage, { params })
-    throw ErrorHandler.Factory.createFSPIOPError(
-      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-      errMessage
-    )
-  }
-}
+// validatePathParameters imported from ../../lib/validators
 
 /**
  * @function getParticipantsByTypeAndID
@@ -111,7 +84,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
   const partySubIdOrType = params.SubId
 
   // Validate path parameters
-  validatePathParameters(params, log)
+  validatePathParameters(params)
 
   const source = headers[Enums.Http.Headers.FSPIOP.SOURCE]
   const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
@@ -632,7 +605,7 @@ const deleteParticipants = async (headers, params, method, query) => {
     const partySubIdOrType = params.SubId || undefined
 
     // Validate path parameters
-    validatePathParameters(params, log)
+    validatePathParameters(params)
 
     const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
     if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {

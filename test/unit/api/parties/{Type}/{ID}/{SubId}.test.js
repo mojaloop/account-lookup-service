@@ -106,14 +106,12 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
   it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
-
     const headers = Helper.defaultStandardHeaders('parties')
     delete headers['fspiop-destination']
 
     const options = {
       method: 'get',
-      url: mock.request.path,
+      url: '/parties/MSISDN/123456789/subId1',
       headers
     }
 
@@ -148,14 +146,12 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
   // which uses mojaloop/als-oracle-pathfinder and currently returns 404.
   it('getPartiesByTypeAndID endpoint sends async 3201 to /error for invalid party ID with status 404', async () => {
     // Arrange
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
-
     const headers = Helper.defaultStandardHeaders('parties')
     delete headers['fspiop-destination']
 
     const options = {
       method: 'get',
-      url: mock.request.path,
+      url: '/parties/MSISDN/123456789/subId1',
       headers
     }
 

@@ -30,6 +30,7 @@ const { Enum, Util } = require('@mojaloop/central-services-shared')
 const { initStepState } = require('../../../lib/util')
 const { createCallbackHeaders } = require('../../../lib/headers')
 const { ERROR_MESSAGES } = require('../../../constants')
+const { validatePathParameters } = require('../../../lib/validators')
 
 const { FspEndpointTypes, FspEndpointTemplates } = Enum.EndPoints
 const { Headers, RestMethods, HeaderResources } = Enum.Http
@@ -82,6 +83,7 @@ class BasePartiesService {
   constructor (deps, inputs) {
     this.#deps = Object.freeze(deps)
     this.#inputs = Object.freeze(inputs)
+    validatePathParameters(inputs.params)
     this.#state = this.#initiateState()
     this.log = this.deps.log.child({
       component: this.constructor.name,

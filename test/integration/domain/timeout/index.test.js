@@ -67,7 +67,8 @@ describe('Timeout Handler', () => {
   })
 
   it('should pass timeoutInterschemePartiesLookups flow', async () => {
-    const partyIds = [`isp1-${Date.now()}`, `isp2-${Date.now()}`]
+    const ts = Date.now()
+    const partyIds = [`PT00${ts}1`.substring(0, 20), `PT00${ts}2`.substring(0, 20)]
     const proxies = [PROXY_NAME]
     const alsReq1 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyIds[0])
     const alsReq2 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyIds[1])
@@ -100,8 +101,9 @@ describe('Timeout Handler', () => {
   })
 
   it.skip('should pass timeoutProxyGetPartiesLookups flow', async () => {
-    const partyId1 = `pgp1-${Date.now()}`
-    const partyId2 = `pgp2-${Date.now()}`
+    const ts = Date.now()
+    const partyId1 = `PT00${ts}3`.substring(0, 20)
+    const partyId2 = `PT00${ts}4`.substring(0, 20)
     const alsReq1 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyId1)
     const alsReq2 = fixtures.mockAlsRequestDto(PAYER_DFSP, PARTY_ID_TYPE, partyId2)
     const keys = [

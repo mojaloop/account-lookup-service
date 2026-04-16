@@ -30,7 +30,6 @@
 
 'use strict'
 
-const { randomUUID } = require('node:crypto')
 const { setTimeout: sleep } = require('node:timers/promises')
 const Sinon = require('sinon')
 const { createProxyCache } = require('@mojaloop/inter-scheme-proxy-cache-lib')
@@ -694,7 +693,7 @@ describe('Parties Tests', () => {
       oracle.oracleRequest = sandbox.stub().resolves()
 
       const headers = fixtures.partiesCallHeadersDto({ source, destination, proxy })
-      const partyId = `testParty-${randomUUID()}`
+      const partyId = `${Date.now()}`
       const partyIdType = 'MSISDN'
       const partyDetails = fixtures.putPartiesSuccessResponseDto({
         partyId,

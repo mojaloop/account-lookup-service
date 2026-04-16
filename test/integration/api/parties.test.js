@@ -77,7 +77,7 @@ describe('Parties Endpoints Tests -->', () => {
     })
 
     test('should handle PUT /parties/{Type}/{ID}/error without accept-header', async () => {
-      const partyId = `PT-${Date.now()}`
+      const partyId = `PT00${Date.now()}`.substring(0, 20)
       const body = fixtures.errorCallbackResponseDto()
 
       const { accept, ...headers } = fixtures.partiesCallHeadersDto({ proxy: 'proxyAB' })
@@ -95,7 +95,7 @@ describe('Parties Endpoints Tests -->', () => {
 
   describe('PUT /parties... endpoints tests -->', () => {
     const generatePutPartiesTestDataDto = ({
-      partyId = `party-${randomUUID()}`,
+      partyId = `PT00${Date.now()}`.substring(0, 20),
       partyIdType = PARTY_ID_TYPE,
       source = `sourceFsp-${Date.now()}`,
       destination = PAYER_DFSP,
