@@ -54,9 +54,12 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     server = await initServer(Config)
   })
 
+  afterEach(() => {
+    sandbox.restore()
+  })
+
   afterAll(async () => {
     await server.stop()
-    sandbox.restore()
   })
 
   it('getPartiesByTypeAndID (with SubId) failure', async () => {
@@ -67,6 +70,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
     const throwError = new Error('Unknown error')
     sandbox.stub(parties, 'getPartiesByTypeAndID').rejects(throwError)
 
@@ -80,6 +84,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Cleanup
     parties.getPartiesByTypeAndID.restore()
+    participant.validateParticipant.restore()
   })
 
   it('getPartiesByTypeAndID (with SubId) success', async () => {
@@ -90,6 +95,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
     sandbox.stub(parties, 'getPartiesByTypeAndID').resolves({})
 
     // Act
@@ -102,7 +108,12 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Cleanup
     parties.getPartiesByTypeAndID.restore()
+    participant.validateParticipant.restore()
   })
+
+  // NOTE: the 3101 invalid-fspiop-source error case is covered by the shared
+  // validateSourceFspHeader helper; see test/unit/api/parties/{Type}/{ID}.test.js
+  // for the route-level assertion. The SubId route delegates to the same helper.
 
   it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange

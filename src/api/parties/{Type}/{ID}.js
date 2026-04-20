@@ -30,6 +30,7 @@ const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const parties = require('../../../domain/parties')
 const LibUtil = require('../../../lib/util')
+const { validateSourceFspHeader } = require('../../../lib/validators')
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -70,6 +71,9 @@ module.exports = {
       headers,
       payload
     }, EventSdk.AuditEventAction.start)
+
+    await validateSourceFspHeader(headers)
+
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.
     parties.getPartiesByTypeAndID(headers, params, method, query, span, proxyCache).catch(err => {
