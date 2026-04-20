@@ -33,6 +33,7 @@ const ERROR_MESSAGES = Object.freeze({
   failedToCacheSendToProxiesList: 'Failed to cache sendToProxiesList',
   noDiscoveryRequestsForwarded: 'No discovery requests forwarded to participants',
   sourceFspNotFound: 'Requester FSP not found',
+  invalidFspiopSourceHeader: 'invalid fspiop-source header',
   partyDestinationFspNotFound: 'Destination FSP not found',
   partyProxyNotFound: 'Proxy not found',
   proxyConnectionError: 'Proxy connection error - no successful requests sent to proxies',

@@ -54,9 +54,12 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     server = await initServer(Config)
   })
 
+  afterEach(() => {
+    sandbox.restore()
+  })
+
   afterAll(async () => {
     await server.stop()
-    sandbox.restore()
   })
 
   it('getPartiesByTypeAndID (with SubId) failure', async () => {
@@ -67,6 +70,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
     const throwError = new Error('Unknown error')
     sandbox.stub(parties, 'getPartiesByTypeAndID').rejects(throwError)
 
@@ -80,6 +84,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Cleanup
     parties.getPartiesByTypeAndID.restore()
+    participant.validateParticipant.restore()
   })
 
   it('getPartiesByTypeAndID (with SubId) success', async () => {
@@ -90,6 +95,7 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
     sandbox.stub(parties, 'getPartiesByTypeAndID').resolves({})
 
     // Act
@@ -102,6 +108,30 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Cleanup
     parties.getPartiesByTypeAndID.restore()
+    participant.validateParticipant.restore()
+  })
+
+  it('getPartiesByTypeAndID (with SubId) returns 400 with error 3101 when fspiop-source references an unknown FSP', async () => {
+    // Arrange
+    sandbox.stub(participant, 'validateParticipant').resolves(null)
+    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
+    const options = {
+      method: 'get',
+      url: mock.request.path,
+      headers: Helper.defaultStandardHeaders('parties')
+    }
+
+    // Act
+    const response = await server.inject(options)
+
+    // Assert
+    expect(response.statusCode).toBe(400)
+    expect(response.result.errorInformation).toBeDefined()
+    expect(response.result.errorInformation.errorCode).toBe('3101')
+    expect(response.result.errorInformation.errorDescription).toBe('Malformed syntax - invalid fspiop-source header')
+
+    // Cleanup
+    participant.validateParticipant.restore()
   })
 
   it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {

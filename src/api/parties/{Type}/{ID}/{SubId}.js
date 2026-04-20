@@ -27,10 +27,13 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
+const participant = require('../../../../models/participantEndpoint/facade')
 const Metrics = require('@mojaloop/central-services-metrics')
+const { ERROR_MESSAGES } = require('../../../../constants')
 
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}
@@ -72,6 +75,15 @@ module.exports = {
       headers,
       payload
     }, EventSdk.AuditEventAction.start)
+
+    const sourceFsp = headers[Enum.Http.Headers.FSPIOP.SOURCE]
+    const requesterParticipantModel = await participant.validateParticipant(sourceFsp)
+    if (!requesterParticipantModel) {
+      throw ErrorHandler.Factory.createFSPIOPError(
+        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
+        ERROR_MESSAGES.invalidFspiopSourceHeader
+      )
+    }
 
     parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
