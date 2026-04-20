@@ -26,13 +26,11 @@
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const EventFrameworkUtil = require('@mojaloop/central-services-shared').Util.EventFramework
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
 const Metrics = require('@mojaloop/central-services-metrics')
 const parties = require('../../../domain/parties')
-const participant = require('../../../models/participantEndpoint/facade')
 const LibUtil = require('../../../lib/util')
-const { ERROR_MESSAGES } = require('../../../constants')
+const { validateSourceFspHeader } = require('../../../lib/validators')
 
 /**
  * Operations on /parties/{Type}/{ID}
@@ -74,14 +72,7 @@ module.exports = {
       payload
     }, EventSdk.AuditEventAction.start)
 
-    const sourceFsp = headers[Enum.Http.Headers.FSPIOP.SOURCE]
-    const requesterParticipantModel = await participant.validateParticipant(sourceFsp)
-    if (!requesterParticipantModel) {
-      throw ErrorHandler.Factory.createFSPIOPError(
-        ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
-        ERROR_MESSAGES.invalidFspiopSourceHeader
-      )
-    }
+    await validateSourceFspHeader(headers)
 
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by getPartiesByTypeAndID.

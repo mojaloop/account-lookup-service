@@ -1,6 +1,9 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const { Enum } = require('@mojaloop/central-services-shared')
+const participant = require('../models/participantEndpoint/facade')
+const { ERROR_MESSAGES } = require('../constants')
 
 /**
  * General safety pattern for party identifiers and sub-IDs.
@@ -97,10 +100,28 @@ const validatePathParameters = (params) => {
   validatePartySubIdOrType(params.SubId)
 }
 
+/**
+ * @function validateSourceFspHeader
+ * @description Validates that the fspiop-source header references a known FSP.
+ * @param {object} headers - Request headers
+ * @throws {FSPIOPError} MALFORMED_SYNTAX (3101) when the FSP is unknown
+ */
+const validateSourceFspHeader = async (headers) => {
+  const sourceFsp = headers[Enum.Http.Headers.FSPIOP.SOURCE]
+  const requesterParticipantModel = await participant.validateParticipant(sourceFsp)
+  if (!requesterParticipantModel) {
+    throw ErrorHandler.Factory.createFSPIOPError(
+      ErrorHandler.Enums.FSPIOPErrorCodes.MALFORMED_SYNTAX,
+      ERROR_MESSAGES.invalidFspiopSourceHeader
+    )
+  }
+}
+
 module.exports = {
   validatePathParameters,
   validatePartyIdentifier,
   validatePartySubIdOrType,
+  validateSourceFspHeader,
   TYPE_PATTERNS,
   GENERAL_ID_PATTERN
 }
