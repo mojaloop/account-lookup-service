@@ -15,7 +15,7 @@
   "dependencies": {
     "@mojaloop/central-services-shared": "18.30.6",
     "@types/node": "^24.1.0",
-    "axios": "1.13.6",
+    "axios": "1.15.1",
     "body-parser": "2.2.1",
     "express": "4.21.2",
     "ts-node": "^10.9.2",
@@ -54,6 +54,13 @@
     "fast-xml-parser": "5.5.8",
     "flatted": "3.4.2",
     "immutable": "5.1.5",
-    "axios": "1.13.6"
+    "axios": "1.15.1",
+    "follow-redirects": "1.16.0",
+    "@grpc/proto-loader": {
+      "protobufjs": "7.5.5"
+    },
+    "@mojaloop/event-sdk": {
+      "protobufjs": "8.0.1"
+    }
   }
 }
