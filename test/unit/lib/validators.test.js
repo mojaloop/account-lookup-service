@@ -1,6 +1,13 @@
 'use strict'
 
-const { validatePathParameters, validatePartyIdentifier, validatePartySubIdOrType } = require('../../../src/lib/validators')
+const Sinon = require('sinon')
+const participant = require('../../../src/models/participantEndpoint/facade')
+const {
+  validatePathParameters,
+  validatePartyIdentifier,
+  validatePartySubIdOrType,
+  validateSourceFspHeader
+} = require('../../../src/lib/validators')
 
 describe('validators', () => {
   describe('validatePartyIdentifier', () => {
@@ -82,6 +89,26 @@ describe('validators', () => {
 
     it('should reject invalid SubId', () => {
       expect(() => validatePathParameters({ Type: 'MSISDN', ID: '123456789', SubId: '{SubId}' })).toThrow()
+    })
+  })
+
+  describe('validateSourceFspHeader', () => {
+    let sandbox
+    beforeEach(() => { sandbox = Sinon.createSandbox() })
+    afterEach(() => sandbox.restore())
+
+    it('resolves when the source FSP is known', async () => {
+      sandbox.stub(participant, 'validateParticipant').resolves({ name: 'payerfsp' })
+      await expect(validateSourceFspHeader({ 'fspiop-source': 'payerfsp' })).resolves.toBeUndefined()
+    })
+
+    it('throws MALFORMED_SYNTAX (3101) with the invalid fspiop-source message when unknown', async () => {
+      sandbox.stub(participant, 'validateParticipant').resolves(null)
+      await expect(validateSourceFspHeader({ 'fspiop-source': 'invalidFSPIOPText' }))
+        .rejects.toMatchObject({
+          apiErrorCode: { code: '3101' },
+          message: 'invalid fspiop-source header'
+        })
     })
   })
 })

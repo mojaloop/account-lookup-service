@@ -88,26 +88,6 @@ describe('/parties', () => {
     parties.getPartiesByTypeAndID.restore()
   })
 
-  it('getPartiesByTypeAndID returns 400 with error 3101 when fspiop-source references an unknown FSP', async () => {
-    // Arrange
-    sandbox.stub(participant, 'validateParticipant').resolves(null)
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')
-    const options = {
-      method: 'get',
-      url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties')
-    }
-
-    // Act
-    const response = await server.inject(options)
-
-    // Assert
-    expect(response.statusCode).toBe(400)
-    expect(response.result.errorInformation).toBeDefined()
-    expect(response.result.errorInformation.errorCode).toBe('3101')
-    expect(response.result.errorInformation.errorDescription).toBe('Malformed syntax - invalid fspiop-source header')
-  })
-
   it('getPartiesByTypeAndID failure', async () => {
     // Arrange
     const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}', 'get')

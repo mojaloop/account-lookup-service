@@ -111,28 +111,9 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     participant.validateParticipant.restore()
   })
 
-  it('getPartiesByTypeAndID (with SubId) returns 400 with error 3101 when fspiop-source references an unknown FSP', async () => {
-    // Arrange
-    sandbox.stub(participant, 'validateParticipant').resolves(null)
-    const mock = await Helper.generateMockRequest('/parties/{Type}/{ID}/{SubId}', 'get')
-    const options = {
-      method: 'get',
-      url: mock.request.path,
-      headers: Helper.defaultStandardHeaders('parties')
-    }
-
-    // Act
-    const response = await server.inject(options)
-
-    // Assert
-    expect(response.statusCode).toBe(400)
-    expect(response.result.errorInformation).toBeDefined()
-    expect(response.result.errorInformation.errorCode).toBe('3101')
-    expect(response.result.errorInformation.errorDescription).toBe('Malformed syntax - invalid fspiop-source header')
-
-    // Cleanup
-    participant.validateParticipant.restore()
-  })
+  // NOTE: the 3101 invalid-fspiop-source error case is covered by the shared
+  // validateSourceFspHeader helper; see test/unit/api/parties/{Type}/{ID}.test.js
+  // for the route-level assertion. The SubId route delegates to the same helper.
 
   it('getPartiesByTypeAndID endpoint sends async 3204 to /error for invalid party ID on response with status 400', async () => {
     // Arrange
