@@ -39,9 +39,6 @@
       "yargs-parser": "21.1.1",
       "markdown-it": "12.3.2"
     },
-    "swagger2openapi": {
-      "yaml": "2.7.0"
-    },
     "cross-spawn": "7.0.6",
     "jsonwebtoken": "9.0.0",
     "jsonpointer": "5.0.0",
