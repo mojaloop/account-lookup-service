@@ -24,6 +24,11 @@
  ******/
 'use strict'
 
+const fs = require('node:fs')
+const path = require('node:path')
+const { Jws } = require('@mojaloop/sdk-standard-components')
+const JwsValidator = Jws.validator
+
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
@@ -135,6 +140,39 @@ const registerPlugins = async (server, openAPIBackend) => {
     }
   ])
 
+  if (Config.JWS_VALIDATE) {
+    const validationKeys = loadJwsKeys(Config.JWS_VERIFICATION_KEYS_DIRECTORY)
+    const jwsValidator = new JwsValidator({ logger, validationKeys })
+    const validatePutParties = Config.JWS_VALIDATE_PUT_PARTIES
+
+    const watcher = watchJwsKeys(Config.JWS_VERIFICATION_KEYS_DIRECTORY, validationKeys)
+    if (watcher) {
+      server.app.jwsKeyWatcher = watcher
+      server.events.on('stop', () => watcher.close())
+    }
+
+    server.ext('onPostAuth', (request, h) => {
+      if (request.method === 'get') return h.continue
+
+      const resource = request.path.replace(/^\//, '').split('/')[0]
+      if (!['participants', 'parties'].includes(resource)) return h.continue
+
+      if (!validatePutParties && request.method === 'put' && request.path.startsWith('/parties/')) {
+        return h.continue
+      }
+
+      try {
+        jwsValidator.validate({ headers: request.headers, body: request.payload })
+      } catch (err) {
+        logger.error('Inbound request failed JWS validation', err)
+        throw ErrorHandling.Factory.createFSPIOPError(
+          ErrorHandling.Enums.FSPIOPErrorCodes.INVALID_SIGNATURE, err.message
+        )
+      }
+      return h.continue
+    })
+  }
+
   if (Config.DISPLAY_ROUTES === true) {
     await server.register([Blipp])
   }
@@ -142,6 +180,35 @@ const registerPlugins = async (server, openAPIBackend) => {
   await server.register({
     plugin: loggingPlugin,
     options: { log: logger }
+  })
+}
+
+const loadJwsKeys = (dir) => {
+  const keys = {}
+  if (!dir || !fs.existsSync(dir)) return keys
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.pem'))) {
+    keys[path.basename(f, '.pem')] = fs.readFileSync(path.join(dir, f))
+  }
+  return keys
+}
+
+const watchJwsKeys = (dir, keyMap) => {
+  if (!dir || !fs.existsSync(dir)) return null
+  return fs.watch(dir, async (eventType, filename) => {
+    if (!filename || path.extname(filename) !== '.pem') return
+    const keyName = path.basename(filename, '.pem')
+    const keyPath = path.join(dir, filename)
+    try {
+      if (fs.existsSync(keyPath)) {
+        keyMap[keyName] = await fs.promises.readFile(keyPath)
+        logger.info(`JWS verification key loaded: ${keyName}`)
+      } else {
+        delete keyMap[keyName]
+        logger.info(`JWS verification key removed: ${keyName}`)
+      }
+    } catch (err) {
+      logger.error(`Failed to process JWS key change for ${filename}`, err)
+    }
   })
 }
 
