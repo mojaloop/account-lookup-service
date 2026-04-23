@@ -46,6 +46,12 @@ ignore:
   - vulnerability: GHSA-f886-m6hf-6m8v
     include-aliases: true
     reason: "npm override applied (brace-expansion 1.1.13) but grype reads lock file literally - override verified via npm ls"
+  - vulnerability: GHSA-xq3m-2v4x-88gg
+    include-aliases: true
+    reason: "npm override applied (protobufjs@8.0.0 -> 8.0.1; nested @grpc/proto-loader resolves to 7.5.5) but grype reads lock file literally (flags declared '^7.5.3' and '8.0.0' requirements) - override verified via npm ls"
+  - vulnerability: GHSA-r4q5-vmmm-2653
+    include-aliases: true
+    reason: "follow-redirects resolved to 1.16.0 (patched) but grype reads lock file literally (flags declared '^1.15.11' requirement) - resolved version verified via npm ls"
 output:
   - table
   - json
