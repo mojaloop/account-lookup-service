@@ -54,6 +54,10 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     server = await initServer(Config)
   })
 
+  beforeEach(() => {
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
+  })
+
   afterEach(() => {
     sandbox.restore()
   })
@@ -70,7 +74,6 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
-    sandbox.stub(participant, 'validateParticipant').resolves(true)
     const throwError = new Error('Unknown error')
     sandbox.stub(parties, 'getPartiesByTypeAndID').rejects(throwError)
 
@@ -84,7 +87,6 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Cleanup
     parties.getPartiesByTypeAndID.restore()
-    participant.validateParticipant.restore()
   })
 
   it('getPartiesByTypeAndID (with SubId) success', async () => {
@@ -95,7 +97,6 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
-    sandbox.stub(participant, 'validateParticipant').resolves(true)
     sandbox.stub(parties, 'getPartiesByTypeAndID').resolves({})
 
     // Act
@@ -108,7 +109,6 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
 
     // Cleanup
     parties.getPartiesByTypeAndID.restore()
-    participant.validateParticipant.restore()
   })
 
   // NOTE: the 3101 invalid-fspiop-source error case is covered by the shared
@@ -135,7 +135,6 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     )
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
-      sandbox.stub(participant, 'validateParticipant').resolves(true),
       sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]
@@ -175,7 +174,6 @@ describe('/parties/{Type}/{ID}/{SubId}', () => {
     )
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
-      sandbox.stub(participant, 'validateParticipant').resolves(true),
       sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
       sandbox.stub(requestUtil, 'sendRequest').rejects(badRequestError)
     ]

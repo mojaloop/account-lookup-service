@@ -32,6 +32,7 @@
 const Metrics = require('@mojaloop/central-services-metrics')
 const libUtil = require('../../lib/util')
 const { logger } = require('../../lib')
+const { validatePathParameters } = require('../../lib/validators')
 const { createDeps } = require('./deps')
 const services = require('./services')
 
@@ -59,6 +60,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
   let fspiopError
 
   try {
+    validatePathParameters(params)
     await service.handleRequest()
     logger.info('putPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
@@ -95,6 +97,7 @@ const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, spa
   let fspiopError
 
   try {
+    validatePathParameters(params)
     await service.handleRequest()
     logger.info('putPartiesErrorByTypeAndID is done')
     histTimerEnd({ success: true })
