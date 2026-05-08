@@ -30,9 +30,6 @@ const Mockgen = require('./mockgen')
 const Enums = require('@mojaloop/central-services-shared').Enum
 const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 const Config = require('../../src/lib/config')
-const participantFacade = require('../../src/models/participantEndpoint/facade')
-
-const stubValidateParticipant = (sandbox) => sandbox.stub(participantFacade, 'validateParticipant').resolves(true)
 
 const payerfsp = 'payerfsp'
 const payeefsp = 'payeefsp'
@@ -331,6 +328,5 @@ module.exports = {
   partiesHeadersDto,
   participantPutEndpointOptions,
   postByTypeIdCurrencyRequest,
-  mockSpan,
-  stubValidateParticipant
+  mockSpan
 }
