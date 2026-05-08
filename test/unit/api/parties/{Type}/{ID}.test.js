@@ -57,10 +57,6 @@ describe('/parties', () => {
     server = await initServer(Config)
   })
 
-  beforeEach(() => {
-    sandbox.stub(participant, 'validateParticipant').resolves(true)
-  })
-
   afterEach(async () => {
     sandbox.restore()
   })
@@ -77,6 +73,7 @@ describe('/parties', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    Helper.stubValidateParticipant(sandbox)
     sandbox.stub(parties, 'getPartiesByTypeAndID').resolves({})
 
     // Act
@@ -99,6 +96,7 @@ describe('/parties', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    Helper.stubValidateParticipant(sandbox)
     const throwError = new Error('Unknown error')
     sandbox.stub(parties, 'getPartiesByTypeAndID').rejects(throwError)
 
@@ -132,6 +130,7 @@ describe('/parties', () => {
       {},
       [{ key: 'status', value: 400 }]
     )
+    Helper.stubValidateParticipant(sandbox)
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
       sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
@@ -174,6 +173,7 @@ describe('/parties', () => {
       {},
       [{ key: 'status', value: 404 }]
     )
+    Helper.stubValidateParticipant(sandbox)
     const stubs = [
       sandbox.stub(participant, 'sendErrorToParticipant').resolves({}),
       sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves(['whatever']),
