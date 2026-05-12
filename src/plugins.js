@@ -215,3 +215,5 @@ const watchJwsKeys = (dir, keyMap) => {
 module.exports = {
   registerPlugins
 }
+module.exports._loadJwsKeys = loadJwsKeys
+module.exports._watchJwsKeys = watchJwsKeys

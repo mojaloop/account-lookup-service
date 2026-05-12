@@ -1,7 +1,6 @@
 disabled: false
 scan-type: source
 ignore:
-  # --- npm transitive vulnerabilities (unfixable via application deps) ---
   - vulnerability: GHSA-2g4f-4pwh-qvx6
     include-aliases: true
     reason: "Unfixable npm transitive vulnerability: ajv ReDoS via $data (moderate) - via @mojaloop/ml-schema-transformer-lib"
@@ -10,48 +9,60 @@ ignore:
     reason: "Unfixable npm transitive vulnerability: js-yaml prototype pollution (moderate) - via json-schema-ref-parser"
   - vulnerability: GHSA-fvcv-3m26-pcqx
     include-aliases: true
-    reason: "npm override applied (axios 1.15.0) but grype reads lock file literally - override verified via npm ls as of 2026-04-14"
-
-  # --- npm overrides that grype reads from lockfile metadata ---
+    reason: >-
+      npm override applied (axios 1.15.0) but grype reads lock file literally - override verified via npm ls as of
+      2026-04-14
   - vulnerability: GHSA-44fc-8fm5-q62h
     include-aliases: true
-    reason: "npm override applied (convict 6.2.5) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (convict 6.2.5) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-hf2r-9gf9-rwch
     include-aliases: true
-    reason: "npm override applied (convict 6.2.5) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (convict 6.2.5) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-jg4p-7fhp-p32p
     include-aliases: true
-    reason: "npm override applied (@hapi/content 6.0.1) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (@hapi/content 6.0.1) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-37ch-88jc-xwx2
     include-aliases: true
-    reason: "npm override applied (path-to-regexp 0.1.13) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (path-to-regexp 0.1.13) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-48c2-rrv3-qjmp
     include-aliases: true
-    reason: "npm override applied (yaml 1.10.3) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (yaml 1.10.3) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-3p68-rc4w-qgx5
     include-aliases: true
-    reason: "npm override applied (axios 1.15.0) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (axios 1.15.0) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-r5fr-rjxr-66jc
     include-aliases: true
-    reason: "npm override applied (lodash 4.18.0) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (lodash 4.18.0) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-f23m-r3pf-42rh
     include-aliases: true
-    reason: "npm override applied (lodash 4.18.0) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (lodash 4.18.0) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-3v7f-55p6-f55p
     include-aliases: true
-    reason: "npm override applied (picomatch 2.3.2) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (picomatch 2.3.2) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-c2c7-rcm5-vvqj
     include-aliases: true
-    reason: "npm override applied (picomatch 2.3.2) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (picomatch 2.3.2) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-f886-m6hf-6m8v
     include-aliases: true
-    reason: "npm override applied (brace-expansion 1.1.13) but grype reads lock file literally - override verified via npm ls"
+    reason: npm override applied (brace-expansion 1.1.13) but grype reads lock file literally - override verified via npm ls
   - vulnerability: GHSA-xq3m-2v4x-88gg
     include-aliases: true
-    reason: "npm override applied (protobufjs@8.0.0 -> 8.0.1; nested @grpc/proto-loader resolves to 7.5.5) but grype reads lock file literally (flags declared '^7.5.3' and '8.0.0' requirements) - override verified via npm ls"
+    reason: >-
+      npm override applied (protobufjs@8.0.0 -> 8.0.1; nested @grpc/proto-loader resolves to 7.5.5) but grype reads lock
+      file literally (flags declared '^7.5.3' and '8.0.0' requirements) - override verified via npm ls
   - vulnerability: GHSA-r4q5-vmmm-2653
     include-aliases: true
-    reason: "follow-redirects resolved to 1.16.0 (patched) but grype reads lock file literally (flags declared '^1.15.11' requirement) - resolved version verified via npm ls"
+    reason: >-
+      follow-redirects resolved to 1.16.0 (patched) but grype reads lock file literally (flags declared '^1.15.11'
+      requirement) - resolved version verified via npm ls
+  - vulnerability: CVE-2025-60876
+    include-aliases: true
+    reason: "Alpine base image package (apk): busybox - no npm fix available as of 2026-05-12 (moderate severity)"
+  - vulnerability: GHSA-v2v4-37r5-5v8g
+    include-aliases: true
+    reason: >-
+      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-05-12 (moderate severity)
 output:
   - table
   - json
