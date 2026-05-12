@@ -26,6 +26,7 @@
 const Metrics = require('@mojaloop/central-services-metrics')
 const libUtil = require('../../lib/util')
 const { logger } = require('../../lib')
+const { validatePathParameters } = require('../../lib/validators')
 const { createDeps } = require('./deps')
 const { GetPartiesService } = require('./services')
 
@@ -54,6 +55,7 @@ const getPartiesByTypeAndID = async (headers, params, method, query, span, proxy
   let fspiopError
 
   try {
+    validatePathParameters(params)
     await service.handleRequest()
     logger.info('getPartiesByTypeAndID is done')
     histTimerEnd({ success: true })
