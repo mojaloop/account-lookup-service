@@ -15,7 +15,7 @@
   "dependencies": {
     "@mojaloop/central-services-shared": "18.30.6",
     "@types/node": "^24.1.0",
-    "axios": "1.13.6",
+    "axios": "1.15.2",
     "body-parser": "2.2.1",
     "express": "4.21.2",
     "ts-node": "^10.9.2",
@@ -26,7 +26,7 @@
     "@types/express": "^5.0.3"
   },
   "overrides": {
-    "form-data": "4.0.4",
+    "form-data": "4.0.5",
     "shins": {
       "ajv": "6.12.3",
       "ejs": "3.1.10",
@@ -39,21 +39,30 @@
       "yargs-parser": "21.1.1",
       "markdown-it": "12.3.2"
     },
-    "swagger2openapi": {
-      "yaml": "2.7.0"
-    },
     "cross-spawn": "7.0.6",
     "jsonwebtoken": "9.0.0",
     "jsonpointer": "5.0.0",
     "qs": "6.14.2",
     "minimatch": "10.2.4",
-    "lodash": "4.17.23",
+    "lodash": "4.18.0",
     "undici": "7.24.5",
     "js-yaml": "4.1.1",
     "diff": "5.2.2",
-    "fast-xml-parser": "5.5.8",
+    "fast-xml-parser": "5.7.0",
     "flatted": "3.4.2",
     "immutable": "5.1.5",
-    "axios": "1.13.6"
+    "axios": "1.15.2",
+    "follow-redirects": "1.16.0",
+    "@grpc/proto-loader": {
+      "protobufjs": "7.5.5"
+    },
+    "@mojaloop/event-sdk": {
+      "protobufjs": "8.0.1"
+    },
+    "convict": "6.2.5",
+    "fast-uri": "3.1.2",
+    "fast-xml-builder": "1.1.7",
+    "path-to-regexp": "0.1.13",
+    "yaml": "2.8.3"
   }
 }

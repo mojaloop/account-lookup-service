@@ -1,0 +1,11 @@
+ignore:
+  - vulnerability: GHSA-2g4f-4pwh-qvx6
+    include-aliases: true
+    reason: "Unfixable npm transitive vulnerability: ajv (moderate severity) as of 2026-05-12"
+output:
+  - table
+  - json
+search:
+  scope: squashed
+quiet: false
+check-for-app-update: false
