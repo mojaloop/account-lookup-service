@@ -73,6 +73,7 @@ describe('/parties', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
     sandbox.stub(parties, 'getPartiesByTypeAndID').resolves({})
 
     // Act
@@ -95,6 +96,7 @@ describe('/parties', () => {
       url: mock.request.path,
       headers: Helper.defaultStandardHeaders('parties')
     }
+    sandbox.stub(participant, 'validateParticipant').resolves(true)
     const throwError = new Error('Unknown error')
     sandbox.stub(parties, 'getPartiesByTypeAndID').rejects(throwError)
 

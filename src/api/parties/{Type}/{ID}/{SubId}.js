@@ -31,6 +31,7 @@ const EventSdk = require('@mojaloop/event-sdk')
 const LibUtil = require('../../../../lib/util')
 const parties = require('../../../../domain/parties')
 const Metrics = require('@mojaloop/central-services-metrics')
+const { validateSourceFspHeader } = require('../../../../lib/validators')
 
 /**
  * Operations on /parties/{Type}/{ID}/{SubId}
@@ -72,6 +73,8 @@ module.exports = {
       headers,
       payload
     }, EventSdk.AuditEventAction.start)
+
+    await validateSourceFspHeader(headers)
 
     parties.getPartiesByTypeAndID(request.headers, request.params, request.method, request.query, request.span, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - getPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)

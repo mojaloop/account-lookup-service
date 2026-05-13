@@ -183,7 +183,8 @@
     "minimatch@10.2.1": "10.2.3",
     "axios": "1.16.0",
     "immutable": "5.1.5",
-    "protobufjs@8.0.0": "8.0.1",
+    "protobufjs@8.0.0": "8.0.3",
+    "@protobufjs/utf8": "1.1.1",
     "undici@7.18.2": "7.24.5",
     "flatted": "3.4.2",
     "markdown-it": "14.1.1",
@@ -198,10 +199,10 @@
     "path-to-regexp": "0.1.13",
     "brace-expansion": "1.1.13",
     "@grpc/proto-loader": {
-      "protobufjs": "7.5.5"
+      "protobufjs": "7.5.8"
     },
     "@mojaloop/event-sdk": {
-      "protobufjs": "8.0.1"
+      "protobufjs": "8.0.3"
     },
     "fast-uri": "3.1.2",
     "fast-xml-builder": "1.1.7",
