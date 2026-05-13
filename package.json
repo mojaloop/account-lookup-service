@@ -100,7 +100,7 @@
     "@mojaloop/central-services-shared": "18.35.7",
     "@mojaloop/central-services-stream": "11.9.1",
     "@mojaloop/database-lib": "^11.3.7",
-    "@mojaloop/event-sdk": "14.8.3",
+    "@mojaloop/event-sdk": "14.8.4",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.10.0",
     "@mojaloop/ml-schema-transformer-lib": "2.9.0",
     "@mojaloop/sdk-standard-components": "19.18.9",
@@ -196,7 +196,17 @@
     "convict": "6.2.5",
     "@hapi/content": "6.0.1",
     "path-to-regexp": "0.1.13",
-    "brace-expansion": "1.1.13"
+    "brace-expansion": "1.1.13",
+    "@grpc/proto-loader": {
+      "protobufjs": "7.5.5"
+    },
+    "@mojaloop/event-sdk": {
+      "protobufjs": "8.0.1"
+    },
+    "fast-uri": "3.1.2",
+    "fast-xml-builder": "1.1.7",
+    "js-yaml": "3.14.2",
+    "ajv@>=7.0.0-alpha.0 <8.18.0": "8.18.0"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",
@@ -211,7 +221,7 @@
     "jest-junit": "17.0.0",
     "jsdoc": "4.0.5",
     "nodemon": "3.1.14",
-    "npm-check-updates": "22.1.1",
+    "npm-check-updates": "22.2.0",
     "nyc": "18.0.0",
     "pre-commit": "2.0.0",
     "proxyquire": "2.1.3",
