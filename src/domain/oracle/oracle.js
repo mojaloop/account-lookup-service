@@ -37,6 +37,11 @@ const endpointType = require('../../models/endpointType')
 const currency = require('../../models/currency')
 const util = require('../../lib/util')
 
+const histCreateOracle = Metrics.getHistogram('createOracle', 'Create Oracle', ['success'])
+const histGetOracle = Metrics.getHistogram('getOracle', 'Get Oracle', ['success'])
+const histUpdateOracle = Metrics.getHistogram('updateOracle', 'Update Oracle', ['success'])
+const histDeleteOracle = Metrics.getHistogram('deleteOracle', 'Delete Oracle', ['success'])
+
 /**
  * @function createOracle
  *
@@ -45,11 +50,7 @@ const util = require('../../lib/util')
  * @param {object} payload The payload from the Hapi server request
  */
 exports.createOracle = async (payload) => {
-  const histTimerEnd = Metrics.getHistogram(
-    'createOracle',
-    'Create Oracle',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histCreateOracle.startTimer()
   let step
 
   try {
@@ -103,11 +104,7 @@ exports.createOracle = async (payload) => {
  * @param {object} query The query parameters from the Hapi server request
  */
 exports.getOracle = async (query) => {
-  const histTimerEnd = Metrics.getHistogram(
-    'getOracle',
-    'Get Oracle',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histGetOracle.startTimer()
   let step
   try {
     let oracleEndpointModelList
@@ -164,11 +161,7 @@ exports.getOracle = async (query) => {
  * @param {object} payload The payload from the Hapi server request
  */
 exports.updateOracle = async (params, payload) => {
-  const histTimerEnd = Metrics.getHistogram(
-    'updateOracle',
-    'Update Oracle',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histUpdateOracle.startTimer()
   let step
   try {
     step = 'getOracleEndpointById-1'
@@ -241,11 +234,7 @@ exports.updateOracle = async (params, payload) => {
  * @param {object} params The parameters from the Hapi server request
  */
 exports.deleteOracle = async (params) => {
-  const histTimerEnd = Metrics.getHistogram(
-    'deleteOracle',
-    'Delete Oracle',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histDeleteOracle.startTimer()
   try {
     await oracleEndpoint.destroyOracleEndpointById(params.ID)
     histTimerEnd({ success: true })

@@ -41,6 +41,22 @@ const axiosRequestOptionsOverride = {
   timeout: Config.HTTP_REQUEST_TIMEOUT_MS
 }
 
+const histGetParticipantEndpoint = Metrics.getHistogram(
+  'egress_getParticipantEndpoint',
+  'Egress: Get Endpoint of participant',
+  ['success', 'endpointType', 'participantName']
+)
+const histSendRequestToParticipant = Metrics.getHistogram(
+  'egress_sendRequestToParticipant',
+  'Egress: Send request to participant',
+  ['success', 'endpointType', 'participantName']
+)
+const histValidateParticipant = Metrics.getHistogram(
+  'egress_validateParticipant',
+  'Egress: Validate participant',
+  ['success']
+)
+
 /**
  * @module src/models/participantEndpoint/facade
  */
@@ -80,11 +96,7 @@ const defineJwsSigner = (config, headers, requestedEndpoint) => {
 exports.sendRequest = async (headers, requestedParticipant, endpointType, method = undefined, payload = undefined, options = undefined, span = undefined) => {
   // Get endpoint for participant
   let requestedEndpoint
-  const histTimerEndGetParticipantEndpoint = Metrics.getHistogram(
-    'egress_getParticipantEndpoint',
-    'Egress: Get Endpoint of participant',
-    ['success', 'endpointType', 'participantName']
-  ).startTimer()
+  const histTimerEndGetParticipantEndpoint = histGetParticipantEndpoint.startTimer()
   try {
     requestedEndpoint = await Util.Endpoints.getEndpoint(Config.SWITCH_ENDPOINT, requestedParticipant, endpointType, options || undefined)
     histTimerEndGetParticipantEndpoint({ success: true, endpointType, participantName: requestedParticipant })
@@ -96,11 +108,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
   }
 
   // Send request to participant
-  const histTimerEndSendRequestToParticipant = Metrics.getHistogram(
-    'egress_sendRequestToParticipant',
-    'Egress: Send request to participant',
-    ['success', 'endpointType', 'participantName']
-  ).startTimer()
+  const histTimerEndSendRequestToParticipant = histSendRequestToParticipant.startTimer()
   try {
     // Injected Configuration for outbound Content-Type & Accept headers.
     const protocolVersions = {
@@ -152,11 +160,7 @@ exports.sendRequest = async (headers, requestedParticipant, endpointType, method
  * @returns the participants info in a successful case and
  */
 exports.validateParticipant = async (fsp) => {
-  const histTimerEnd = Metrics.getHistogram(
-    'egress_validateParticipant',
-    'Egress: Validate participant',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histValidateParticipant.startTimer()
   try {
     const resp = await Util.Participants.getParticipant(Config.SWITCH_ENDPOINT, fsp)
     histTimerEnd({ success: true })
@@ -195,11 +199,7 @@ exports.validateParticipant = async (fsp) => {
 exports.sendErrorToParticipant = async (participantName, endpointType, errorInformation, headers, params = {}, payload = undefined, span = undefined) => {
   // Get endpoint for participant
   let requesterErrorEndpoint
-  const histTimerEndGetParticipantEndpoint = Metrics.getHistogram(
-    'egress_getParticipantEndpoint',
-    'Egress: Get Endpoint of participant',
-    ['success', 'endpointType', 'participantName']
-  ).startTimer()
+  const histTimerEndGetParticipantEndpoint = histGetParticipantEndpoint.startTimer()
   try {
     const { requestId } = payload || {}
 
@@ -226,11 +226,7 @@ exports.sendErrorToParticipant = async (participantName, endpointType, errorInfo
   }
 
   // Send error to participant
-  const histTimerEndSendRequestToParticipant = Metrics.getHistogram(
-    'egress_sendRequestToParticipant',
-    'Egress: Send request to participant',
-    ['success', 'endpointType', 'participantName']
-  ).startTimer()
+  const histTimerEndSendRequestToParticipant = histSendRequestToParticipant.startTimer()
   try {
     // Injected Configuration for outbound Content-Type & Accept headers.
     const protocolVersions = {

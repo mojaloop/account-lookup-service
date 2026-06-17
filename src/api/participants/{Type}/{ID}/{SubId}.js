@@ -67,10 +67,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     participants.getParticipantsByTypeAndID(request.headers, request.params, request.method, request.query, request.span).catch(err => {
       request.server.log(['error'], `ERROR - getParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
@@ -109,10 +109,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     participants.putParticipantsByTypeAndID(request.headers, request.params, request.method, request.payload).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)
@@ -151,10 +151,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     participants.postParticipants(request.headers, request.method, request.params, request.payload, request.span).catch(err => {
       request.server.log(['error'], `ERROR - postParticipants: ${LibUtil.getStackOrInspect(err)}`)
@@ -193,10 +193,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     participants.deleteParticipants(request.headers, request.params, request.method, request.query).catch(err => {
       request.server.log(['error'], `ERROR - deleteParticipants: ${LibUtil.getStackOrInspect(err)}`)

@@ -69,10 +69,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     await validateSourceFspHeader(headers)
 
@@ -114,10 +114,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     parties.putPartiesByTypeAndID(request.headers, request.params, request.method, request.payload, request.dataUri, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)

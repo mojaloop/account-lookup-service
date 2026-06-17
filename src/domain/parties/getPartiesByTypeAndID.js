@@ -30,6 +30,12 @@ const { validatePathParameters } = require('../../lib/validators')
 const { createDeps } = require('./deps')
 const { GetPartiesService } = require('./services')
 
+const histGetPartiesByTypeAndID = Metrics.getHistogram(
+  'getPartiesByTypeAndID',
+  'Get party by Type and Id',
+  ['success']
+)
+
 /**
  * @function getPartiesByTypeAndID
  *
@@ -44,11 +50,7 @@ const { GetPartiesService } = require('./services')
  */
 const getPartiesByTypeAndID = async (headers, params, method, query, span, proxyCache = undefined) => {
   const component = getPartiesByTypeAndID.name
-  const histTimerEnd = Metrics.getHistogram(
-    component,
-    'Get party by Type and Id',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histGetPartiesByTypeAndID.startTimer()
   const childSpan = span ? span.getChild(component) : undefined
   const deps = createDeps({ proxyCache, childSpan })
   const service = new GetPartiesService(deps, { headers, params, query })

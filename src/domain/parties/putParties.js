@@ -36,6 +36,17 @@ const { validatePathParameters } = require('../../lib/validators')
 const { createDeps } = require('./deps')
 const services = require('./services')
 
+const histPutPartiesByTypeAndID = Metrics.getHistogram(
+  'putPartiesByTypeAndID',
+  'Put parties by type and id',
+  ['success']
+)
+const histPutPartiesErrorByTypeAndID = Metrics.getHistogram(
+  'putPartiesErrorByTypeAndID',
+  'Put parties error by type and id',
+  ['success']
+)
+
 /**
  * Sends a callback to inform participant of successful lookup
  *
@@ -49,11 +60,7 @@ const services = require('./services')
 const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, proxyCache = undefined) => {
   // think, if we need to pass span here
   const component = putPartiesByTypeAndID.name
-  const histTimerEnd = Metrics.getHistogram(
-    component,
-    'Put parties by type and id',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histPutPartiesByTypeAndID.startTimer()
   // const childSpan = span ? span.getChild(component) : undefined
   const deps = createDeps({ proxyCache })
   const service = new services.PutPartiesService(deps, { headers, params, payload, dataUri })
@@ -85,11 +92,7 @@ const putPartiesByTypeAndID = async (headers, params, method, payload, dataUri, 
  */
 const putPartiesErrorByTypeAndID = async (headers, params, payload, dataUri, span, proxyCache = undefined) => {
   const component = putPartiesErrorByTypeAndID.name
-  const histTimerEnd = Metrics.getHistogram(
-    component,
-    'Put parties error by type and id',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histPutPartiesErrorByTypeAndID.startTimer()
   const childSpan = span ? span.getChild(component) : undefined
   const deps = createDeps({ proxyCache, childSpan })
   const inputs = { headers, params, payload, dataUri }
