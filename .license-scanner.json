@@ -1,8 +1,0 @@
-{
-  "exceptions": {
-    "wordwrap@0.0.2": {
-      "reason": "Transitive dep of shins > uglify-js@2.8.29 > yargs@3 > cliui@2.1.0. Declares non-SPDX 'MIT/X11' (effectively MIT). Cannot be removed without dropping shins, which is required by central-services-shared for docs generation.",
-      "expires": "2027-06-17"
-    }
-  }
-}
