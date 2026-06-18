@@ -5,7 +5,12 @@ scan-type: source
 exclude:
   - "./docker/**"
 ignore:
-
+  - vulnerability: GHSA-h67p-54hq-rp68
+    include-aliases: true
+    reason: >-
+      js-yaml quadratic-complexity DoS in merge key handling (moderate) — pinned to 3.14.x to keep
+      json-schema-ref-parser working (4.x removes safeLoad which json-schema-ref-parser still calls).
+      No upstream fix available for 3.x.
 output:
   - table
   - json
