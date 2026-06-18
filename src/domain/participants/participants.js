@@ -115,7 +115,7 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
       const payload = {
         fspId: response.data.partyList[0].fspId
       }
-      const clonedHeaders = Object.assign({}, headers)
+      const clonedHeaders = { ...headers }
       if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
         clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE]
       }
@@ -230,7 +230,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
             partyIdentifier: params.ID
           }
           options = partySubIdOrType ? { ...options, partySubIdOrType } : options
-          const clonedHeaders = Object.assign({}, headers)
+          const clonedHeaders = { ...headers }
           if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
             clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
             clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
@@ -404,7 +404,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
             partyIdentifier: params.ID
           }
           options = partySubIdOrType ? { ...options, partySubIdOrType } : options
-          const clonedHeaders = Object.assign({}, headers)
+          const clonedHeaders = { ...headers }
           if (!clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] || clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] === '') {
             clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = payload.fspId
             clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
@@ -624,7 +624,7 @@ const deleteParticipants = async (headers, params, method, query) => {
             partyIdentifier: params.ID
           }
           options = partySubIdOrType ? { ...options, partySubIdOrType } : options
-          const clonedHeaders = Object.assign({}, headers)
+          const clonedHeaders = { ...headers }
           clonedHeaders[Enums.Http.Headers.FSPIOP.DESTINATION] = headers[Enums.Http.Headers.FSPIOP.SOURCE]
           clonedHeaders[Enums.Http.Headers.FSPIOP.SOURCE] = Config.HUB_NAME
           step = 'sendRequest-3'
