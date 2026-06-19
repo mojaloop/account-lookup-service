@@ -66,10 +66,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     parties.putPartiesErrorByTypeAndID(headers, params, payload, dataUri, span, proxyCache).catch(err => {
       request.server.log(['error'], `ERROR - putPartiesErrorByTypeAndID: ${LibUtil.getStackOrInspect(err)}`)

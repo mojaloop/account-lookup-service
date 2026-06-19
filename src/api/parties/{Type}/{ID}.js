@@ -67,10 +67,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     await validateSourceFspHeader(headers)
 
@@ -114,10 +114,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
     // Here we call an async function- but as we send an immediate sync response, _all_ errors
     // _must_ be handled by putPartiesByTypeAndID.
     parties.putPartiesByTypeAndID(headers, params, method, payload, dataUri, proxyCache).catch(err => {

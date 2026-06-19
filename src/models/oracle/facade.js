@@ -41,6 +41,12 @@ const { oracleGetCached } = require('./oracleGetCached')
 
 const { Headers, RestMethods, ReturnCodes } = Enums.Http
 
+const histOracleRequest = Metrics.getHistogram(
+  'egress_oracleRequest',
+  'Egress: oracleRequest',
+  ['success']
+)
+
 const sendHttpRequest = ({ method, ...restArgs }) => request.sendRequest({
   ...restArgs,
   method: method.toUpperCase(),
@@ -134,11 +140,7 @@ const determineOracleEndpoint = async ({
 const sendOracleGetRequest = async ({
   url, source, destination, headers, method, params, cache
 }) => {
-  const histTimerEnd = Metrics.getHistogram(
-    'egress_oracleRequest',
-    'Egress: oracleRequest',
-    ['success']
-  ).startTimer()
+  const histTimerEnd = histOracleRequest.startTimer()
   const log = logger.child({ component: 'sendOracleGetRequest', params })
 
   try {

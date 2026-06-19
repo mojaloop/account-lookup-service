@@ -1,0 +1,5 @@
+# Skip test-only scaffolding. docker/ contains mock services used by integration tests,
+# not shipped artifacts — exclude them from SBOM generation so downstream gates
+# (license-scanner-tool, etc.) don't flag test-only transitive deps.
+exclude:
+  - "./docker/**"

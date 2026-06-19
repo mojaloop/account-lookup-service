@@ -22,7 +22,7 @@
   },
   "bugs": "http://github.com/mojaloop/account-lookup-service/issues",
   "engines": {
-    "node": ">=18.x"
+    "node": ">=20.x"
   },
   "config": {
     "knex": "--knexfile ./config/knexfile.js",
@@ -37,7 +37,8 @@
     "lint",
     "test",
     "dep:check",
-    "audit:check"
+    "audit:check",
+    "license:check"
   ],
   "scripts": {
     "start": "node src/index.js server",
@@ -80,6 +81,7 @@
     "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
     "dep:check": "npx ncu -e 2",
     "dep:update": "npx ncu -u",
+    "license:check": "npx @mojaloop/license-scanner-tool .",
     "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
     "wait-4-docker": "node ./scripts/_wait4_all.js"
@@ -91,19 +93,19 @@
     "@hapi/catbox-memory": "6.0.2",
     "@hapi/good": "9.0.1",
     "@hapi/hapi": "21.4.9",
-    "@hapi/inert": "7.1.0",
+    "@hapi/inert": "7.1.2",
     "@hapi/vision": "7.0.3",
     "@mojaloop/central-services-error-handling": "13.1.6",
     "@mojaloop/central-services-health": "15.2.2",
     "@mojaloop/central-services-logger": "11.10.4",
     "@mojaloop/central-services-metrics": "12.8.5",
-    "@mojaloop/central-services-shared": "18.35.7",
+    "@mojaloop/central-services-shared": "18.37.0",
     "@mojaloop/central-services-stream": "11.9.1",
     "@mojaloop/database-lib": "^11.3.7",
     "@mojaloop/event-sdk": "14.8.4",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.10.0",
-    "@mojaloop/ml-schema-transformer-lib": "2.9.0",
-    "@mojaloop/sdk-standard-components": "19.18.9",
+    "@mojaloop/ml-schema-transformer-lib": "2.10.0",
+    "@mojaloop/sdk-standard-components": "19.19.0",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.20.0",
     "ajv-keywords": "5.1.0",
@@ -111,17 +113,18 @@
     "commander": "14.0.3",
     "cron": "4.4.0",
     "hapi-auth-bearer-token": "8.0.0",
-    "joi": "^18.2.1",
+    "joi": "18.2.3",
     "knex": "^3.2.10",
     "mustache": "4.2.0",
     "mysql": "2.18.1",
-    "mysql2": "^3.22.3",
+    "mysql2": "^3.22.5",
     "npm-run-all": "4.1.5",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8"
   },
   "overrides": {
-    "form-data": "4.0.5",
+    "@grpc/grpc-js": "1.14.4",
+    "form-data": "4.0.6",
     "on-headers": "1.1.0",
     "postcss": "8.5.10",
     "ioredis": "5.6.1",
@@ -139,12 +142,12 @@
       "ejs": "3.1.10",
       "sanitize-html": "2.12.1",
       "yargs-parser": "21.1.1",
-      "markdown-it": "12.3.2"
+      "markdown-it": "14.2.0"
     },
     "widdershins": {
       "swagger2openapi": "7.0.8",
       "yargs-parser": "21.1.1",
-      "markdown-it": "12.3.2"
+      "markdown-it": "14.2.0"
     },
     "swagger2openapi": {
       "yaml": "2.8.3"
@@ -161,7 +164,8 @@
     },
     "jsonwebtoken": "9.0.0",
     "jsonpointer": "5.0.0",
-    "qs": "6.14.2",
+    "joi": "18.2.3",
+    "qs": "6.15.2",
     "validator": "13.15.22",
     "glob@10.4.5": "10.5.0",
     "swagmock": {
@@ -181,13 +185,11 @@
     "minimatch@3.1.2": "3.1.5",
     "minimatch@5.1.6": "5.1.9",
     "minimatch@10.2.1": "10.2.3",
-    "axios": "1.16.0",
+    "axios": "1.18.0",
     "immutable": "5.1.5",
-    "protobufjs@8.0.0": "8.0.3",
-    "@protobufjs/utf8": "1.1.1",
     "undici@7.18.2": "7.24.5",
     "flatted": "3.4.2",
-    "markdown-it": "14.1.1",
+    "markdown-it": "14.2.0",
     "picomatch@2.3.1": "2.3.2",
     "picomatch@4.0.3": "4.0.4",
     "readdirp": {
@@ -195,14 +197,13 @@
     },
     "yaml": "1.10.3",
     "convict": "6.2.5",
-    "@hapi/content": "6.0.1",
     "path-to-regexp": "0.1.13",
     "brace-expansion": "1.1.13",
     "@grpc/proto-loader": {
-      "protobufjs": "7.5.8"
+      "protobufjs": "8.6.0"
     },
     "@mojaloop/event-sdk": {
-      "protobufjs": "8.0.3"
+      "protobufjs": "8.6.0"
     },
     "fast-uri": "3.1.2",
     "fast-xml-builder": "1.1.7",
@@ -210,9 +211,10 @@
     "ajv@>=7.0.0-alpha.0 <8.18.0": "8.18.0"
   },
   "devDependencies": {
+    "@mojaloop/license-scanner-tool": "^1.1.1",
     "@types/jest": "30.0.0",
     "audit-ci": "^7.1.0",
-    "axios": "1.16.0",
+    "axios": "1.18.0",
     "axios-retry": "^4.5.0",
     "docdash": "2.0.2",
     "dotenv": "^17.4.2",
@@ -222,7 +224,7 @@
     "jest-junit": "17.0.0",
     "jsdoc": "4.0.5",
     "nodemon": "3.1.14",
-    "npm-check-updates": "22.2.0",
+    "npm-check-updates": "22.2.3",
     "nyc": "18.0.0",
     "pre-commit": "2.0.0",
     "proxyquire": "2.1.3",

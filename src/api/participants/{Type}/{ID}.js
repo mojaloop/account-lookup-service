@@ -69,10 +69,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     const metadata = `${method} ${path}`
     participants.getParticipantsByTypeAndID(headers, params, method, request.query, span).catch(err => {
@@ -113,10 +113,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     participants.putParticipantsByTypeAndID(headers, params, method, payload).catch(err => {
       request.server.log(['error'], `ERROR - putParticipantsByTypeAndID:${metadata}: ${LibUtil.getStackOrInspect(err)}`)
@@ -153,10 +153,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     const sourceFsp = headers[Enum.Http.Headers.FSPIOP.SOURCE]
     const requesterParticipantModel = await participant.validateParticipant(sourceFsp)
@@ -204,10 +204,10 @@ module.exports = {
       }
     )
     span.setTags(queryTags)
-    await span.audit({
+    span.audit({
       headers,
       payload: undefined
-    }, EventSdk.AuditEventAction.start)
+    }, EventSdk.AuditEventAction.start).catch(err => request.server.log(['error'], `span.audit error: ${err.message}`))
 
     const metadata = `${method} ${path}`
     participants.deleteParticipants(headers, params, method, request.query).catch(err => {

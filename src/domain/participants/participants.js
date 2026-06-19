@@ -42,6 +42,8 @@ const { validatePathParameters } = require('../../lib/validators')
 
 const { FSPIOPErrorCodes } = ErrorHandler.Enums
 
+const VALID_PARTY_ACCOUNT_TYPES = new Set(Object.values(Enums.Accounts.PartyAccountTypes))
+
 /**
  * @function getCallbackEndpointTypes
  * @description Determines the callback and error callback endpoint types based on SubId presence
@@ -169,9 +171,8 @@ const getParticipantsByTypeAndID = async (headers, params, method, query, span) 
       const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
       await childSpan.error(fspiopError, state)
       await childSpan.finish(fspiopError.message, state)
-      histTimerEnd({ success: false })
     }
-    histTimerEnd({ success: true })
+    histTimerEnd({ success: !fspiopError })
   }
 }
 
@@ -204,7 +205,7 @@ const putParticipantsByTypeAndID = async (headers, params, method, payload) => {
     validatePathParameters(params)
 
     const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
-    if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
+    if (VALID_PARTY_ACCOUNT_TYPES.has(type)) {
       step = 'validateParticipant-1'
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
@@ -378,7 +379,7 @@ const postParticipants = async (headers, method, params, payload, span) => {
 
     const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
 
-    if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
+    if (VALID_PARTY_ACCOUNT_TYPES.has(type)) {
       step = 'validateParticipant-1'
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE], childSpan)
       if (requesterParticipantModel) {
@@ -502,7 +503,7 @@ const postParticipantsBatch = async (headers, method, requestPayload, span) => {
     }
 
     for (const party of requestPayload.partyList) {
-      if (Object.values(Enums.Accounts.PartyAccountTypes).includes(party.partyIdType)) {
+      if (VALID_PARTY_ACCOUNT_TYPES.has(party.partyIdType)) {
         party.currency = requestPayload.currency
         if (party.fspId === headers[Enums.Http.Headers.FSPIOP.SOURCE]) {
           if (typeMap.get(party.partyIdType)) {
@@ -608,7 +609,7 @@ const deleteParticipants = async (headers, params, method, query) => {
     validatePathParameters(params)
 
     const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
-    if (Object.values(Enums.Accounts.PartyAccountTypes).includes(type)) {
+    if (VALID_PARTY_ACCOUNT_TYPES.has(type)) {
       step = 'validateParticipant-1'
       const requesterParticipantModel = await participant.validateParticipant(headers[Enums.Http.Headers.FSPIOP.SOURCE])
       if (requesterParticipantModel) {
