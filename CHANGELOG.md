@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.16.0](https://github.com/mojaloop/account-lookup-service/compare/v17.15.3...v17.16.0) (2026-06-19)
+
+
+### Features
+
+* async audit and perf tweaks ([#4485](https://github.com/mojaloop/account-lookup-service/issues/4485)) ([#623](https://github.com/mojaloop/account-lookup-service/issues/623)) ([90e43d9](https://github.com/mojaloop/account-lookup-service/commit/90e43d9cf42be0b8d61b9df80c0e57d64d483709))
+* validate inbound JWS + update deps and ([#620](https://github.com/mojaloop/account-lookup-service/issues/620)) ([e5138c3](https://github.com/mojaloop/account-lookup-service/commit/e5138c36dee30c48739e0827716a7fa87d96915e))
+
+
+### Bug Fixes
+
+* reject GET /parties/{Type}/{ID} with invalid fspiop-source header ([#4109](https://github.com/mojaloop/account-lookup-service/issues/4109)) ([#621](https://github.com/mojaloop/account-lookup-service/issues/621)) ([b62da71](https://github.com/mojaloop/account-lookup-service/commit/b62da71e8a87febb3c0b9a6840a0edaceb5d4423))
+* route [#4144](https://github.com/mojaloop/account-lookup-service/issues/4144) path-parameter validation errors to async error callback ([#622](https://github.com/mojaloop/account-lookup-service/issues/622)) ([e8e9c37](https://github.com/mojaloop/account-lookup-service/commit/e8e9c373dc6b1b0267826630b59db601d66157b3)), closes [#619](https://github.com/mojaloop/account-lookup-service/issues/619)
+* upgrade lodash to fix release bug ([#624](https://github.com/mojaloop/account-lookup-service/issues/624)) ([fc30d46](https://github.com/mojaloop/account-lookup-service/commit/fc30d468b70f42688e6a121df0e1088768097911))
+* validate ID path parameter to reject URL template placeholders ([#4144](https://github.com/mojaloop/account-lookup-service/issues/4144)) ([#619](https://github.com/mojaloop/account-lookup-service/issues/619)) ([cce0cb0](https://github.com/mojaloop/account-lookup-service/commit/cce0cb0ff70edb7f01f337862ce02d7b5735f91c))
+* validate source FSP before accepting POST /participants/{Type}/{ID} ([#618](https://github.com/mojaloop/account-lookup-service/issues/618)) ([1f1b7fd](https://github.com/mojaloop/account-lookup-service/commit/1f1b7fdecd030bda359038f4a69fc9f8546e0772)), closes [mojaloop/project#4145](https://github.com/mojaloop/project/issues/4145)
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([776743c](https://github.com/mojaloop/account-lookup-service/commit/776743ce4024eed9f005f7a51a907199a86814a8))
+
 ### [17.15.3](https://github.com/mojaloop/account-lookup-service/compare/v17.15.2...v17.15.3) (2026-03-25)
 
 
