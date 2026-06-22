@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.16.1](https://github.com/mojaloop/account-lookup-service/compare/v17.16.0...v17.16.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* remove docker image license scan ([#625](https://github.com/mojaloop/account-lookup-service/issues/625)) ([3176a3f](https://github.com/mojaloop/account-lookup-service/commit/3176a3ff75eca70bd4da37a41021e720f59b7832))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([a93f2b5](https://github.com/mojaloop/account-lookup-service/commit/a93f2b52d32a5f7056b563786cb0466908b65059))
+
 ## [17.16.0](https://github.com/mojaloop/account-lookup-service/compare/v17.15.3...v17.16.0) (2026-06-19)
 
 
