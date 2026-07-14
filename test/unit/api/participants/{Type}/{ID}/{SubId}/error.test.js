@@ -27,7 +27,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const getPort = require('get-port')
+const { default: getPort } = require('get-port')
 const Logger = require('@mojaloop/central-services-logger')
 const initServer = require('../../../../../../../src/server').initializeApi
 const Db = require('../../../../../../../src/lib/db')

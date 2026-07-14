@@ -87,7 +87,7 @@ describe('Util', () => {
 
     it('should not be able to change internal state directly', async () => {
       const stepState = Util.initStepState()
-      expect(() => { stepState.step = 'impossible' }).toThrowError()
+      expect(() => { stepState.step = 'impossible' }).toThrow()
     })
   })
 })

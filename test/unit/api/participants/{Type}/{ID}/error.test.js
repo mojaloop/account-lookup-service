@@ -27,7 +27,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const getPort = require('get-port')
+const { default: getPort } = require('get-port')
 
 const src = '../../../../../../src'
 

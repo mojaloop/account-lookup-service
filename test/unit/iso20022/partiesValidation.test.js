@@ -25,7 +25,7 @@
 
 const { setTimeout: sleep } = require('node:timers/promises')
 const Sinon = require('sinon')
-const getPort = require('get-port')
+const { default: getPort } = require('get-port')
 const { API_TYPES } = require('@mojaloop/central-services-shared').Util.Hapi
 
 const { initializeApi } = require('../../../src/server')

@@ -83,6 +83,6 @@ describe('partyIdType Model', () => {
     const action = async () => getPartyIdTypeByName('MSISDN')
 
     // Assert
-    await expect(action()).rejects.toThrowError(/Error finding partyIdType/)
+    await expect(action()).rejects.toThrow(/Error finding partyIdType/)
   })
 })
