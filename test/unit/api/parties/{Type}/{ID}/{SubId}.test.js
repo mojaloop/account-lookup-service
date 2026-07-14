@@ -27,7 +27,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const getPort = require('get-port')
+const { default: getPort } = require('get-port')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const requestUtil = require('@mojaloop/central-services-shared').Util.Request

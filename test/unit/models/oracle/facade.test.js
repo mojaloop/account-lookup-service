@@ -448,7 +448,7 @@ describe('Oracle Facade', () => {
       const action = async () => OracleFacade.oracleRequest(headers, method, params, {}, payload)
 
       // Assert
-      await expect(action()).rejects.toThrowError(/(Oracle type:.*not found)/)
+      await expect(action()).rejects.toThrow(/(Oracle type:.*not found)/)
     })
 
     it('should return proper error on adding existing party [CSI-1352]', async () => {

@@ -30,7 +30,7 @@
 'use strict'
 
 const Sinon = require('sinon')
-const getPort = require('get-port')
+const { default: getPort } = require('get-port')
 const Logger = require('@mojaloop/central-services-logger')
 const oracle = require('../../../src/domain/oracle')
 const Helper = require('../../util/helper')

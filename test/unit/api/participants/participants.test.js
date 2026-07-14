@@ -34,7 +34,7 @@ const Db = require('../../../../src/lib/db')
 const Helper = require('../../../util/helper')
 const participants = require('../../../../src/domain/participants')
 const initServer = require('../../../../src/server').initializeApi
-const getPort = require('get-port')
+const { default: getPort } = require('get-port')
 const Config = require('../../../../src/lib/config')
 
 describe('/participants', () => {
