@@ -465,6 +465,43 @@ describe('Oracle Facade', () => {
           expect(err.apiErrorCode.code).toBe(ERROR.code)
         })
     })
+
+    it('blocks DELETE when the party belongs to a different FSP [#4509]', async () => {
+      expect.hasAssertions()
+      // Arrange: oracle says the party is owned by 'fsp2', but 'fsp1' is requesting the delete
+      request.sendRequest = sandbox.stub().resolves({
+        status: Enums.Http.ReturnCodes.OK.CODE,
+        data: { partyList: [{ fspId: 'fsp2' }] }
+      })
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp1'
+      const method = Enums.Http.RestMethods.DELETE
+      const params = { Type: 'MSISDN', ID: '123456' }
+
+      // Act / Assert: ownership check must reject the delete
+      await expect(OracleFacade.oracleRequest(headers, method, params)).rejects.toThrow()
+    })
+
+    it('allows DELETE when the party belongs to the requesting FSP [#4509]', async () => {
+      expect.hasAssertions()
+      // Arrange: oracle says the party is owned by 'fsp1', and 'fsp1' is requesting the delete
+      request.sendRequest = sandbox.stub().resolves({
+        status: Enums.Http.ReturnCodes.OK.CODE,
+        data: { partyList: [{ fspId: 'fsp1' }] }
+      })
+      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
+      const headers = {}
+      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp1'
+      const method = Enums.Http.RestMethods.DELETE
+      const params = { Type: 'MSISDN', ID: '123456' }
+
+      // Act: owner deletes their own mapping — validation passes, delete proceeds
+      await OracleFacade.oracleRequest(headers, method, params)
+
+      // Assert: sendRequest called twice — once for the ownership GET, once for the actual DELETE
+      expect(request.sendRequest.callCount).toBe(2)
+    })
   })
 
   describe('oracleBatchRequest', () => {
