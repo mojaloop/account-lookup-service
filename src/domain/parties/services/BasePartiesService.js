@@ -225,7 +225,7 @@ class BasePartiesService {
   }
 
   createFspiopPartyNotFoundError (errMessage, log = this.log) {
-    log.warn(errMessage)
+    if (errMessage) log.warn(errMessage)
     return ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND, errMessage)
   }
 
