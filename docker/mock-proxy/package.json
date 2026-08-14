@@ -16,7 +16,7 @@
     "@mojaloop/central-services-shared": "18.30.6",
     "@types/node": "^24.1.0",
     "axios": "1.15.2",
-    "body-parser": "2.2.1",
+    "body-parser": "2.3.0",
     "express": "4.21.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
