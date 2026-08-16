@@ -35,6 +35,7 @@ const errorHandling = require('@mojaloop/central-services-error-handling')
 const OracleFacade = require('#src/models/oracle/facade')
 const oracleEndpointCached = require('#src/models/oracle/oracleEndpointCached')
 const oracleGetCached = require('#src/models/oracle/oracleGetCached')
+const Config = require('#src/lib/config')
 const fixtures = require('#test/fixtures/index')
 
 const { createFSPIOPError } = errorHandling.Factory
@@ -468,39 +469,56 @@ describe('Oracle Facade', () => {
 
     it('blocks DELETE when the party belongs to a different FSP [#4509]', async () => {
       expect.hasAssertions()
-      // Arrange: oracle says the party is owned by 'fsp2', but 'fsp1' is requesting the delete
-      request.sendRequest = sandbox.stub().resolves({
-        status: Enums.Http.ReturnCodes.OK.CODE,
-        data: { partyList: [{ fspId: 'fsp2' }] }
-      })
-      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
-      const headers = {}
-      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp1'
-      const method = Enums.Http.RestMethods.DELETE
-      const params = { Type: 'MSISDN', ID: '123456' }
+      // Explicitly enable the validation so the test does not depend on the config default
+      const originalFlag = Config.DELETE_PARTICIPANT_VALIDATION_ENABLED
+      Config.DELETE_PARTICIPANT_VALIDATION_ENABLED = true
+      try {
+        // Arrange: oracle says the party is owned by 'fsp2', but 'fsp1' is requesting the delete
+        request.sendRequest = sandbox.stub().resolves({
+          status: Enums.Http.ReturnCodes.OK.CODE,
+          data: { partyList: [{ fspId: 'fsp2' }] }
+        })
+        sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
+        const headers = {}
+        headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp1'
+        const method = Enums.Http.RestMethods.DELETE
+        const params = { Type: 'MSISDN', ID: '123456' }
 
-      // Act / Assert: ownership check must reject the delete
-      await expect(OracleFacade.oracleRequest(headers, method, params)).rejects.toThrow()
+        // Act / Assert: ownership check must reject the delete with the deletion error code
+        await expect(OracleFacade.oracleRequest(headers, method, params))
+          .rejects.toMatchObject({
+            apiErrorCode: { code: FSPIOPErrorCodes.DELETE_PARTY_INFO_ERROR.code }
+          })
+      } finally {
+        Config.DELETE_PARTICIPANT_VALIDATION_ENABLED = originalFlag
+      }
     })
 
     it('allows DELETE when the party belongs to the requesting FSP [#4509]', async () => {
       expect.hasAssertions()
-      // Arrange: oracle says the party is owned by 'fsp1', and 'fsp1' is requesting the delete
-      request.sendRequest = sandbox.stub().resolves({
-        status: Enums.Http.ReturnCodes.OK.CODE,
-        data: { partyList: [{ fspId: 'fsp1' }] }
-      })
-      sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
-      const headers = {}
-      headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp1'
-      const method = Enums.Http.RestMethods.DELETE
-      const params = { Type: 'MSISDN', ID: '123456' }
+      // Explicitly enable the validation so the test does not depend on the config default
+      const originalFlag = Config.DELETE_PARTICIPANT_VALIDATION_ENABLED
+      Config.DELETE_PARTICIPANT_VALIDATION_ENABLED = true
+      try {
+        // Arrange: oracle says the party is owned by 'fsp1', and 'fsp1' is requesting the delete
+        request.sendRequest = sandbox.stub().resolves({
+          status: Enums.Http.ReturnCodes.OK.CODE,
+          data: { partyList: [{ fspId: 'fsp1' }] }
+        })
+        sandbox.stub(oracleEndpointCached, 'getOracleEndpointByType').resolves([{}])
+        const headers = {}
+        headers[Enums.Http.Headers.FSPIOP.SOURCE] = 'fsp1'
+        const method = Enums.Http.RestMethods.DELETE
+        const params = { Type: 'MSISDN', ID: '123456' }
 
-      // Act: owner deletes their own mapping — validation passes, delete proceeds
-      await OracleFacade.oracleRequest(headers, method, params)
+        // Act: owner deletes their own mapping — validation passes, delete proceeds
+        await OracleFacade.oracleRequest(headers, method, params)
 
-      // Assert: sendRequest called twice — once for the ownership GET, once for the actual DELETE
-      expect(request.sendRequest.callCount).toBe(2)
+        // Assert: sendRequest called twice — once for the ownership GET, once for the actual DELETE
+        expect(request.sendRequest.callCount).toBe(2)
+      } finally {
+        Config.DELETE_PARTICIPANT_VALIDATION_ENABLED = originalFlag
+      }
     })
   })
 
