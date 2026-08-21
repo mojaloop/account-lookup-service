@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.16.4](https://github.com/mojaloop/account-lookup-service/compare/v17.16.3...v17.16.4) (2026-08-21)
+
+
+### Bug Fixes
+
+* **parties:** return generic party not found in default mode ([#637](https://github.com/mojaloop/account-lookup-service/issues/637)) ([3fb3659](https://github.com/mojaloop/account-lookup-service/commit/3fb365985eedbfe8112d302c1e0e706d96b03af2))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([d88bf7a](https://github.com/mojaloop/account-lookup-service/commit/d88bf7ae3fc3fac0bff37d5f626161dacd6a6c7d))
+
 ### [17.16.3](https://github.com/mojaloop/account-lookup-service/compare/v17.16.2...v17.16.3) (2026-08-14)
 
 
