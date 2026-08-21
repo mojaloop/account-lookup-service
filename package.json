@@ -2,7 +2,7 @@
   "name": "account-lookup-service",
   "private": true,
   "description": "Account Lookup Service is used to validate Party and Participant lookups.",
-  "version": "17.16.2",
+  "version": "17.16.3",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
@@ -92,20 +92,20 @@
     "@hapi/catbox": "12.1.1",
     "@hapi/catbox-memory": "6.0.2",
     "@hapi/good": "9.0.1",
-    "@hapi/hapi": "21.4.9",
+    "@hapi/hapi": "21.4.10",
     "@hapi/inert": "7.1.2",
     "@hapi/vision": "7.0.3",
-    "@mojaloop/central-services-error-handling": "13.1.6",
-    "@mojaloop/central-services-health": "15.2.2",
-    "@mojaloop/central-services-logger": "11.10.5",
-    "@mojaloop/central-services-metrics": "12.8.6",
+    "@mojaloop/central-services-error-handling": "13.1.8",
+    "@mojaloop/central-services-health": "15.2.3",
+    "@mojaloop/central-services-logger": "11.10.6",
+    "@mojaloop/central-services-metrics": "12.8.8",
     "@mojaloop/central-services-shared": "18.37.0",
-    "@mojaloop/central-services-stream": "11.9.1",
-    "@mojaloop/database-lib": "^11.3.8",
+    "@mojaloop/central-services-stream": "11.9.3",
+    "@mojaloop/database-lib": "^11.3.10",
     "@mojaloop/event-sdk": "14.8.4",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.10.0",
-    "@mojaloop/ml-schema-transformer-lib": "2.10.0",
-    "@mojaloop/sdk-standard-components": "19.19.0",
+    "@mojaloop/ml-schema-transformer-lib": "2.10.1",
+    "@mojaloop/sdk-standard-components": "19.19.1",
     "@now-ims/hapi-now-auth": "2.1.0",
     "ajv": "8.20.0",
     "ajv-keywords": "5.1.0",
@@ -117,16 +117,19 @@
     "knex": "^3.3.0",
     "mustache": "4.2.0",
     "mysql": "2.18.1",
-    "mysql2": "^3.22.5",
+    "mysql2": "^3.23.3",
     "npm-run-all": "4.1.5",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8"
   },
   "overrides": {
+    "shell-quote": "1.9.0",
+    "linkify-it": "5.0.2",
+    "axios": "1.19.0",
     "@grpc/grpc-js": "1.14.4",
     "form-data": "4.0.6",
     "on-headers": "1.1.0",
-    "postcss": "8.5.10",
+    "postcss": "8.5.23",
     "ioredis": "5.6.1",
     "@mojaloop/central-services-health": {
       "@mojaloop/central-services-logger": ">=11.4.0"
@@ -140,7 +143,7 @@
     "shins": {
       "ajv": "6.12.3",
       "ejs": "3.1.10",
-      "sanitize-html": "2.12.1",
+      "sanitize-html": "2.17.5",
       "yargs-parser": "21.1.1",
       "markdown-it": "14.2.0"
     },
@@ -168,13 +171,6 @@
     "qs": "6.15.2",
     "validator": "13.15.22",
     "glob@10.4.5": "10.5.0",
-    "swagmock": {
-      "swagger-parser": {
-        "json-schema-ref-parser": {
-          "js-yaml": "3.14.1"
-        }
-      }
-    },
     "body-parser": "2.2.1",
     "lodash": "4.18.1",
     "lodash-es": "^4.17.23",
@@ -185,9 +181,8 @@
     "minimatch@3.1.2": "3.1.5",
     "minimatch@5.1.6": "5.1.9",
     "minimatch@10.2.1": "10.2.3",
-    "axios": "1.18.1",
-    "immutable": "5.1.5",
-    "undici@7.18.2": "7.24.5",
+    "immutable": "5.1.8",
+    "undici@7.28.0": "7.29.0",
     "flatted": "3.4.2",
     "markdown-it": "14.2.0",
     "picomatch@2.3.1": "2.3.2",
@@ -198,23 +193,22 @@
     "yaml": "1.10.3",
     "convict": "6.2.5",
     "path-to-regexp": "0.1.13",
-    "brace-expansion": "1.1.13",
+    "brace-expansion": "1.1.18",
     "@grpc/proto-loader": {
-      "protobufjs": "8.6.0"
+      "protobufjs": "8.6.6"
     },
     "@mojaloop/event-sdk": {
-      "protobufjs": "8.6.0"
+      "protobufjs": "8.6.6"
     },
-    "fast-uri": "3.1.2",
+    "fast-uri": "3.1.5",
     "fast-xml-builder": "1.1.7",
-    "js-yaml": "3.14.2",
-    "ajv@>=7.0.0-alpha.0 <8.18.0": "8.18.0"
+    "js-yaml": "3.15.1"
   },
   "devDependencies": {
-    "@mojaloop/license-scanner-tool": "^1.1.1",
+    "@mojaloop/license-scanner-tool": "^1.1.2",
     "@types/jest": "30.0.0",
     "audit-ci": "^7.1.0",
-    "axios": "1.18.1",
+    "axios": "1.19.0",
     "axios-retry": "^4.5.0",
     "docdash": "2.0.2",
     "dotenv": "^17.4.2",
@@ -224,7 +218,7 @@
     "jest-junit": "17.0.0",
     "jsdoc": "4.0.5",
     "nodemon": "3.1.14",
-    "npm-check-updates": "22.2.9",
+    "npm-check-updates": "23.0.2",
     "nyc": "18.0.0",
     "pre-commit": "2.0.0",
     "proxyquire": "2.1.3",
