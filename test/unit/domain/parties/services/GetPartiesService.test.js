@@ -330,6 +330,31 @@ describe('GetPartiesService Tests -->', () => {
     })
   })
 
+  test('should send the canonical party not found error when proxy support is disabled', async () => {
+    participantMock.validateParticipant = jest.fn().mockResolvedValue({})
+    oracleMock.oracleRequest = jest.fn().mockResolvedValue(
+      fixtures.oracleRequestResponseDto({ partyList: [] })
+    )
+    const deps = {
+      ...createMockDeps(),
+      config: {
+        ...config,
+        PROXY_CACHE_CONFIG: { ...config.PROXY_CACHE_CONFIG, enabled: false }
+      }
+    }
+    const headers = fixtures.partiesCallHeadersDto({ destination: '' })
+    const params = fixtures.partiesParamsDto()
+    const service = new GetPartiesService(deps, { headers, params })
+
+    await service.handleRequest()
+
+    const errorPayload = participantMock.sendErrorToParticipant.mock.lastCall[2]
+    expect(errorPayload.errorInformation).toEqual({
+      errorCode: '3204',
+      errorDescription: 'Party not found'
+    })
+  })
+
   test('should send partyNotFound callback in ISO20022 format', async () => {
     participantMock.validateParticipant = jest.fn().mockResolvedValue({})
     oracleMock.oracleRequest = jest.fn()
