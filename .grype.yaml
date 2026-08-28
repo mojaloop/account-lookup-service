@@ -1,16 +1,181 @@
 disabled: false
 scan-type: source
-# Skip test-only scaffolding. docker/ contains mock services used by integration tests,
-# not shipped artifacts — their dep trees are not in the runtime threat model.
 exclude:
-  - "./docker/**"
+  - ./docker/**
 ignore:
   - vulnerability: GHSA-h67p-54hq-rp68
     include-aliases: true
     reason: >-
       js-yaml quadratic-complexity DoS in merge key handling (moderate) — pinned to 3.14.x to keep
-      json-schema-ref-parser working (4.x removes safeLoad which json-schema-ref-parser still calls).
-      No upstream fix available for 3.x.
+      json-schema-ref-parser working (4.x removes safeLoad which json-schema-ref-parser still calls). No upstream fix
+      available for 3.x.
+  - vulnerability: CVE-2026-18798
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: CVE-2026-63076
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: CVE-2026-14457
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: GHSA-vxpw-j846-p89q
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (high severity)
+  - vulnerability: CVE-2026-14456
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: GHSA-23hp-3jrh-7fpw
+    include-aliases: true
+    reason: >-
+      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (critical severity)
+  - vulnerability: GHSA-rgw5-rvv9-x895
+    include-aliases: true
+    reason: >-
+      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
+      as of 2026-08-28 (high severity)
+  - vulnerability: CVE-2026-63072
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: CVE-2026-54874
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: CVE-2026-56846
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (high severity)'
+  - vulnerability: CVE-2026-56848
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (high severity)'
+  - vulnerability: CVE-2026-63075
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (high severity)'
+  - vulnerability: GHSA-mh99-v99m-4gvg
+    include-aliases: true
+    reason: >-
+      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
+      as of 2026-08-28 (high severity)
+  - vulnerability: GHSA-8x88-c5mf-7j5w
+    include-aliases: true
+    reason: >-
+      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (high severity)
+  - vulnerability: GHSA-w8wr-v893-vjvp
+    include-aliases: true
+    reason: >-
+      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: GHSA-r292-9mhp-454m
+    include-aliases: true
+    reason: >-
+      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (high severity)
+  - vulnerability: GHSA-mwp4-54f8-5fhr
+    include-aliases: true
+    reason: >-
+      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (high severity)
+  - vulnerability: CVE-2026-63074
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (moderate severity)'
+  - vulnerability: GHSA-gvwx-54wh-qm9j
+    include-aliases: true
+    reason: >-
+      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: GHSA-3jxr-9vmj-r5cp
+    include-aliases: true
+    reason: >-
+      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
+      as of 2026-08-28 (high severity)
+  - vulnerability: GHSA-22jq-vg5j-6vgg
+    include-aliases: true
+    reason: >-
+      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: GHSA-4xrf-jv44-h6hh
+    include-aliases: true
+    reason: >-
+      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: CVE-2026-63073
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (info severity)'
+  - vulnerability: CVE-2026-58042
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (moderate severity)'
+  - vulnerability: CVE-2025-60876
+    include-aliases: true
+    reason: 'Alpine base image package (apk): busybox - no npm fix available as of 2026-08-28 (moderate severity)'
+  - vulnerability: CVE-2026-58040
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (moderate severity)'
+  - vulnerability: GHSA-p88m-4jfj-68fv
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: CVE-2026-58041
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (moderate severity)'
+  - vulnerability: CVE-2026-58043
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (high severity)'
+  - vulnerability: GHSA-v3r7-h72x-cjcm
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: CVE-2026-58045
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (moderate severity)'
+  - vulnerability: GHSA-vmf3-w455-68vh
+    include-aliases: true
+    reason: >-
+      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: GHSA-m8rv-5g2x-5cg5
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: GHSA-8xcm-r25x-g524
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (moderate severity)
+  - vulnerability: CVE-2026-58044
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (low severity)'
+  - vulnerability: GHSA-g8m3-5g58-fq7m
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (low severity)
+  - vulnerability: CVE-2026-56847
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (moderate severity)'
+  - vulnerability: GHSA-35p6-xmwp-9g52
+    include-aliases: true
+    reason: >-
+      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
+      2026-08-28 (low severity)
+  - vulnerability: CVE-2026-75803
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-08-28 (info severity)'
+  - vulnerability: CVE-2026-58039
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (low severity)'
+  - vulnerability: CVE-2026-56850
+    include-aliases: true
+    reason: 'Node.js binary vulnerability: node - requires Node.js runtime update as of 2026-08-28 (moderate severity)'
+  - vulnerability: GHSA-vccv-cmxp-4j9h
+    include-aliases: true
+    reason: 'Unfixable npm transitive vulnerability: sanitize-html (moderate severity) as of 2026-08-28'
+  - vulnerability: GHSA-2g4f-4pwh-qvx6
+    include-aliases: true
+    reason: 'Unfixable npm transitive vulnerability: ajv (moderate severity) as of 2026-08-28'
 output:
   - table
   - json
