@@ -7,7 +7,7 @@ ARG USERNAME
 WORKDIR /opt/app
 COPY tsconfig.json package*.json ./
 COPY src ./src
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 RUN adduser -D ${USERNAME}
 USER ${USERNAME}
