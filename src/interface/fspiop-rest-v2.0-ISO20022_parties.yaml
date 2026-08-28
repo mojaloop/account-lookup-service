@@ -1,4 +1,4 @@
-openapi: 3.0.2
+openapi: 3.1.0
 info:
   version: v2.0-iso20022-parties-draft
   title: Open API for FSP Interoperability (FSPIOP) - the ISO 20022 message version (parties)
