@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: Open API for FSP Interoperability (FSPIOP) (Implementation Friendly Version) Extended
   description: Based on API Definition.docx Version 1.1 that was confirmed on 2020-05-19.
