@@ -203,6 +203,14 @@ const sendOracleGetRequest = async ({
   }
 }
 
+/**
+ * Verifies that the party being deleted belongs to the requesting FSP.
+ *
+ * Known limitation (TOCTOU): ownership is checked with a GET and then acted on
+ * with a separate DELETE, so a race exists if ownership changes between the two
+ * calls. The probability is low and this cannot be fully enforced at the HTTP
+ * layer; documented here as a known issue.
+ */
 const validatePartyDeletion = async ({ url, source, destination, headers, params }) => {
   const log = logger.child({ component: 'validatePartyDeletion', params })
   // If the request is a DELETE request, we need to ensure that the participant belongs to the requesting FSP
