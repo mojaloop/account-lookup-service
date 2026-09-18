@@ -19,7 +19,8 @@ RUN apk add --no-cache -t build-dependencies make gcc g++ python3 py3-setuptools
 
 COPY package.json package-lock.json /opt/app/
 
-RUN npm ci
+RUN npm ci --omit=dev --ignore-scripts
+RUN npm rebuild node-rdkafka
 
 COPY src /opt/app/src
 COPY config /opt/app/config
@@ -38,7 +39,7 @@ RUN adduser -D ml-user
 USER ml-user
 
 COPY --chown=ml-user --from=builder /opt/app .
-RUN npm prune --production
+
 
 EXPOSE 3001
 CMD ["npm", "run", "start"]
