@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.16.7](https://github.com/mojaloop/account-lookup-service/compare/v17.16.6...v17.16.7) (2026-09-21)
+
+
+### Chore
+
+* ignore npm lifecycle scripts in service image build ([#648](https://github.com/mojaloop/account-lookup-service/issues/648)) ([cc66f7b](https://github.com/mojaloop/account-lookup-service/commit/cc66f7b8c5bc320adde3255f65bc095fa5554bce))
+* **sbom:** update sbom [skip ci] ([fe503c8](https://github.com/mojaloop/account-lookup-service/commit/fe503c822f138bd9ce88d1cdba5a0a1dadcdf3fa))
+
 ### [17.16.6](https://github.com/mojaloop/account-lookup-service/compare/v17.16.5...v17.16.6) (2026-09-16)
 
 
