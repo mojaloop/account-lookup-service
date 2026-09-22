@@ -234,6 +234,9 @@ ignore:
   - vulnerability: GHSA-mh29-5h37-fv8m
     include-aliases: true
     reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-09-14'
+  - vulnerability: CVE-2026-85091
+    include-aliases: true
+    reason: 'Alpine base image package (apk): zlib - no npm fix available as of 2026-09-22 (high severity)'
 output:
   - table
   - json

@@ -1,0 +1,15 @@
+{
+  "reject": [
+    "get-port",
+    "why-get-port: v6+ is ESM-only and this suite is CommonJS (carried over from the yaml config)",
+    "jest",
+    "sinon",
+    "commander",
+    "why-jest-sinon-commander: held at the versions the committed lock pins; jest 30 and commander 15 break the CommonJS suites (carried over from the yaml config)",
+    "@mojaloop/event-sdk",
+    "@mojaloop/central-services-shared",
+    "why-ml-libs: newer releases pull ESM-only transitive deps that this jest setup cannot load (carried over from the yaml config)",
+    "@types/node",
+    "why-types-node: its major must match the Node runtime major in .nvmrc (24); a higher major only weakens type checking; bump together with the runtime"
+  ]
+}
