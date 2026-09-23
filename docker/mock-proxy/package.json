@@ -15,8 +15,8 @@
   "dependencies": {
     "@mojaloop/central-services-shared": "18.30.6",
     "@types/node": "^24.1.0",
-    "axios": "1.15.2",
-    "body-parser": "2.2.1",
+    "axios": "1.20.0",
+    "body-parser": "2.3.0",
     "express": "4.21.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
@@ -26,43 +26,63 @@
     "@types/express": "^5.0.3"
   },
   "overrides": {
-    "form-data": "4.0.5",
+    "form-data": "4.0.6",
     "shins": {
       "ajv": "6.12.3",
       "ejs": "3.1.10",
-      "sanitize-html": "2.12.1",
+      "sanitize-html": "2.17.7",
       "yargs-parser": "21.1.1",
-      "markdown-it": "12.3.2"
+      "markdown-it": "14.2.0"
     },
     "widdershins": {
       "swagger2openapi": "7.0.8",
       "yargs-parser": "21.1.1",
-      "markdown-it": "12.3.2"
+      "markdown-it": "14.2.0"
     },
     "cross-spawn": "7.0.6",
     "jsonwebtoken": "9.0.0",
     "jsonpointer": "5.0.0",
-    "qs": "6.14.2",
+    "qs": "6.16.0",
     "minimatch": "10.2.4",
-    "lodash": "4.18.0",
-    "undici": "7.24.5",
-    "js-yaml": "4.1.1",
+    "lodash": "4.18.1",
+    "undici": "7.29.0",
+    "js-yaml": "4.3.2",
     "diff": "5.2.2",
     "fast-xml-parser": "5.7.0",
     "flatted": "3.4.2",
-    "immutable": "5.1.5",
-    "axios": "1.15.2",
+    "immutable": "5.1.8",
+    "axios": "1.20.0",
     "follow-redirects": "1.16.0",
     "@grpc/proto-loader": {
-      "protobufjs": "7.5.5"
+      "protobufjs": "7.6.5"
     },
     "@mojaloop/event-sdk": {
-      "protobufjs": "8.0.1"
+      "protobufjs": "8.8.0"
     },
     "convict": "6.2.5",
-    "fast-uri": "3.1.2",
+    "fast-uri": "3.1.6",
     "fast-xml-builder": "1.1.7",
     "path-to-regexp": "0.1.13",
-    "yaml": "2.8.3"
+    "yaml": "2.8.3",
+    "postcss": "8.5.23",
+    "linkify-it": "5.0.2",
+    "@grpc/grpc-js": "1.14.4",
+    "nanoid": "3.3.18",
+    "@hapi/content": "6.0.2",
+    "@hapi/wreck": "18.1.2",
+    "brace-expansion": "5.0.12",
+    "mysql2": "3.24.4",
+    "markdown-it": "14.2.0",
+    "joi": "17.13.8",
+    "axios@1": "1.20.0",
+    "@protobufjs/utf8": "1.1.1",
+    "ajv@>=7.0.0-alpha.0": "8.20.0",
+    "sanitize-html": "2.17.7",
+    "body-parser@2": "2.3.0",
+    "protobufjs@7": "7.6.5",
+    "protobufjs@8": "8.8.0",
+    "express": {
+      "body-parser": "1.20.8"
+    }
   }
 }
