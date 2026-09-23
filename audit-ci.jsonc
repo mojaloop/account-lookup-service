@@ -12,9 +12,7 @@
     "GHSA-vccv-cmxp-4j9h",
     "GHSA-2g4f-4pwh-qvx6",
     "GHSA-gg4h-3hg2-grpc",
-    "GHSA-g8qq-57p8-ggw5",
-    "GHSA-4mjr-xmp4-gh2g",
-    "GHSA-x5fp-wj9c-mxmx",
-    "GHSA-jxwj-j7wr-gfrw"
+    "GHSA-g8qq-57p8-ggw5", // sanitize-html held at 2.17.5: 2.17.7 pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load
+    "GHSA-jxwj-j7wr-gfrw" // sanitize-html, same hold as above
   ]
 }
