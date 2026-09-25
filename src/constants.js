@@ -21,6 +21,7 @@
 
  * Mojaloop Foundation
  * Eugen Klymniuk <eugen.klymniuk@infitx.com>
+ * Yong Zhuo Yu <yongzhuoyu@gmail.com>
 
  --------------
  ******/
@@ -33,6 +34,7 @@ const ERROR_MESSAGES = Object.freeze({
   failedToCacheSendToProxiesList: 'Failed to cache sendToProxiesList',
   noDiscoveryRequestsForwarded: 'No discovery requests forwarded to participants',
   sourceFspNotFound: 'Requester FSP not found',
+  fspIdMismatchWithSource: 'The fspId in the request body does not match the fspiop-source header',
   invalidFspiopSourceHeader: 'invalid fspiop-source header',
   partyDestinationFspNotFound: 'Destination FSP not found',
   partyProxyNotFound: 'Proxy not found',

@@ -972,6 +972,91 @@ describe('participant Tests', () => {
       expect(firstCallArgs[4].partyList[0].partySubIdOrType).toBe('subId')
     })
 
+    it('rejects with a validation error when the body fspId does not match the fspiop-source header', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        },
+        status: 201
+      })
+      participant.sendRequest = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Config.HUB_NAME,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN'
+      }
+      const payload = {
+        fspId: 'fsp2',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'get', params, payload, Helper.mockSpan())
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(0)
+      expect(oracle.oracleRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+      expect(firstCallArgs[2].errorInformation.errorCode).toBe('3100')
+    })
+
+    it('rejects with a validation error when the body fspId does not match the fspiop-source header with SubId', async () => {
+      expect.hasAssertions()
+      // Arrange
+      participant.validateParticipant = sandbox.stub().resolves({})
+      oracle.oracleRequest = sandbox.stub().resolves({
+        data: {
+          partyList: [
+            { fspId: 'fsp1' }
+          ]
+        },
+        status: 201
+      })
+      participant.sendRequest = sandbox.stub()
+      participant.sendErrorToParticipant = sandbox.stub()
+      const headers = {
+        accept: 'application/vnd.interoperability.participants+json;version=1',
+        'fspiop-destination': Config.HUB_NAME,
+        'content-type': 'application/vnd.interoperability.participants+json;version=1.1',
+        date: '2019-05-24 08:52:19',
+        'fspiop-source': 'fsp1'
+      }
+      const params = {
+        ID: '123456',
+        Type: 'MSISDN',
+        SubId: 'subId'
+      }
+      const payload = {
+        fspId: 'fsp2',
+        currency: 'USD'
+      }
+
+      // Act
+      await participantsDomain.postParticipants(headers, 'get', params, payload, Helper.mockSpan())
+
+      // Assert
+      expect(participant.sendRequest.callCount).toBe(0)
+      expect(oracle.oracleRequest.callCount).toBe(0)
+      expect(participant.sendErrorToParticipant.callCount).toBe(1)
+      const firstCallArgs = participant.sendErrorToParticipant.getCall(0).args
+      expect(firstCallArgs[0]).toBe('fsp1')
+      expect(firstCallArgs[2].errorInformation.errorCode).toBe('3100')
+    })
+
     it('handles the request without fspiop-dest header', async () => {
       expect.hasAssertions()
       // Arrange
@@ -996,7 +1081,7 @@ describe('participant Tests', () => {
         Type: 'MSISDN'
       }
       const payload = {
-        fspId: 'fsp2',
+        fspId: 'fsp1',
         currency: 'USD'
       }
 
@@ -1006,7 +1091,7 @@ describe('participant Tests', () => {
       // Assert
       expect(participant.sendRequest.callCount).toBe(1)
       const firstCallArgs = participant.sendRequest.getCall(0).args
-      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('fsp2')
+      expect(firstCallArgs[0][Enums.Http.Headers.FSPIOP.DESTINATION]).toBe('fsp1')
     })
 
     it('handles the case where `oracleRequest` returns has no response.data', async () => {
