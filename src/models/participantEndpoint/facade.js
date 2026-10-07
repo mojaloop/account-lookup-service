@@ -36,7 +36,7 @@ const Config = require('../../lib/config')
 const { logger } = require('../../lib')
 const { hubNameRegex } = require('../../lib/util').hubNameConfig
 
-const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
+const uriRegex = /^.*(\/(?:participants|parties|quotes|transfers)(?:\/.*)?)$/
 const axiosRequestOptionsOverride = {
   timeout: Config.HTTP_REQUEST_TIMEOUT_MS
 }
