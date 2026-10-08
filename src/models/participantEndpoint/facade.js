@@ -17,6 +17,7 @@
  optionally within square brackets <email>.
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
+ - Keene Ng <keene.ng.2024@smu.edu.sg>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Juan Correa <juan.correa@modusbox.com>

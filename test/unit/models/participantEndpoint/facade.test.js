@@ -18,6 +18,7 @@
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
  - Shashikant Hirugade <shashikant.hirugade@modusbox.com>
+ - Keene Ng <keene.ng.2024@smu.edu.sg>
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
