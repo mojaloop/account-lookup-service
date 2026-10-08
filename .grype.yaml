@@ -234,6 +234,72 @@ ignore:
   - vulnerability: GHSA-mh29-5h37-fv8m
     include-aliases: true
     reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-09-14'
+  - vulnerability: GHSA-pqg4-j6r4-53mv
+    include-aliases: true
+    reason: 'shell-quote 1.9.0: shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token (critical severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-jqcg-44mw-7w3h
+    include-aliases: true
+    reason: 'proxy-addr 2.0.7: proxy-addr vulnerable to IP spoofing via IPv4-mapped IPv6 trust subnet (critical severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-vfj7-8cjw-p6xm
+    include-aliases: true
+    reason: 'braces 3.0.3: braces vulnerable to stack-exhaustion denial of service through deeply nested patterns (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-68fv-2mgg-jv7q
+    include-aliases: true
+    reason: 'source-map-js 1.2.1: source-map-js allows event-loop denial of service through indexed source-map section offsets (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-vc2v-76pw-4v95
+    include-aliases: true
+    reason: 'compression 1.8.1: compression vulnerable to Denial of Service via memory leak on premature response close (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-rfgv-xxqx-mfg5
+    include-aliases: true
+    reason: 'undici 6.28.0, 7.29.0: undici vulnerable to Denial of Service via unrequested WebSocket subprotocol (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-58mr-gqgx-xq4g
+    include-aliases: true
+    reason: 'fast-uri 3.1.6: fast-uri vulnerable to host confusion via an unclosed bracket in the URI authority (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-6j4f-fj2g-mc7p
+    include-aliases: true
+    reason: 'brace-expansion 1.1.18: brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-qhr7-859c-m2p7
+    include-aliases: true
+    reason: 'brace-expansion 1.1.18: brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-qw65-cvwx-89v3
+    include-aliases: true
+    reason: 'fast-uri 3.1.6: fast-uri vulnerable to authority injection via an unvalidated port in serialize (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-m9gg-hp2v-232j
+    include-aliases: true
+    reason: '@grpc/grpc-js 1.14.4: @grpc/grpc-js: In certain configurations, getAuthContext can return unauthorized certificates as though they were authorized (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-w293-vg96-wgc3
+    include-aliases: true
+    reason: 'undici 7.29.0: undici vulnerable to TLS certificate validation bypass via dropped connect options in BalancedPool (high severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-3wwx-pv8p-q78v
+    include-aliases: true
+    reason: 'undici 6.28.0, 7.29.0: undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-3xpg-4rpp-hhhm
+    include-aliases: true
+    reason: 'undici 7.29.0: undici vulnerable to Denial of Service via unbounded decompression of compressed responses (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-hp3w-g68c-fv3c
+    include-aliases: true
+    reason: 'sprintf-js 1.0.3: sprintf-js vulnerable to denial of service through unbounded precision specifiers (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-rx4f-c7p8-82vq
+    include-aliases: true
+    reason: 'undici 7.29.0: undici vulnerable to Denial of Service via WebSocketStream unclean close (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-pmjh-fq2x-6v4x
+    include-aliases: true
+    reason: 'undici 7.29.0: undici vulnerable to Denial of Service via orphaned RetryHandler response body (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-4p3w-j4w9-5jqw
+    include-aliases: true
+    reason: 'moment 2.30.1: moment vulnerable to Path Traversal via crafted non-string locale name (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-2jfj-6hjv-fm6j
+    include-aliases: true
+    reason: 'undici 7.29.0: undici vulnerable to cross-user cookie disclosure via Set-Cookie caching in shared caches (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-q2hr-2g5m-vwhr
+    include-aliases: true
+    reason: 'brace-expansion 1.1.18: brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-hrr3-gc8f-f4qj
+    include-aliases: true
+    reason: 'fast-uri 3.1.6: fast-uri vulnerable to inconsistent host case normalization via percent-encoded octets (medium severity) - pending vulnerability fixes in #649'
+  - vulnerability: GHSA-253c-mchw-3w2r
+    include-aliases: true
+    reason: 'markdown-it 14.2.0: markdown-it linkify: true has two quadratic paths, so a few hundred KB of markdown blocks the event loop for tens of seconds (medium severity) - pending vulnerability fixes in #649'
 output:
   - table
   - json
