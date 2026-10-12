@@ -11,4 +11,6 @@ reject: [
     ## the following dependencies are rejected due to breaking changes in their latest versions. Future stories should be created to address these issues and update the dependencies accordingly.
     "@mojaloop/event-sdk",
     "@mojaloop/central-services-shared",
+    # TODO: 2.10.2 nests @mojaloop/central-services-shared 18.39.4, whose openapi-backend requires @apidevtools/json-schema-ref-parser ^16 (ESM only), so require() fails and unit test suites cannot load. Upgrade once central-services-shared is unblocked above.
+    "@mojaloop/ml-schema-transformer-lib",
   ]
