@@ -17,6 +17,7 @@
  optionally within square brackets <email>.
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
+ - Keene Ng <keene.ng.2024@smu.edu.sg>
 
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Juan Correa <juan.correa@modusbox.com>
@@ -36,7 +37,7 @@ const Config = require('../../lib/config')
 const { logger } = require('../../lib')
 const { hubNameRegex } = require('../../lib/util').hubNameConfig
 
-const uriRegex = /(?:^.*)(\/(participants|parties|quotes|transfers)(\/.*)*)$/
+const uriRegex = /^.*(\/(?:participants|parties|quotes|transfers)(?:\/.*)?)$/
 const axiosRequestOptionsOverride = {
   timeout: Config.HTTP_REQUEST_TIMEOUT_MS
 }

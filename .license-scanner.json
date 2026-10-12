@@ -1,0 +1,20 @@
+{
+  "exceptions": {
+    "memorystream@0.3.1": {
+      "reason": "MIT per LICENSE file; legacy licenses field, no license field in package.json (via npm-run-all)",
+      "expires": "2027-01-01"
+    },
+    "oer-utils@5.1.2": {
+      "reason": "Apache-2.0 per LICENSE file, not listed in package.json (via @mojaloop/ml-schema-transformer-lib)",
+      "expires": "2027-01-01"
+    },
+    "window-size@0.1.0": {
+      "reason": "MIT per LICENSE-MIT file; legacy licenses field, no license field in package.json (via @mojaloop/central-services-shared)",
+      "expires": "2027-01-01"
+    },
+    "wordwrap@0.0.2": {
+      "reason": "MIT/X11 declared in package.json, not a valid SPDX id (via @mojaloop/central-services-shared)",
+      "expires": "2027-01-01"
+    }
+  }
+}
