@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.16.8](https://github.com/mojaloop/account-lookup-service/compare/v17.16.7...v17.16.8) (2026-10-13)
+
+
+### Bug Fixes
+
+* replace inefficient regular expression in participantEndpoint model ([#655](https://github.com/mojaloop/account-lookup-service/issues/655)) ([53ee290](https://github.com/mojaloop/account-lookup-service/commit/53ee290feb437f2a6dae81678fa04dd73e21b725)), closes [#649](https://github.com/mojaloop/account-lookup-service/issues/649) [#649](https://github.com/mojaloop/account-lookup-service/issues/649)
+
+
+### Chore
+
+* **deps:** bump handlebars to 4.7.10 and update dependencies ([#660](https://github.com/mojaloop/account-lookup-service/issues/660)) ([0ce1746](https://github.com/mojaloop/account-lookup-service/commit/0ce174635751aebc670a5a203726aadeace12062))
+* **sbom:** update sbom [skip ci] ([092be2a](https://github.com/mojaloop/account-lookup-service/commit/092be2a816a1067b270c7303a8febf60ed54cffb))
+
 ### [17.16.7](https://github.com/mojaloop/account-lookup-service/compare/v17.16.6...v17.16.7) (2026-09-21)
 
 
