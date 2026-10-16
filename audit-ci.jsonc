@@ -4,39 +4,9 @@
   // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
   "moderate": true,
   "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
-    "GHSA-h67p-54hq-rp68",
-    "GHSA-mh29-5h37-fv8m",
-    "GHSA-rgw5-rvv9-x895",
-    "GHSA-mh99-v99m-4gvg",
-    "GHSA-3jxr-9vmj-r5cp",
-    "GHSA-vccv-cmxp-4j9h",
-    "GHSA-2g4f-4pwh-qvx6",
-    "GHSA-gg4h-3hg2-grpc",
-    "GHSA-g8qq-57p8-ggw5",
-    "GHSA-4mjr-xmp4-gh2g",
-    "GHSA-x5fp-wj9c-mxmx",
-    "GHSA-jxwj-j7wr-gfrw",
-    "GHSA-253c-mchw-3w2r", // markdown-it moderate: markdown-it linkify: true has two quadratic paths, so a few hundred KB of markdown blocks the event loop for tens of seconds - pending vulnerability fixes in #649
-    "GHSA-2jfj-6hjv-fm6j", // undici moderate: undici vulnerable to cross-user cookie disclosure via Set-Cookie caching in shared caches - pending vulnerability fixes in #649
-    "GHSA-3wwx-pv8p-q78v", // undici moderate: undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression - pending vulnerability fixes in #649
-    "GHSA-3xpg-4rpp-hhhm", // undici moderate: undici vulnerable to Denial of Service via unbounded decompression of compressed responses - pending vulnerability fixes in #649
-    "GHSA-4p3w-j4w9-5jqw", // moment moderate: moment vulnerable to Path Traversal via crafted non-string locale name - pending vulnerability fixes in #649
-    "GHSA-58mr-gqgx-xq4g", // fast-uri high: fast-uri vulnerable to host confusion via an unclosed bracket in the URI authority - pending vulnerability fixes in #649
-    "GHSA-68fv-2mgg-jv7q", // source-map-js high: source-map-js allows event-loop denial of service through indexed source-map section offsets - pending vulnerability fixes in #649
-    "GHSA-6j4f-fj2g-mc7p", // brace-expansion high: brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - pending vulnerability fixes in #649
-    "GHSA-hp3w-g68c-fv3c", // sprintf-js moderate: sprintf-js vulnerable to denial of service through unbounded precision specifiers - pending vulnerability fixes in #649
-    "GHSA-hrr3-gc8f-f4qj", // fast-uri moderate: fast-uri vulnerable to inconsistent host case normalization via percent-encoded octets - pending vulnerability fixes in #649
-    "GHSA-jqcg-44mw-7w3h", // proxy-addr critical: proxy-addr vulnerable to IP spoofing via IPv4-mapped IPv6 trust subnet - pending vulnerability fixes in #649
-    "GHSA-m9gg-hp2v-232j", // @grpc/grpc-js high: @grpc/grpc-js: In certain configurations, getAuthContext can return unauthorized certificates as though they were authorized - pending vulnerability fixes in #649
-    "GHSA-pmjh-fq2x-6v4x", // undici moderate: undici vulnerable to Denial of Service via orphaned RetryHandler response body - pending vulnerability fixes in #649
-    "GHSA-pqg4-j6r4-53mv", // shell-quote critical: shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token - pending vulnerability fixes in #649
-    "GHSA-q2hr-2g5m-vwhr", // brace-expansion moderate: brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - pending vulnerability fixes in #649
-    "GHSA-qhr7-859c-m2p7", // brace-expansion high: brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - pending vulnerability fixes in #649
-    "GHSA-qw65-cvwx-89v3", // fast-uri high: fast-uri vulnerable to authority injection via an unvalidated port in serialize - pending vulnerability fixes in #649
-    "GHSA-rfgv-xxqx-mfg5", // undici high: undici vulnerable to Denial of Service via unrequested WebSocket subprotocol - pending vulnerability fixes in #649
-    "GHSA-rx4f-c7p8-82vq", // undici moderate: undici vulnerable to Denial of Service via WebSocketStream unclean close - pending vulnerability fixes in #649
-    "GHSA-vc2v-76pw-4v95", // compression high: compression vulnerable to Denial of Service via memory leak on premature response close - pending vulnerability fixes in #649
-    "GHSA-vfj7-8cjw-p6xm", // braces high: braces vulnerable to stack-exhaustion denial of service through deeply nested patterns - pending vulnerability fixes in #649
-    "GHSA-w293-vg96-wgc3" // undici high: undici vulnerable to TLS certificate validation bypass via dropped connect options in BalancedPool - pending vulnerability fixes in #649
+    "GHSA-vfj7-8cjw-p6xm", // braces stack-exhaustion ReDoS - dev-only transitive via @mojaloop/api-snippets > ts-auto-mock > micromatch; no patched release of braces 3.x exists (2026-10-16)
+    "GHSA-hp3w-g68c-fv3c", // sprintf-js unbounded precision DoS - dev-only transitive via ioredis-mock > fengari (wants ^1.1.3); no patched release of sprintf-js exists (2026-10-16)
+    "GHSA-g8qq-57p8-ggw5", // sanitize-html held at 2.17.6: 2.17.7 pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load
+    "GHSA-jxwj-j7wr-gfrw" // sanitize-html, same hold as above
   ]
 }

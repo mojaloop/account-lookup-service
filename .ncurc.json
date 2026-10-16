@@ -1,0 +1,17 @@
+{
+  "reject": [
+    "get-port",
+    "why-get-port: v6+ is ESM-only and this suite is CommonJS (carried over from the yaml config)",
+    "jest",
+    "sinon",
+    "commander",
+    "why-jest-sinon-commander: held at the versions the committed lock pins; jest 30 and commander 15 break the CommonJS suites (carried over from the yaml config)",
+    "@mojaloop/event-sdk",
+    "@mojaloop/central-services-shared",
+    "why-ml-libs: newer releases pull ESM-only transitive deps that this jest setup cannot load (carried over from the yaml config)",
+    "@types/node",
+    "why-types-node: its major must match the Node runtime major in .nvmrc (24); a higher major only weakens type checking; bump together with the runtime",
+    "@mojaloop/ml-schema-transformer-lib",
+    "why-schema-transformer: 2.10.2 nests the shared lib 18.39.4 whose openapi-backend requires an ESM-only json-schema-ref-parser 16, so require() fails and every unit suite refuses to load under jest 29 (reproduced 2026-10-16; carried over from the yaml config)"
+  ]
+}
