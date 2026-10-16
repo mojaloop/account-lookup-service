@@ -4,15 +4,9 @@
   // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
   "moderate": true,
   "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
-    "GHSA-h67p-54hq-rp68",
-    "GHSA-mh29-5h37-fv8m",
-    "GHSA-rgw5-rvv9-x895",
-    "GHSA-mh99-v99m-4gvg",
-    "GHSA-3jxr-9vmj-r5cp",
-    "GHSA-vccv-cmxp-4j9h",
-    "GHSA-2g4f-4pwh-qvx6",
-    "GHSA-gg4h-3hg2-grpc",
-    "GHSA-g8qq-57p8-ggw5", // sanitize-html held at 2.17.5: 2.17.7 pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load
+    "GHSA-vfj7-8cjw-p6xm", // braces stack-exhaustion ReDoS - dev-only transitive via @mojaloop/api-snippets > ts-auto-mock > micromatch; no patched release of braces 3.x exists (2026-10-16)
+    "GHSA-hp3w-g68c-fv3c", // sprintf-js unbounded precision DoS - dev-only transitive via ioredis-mock > fengari (wants ^1.1.3); no patched release of sprintf-js exists (2026-10-16)
+    "GHSA-g8qq-57p8-ggw5", // sanitize-html held at 2.17.6: 2.17.7 pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load
     "GHSA-jxwj-j7wr-gfrw" // sanitize-html, same hold as above
   ]
 }
