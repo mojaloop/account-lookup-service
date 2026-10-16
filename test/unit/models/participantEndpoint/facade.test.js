@@ -18,6 +18,7 @@
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
  - Shashikant Hirugade <shashikant.hirugade@modusbox.com>
+ - Keene Ng <keene.ng.2024@smu.edu.sg>
 
  * Crosslake
  - Lewis Daly <lewisd@crosslaketech.com>
@@ -34,7 +35,7 @@ const mockGetParticipant = jest.fn()
 const mockSendRequest = jest.fn()
 const mockEnums = {
   Http: {
-    Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', SWITCH: { value: mockHubName } } },
+    Headers: { FSPIOP: { DESTINATION: 'fsp1', SOURCE: 'fsp2', HTTP_METHOD: 'fspiop-http-method', URI: 'fspiop-uri', SWITCH: { value: mockHubName } } },
     RestMethods: { PUT: 'PUT' },
     ResponseTypes: { JSON: 'json' },
     HeaderResources: { PARTICIPANTS: 'value' }
@@ -331,6 +332,39 @@ describe('participantEndpoint Facade', () => {
       expect(mockSendRequest).toHaveBeenCalledTimes(1)
       const args = mockSendRequest.mock.calls[0][0]
       expect(args.apiType).toBe(apiType)
+    })
+  })
+
+  describe('FSPIOP-URI header for JWS signing', () => {
+    const loadSigningFacade = (endpoint) => {
+      jest.mock('../../../../src/lib/config', () => mockConfigDto({ jwsSign: true }))
+      jest.mock('@mojaloop/sdk-standard-components') // to mock JwsSigner
+      mockGetEndpoint.mockImplementation(() => endpoint)
+      mockSendRequest.mockImplementation(() => Promise.resolve(true))
+      return require(`${src}/models/participantEndpoint/facade`)
+    }
+    const signedHeaders = () => ({ [mockEnums.Http.Headers.FSPIOP.SOURCE]: mockHubName })
+
+    it.each([
+      ['https://example.com/parties/MSISDN12345', '/parties/MSISDN12345'],
+      ['https://example.com/participants/MSISDN/1/sub/error', '/participants/MSISDN/1/sub/error']
+    ])('extracts FSPIOP-URI from %s', async (endpoint, expected) => {
+      const ParticipantFacade = loadSigningFacade(endpoint)
+      const headers = signedHeaders()
+
+      await ParticipantFacade.sendRequest(headers, 'fsp1', 'URL', 'PUT', {})
+
+      expect(headers[mockEnums.Http.Headers.FSPIOP.URI]).toBe(expected)
+    })
+
+    it('does not backtrack catastrophically on a crafted endpoint', async () => {
+      const ParticipantFacade = loadSigningFacade('https://example.com/parties' + '/'.repeat(30) + '\n')
+
+      // Measured locally: fixed regex 1–35 ms, original regex 5.7–63 s for this input.
+      // 1000 ms leaves wide margins on both sides.
+      const start = Date.now()
+      await expect(ParticipantFacade.sendRequest(signedHeaders(), 'fsp1', 'URL', 'PUT', {})).rejects.toThrow()
+      expect(Date.now() - start).toBeLessThan(1000)
     })
   })
 })
