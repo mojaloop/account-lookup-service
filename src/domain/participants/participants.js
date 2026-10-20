@@ -21,6 +21,7 @@
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Steven Oderayi <steven.oderayi@modusbox.com>
  - Juan Correa <juan.correa@modusbox.com>
+ - Yong Zhuo Yu <yongzhuoyu@gmail.com>
 
  --------------
  ******/
@@ -376,6 +377,15 @@ const postParticipants = async (headers, method, params, payload, span) => {
 
     // Validate path parameters
     validatePathParameters(params)
+
+    // An FSP may only register a mapping for itself: the body fspId must match the fspiop-source header
+    const source = headers[Enums.Http.Headers.FSPIOP.SOURCE]
+    if (payload.fspId !== source) {
+      throw ErrorHandler.Factory.createFSPIOPError(
+        FSPIOPErrorCodes.VALIDATION_ERROR,
+        ERROR_MESSAGES.fspIdMismatchWithSource
+      )
+    }
 
     const { callbackEndpointType, errorCallbackEndpointType } = getCallbackEndpointTypes(partySubIdOrType)
 
