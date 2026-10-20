@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.16.9](https://github.com/mojaloop/account-lookup-service/compare/v17.16.8...v17.16.9) (2026-10-20)
+
+
+### Bug Fixes
+
+* **participants:** reject registration when body fspId does not match fspiop-source header ([#650](https://github.com/mojaloop/account-lookup-service/issues/650)) ([c75f285](https://github.com/mojaloop/account-lookup-service/commit/c75f285b29afc6d868039cc793c96d78bf143aa7))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([d2a4e76](https://github.com/mojaloop/account-lookup-service/commit/d2a4e7690fa9a21b805504b366f6e40c30db39e0))
+
 ### [17.16.8](https://github.com/mojaloop/account-lookup-service/compare/v17.16.7...v17.16.8) (2026-10-13)
 
 
