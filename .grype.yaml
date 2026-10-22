@@ -213,6 +213,9 @@ ignore:
       sanitize-html held at 2.17.5 under shins (central-services-shared 18 API-doc builder, loaded at startup): the fix
       2.18.0 is ESM-only and jest 29 (pinned via .ncurc) cannot load it; build-time API-doc path only, not
       runtime-exploitable; revisit with the jest 30 upgrade (2026-10-22)
+  - vulnerability: CVE-2026-107891
+    include-aliases: true
+    reason: 'Alpine base image package (apk): musl - no npm fix available as of 2026-10-22 (info severity)'
 output:
   - table
   - json
