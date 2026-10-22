@@ -92,8 +92,8 @@
     "@hapi/catbox": "12.1.1",
     "@hapi/catbox-memory": "6.0.2",
     "@hapi/good": "9.0.1",
-    "@hapi/hapi": "21.4.10",
-    "@hapi/inert": "7.1.2",
+    "@hapi/hapi": "21.4.11",
+    "@hapi/inert": "7.1.3",
     "@hapi/vision": "7.0.3",
     "@mojaloop/central-services-error-handling": "13.2.1",
     "@mojaloop/central-services-health": "15.2.4",
@@ -102,7 +102,7 @@
     "@mojaloop/central-services-shared": "18.37.0",
     "@mojaloop/central-services-stream": "11.12.0",
     "@mojaloop/database-lib": "^11.3.11",
-    "@mojaloop/event-sdk": "14.8.4",
+    "@mojaloop/event-sdk": "14.8.6",
     "@mojaloop/inter-scheme-proxy-cache-lib": "2.10.0",
     "@mojaloop/ml-schema-transformer-lib": "2.10.1",
     "@mojaloop/sdk-standard-components": "19.19.3",
@@ -123,10 +123,10 @@
     "rc": "1.2.8"
   },
   "overrides": {
-    "shell-quote": "1.9.0",
+    "shell-quote": "1.12.0",
     "linkify-it": "5.0.2",
     "axios": "1.20.0",
-    "@grpc/grpc-js": "1.14.4",
+    "@grpc/grpc-js": "1.14.6",
     "form-data": "4.0.6",
     "on-headers": "1.1.0",
     "postcss": "8.5.23",
@@ -145,30 +145,21 @@
       "ejs": "3.1.10",
       "sanitize-html": "2.17.5",
       "yargs-parser": "21.1.1",
-      "markdown-it": "14.2.0"
+      "markdown-it": "14.3.3"
     },
     "widdershins": {
       "swagger2openapi": "7.0.8",
       "yargs-parser": "21.1.1",
-      "markdown-it": "14.2.0"
-    },
-    "swagger2openapi": {
-      "yaml": "2.8.3"
-    },
-    "oas-validator": {
-      "yaml": "2.8.3"
-    },
-    "oas-linter": {
-      "yaml": "2.8.3"
+      "markdown-it": "14.3.3"
     },
     "cross-spawn": "7.0.6",
     "yargs": {
       "yargs-parser": "21.1.1"
     },
-    "jsonwebtoken": "9.0.0",
+    "jsonwebtoken": "9.0.3",
     "jsonpointer": "5.0.0",
     "joi": "18.3.0",
-    "qs": "6.15.3",
+    "qs": "6.16.0",
     "validator": "13.15.22",
     "glob@10.4.5": "10.5.0",
     "body-parser": "1.20.6",
@@ -181,31 +172,44 @@
     "minimatch@3.1.2": "3.1.5",
     "minimatch@5.1.6": "5.1.9",
     "minimatch@10.2.1": "10.2.3",
-    "immutable": "5.1.8",
-    "undici@7.28.0": "7.29.0",
+    "immutable": "5.1.9",
     "flatted": "3.4.2",
-    "markdown-it": "14.2.0",
+    "markdown-it": "14.3.3",
     "picomatch@2.3.1": "2.3.2",
     "picomatch@4.0.3": "4.0.4",
     "readdirp": {
       "picomatch": "2.3.2"
     },
-    "yaml": "1.10.3",
     "convict": "6.2.5",
     "path-to-regexp": "0.1.13",
-    "brace-expansion": "1.1.18",
     "@grpc/proto-loader": {
-      "protobufjs": "8.6.6"
+      "protobufjs": "8.8.0"
     },
     "@mojaloop/event-sdk": {
-      "protobufjs": "8.6.6"
+      "protobufjs": "8.8.0"
     },
-    "fast-uri": "3.1.6",
+    "fast-uri": "3.1.8",
     "fast-xml-builder": "1.1.7",
-    "js-yaml": "3.15.2",
     "browserslist": "4.28.7",
     "sanitize-html": "2.17.6",
-    "baseline-browser-mapping": "2.11.0"
+    "baseline-browser-mapping": "2.11.0",
+    "proxy-addr": "2.0.8",
+    "compression": "1.8.2",
+    "source-map-js": "1.2.2",
+    "moment": "2.31.0",
+    "brace-expansion@1": "1.1.21",
+    "brace-expansion@2": "2.1.7",
+    "brace-expansion@5": "5.0.12",
+    "undici@6": "6.29.1",
+    "undici@7": "7.29.1",
+    "argparse@1": "2.0.1",
+    "yaml@1": "1.10.3",
+    "yaml@2": "2.9.1",
+    "js-yaml@3": "3.15.2",
+    "js-yaml@4": "4.3.2",
+    "argparse@3": "3.0.0",
+    "serialize-error": "8.1.0",
+    "follow-redirects": "1.16.1"
   },
   "devDependencies": {
     "@mojaloop/license-scanner-tool": "^1.1.2",
@@ -226,7 +230,7 @@
     "pre-commit": "2.0.0",
     "proxyquire": "2.1.3",
     "replace": "^1.2.2",
-    "sinon": "21.0.3",
+    "sinon": "22.1.0",
     "standard": "17.1.2",
     "standard-version": "^9.5.0",
     "swagmock": "1.0.0"
