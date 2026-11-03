@@ -4,6 +4,13 @@
   // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
   "moderate": true,
   "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
+    {
+      "GHSA-g3hv-75wg-m249": {
+        "active": true,
+        "notes": "minimatch globparts DoS, fixed only in minimatch 11 (named-export API). The 10.x copies are overridden to 11.0.4. The 3.x copies are pinned by eslint 8 (@eslint/eslintrc 2, @humanwhocodes/config-array), eslint-plugin-import, eslint-plugin-n, eslint-plugin-react, replace, dotgitignore (standard-version), test-exclude 6, glob 7 and npm-run-all (script runner used by the npm start scripts only); the 5.x copies by @redocly/openapi-core 1.34 (via @mojaloop/api-snippets) and filelist (jake, via shins). All of them call minimatch as a function and cannot take 11; lint, test, release and codegen tooling only, not reachable at runtime. Reassess when they move to minimatch 11.",
+        "expiry": "2026-12-31"
+      }
+    },
     "GHSA-h67p-54hq-rp68",
     "GHSA-mh29-5h37-fv8m",
     "GHSA-rgw5-rvv9-x895",
@@ -12,10 +19,12 @@
     "GHSA-vccv-cmxp-4j9h",
     "GHSA-2g4f-4pwh-qvx6",
     "GHSA-gg4h-3hg2-grpc",
-    "GHSA-g8qq-57p8-ggw5",
+    "GHSA-g8qq-57p8-ggw5", // sanitize-html moderate: held at 2.17.5 - 2.17.6+ pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load (2026-11-03)
     "GHSA-4mjr-xmp4-gh2g",
     "GHSA-x5fp-wj9c-mxmx",
-    "GHSA-jxwj-j7wr-gfrw",
+    "GHSA-jxwj-j7wr-gfrw", // sanitize-html moderate: same hold as GHSA-g8qq-57p8-ggw5 (2026-11-03)
+    "GHSA-cv27-6wvh-8x7j", // sanitize-html moderate: same hold as GHSA-x3q4-9hxx-gx8m (2026-11-03)
+    "GHSA-x3q4-9hxx-gx8m", // sanitize-html moderate: held at 2.17.5 under shins (central-services-shared 18 API-doc builder, loaded at startup) and at the root; the fix 2.18.0 pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load. Build-time API-doc path only, not runtime-exploitable; revisit with the jest 30 upgrade (2026-11-03)
     "GHSA-253c-mchw-3w2r", // markdown-it moderate: markdown-it linkify: true has two quadratic paths, so a few hundred KB of markdown blocks the event loop for tens of seconds - pending vulnerability fixes in #649
     "GHSA-2jfj-6hjv-fm6j", // undici moderate: undici vulnerable to cross-user cookie disclosure via Set-Cookie caching in shared caches - pending vulnerability fixes in #649
     "GHSA-3wwx-pv8p-q78v", // undici moderate: undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression - pending vulnerability fixes in #649
