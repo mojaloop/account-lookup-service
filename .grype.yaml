@@ -142,13 +142,13 @@ ignore:
   - vulnerability: GHSA-6j4f-fj2g-mc7p
     include-aliases: true
     reason: >-
-      Base image npm package: brace-expansion 5.0.9 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in
-      image as of 2026-11-02 (high severity)
+      Base image npm package: brace-expansion 5.0.9 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
+      as of 2026-11-02 (high severity)
   - vulnerability: GHSA-qhr7-859c-m2p7
     include-aliases: true
     reason: >-
-      Base image npm package: brace-expansion 5.0.9 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in
-      image as of 2026-11-02 (high severity)
+      Base image npm package: brace-expansion 5.0.9 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
+      as of 2026-11-02 (high severity)
   - vulnerability: GHSA-qrxm-fqhp-jwvm
     include-aliases: true
     reason: >-
@@ -167,13 +167,13 @@ ignore:
   - vulnerability: CVE-2025-60876
     include-aliases: true
     reason: >-
-      Alpine base image package (apk): busybox 1.37.0-r31 / busybox-binsh 1.37.0-r31 / ssl_client 1.37.0-r31 - base
-      image node:24.22.2-alpine3.24, no fix in image as of 2026-11-02 (medium severity)
+      Alpine base image package (apk): busybox 1.37.0-r31 / busybox-binsh 1.37.0-r31 / ssl_client 1.37.0-r31 - base image
+      node:24.22.2-alpine3.24, no fix in image as of 2026-11-02 (medium severity)
   - vulnerability: GHSA-2vr4-cq9g-pvrc
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
-      as of 2026-11-02 (medium severity)
+      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image as
+      of 2026-11-02 (medium severity)
   - vulnerability: GHSA-3g3m-2fjr-6pw4
     include-aliases: true
     reason: >-
@@ -197,33 +197,33 @@ ignore:
   - vulnerability: GHSA-h3mg-xc3c-68pw
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
-      as of 2026-11-02 (medium severity)
+      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image as
+      of 2026-11-02 (medium severity)
   - vulnerability: GHSA-j6r3-76f7-8jcv
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
-      as of 2026-11-02 (medium severity)
+      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image as
+      of 2026-11-02 (medium severity)
   - vulnerability: GHSA-q2hr-2g5m-vwhr
     include-aliases: true
     reason: >-
-      Base image npm package: brace-expansion 5.0.9 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in
-      image as of 2026-11-02 (medium severity)
+      Base image npm package: brace-expansion 5.0.9 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
+      as of 2026-11-02 (medium severity)
   - vulnerability: GHSA-rj75-hqrm-r3gf
     include-aliases: true
     reason: >-
-      Base image npm package: postcss-selector-parser 7.1.4 (bundled in npm) - base image node:24.22.2-alpine3.24, no
-      fix in image as of 2026-11-02 (medium severity)
+      Base image npm package: postcss-selector-parser 7.1.4 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix
+      in image as of 2026-11-02 (medium severity)
   - vulnerability: GHSA-rpw4-54j3-4h4q
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
-      as of 2026-11-02 (medium severity)
+      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image as
+      of 2026-11-02 (medium severity)
   - vulnerability: GHSA-rxp7-6hxx-x8q5
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image
-      as of 2026-11-02 (medium severity)
+      Base image npm package: ip-address 10.5.0 (bundled in npm) - base image node:24.22.2-alpine3.24, no fix in image as
+      of 2026-11-02 (medium severity)
   - vulnerability: GHSA-r53p-7pc4-xj5r
     include-aliases: true
     reason: >-
@@ -243,107 +243,19 @@ ignore:
   - vulnerability: GHSA-g8qq-57p8-ggw5
     include-aliases: true
     reason: >-
-      sanitize-html held at 2.17.5 (root and under shins, the central-services-shared 18 API-doc builder loaded at
-      startup): 2.17.6+ pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load. Build-time API-doc
-      path only, not runtime-exploitable; also allowlisted in audit-ci.jsonc; revisit with the jest 30 upgrade
-      (2026-11-03)
+      sanitize-html held at 2.17.5 (root and under shins, the central-services-shared 18 API-doc builder loaded at startup): 2.17.6+ pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load. Build-time API-doc path only, not runtime-exploitable; also allowlisted in audit-ci.jsonc; revisit with the jest 30 upgrade (2026-11-03)
   - vulnerability: GHSA-jxwj-j7wr-gfrw
     include-aliases: true
-    reason: sanitize-html held at 2.17.5 - same hold as GHSA-g8qq-57p8-ggw5; also allowlisted in audit-ci.jsonc
+    reason: >-
+      sanitize-html held at 2.17.5 - same hold as GHSA-g8qq-57p8-ggw5; also allowlisted in audit-ci.jsonc
   - vulnerability: GHSA-x3q4-9hxx-gx8m
     include-aliases: true
     reason: >-
-      sanitize-html held at 2.17.5 (root and under shins, the central-services-shared 18 API-doc builder loaded at
-      startup): 2.17.6+ pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load. Build-time API-doc
-      path only, not runtime-exploitable; also allowlisted in audit-ci.jsonc; revisit with the jest 30 upgrade
-      (2026-11-03)
+      sanitize-html held at 2.17.5 (root and under shins, the central-services-shared 18 API-doc builder loaded at startup): 2.17.6+ pulls ESM-only htmlparser2 12, which jest 29 (pinned via .ncurc) cannot load. Build-time API-doc path only, not runtime-exploitable; also allowlisted in audit-ci.jsonc; revisit with the jest 30 upgrade (2026-11-03)
   - vulnerability: GHSA-cv27-6wvh-8x7j
     include-aliases: true
-    reason: sanitize-html held at 2.17.5 - same hold as GHSA-x3q4-9hxx-gx8m; also allowlisted in audit-ci.jsonc
-  - vulnerability: GHSA-rgw5-rvv9-x895
-    include-aliases: true
     reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-11-19 (high severity)
-  - vulnerability: GHSA-mh99-v99m-4gvg
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-11-19 (high severity)
-  - vulnerability: GHSA-mwp4-54f8-5fhr
-    include-aliases: true
-    reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-11-19 (high severity)
-  - vulnerability: CVE-2026-95692
-    include-aliases: true
-    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-11-19 (high severity)'
-  - vulnerability: GHSA-c2c7-rcm5-vvqj
-    include-aliases: true
-    reason: >-
-      Base image npm package: picomatch - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-11-19 (high severity)
-  - vulnerability: GHSA-f886-m6hf-6m8v
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-11-19 (moderate severity)
-  - vulnerability: GHSA-w4pp-8pjf-rmxw
-    include-aliases: true
-    reason: >-
-      Base image npm package: pacote - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-11-19 (high severity)
-  - vulnerability: GHSA-3jxr-9vmj-r5cp
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-11-19 (high severity)
-  - vulnerability: CVE-2026-107496
-    include-aliases: true
-    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-11-19 (high severity)'
-  - vulnerability: CVE-2026-4738
-    include-aliases: true
-    reason: 'Alpine base image package (apk): zlib - no npm fix available as of 2026-11-19 (critical severity)'
-  - vulnerability: GHSA-v2v4-37r5-5v8g
-    include-aliases: true
-    reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-11-19 (moderate severity)
-  - vulnerability: GHSA-3v7f-55p6-f55p
-    include-aliases: true
-    reason: >-
-      Base image npm package: picomatch - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-11-19 (moderate severity)
-  - vulnerability: CVE-2026-95691
-    include-aliases: true
-    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-11-19 (high severity)'
-  - vulnerability: CVE-2026-88823
-    include-aliases: true
-    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-11-19 (high severity)'
-  - vulnerability: CVE-2026-88822
-    include-aliases: true
-    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-11-19 (moderate severity)'
-  - vulnerability: GHSA-52v5-jr5w-gjxr
-    include-aliases: true
-    reason: >-
-      Base image npm package: sigstore - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-11-19 (high severity)
-  - vulnerability: GHSA-jfc7-64v2-mr8c
-    include-aliases: true
-    reason: >-
-      Base image npm package: @sigstore/core - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-11-19 (moderate severity)
-  - vulnerability: GHSA-w9m9-85wc-3x92
-    include-aliases: true
-    reason: >-
-      Base image npm package: postcss-selector-parser - bundled in Node.js base image, not fixable via application
-      dependencies as of 2026-11-19 (low severity)
-  - vulnerability: GHSA-vccv-cmxp-4j9h
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: sanitize-html (moderate severity) as of 2026-11-19'
-  - vulnerability: GHSA-6pq8-jhm2-2vcw
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-11-19'
+      sanitize-html held at 2.17.5 - same hold as GHSA-x3q4-9hxx-gx8m; also allowlisted in audit-ci.jsonc
 output:
   - table
   - json
